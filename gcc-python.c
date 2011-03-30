@@ -22,11 +22,11 @@ static const char* event_name[] = {
   follows:
 
   PLUGIN_ATTRIBUTES:
-    gcc_data=0x0 
+    gcc_data=0x0
     Called from: init_attributes () at ../../gcc/attribs.c:187
 
   PLUGIN_PRAGMAS:
-    gcc_data=0x0 
+    gcc_data=0x0
     Called from: c_common_init () at ../../gcc/c-family/c-opts.c:1052
 
   PLUGIN_START_UNIT:
@@ -95,19 +95,65 @@ static void my_callback_for_##NAME(void *gcc_data, void *user_data) \
 # include "plugin.def"
 # undef DEFEVENT
 
+static PyObject*
+gcc_python_register_callback(PyObject *self, PyObject *args)
+{
+    // FIXME: to be written
+    // if(!PyArg_ParseTuple(args, ":numargs"))
+    //return NULL;
+    printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
+    Py_RETURN_NONE;
+    //return Py_BuildValue("i", numargs);
+}
+
+static PyMethodDef GccMethods[] = {
+    {"register_callback", gcc_python_register_callback, METH_VARARGS,
+     "Register a callback, to be called when various GCC events occur."},
+
+    /* Sentinel: */
+    {NULL, NULL, 0, NULL}
+};
+
+static int
+gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
+{
+    PyObject *gcc_module;
+
+    gcc_module = Py_InitModule("gcc", GccMethods);
+    if (!gcc_module) {
+        return 0;
+    }
+
+#define DEFEVENT(NAME) \
+    PyModule_AddIntMacro(gcc_module, NAME);
+# include "plugin.def"
+# undef DEFEVENT
+
+
+    /* Success: */
+    return 1;
+}
+
 int
 plugin_init (struct plugin_name_args *plugin_info,
              struct plugin_gcc_version *version)
 {
     if (!plugin_default_version_check (version, &gcc_version)) {
-          return 1;
+        return 1;
     }
 
     printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
     Py_Initialize();
+
+    if (!gcc_python_init_gcc_module(plugin_info)) {
+        return 1;
+    }
+
     PyRun_SimpleString("from time import time,ctime\n"
 		       "print 'Today is',ctime(time())\n");
+    PyRun_SimpleString("import gcc; help(gcc)\n");
+    PyRun_SimpleString("import gcc; gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION)\n");
     Py_Finalize();
 
     printf("%s:%i:got here\n", __FILE__, __LINE__);
