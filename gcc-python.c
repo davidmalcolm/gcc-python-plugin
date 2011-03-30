@@ -1,3 +1,4 @@
+#include <Python.h>
 #include <gcc-plugin.h>
 
 int plugin_is_GPL_compatible;
@@ -103,6 +104,13 @@ plugin_init (struct plugin_name_args *plugin_info,
     }
 
     printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
+
+    Py_Initialize();
+    PyRun_SimpleString("from time import time,ctime\n"
+		       "print 'Today is',ctime(time())\n");
+    Py_Finalize();
+
+    printf("%s:%i:got here\n", __FILE__, __LINE__);
 
 #define DEFEVENT(NAME) \
     if (NAME != PLUGIN_PASS_MANAGER_SETUP &&         \

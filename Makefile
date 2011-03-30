@@ -2,7 +2,12 @@ GCC=gcc
 PLUGIN_SOURCE_FILES= gcc-python.c
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
-CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -g
+
+PYTHON_CONFIG=python-config
+PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
+PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
+
+CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
 plugin: gcc-python.so
 
