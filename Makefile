@@ -2,7 +2,7 @@ GCC=gcc
 PLUGIN_SOURCE_FILES= gcc-python.c
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
-CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall
+CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -g
 
 plugin: gcc-python.so
 
@@ -12,6 +12,10 @@ gcc-python.so: $(PLUGIN_OBJECT_FILES)
 clean:
 	rm -f *.so *.o
 
+# Hint for debugging: add -v to the gcc options 
+# to get a command line for invoking individual subprocesses
+# Doing so seems to require that paths be absolute, rather than relative
+# to this directory
 test: plugin
-	gcc -fplugin=./gcc-python.so test.c
+	gcc -v -fplugin=$(shell pwd)/gcc-python.so $(shell pwd)/test.c
 
