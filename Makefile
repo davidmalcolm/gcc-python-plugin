@@ -21,6 +21,10 @@ clean:
 # to get a command line for invoking individual subprocesses
 # Doing so seems to require that paths be absolute, rather than relative
 # to this directory
+TEST_CFLAGS= \
+  -fplugin=$(shell pwd)/python.so \
+  -fplugin-arg-python-script=test.py
+
 test: plugin
-	gcc -v -fplugin=$(shell pwd)/python.so $(shell pwd)/test.c -fplugin-arg-python-script=test.py
+	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c 
 
