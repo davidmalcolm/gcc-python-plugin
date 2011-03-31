@@ -3,7 +3,7 @@ PLUGIN_SOURCE_FILES= gcc-python.c
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
 
-PYTHON_CONFIG=python-config
+PYTHON_CONFIG=python-debug-config
 PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
 PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
