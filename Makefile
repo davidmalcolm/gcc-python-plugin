@@ -2,7 +2,8 @@ GCC=gcc
 
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
-  gcc-python-closure.c
+  gcc-python-closure.c \
+  optpass.c
 
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
@@ -20,6 +21,10 @@ python.so: $(PLUGIN_OBJECT_FILES)
 
 clean:
 	rm -f *.so *.o
+	rm -f optpass.c
+
+optpass.c: optpass.pyx
+	cython $^ -o $@
 
 # Hint for debugging: add -v to the gcc options 
 # to get a command line for invoking individual subprocesses

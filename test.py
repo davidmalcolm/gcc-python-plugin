@@ -3,7 +3,7 @@ print "hello world"
 
 import gcc
 
-help(gcc)
+#help(gcc)
 
 def my_callback(*args, **kwargs):
     print('my_callback was called: args=%r  kwargs=%r' % (args, kwargs))

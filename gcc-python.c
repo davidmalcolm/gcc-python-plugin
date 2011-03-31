@@ -2,6 +2,7 @@
 #include <gcc-plugin.h>
 
 #include "gcc-python-closure.h"
+#include "gcc-python-wrappers.h"
 
 int plugin_is_GPL_compatible;
 
@@ -116,23 +117,20 @@ gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
     PyGILState_STATE gstate;
 
     //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
-    //printf("%s:%i:%p:%p\n", __FILE__, __LINE__, closure->callback, closure->data);
-
     assert(pass);
     assert(closure);
 
-    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION bar\n", __FILE__, __LINE__);
-
     gstate = PyGILState_Ensure();
-
-    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION foo\n", __FILE__, __LINE__);
 
     //PyObject_Print(closure->callback, stdout, 0);
     //PyObject_Print(closure->extraargs, stdout, 0);
 
-    // FIXME: supply "pass" to the callback:
-    // FIXME: for now, simply pass the address of "pass" as an int object (useless, really)
-    wrapped_gcc_data = PyLong_FromLong((long)pass);
+    // printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
+
+    wrapped_gcc_data = gcc_python_make_wrapper_opt_pass(pass);
+ 
+    //PyObject_Print(wrapped_gcc_data, stdout, 0);
+
     if (!wrapped_gcc_data) {
         goto cleanup;
     }
@@ -171,9 +169,8 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "iO|O:register_callback", &event, &callback, &extraargs)) {
         return NULL;
     }
-    // FIXME: to be written
-    //return NULL;
-    printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
+
+    //printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
 
     closure = gcc_python_closure_new(callback, extraargs);
     if (!closure) {
@@ -301,7 +298,7 @@ plugin_init (struct plugin_name_args *plugin_info,
         return 1;
     }
 
-    printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
+    //printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
     Py_Initialize();
     PyEval_InitThreads();
@@ -310,6 +307,9 @@ plugin_init (struct plugin_name_args *plugin_info,
         return 1;
     }
 
+    // init other modules
+    initoptpass();
+
     gcc_python_run_any_script();
 
     /* 
@@ -317,7 +317,7 @@ plugin_init (struct plugin_name_args *plugin_info,
        There doesn't seem to be an exit hook for a plugin
     */
 
-    printf("%s:%i:got here\n", __FILE__, __LINE__);
+    //printf("%s:%i:got here\n", __FILE__, __LINE__);
 
 #if GCC_PYTHON_TRACE_ALL_EVENTS
 #define DEFEVENT(NAME) \
