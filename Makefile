@@ -3,7 +3,8 @@ GCC=gcc
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
   gcc-python-closure.c \
-  optpass.c
+  optpass.c \
+  tree.c
 
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
@@ -24,6 +25,9 @@ clean:
 	rm -f optpass.c
 
 optpass.c: optpass.pyx
+	cython $^ -o $@
+
+tree.c: tree.pyx
 	cython $^ -o $@
 
 # Hint for debugging: add -v to the gcc options 

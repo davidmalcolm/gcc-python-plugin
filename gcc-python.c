@@ -102,34 +102,15 @@ static void my_callback_for_##NAME(void *gcc_data, void *user_data) \
 # undef DEFEVENT
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
-//gcc_debug_callback(enum plugin_event event, void *gcc_data, void *user_data)
-
 static void
-gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
+gcc_python_finish_invoking_callback(PyGILState_STATE gstate, PyObject *wrapped_gcc_data, void *user_data)
 {
-  //gcc_data: struct opt_pass *pass
-    struct opt_pass *pass = (struct opt_pass *)gcc_data;
     struct callback_closure *closure = (struct callback_closure *)user_data;
-    PyObject *wrapped_gcc_data = NULL;
     PyObject *args = NULL;
     PyObject *result = NULL;
 
-    PyGILState_STATE gstate;
-
-    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
-    assert(pass);
     assert(closure);
-
-    gstate = PyGILState_Ensure();
-
-    //PyObject_Print(closure->callback, stdout, 0);
-    //PyObject_Print(closure->extraargs, stdout, 0);
-
-    // printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
-
-    wrapped_gcc_data = gcc_python_make_wrapper_opt_pass(pass);
- 
-    //PyObject_Print(wrapped_gcc_data, stdout, 0);
+    /* We take ownership of wrapped_gcc_data, which could also be NULL */
 
     if (!wrapped_gcc_data) {
         goto cleanup;
@@ -150,10 +131,38 @@ cleanup:
     Py_XDECREF(result);
 
     PyGILState_Release(gstate);
-    return;
+}
 
+static void
+gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+    tree fndecl = (tree)gcc_data;
 
-		       
+    //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
+    assert(fndecl);
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate, 
+					gcc_python_make_wrapper_tree(fndecl),
+					user_data);
+}
+    
+static void
+gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+    struct opt_pass *pass = (struct opt_pass *)gcc_data;
+
+    //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
+    assert(pass);
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate, 
+					gcc_python_make_wrapper_opt_pass(pass),
+					user_data);
 }
 
 
@@ -178,6 +187,13 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
     }
 
     switch ((enum plugin_event)event) {
+    case PLUGIN_PRE_GENERICIZE:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE,
+			  closure);
+	break;
+	
     case PLUGIN_PASS_EXECUTION:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
@@ -307,8 +323,10 @@ plugin_init (struct plugin_name_args *plugin_info,
         return 1;
     }
 
-    // init other modules
+    /* Init other modules */
+    /* FIXME: properly integrate them within the module hierarchy */
     initoptpass();
+    inittree();
 
     gcc_python_run_any_script();
 
