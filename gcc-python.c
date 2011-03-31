@@ -1,9 +1,12 @@
 #include <Python.h>
 #include <gcc-plugin.h>
 
+#include "gcc-python-closure.h"
+
 int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
+
 
 #if GCC_PYTHON_TRACE_ALL_EVENTS
 static const char* event_name[] = {
@@ -100,19 +103,15 @@ static void my_callback_for_##NAME(void *gcc_data, void *user_data) \
 
 //gcc_debug_callback(enum plugin_event event, void *gcc_data, void *user_data)
 
-struct callback_closure
-{
-    PyObject *callback;
-    PyObject *data;
-};
-
 static void
 gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
 {
   //gcc_data: struct opt_pass *pass
     struct opt_pass *pass = (struct opt_pass *)gcc_data;
     struct callback_closure *closure = (struct callback_closure *)user_data;
-    PyObject* result;
+    PyObject *wrapped_gcc_data = NULL;
+    PyObject *args = NULL;
+    PyObject *result = NULL;
 
     PyGILState_STATE gstate;
 
@@ -129,28 +128,43 @@ gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
     //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION foo\n", __FILE__, __LINE__);
 
     //PyObject_Print(closure->callback, stdout, 0);
-    //PyObject_Print(closure->data, stdout, 0);
+    //PyObject_Print(closure->extraargs, stdout, 0);
 
     // FIXME: supply "pass" to the callback:
-    (void)pass;
+    // FIXME: for now, simply pass the address of "pass" as an int object (useless, really)
+    wrapped_gcc_data = PyLong_FromLong((long)pass);
+    if (!wrapped_gcc_data) {
+        goto cleanup;
+    }
 
-    result = PyObject_Call(closure->callback, closure->data, NULL);
-    //assert(result);
+    args = gcc_python_closure_make_args(closure, wrapped_gcc_data);
+    if (!args) {
+        goto cleanup;
+    }
+    result = PyObject_Call(closure->callback, args, NULL);
 
     // FIXME: the result is ignored
     // FIXME: exception handling?
-    (void)result;    
+
+cleanup:
+    Py_XDECREF(wrapped_gcc_data);
+    Py_XDECREF(args);
+    Py_XDECREF(result);
 
     PyGILState_Release(gstate);
+    return;
+
+
+		       
 }
 
 static struct callback_closure *
-gcc_python_closure_new(PyObject *callback, PyObject *data)
+gcc_python_closure_new(PyObject *callback, PyObject *extraargs)
 {
     struct callback_closure *closure;
 
     assert(callback);
-    // data can be NULL
+    // extraargs can be NULL
 
     closure = PyMem_New(struct callback_closure, 1);
     if (!closure) {
@@ -161,37 +175,81 @@ gcc_python_closure_new(PyObject *callback, PyObject *data)
 
     // FIXME: we may want to pass in the event enum as well as the user-supplied extraargs
 
-    if (data) {
-      /* Hold a reference to the data for when we register it with the
-	 callback: */
-      closure->data = data;
-      Py_INCREF(data);
+    if (extraargs) {
+	/* Hold a reference to the extraargs for when we register it with the
+	   callback: */
+	closure->extraargs = extraargs;
+	Py_INCREF(extraargs);
     } else {
-      closure->data = PyTuple_New(0);
-      if (!closure->data) {
-         	return NULL;  // singleton, so can't happen, really
-      }
+	closure->extraargs = PyTuple_New(0);
+	if (!closure->extraargs) {
+	    return NULL;  // singleton, so can't happen, really
+	}
     }
 
     return closure;
 }
+
+PyObject *
+gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrapped_gcc_data)
+{
+    PyObject *args = NULL;
+    int i;
+
+    assert(closure);
+    /* wrapped_gcc_data can be NULL if there isn't one for this kind of callback */
+    assert(closure->extraargs);
+    assert(PyTuple_Check(closure->extraargs));
+    
+    if (wrapped_gcc_data) {
+ 	/* 
+	   Equivalent to:
+	     args = (gcc_data, ) + extraargs
+	 */
+        args = PyTuple_New(1 + PyTuple_Size(closure->extraargs));
+
+	if (!args) {
+	    goto error;
+	}
+
+	PyTuple_SetItem(args, 0, wrapped_gcc_data);
+	Py_INCREF(wrapped_gcc_data);
+	for (i = 0; i < PyTuple_Size(closure->extraargs); i++) {
+	    PyObject *item = PyTuple_GetItem(closure->extraargs, i);
+	    PyTuple_SetItem(args, i + 1, item);
+	    Py_INCREF(item);
+	}
+	
+	return args;
+	
+    } else {
+	/* Just reuse closure's extraargs tuple */
+	Py_INCREF(closure->extraargs);
+	return closure->extraargs;
+    }
+
+ error:
+    Py_XDECREF(args);
+    return NULL;
+}
+
 
 static PyObject*
 gcc_python_register_callback(PyObject *self, PyObject *args)
 {
     int event;
     PyObject *callback = NULL;
-    PyObject *data = NULL;
+    PyObject *extraargs = NULL;
     struct callback_closure *closure;
 
-    if (!PyArg_ParseTuple(args, "iO|O", &event, &callback, &data)) {
+    if (!PyArg_ParseTuple(args, "iO|O:register_callback", &event, &callback, &extraargs)) {
         return NULL;
     }
     // FIXME: to be written
     //return NULL;
     printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
 
-    closure = gcc_python_closure_new(callback, data);
+    closure = gcc_python_closure_new(callback, extraargs);
     if (!closure) {
         return PyErr_NoMemory();
     }
@@ -277,7 +335,6 @@ gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
   	    return 1;
 	}
         PyTuple_SetItem(gcc_python_globals.argument_tuple, i, pair);
-	// FIXME: ref counts?
 
     }
     PyModule_AddObject(gcc_python_globals.module, "argument_dict", gcc_python_globals.argument_dict);
@@ -351,3 +408,10 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     return 0;
 }
+
+/*
+  PEP-7  
+Local variables:
+c-basic-offset: 4
+End:
+*/
