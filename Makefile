@@ -9,9 +9,9 @@ PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
-plugin: gcc-python.so
+plugin: python.so
 
-gcc-python.so: $(PLUGIN_OBJECT_FILES)
+python.so: $(PLUGIN_OBJECT_FILES)
 	$(GCC) $(CFLAGS) -shared $^ -o $@
 
 clean:
@@ -22,5 +22,5 @@ clean:
 # Doing so seems to require that paths be absolute, rather than relative
 # to this directory
 test: plugin
-	gcc -v -fplugin=$(shell pwd)/gcc-python.so $(shell pwd)/test.c
+	gcc -v -fplugin=$(shell pwd)/python.so $(shell pwd)/test.c -fplugin-arg-python-script=test.py
 
