@@ -114,25 +114,92 @@ static PyMethodDef GccMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+static struct 
+{
+    PyObject *module;
+    PyObject *argument_dict;
+    PyObject *argument_tuple;
+} gcc_python_globals;
+
 static int
 gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
 {
-    PyObject *gcc_module;
+    int i;
 
-    gcc_module = Py_InitModule("gcc", GccMethods);
-    if (!gcc_module) {
+    gcc_python_globals.module = Py_InitModule("gcc", GccMethods);
+    if (!gcc_python_globals.module) {
         return 0;
     }
 
-#define DEFEVENT(NAME) \
-    PyModule_AddIntMacro(gcc_module, NAME);
-# include "plugin.def"
-# undef DEFEVENT
+    /* Set up int constants for each of the enum plugin_event values: */
+    #define DEFEVENT(NAME) \
+       PyModule_AddIntMacro(gcc_python_globals.module, NAME);
+    # include "plugin.def"
+    # undef DEFEVENT
 
+    gcc_python_globals.argument_dict = PyDict_New();
+    if (!gcc_python_globals.argument_dict) {
+        return 0;
+    }
+
+    gcc_python_globals.argument_tuple = PyTuple_New(plugin_info->argc);
+    if (!gcc_python_globals.argument_tuple) {
+        return 0;
+    }
+
+    /* PySys_SetArgvEx(plugin_info->argc, plugin_info->argv, 0); */
+    for (i=0; i<plugin_info->argc; i++) {
+	struct plugin_argument *arg = &plugin_info->argv[i];
+        PyObject *key;
+        PyObject *value;
+	PyObject *pair;
+      
+	key = PyString_FromString(arg->key);
+	if (arg->value) {
+	    value = PyString_FromString(plugin_info->argv[i].value);
+	} else {
+  	    value = Py_None;
+	}
+        PyDict_SetItem(gcc_python_globals.argument_dict, key, value);
+	// FIXME: ref counts?
+
+	pair = Py_BuildValue("(s, s)", arg->key, arg->value);
+	if (!pair) {
+  	    return 1;
+	}
+        PyTuple_SetItem(gcc_python_globals.argument_tuple, i, pair);
+	// FIXME: ref counts?
+
+    }
+    PyModule_AddObject(gcc_python_globals.module, "argument_dict", gcc_python_globals.argument_dict);
+    PyModule_AddObject(gcc_python_globals.module, "argument_tuple", gcc_python_globals.argument_tuple);
 
     /* Success: */
     return 1;
 }
+
+static void gcc_python_run_any_script(void)
+{
+    PyObject* script_name;
+    FILE *fp;
+  
+    script_name = PyDict_GetItemString(gcc_python_globals.argument_dict, "script");
+    if (!script_name) {
+        return;
+    }
+
+    fp = fopen(PyString_AsString(script_name), "r");
+    if (!fp) {
+        fprintf(stderr,
+		"Unable to read python script: %s\n",
+		PyString_AsString(script_name));
+	return;
+    }
+    PyRun_SimpleFile(fp, PyString_AsString(script_name));
+    fclose(fp);
+}
+
+
 
 int
 plugin_init (struct plugin_name_args *plugin_info,
@@ -150,10 +217,8 @@ plugin_init (struct plugin_name_args *plugin_info,
         return 1;
     }
 
-    PyRun_SimpleString("from time import time,ctime\n"
-		       "print 'Today is',ctime(time())\n");
-    PyRun_SimpleString("import gcc; help(gcc)\n");
-    PyRun_SimpleString("import gcc; gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION)\n");
+    gcc_python_run_any_script();
+
     Py_Finalize();
 
     printf("%s:%i:got here\n", __FILE__, __LINE__);
