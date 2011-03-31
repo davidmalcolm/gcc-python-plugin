@@ -15,11 +15,16 @@ cdef extern from "coretypes.h":
 
 cdef extern from "tree-pass.h":
      cdef struct opt_pass:
-         pass
+         char *name
 
 cdef extern from "gcc-python-wrappers.h":
    pass
 
+"""
+A single tree-ssa optimization pass
+
+Wrapper around one of GCC's (struct opt_pass*)
+"""
 cdef class OptPass:
     cdef opt_pass *ptr
 
@@ -32,6 +37,9 @@ cdef class OptPass:
 
     cdef __get_ptr(self, opt_pass *ptr):
         self.ptr = ptr
+        
+    def __repr__(self):
+        return 'optpass.OptPass(%r)' % self.ptr.name
 
 
 cdef extern gcc_python_make_wrapper_opt_pass(opt_pass *ptr):
