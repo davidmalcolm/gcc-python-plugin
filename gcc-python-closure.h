@@ -7,6 +7,9 @@ struct callback_closure
     PyObject *extraargs;
 };
 
+struct callback_closure *
+gcc_python_closure_new(PyObject *callback, PyObject *extraargs);
+
 PyObject *
 gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrapped_gcc_data);
 
