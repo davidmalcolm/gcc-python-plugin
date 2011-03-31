@@ -5,6 +5,7 @@ int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
 
+#if GCC_PYTHON_TRACE_ALL_EVENTS
 static const char* event_name[] = {
 #define DEFEVENT(NAME) \
   #NAME, 
@@ -81,6 +82,7 @@ static const char* event_name[] = {
 
 */
 
+
 static void
 my_callback(enum plugin_event event, void *gcc_data, void *user_data)
 {
@@ -94,14 +96,121 @@ static void my_callback_for_##NAME(void *gcc_data, void *user_data) \
 }
 # include "plugin.def"
 # undef DEFEVENT
+#endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
+
+//gcc_debug_callback(enum plugin_event event, void *gcc_data, void *user_data)
+
+struct callback_closure
+{
+    PyObject *callback;
+    PyObject *data;
+};
+
+static void
+gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
+{
+  //gcc_data: struct opt_pass *pass
+    struct opt_pass *pass = (struct opt_pass *)gcc_data;
+    struct callback_closure *closure = (struct callback_closure *)user_data;
+    PyObject* result;
+
+    PyGILState_STATE gstate;
+
+    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
+    //printf("%s:%i:%p:%p\n", __FILE__, __LINE__, closure->callback, closure->data);
+
+    assert(pass);
+    assert(closure);
+
+    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION bar\n", __FILE__, __LINE__);
+
+    gstate = PyGILState_Ensure();
+
+    //printf("%s:%i:gcc_python_callback_for_PLUGIN_PASS_EXECUTION foo\n", __FILE__, __LINE__);
+
+    //PyObject_Print(closure->callback, stdout, 0);
+    //PyObject_Print(closure->data, stdout, 0);
+
+    // FIXME: supply "pass" to the callback:
+    (void)pass;
+
+    result = PyObject_Call(closure->callback, closure->data, NULL);
+    //assert(result);
+
+    // FIXME: the result is ignored
+    // FIXME: exception handling?
+    (void)result;    
+
+    PyGILState_Release(gstate);
+}
+
+static struct callback_closure *
+gcc_python_closure_new(PyObject *callback, PyObject *data)
+{
+    struct callback_closure *closure;
+
+    assert(callback);
+    // data can be NULL
+
+    closure = PyMem_New(struct callback_closure, 1);
+    if (!closure) {
+        return NULL;
+    }
+    
+    closure->callback = callback;
+
+    // FIXME: we may want to pass in the event enum as well as the user-supplied extraargs
+
+    if (data) {
+      /* Hold a reference to the data for when we register it with the
+	 callback: */
+      closure->data = data;
+      Py_INCREF(data);
+    } else {
+      closure->data = PyTuple_New(0);
+      if (!closure->data) {
+         	return NULL;  // singleton, so can't happen, really
+      }
+    }
+
+    return closure;
+}
 
 static PyObject*
 gcc_python_register_callback(PyObject *self, PyObject *args)
 {
+    int event;
+    PyObject *callback = NULL;
+    PyObject *data = NULL;
+    struct callback_closure *closure;
+
+    if (!PyArg_ParseTuple(args, "iO|O", &event, &callback, &data)) {
+        return NULL;
+    }
     // FIXME: to be written
-    // if(!PyArg_ParseTuple(args, ":numargs"))
     //return NULL;
     printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
+
+    closure = gcc_python_closure_new(callback, data);
+    if (!closure) {
+        return PyErr_NoMemory();
+    }
+
+    switch ((enum plugin_event)event) {
+    case PLUGIN_PASS_EXECUTION:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_PLUGIN_PASS_EXECUTION,
+			  closure);
+	break;
+
+    default:
+        PyErr_Format(PyExc_ValueError, "event type %i invalid (or not wired up yet)", event);
+	return NULL;
+    }
+    //    register_callback(plugin_info->base_name, (enum plugin_event)event,
+    //my_callback_for_##NAME, NULL);	      
+    
     Py_RETURN_NONE;
     //return Py_BuildValue("i", numargs);
 }
@@ -212,17 +321,22 @@ plugin_init (struct plugin_name_args *plugin_info,
     printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
     Py_Initialize();
-
+    PyEval_InitThreads();
+  
     if (!gcc_python_init_gcc_module(plugin_info)) {
         return 1;
     }
 
     gcc_python_run_any_script();
 
-    Py_Finalize();
+    /* 
+       Can we ever call Py_Finalize ?
+       There doesn't seem to be an exit hook for a plugin
+    */
 
     printf("%s:%i:got here\n", __FILE__, __LINE__);
 
+#if GCC_PYTHON_TRACE_ALL_EVENTS
 #define DEFEVENT(NAME) \
     if (NAME != PLUGIN_PASS_MANAGER_SETUP &&         \
         NAME != PLUGIN_INFO &&                       \
@@ -233,6 +347,7 @@ plugin_init (struct plugin_name_args *plugin_info,
     }
 # include "plugin.def"
 # undef DEFEVENT
+#endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
     return 0;
 }
