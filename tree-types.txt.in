@@ -1,0 +1,5 @@
+#define DEFTREECODE(SYM, STRING, TYPE, NARGS)   \
+   SYM, STRING, TYPE, NARGS
+#define END_OF_BASE_TREE_CODES
+#include "all-tree.def"
+#undef DEFTREECODE

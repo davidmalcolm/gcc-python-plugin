@@ -1,0 +1,34 @@
+from collections import namedtuple
+
+class TreeType(namedtuple('TreeType', 'SYM, STRING, TYPE, NARGS')):
+    def camel_cased_string(self):
+        return ''.join([word.title()
+                        for word in self.STRING.split('_')])
+
+def iter_tree_types():
+    import re
+    f = open('tree-types.txt')
+    for line in f:
+        # e.g.
+        #   ERROR_MARK, "error_mark", tcc_exceptional, 0
+        m = re.match('(.+), (.+), (.+), (.+)', line)
+        if m:
+            yield TreeType(SYM=m.group(1),
+                           STRING=m.group(2)[1:-1],
+                           TYPE=m.group(3),
+                           NARGS=int(m.group(4)))
+        else:
+            #    print 'UNMATCHED: ', line
+            assert(line.startswith('#') or line.strip() == '')
+    f.close()
+
+for t in iter_tree_types():
+    print (
+"""
+cdef class %s(Tree):
+    _STRING = %r
+    _SYM = %r
+    _TYPE = %r
+    _NARGS = %i
+""" % (t.camel_cased_string(),
+       t.STRING, t.SYM, t.TYPE, t.NARGS))

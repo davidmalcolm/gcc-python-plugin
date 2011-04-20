@@ -30,8 +30,14 @@ optpass.c: optpass.pyx
 tree.c: tree.pyx
 	cython $^ -o $@
 
-tree.pyx: tree.pyx.in
+tree.pyx: tree.pyx.in tree-types.pyx.in
+	cpp $(CFLAGS) tree.pyx.in -o $@
+
+tree-types.txt: tree-types.txt.in
 	cpp $(CFLAGS) $^ -o $@
+
+tree-types.pyx.in: tree-types.txt maketreetypes.py
+	python maketreetypes.py > tree-types.pyx.in
 
 # Hint for debugging: add -v to the gcc options 
 # to get a command line for invoking individual subprocesses

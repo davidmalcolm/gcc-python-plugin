@@ -32,13 +32,7 @@ cdef class Tree:
     def __repr__(self):
         return 'tree.Tree(%r)' % 'foo'
 
-
-#define DEFTREECODE(SYM, STRING, TYPE, NARGS)   \
-cdef class SYM(Tree): \
-     pass
-#define END_OF_BASE_TREE_CODES
-#include "all-tree.def"
-#undef DEFTREECODE
+#include "tree-types.pyx.in"
 
 cdef extern gcc_python_make_wrapper_tree(tree t):
     obj = Tree()
