@@ -30,6 +30,9 @@ optpass.c: optpass.pyx
 tree.c: tree.pyx
 	cython $^ -o $@
 
+tree.pyx: tree.pyx.in
+	cpp $(CFLAGS) $^ -o $@
+
 # Hint for debugging: add -v to the gcc options 
 # to get a command line for invoking individual subprocesses
 # Doing so seems to require that paths be absolute, rather than relative
