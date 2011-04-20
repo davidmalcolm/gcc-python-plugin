@@ -20,12 +20,13 @@ cdef extern from "tree-pass.h":
 cdef extern from "gcc-python-wrappers.h":
    pass
 
-"""
-A single tree-ssa optimization pass
-
-Wrapper around one of GCC's (struct opt_pass*)
-"""
 cdef class OptPass:
+    """
+    A single tree-ssa optimization pass
+
+    Wrapper around one of GCC's (struct opt_pass*)
+    """
+
     cdef opt_pass *ptr
 
     def __init__(self):
