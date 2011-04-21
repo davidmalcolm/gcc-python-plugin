@@ -15,20 +15,6 @@
 
 
 PyObject *
-decl_source_file(tree t)
-{
-  //printf("DECL_SOURCE_FILE: %s\n", DECL_SOURCE_FILE(t));
-    return PyString_FromString(DECL_SOURCE_FILE(t));
-}
-
-PyObject *
-decl_source_line(tree t)
-{
-  //printf("DECL_SOURCE_FILE: %s\n", DECL_SOURCE_FILE(t));
-    return PyInt_FromLong(DECL_SOURCE_LINE(t));
-}
-
-PyObject *
 gcc_python_make_wrapper_location(location_t loc)
 {
     struct PyGccLocation *location_obj = NULL;
@@ -40,9 +26,6 @@ gcc_python_make_wrapper_location(location_t loc)
 
     location_obj->loc = loc;
     /* FIXME: do we need to do something for the GCC GC? */
-
-    //printf("DECL_SOURCE_FILE: %s\n", DECL_SOURCE_FILE(t));
-    //printf("DECL_SOURCE_LINE: %i\n", DECL_SOURCE_LINE(t));
 
     return (PyObject*)location_obj;
       
@@ -67,9 +50,6 @@ gcc_python_make_wrapper_tree(tree t)
 
     tree_obj->t = t;
     /* FIXME: do we need to do something for the GCC GC? */
-
-    printf("DECL_SOURCE_FILE: %s\n", DECL_SOURCE_FILE(t));
-    printf("DECL_SOURCE_LINE: %i\n", DECL_SOURCE_LINE(t));
 
     return (PyObject*)tree_obj;
       
