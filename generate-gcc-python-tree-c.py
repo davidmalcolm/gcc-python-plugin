@@ -10,12 +10,6 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
-cu.add_decl("""
-struct PyGccTree {
-     PyObject_HEAD
-     tree t;
-};
-""")
 
 modinit_preinit = ''
 modinit_postinit = ''

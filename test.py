@@ -14,6 +14,10 @@ def my_pass_execution_callback(*args, **kwargs):
 def my_pre_genericize_callback(*args, **kwargs):
     print('my_pre_genericize_callback was called: args=%r  kwargs=%r' % (args, kwargs))
     #help(args[0])
+    t = args[0]
+    print(t)
+    print(dir(t))
+    print(type(t))
 
 
 #gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
@@ -30,3 +34,5 @@ gcc.register_callback(gcc.PLUGIN_PRE_GENERICIZE,
 #w.show()
 #gtk.main()
 
+#from pprint import pprint
+#pprint(tree.subclass_for_code)
