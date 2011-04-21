@@ -8,7 +8,9 @@ int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
 
+#include "tree.h"
 
+#define GCC_PYTHON_TRACE_ALL_EVENTS 1
 #if GCC_PYTHON_TRACE_ALL_EVENTS
 static const char* event_name[] = {
 #define DEFEVENT(NAME) \
@@ -88,15 +90,15 @@ static const char* event_name[] = {
 
 
 static void
-my_callback(enum plugin_event event, void *gcc_data, void *user_data)
+trace_callback(enum plugin_event event, void *gcc_data, void *user_data)
 {
-  printf("%s:%i:my_callback(%s, %p, %p)\n", __FILE__, __LINE__, event_name[event], gcc_data, user_data);
+  printf("%s:%i:trace_callback(%s, %p, %p)\n", __FILE__, __LINE__, event_name[event], gcc_data, user_data);
 }
 
 #define DEFEVENT(NAME) \
-static void my_callback_for_##NAME(void *gcc_data, void *user_data) \
+static void trace_callback_for_##NAME(void *gcc_data, void *user_data) \
 { \
-     my_callback(NAME, gcc_data, user_data); \
+     trace_callback(NAME, gcc_data, user_data); \
 }
 # include "plugin.def"
 # undef DEFEVENT
@@ -138,6 +140,9 @@ gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE(void *gcc_data, void *user_da
 {
     PyGILState_STATE gstate;
     tree fndecl = (tree)gcc_data;
+
+    /* gcc's handy debug function for trees, apparently from print-tree.c: */
+    debug_tree(fndecl);
 
     //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
     assert(fndecl);
@@ -205,11 +210,8 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError, "event type %i invalid (or not wired up yet)", event);
 	return NULL;
     }
-    //    register_callback(plugin_info->base_name, (enum plugin_event)event,
-    //my_callback_for_##NAME, NULL);	      
     
     Py_RETURN_NONE;
-    //return Py_BuildValue("i", numargs);
 }
 
 static PyMethodDef GccMethods[] = {
@@ -344,7 +346,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 	NAME != PLUGIN_REGISTER_GGC_ROOTS &&         \
 	NAME != PLUGIN_REGISTER_GGC_CACHES) {        \
     register_callback(plugin_info->base_name, NAME,  \
-		      my_callback_for_##NAME, NULL); \
+		      trace_callback_for_##NAME, NULL); \
     }
 # include "plugin.def"
 # undef DEFEVENT
