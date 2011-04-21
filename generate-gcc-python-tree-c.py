@@ -1,6 +1,6 @@
 from maketreetypes import iter_tree_types
 
-from cpybuilder import CompilationUnit, PyTypeObject
+from cpybuilder import *
 
 tree_types = list(iter_tree_types())
 # FIXME: truncate the list, for ease of development:
@@ -8,11 +8,58 @@ tree_types = list(iter_tree_types())
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
+cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
+
+cu.add_defn("""
+static PyObject *
+gcc_Location_get_file(struct PyGccLocation *self, void *closure)
+{
+    return PyString_FromString(LOCATION_FILE(self->loc));
+}
+""")
+cu.add_defn("""
+static PyObject *
+gcc_Location_get_line(struct PyGccLocation *self, void *closure)
+{
+    return PyInt_FromLong(LOCATION_LINE(self->loc));
+}
+""")
+
+getsettable = PyGetSetDefTable('gcc_Location_getset_table',
+                               [PyGetSetDef('file', 'gcc_Location_get_file', None, 'Name of the source file'),
+                                PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file')])
+cu.add_defn(getsettable.c_defn())
+
+pytype = PyTypeObject(name = 'gcc_Location',
+                      localname = 'Location',
+                      tp_name = 'gcc.Location',
+                      struct_name = 'struct PyGccLocation',
+                      tp_dealloc = 'NULL',
+                      tp_repr = 'NULL',
+                      tp_methods = 'NULL',
+                      tp_init = 'NULL',
+                      tp_new = 'PyType_GenericNew')
+cu.add_defn(pytype.c_defn())
+modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
+modinit_preinit += pytype.c_invoke_type_ready()
+modinit_postinit += pytype.c_invoke_add_to_module()
+
+cu.add_defn("""
+static PyObject *
+gcc_Tree_get_location(struct PyGccTree *self, void *closure)
+{
+    return gcc_python_make_wrapper_location(DECL_SOURCE_LOCATION(self->t));
+}
+""")
+
+getsettable = PyGetSetDefTable('gcc_Tree_getset_table',
+                               [PyGetSetDef('location', 'gcc_Tree_get_location', None, 'Location')])
+cu.add_defn(getsettable.c_defn())
 
 pytype = PyTypeObject(name = 'gcc_TreeType',
                       localname = 'Tree',
@@ -24,6 +71,7 @@ pytype = PyTypeObject(name = 'gcc_TreeType',
                       tp_init = 'NULL',
                       tp_new = 'PyType_GenericNew')
 cu.add_defn(pytype.c_defn())
+modinit_preinit += "\n    %s.tp_getset = gcc_Tree_getset_table;\n" % pytype.name
 modinit_preinit += pytype.c_invoke_type_ready()
 modinit_postinit += pytype.c_invoke_add_to_module()
 

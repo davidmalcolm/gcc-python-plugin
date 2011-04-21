@@ -1,6 +1,42 @@
 from subprocess import Popen, PIPE
 import re
 
+def nullable_ptr(ptr):
+    if ptr:
+        return ptr
+    else:
+        return 'NULL'
+
+class PyGetSetDef:
+    def __init__(self, name, get, set, doc, closure=None):
+        self.name = name
+        self.get = get
+        self.set = set
+        self.doc = doc
+        self.closure = closure
+
+    def c_defn(self):
+        result =  '    {"%s",\n' % self.name
+        result += '     (getter)%s,\n' % nullable_ptr(self.get)
+        result += '     (setter)%s,\n' % nullable_ptr(self.set)
+        result += '     "%s",\n' % nullable_ptr(self.doc)
+        result += '     %s},\n' % nullable_ptr(self.closure)
+        return result
+
+class PyGetSetDefTable:
+    def __init__(self, name, gsdefs):
+        self.name = name
+        self.gsdefs = gsdefs
+
+    def c_defn(self):
+        result = 'static PyGetSetDef %s[] = {\n' % self.name
+        for gsdef in self.gsdefs:
+            result += gsdef.c_defn()
+        result += '    {NULL}  /* Sentinel */\n'
+        result += '};\n'
+        return result
+        
+
 METH_VARARGS = 'METH_VARARGS'
 
 class PyMethodDef:

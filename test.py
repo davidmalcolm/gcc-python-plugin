@@ -18,6 +18,21 @@ def my_pre_genericize_callback(*args, **kwargs):
     print(t)
     print(dir(t))
     print(type(t))
+    print(repr(t))
+    print(str(t))
+    print(help(t))
+
+    loc = t.location
+
+    print(loc)
+    print(dir(loc))
+    print(type(loc))
+    print(repr(loc))
+    print(help(loc))
+    print 'loc.file: %r' % loc.file
+    print 'loc.line: %r' % loc.line
+
+    # raise RuntimeError('what happens if we get an error here?')
 
 
 #gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
