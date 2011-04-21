@@ -1,9 +1,32 @@
-#class Writer:
-#    pass
+from subprocess import Popen, PIPE
 
-#def fmt_str(template, )
+METH_VARARGS = 'METH_VARARGS'
 
-# FIXME: this isn't used yet:
+class PyMethodDef:
+    def __init__(self, name, fn_name, args, docstring):
+        self.name = name
+        self.fn_name = fn_name
+        assert args in ('METH_VARARGS', ) # FIXME
+        self.args = args        
+        self.docstring = docstring
+
+    def c_defn(self):
+        return ('    {"%(name)s",  %(fn_name)s, %(args)s,\n'
+                '     "%(docstring)s"},\n' % self.__dict__)
+
+class PyMethodTable:
+    def __init__(self, name, methods):
+        self.name = name
+        self.methods = methods
+
+    def c_defn(self):
+        result = 'static PyMethodDef %s[] = {\n' % self.name
+        for method in self.methods:
+            result += method.c_defn()
+        result += '    {NULL, NULL, 0, NULL} /* Sentinel */\n'
+        result += '};\n'
+        return result
+
 class PyTypeObject:
     def __init__(self, name, localname, tp_name, struct_name, tp_dealloc, tp_repr, tp_methods, tp_init, tp_new):
         self.name = name
@@ -89,10 +112,16 @@ PyTypeObject %(name)s = {
 
 
 class PyModule:
-    def __init__(self, modname, moddoc):
+    def __init__(self, modname, modmethods, moddoc):
         self.modname = modname
         self.moddoc = moddoc
-        self.modmethods = 'NULL' # FIXME
+        assert (modmethods is None) or isinstance(modmethods, PyMethodTable)
+        self.modmethods = modmethods
+
+        if self.modmethods:
+            self.modmethods_as_ptr = self.modmethods.name
+        else:
+            self.modmethods_as_ptr = 'NULL'
 
     def c_initfn_decl(self):
         return ("""
@@ -140,10 +169,11 @@ error:
 #if PY_MAJOR_VERSION >= 3
 static PyModuleDef %(modname)smodule = {
     PyModuleDef_HEAD_INIT,
-    "%(modname)s",
-    "%(moddoc)s",
-    -1,
-    NULL, NULL, NULL, NULL, NULL
+    "%(modname)s", /* m_name */
+    "%(moddoc)s", /* m_doc */
+    -1,   /* m_size */
+    %(modmethods_as_ptr)s, /* m_methods */
+    NULL, NULL, NULL, NULL
 };
 #endif
 """ % self.__dict__)
@@ -152,7 +182,7 @@ static PyModuleDef %(modname)smodule = {
     def c_invoke_ctor(self):
         return ("""
     #if PY_MAJOR_VERSION < 3
-    m = Py_InitModule3("%(modname)s", %(modmethods)s,
+    m = Py_InitModule3("%(modname)s", %(modmethods_as_ptr)s,
                        "%(moddoc)s");
     #else
     m = PyModule_Create(&%(modname)smodule);
@@ -216,7 +246,7 @@ class SimpleModule:
         self._modinit_postinit += pytype.c_invoke_add_to_module()
 
     def add_module_init(self, modname, modmethods, moddoc):
-        pymod = PyModule(modname, moddoc)
+        pymod = PyModule(modname, modmethods, moddoc)
 
         self.cu.add_decl(pymod.c_initfn_decl())
 
@@ -228,11 +258,40 @@ class SimpleModule:
         self.cu.add_defn(self._modinit_postinit)
         self.cu.add_defn(pymod.c_initfn_def_end())
 
+class SimpleBuild:
+    def __init__(self, sm, builddir='.'):
+        self.sm
 
+    #def generate_c(self):
+    #    with open(sm.name
+
+class PyRuntimeError(RuntimeError):
+    def __init__(self, runtime, cmd, out, err):
+        self.runtime = runtime
+        self.cmd = cmd
+        self.out = out
+        self.err = err
+
+    def __str__(self):
+        result = 'PyRuntimeError\n'
+        result += '  running: %s -c %r\n' % (self.runtime.executable , self.cmd)
+        result += 'Stdout:\n'
+        result += self._indent(self.out)
+        result += 'Stderr:\n'
+        result += self._indent(self.err)
+        return result
+
+    def _indent(self, txt):
+        return '\n'.join(['  ' + line for line in txt.splitlines()])
+    
 class PyRuntime:
     def __init__(self, executable, config):
         self.executable = executable
         self.config = config
+
+        pydebug = self.run_command('import sys; print(hasattr(sys, "getobjects"))').strip()
+        assert pydebug in ('False', 'True')
+        self.pydebug = (pydebug == 'True')
 
     def get_build_flags(self):
         return self.get_config_value(['--cflags', '--ldflags'])
@@ -243,4 +302,20 @@ class PyRuntime:
         out, err = p.communicate()
         return ' '.join(out.splitlines()).strip()
 
-        
+    def run_command(self, cmd, checkoutput=True):
+        p = Popen([self.executable, '-c', cmd],
+                  stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise PyRuntimeError(self, cmd, out, err)
+        return out
+
+    #def compile_simple_module(self, sm):
+
+    def get_module_filename(self, name):
+        # FIXME: this is a Fedora-ism:
+        # FIXME: support for 3.2 onwards also?
+        if self.pydebug:
+            return '%s_d.so' % name
+        else:
+            return '%s.so' % name

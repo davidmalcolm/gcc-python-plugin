@@ -1,40 +1,71 @@
+import os
 import unittest
 import tempfile
 
 from subprocess import Popen, PIPE
 
-from cpybuilder import CompilationUnit, SimpleModule, PyRuntime
+from cpybuilder import *
 
 
 # FIXME: this will need tweaking:
 pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
               PyRuntime('/usr/bin/python2.7-debug', '/usr/bin/python2.7-debug-config'),
               PyRuntime('/usr/bin/python3.2mu', '/usr/bin/python3.2mu-config'),
-              PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')]
+              #PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')
+              ]
 
 class SimpleTest(unittest.TestCase):
     def test_compilation(self):
         # Verify that the module builds and runs against multiple Python runtimes
-        #for runtime in pyruntimes:
-        #    print(repr(runtime.get_build_flags()))
 
         sm = SimpleModule()
-        sm.add_module_init('example', modmethods='NULL', moddoc='This is a doc string')
-        print sm.cu.as_str()
 
-        with tempfile.NamedTemporaryFile(prefix='example', suffix='.c') as f:
-            f.write(sm.cu.as_str())
+        sm.cu.add_decl("""
+static PyObject *
+example_hello(PyObject *self, PyObject *args);
+""")
 
-        runtime = pyruntimes[1]
+        sm.cu.add_defn("""
+static PyObject *
+example_hello(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("s", "Hello world!");
+}
+""")
+
+        methods = PyMethodTable('example_methods',
+                                [PyMethodDef('hello', 'example_hello',
+                                             METH_VARARGS, 'Return a greeting.')])
+        sm.cu.add_defn(methods.c_defn())
+
+        sm.add_module_init('example', modmethods=methods, moddoc='This is a doc string')
+        #print sm.cu.as_str()
+
+        for runtime in pyruntimes:
+            self.build_module(runtime, sm)
+            #print(repr(runtime.get_build_flags()))
+
+    def build_module(self, runtime, sm):
+
+        tmpdir = tempfile.mkdtemp()
+
+        srcfile = os.path.join(tmpdir, 'example.c')
+        modfile = os.path.join(tmpdir, runtime.get_module_filename('example'))
+
+        f = open(srcfile, 'w')
+        f.write(sm.cu.as_str())
+        f.close()
+        
         cflags = runtime.get_build_flags()
-
         args = ['gcc']
-        args += ['-x', 'c'] # specify that it's C
-        args += ['-o', 'example_d.so'] # FIXME: the _d is a Fedora-ism
+        #args += ['-x', 'c'] # specify that it's C
+        args += ['-o', modfile]
         args += cflags.split()
+        args += ['-Wall',  '-Werror'] # during testing
         args += ['-shared'] # not sure why this is necessary
-        args += ['-'] # read from stdin
-        print args
+        args += [srcfile]
+        #args += ['-'] # read from stdin
+        #print args
         
         p = Popen(args, stdin = PIPE)
         p.communicate(sm.cu.as_str())
@@ -42,12 +73,7 @@ class SimpleTest(unittest.TestCase):
         assert c == 0
 
         # Now verify that it built:
-        p = Popen([runtime.executable,
-                   '-c',
-                   'import example; print(example.__file__); print(dir(example))'],
-                  stdout=PIPE, stderr=PIPE)
-        out, err = p.communicate()
-        print repr(out), repr(err)
+        runtime.run_command('import sys; sys.path.append("%s"); import example; print(example.hello())' % tmpdir)
         
         
 
