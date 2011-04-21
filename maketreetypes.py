@@ -21,14 +21,3 @@ def iter_tree_types():
             #    print 'UNMATCHED: ', line
             assert(line.startswith('#') or line.strip() == '')
     f.close()
-
-for t in iter_tree_types():
-    print (
-"""
-cdef class %s(Tree):
-    _STRING = %r
-    _SYM = %r
-    _TYPE = %r
-    _NARGS = %i
-""" % (t.camel_cased_string(),
-       t.STRING, t.SYM, t.TYPE, t.NARGS))

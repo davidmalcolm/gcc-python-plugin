@@ -163,24 +163,35 @@ static PyModuleDef %(modname)smodule = {
 
 """ % self.__dict__)
 
-class ModuleWriter:
-    def __init__(self, modname):
-        self.modname = modname
+class CompilationUnit:
+    def __init__(self):
+        self._includes = '#include <Python.h>\n'
 
-        self.includes = '#include <Python.h>\n'
-
-        self.prototypes = ''
+        self._prototypes = ''
         
-        self.definitions = ''
-        self.modinit_preinit = ''
-        self.modinit_postinit = ''
+        self._definitions = ''
+
+        self._modinit_preinit = ''
+        self._modinit_postinit = ''
+
+    def add_include(self, path):
+        self._includes += '#include "%s"\n' % path
+
+    def add_decl(self, text):
+        self._prototypes += text
+
+    def add_defn(self, text):
+        self._definitions += text
 
     def as_str(self):
-        return (self.includes + 
+        return (self._includes + 
                 self.make_header('Prototypes') +
-                self.prototypes + 
+                self._prototypes + 
                 self.make_header('Definitions') +
-                self.definitions)
+                self._definitions)
+
+    def make_header(self, text):
+        return '\n/**** %s ****/\n\n' % text
 
     def add_type_object(self, name, localname,
                         tp_name, struct_name,
@@ -190,27 +201,21 @@ class ModuleWriter:
             tp_new = 'PyType_GenericNew';
 
         pytype = PyTypeObject(name, localname, tp_name, struct_name, tp_dealloc, tp_repr, tp_methods, tp_init, tp_new)
-        self.definitions += pytype.c_defn()
-        self.modinit_preinit += pytype.c_invoke_type_ready()
-        self.modinit_postinit += pytype.c_invoke_add_to_module()
-
-    def make_header(self, text):
-        return '\n/**** %s ****/\n\n' % text
+        self.add_defn(pytype.c_defn())
+        self._modinit_preinit += pytype.c_invoke_type_ready()
+        self._modinit_postinit += pytype.c_invoke_add_to_module()
 
     def module_init(self, modname, modmethods, moddoc):
         pymod = PyModule(modname, moddoc)
 
+        self.add_decl(pymod.c_initfn_decl())
 
-        self.prototypes += pymod.c_initfn_decl()
+        self.add_defn(pymod.c_py3k_moduledef())
 
-        self.definitions += pymod.c_py3k_moduledef()
+        self.add_defn(pymod.c_initfn_def_begin())
+        self.add_defn(self._modinit_preinit)
+        self.add_defn(pymod.c_invoke_ctor())
+        self.add_defn(self._modinit_postinit)
+        self.add_defn(pymod.c_initfn_def_end())
 
-        self.definitions += pymod.c_initfn_def_begin()
-        self.definitions += self.modinit_preinit
-        self.definitions += pymod.c_invoke_ctor()
-        self.definitions += self.modinit_postinit
-        self.definitions += pymod.c_initfn_def_end()
-
-    def add_type(self, typename):
-        self.definitions
 
