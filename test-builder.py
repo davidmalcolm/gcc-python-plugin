@@ -23,7 +23,7 @@ for t in list(iter_tree_types())[:5]:
                        tp_name = 'tree.%s' % t.camel_cased_string(),
                        struct_name = 'struct PyGccTree')
 
-sm.add_module_init('tree', modmethods='NULL', moddoc='This is a doc string')
+sm.add_module_init('tree', modmethods=None, moddoc='This is a doc string')
 print sm.cu.as_str()
 
 from subprocess import Popen, PIPE, check_call

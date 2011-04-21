@@ -15,6 +15,14 @@ pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
               #PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')
               ]
 
+class CompilationError(CommandError):
+    def __init__(self, bm, out, err, p):
+        CommandError.__init__(self, out, err, p)
+        self.bm = bm
+    
+    def _describe_activity(self):
+        return 'compiling: %s' % ' '.join(self.bm.args)
+
 class BuiltModule:
     """A test build of a SimpleModule for a PyRuntime, done in a tempdir"""
     def __init__(self, sm, runtime):
@@ -31,19 +39,20 @@ class BuiltModule:
         f.close()
         
         cflags = runtime.get_build_flags()
-        args = ['gcc']
-        args += ['-o', self.modfile]
-        args += cflags.split()
-        args += ['-Wall',  '-Werror'] # during testing
-        args += ['-shared'] # not sure why this is necessary
-        args += [self.srcfile]
-        #print args
+        self.args = ['gcc']
+        self.args += ['-o', self.modfile]
+        self.args += cflags.split()
+        self.args += ['-Wall',  '-Werror'] # during testing
+        self.args += ['-shared'] # not sure why this is necessary
+        self.args += [self.srcfile]
+        #print self.args
 
         # Invoke the compiler:
-        p = Popen(args)
-        p.communicate()
+        p = Popen(self.args, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
         c = p.wait()
-        assert c == 0
+        if c != 0:
+            raise CompilationError(self, out, err, p)
 
         assert os.path.exists(self.modfile)
 
@@ -56,7 +65,9 @@ class BuiltModule:
         shutil.rmtree(self.tmpdir)
 
 class SimpleTest(unittest.TestCase):
-    def test_compilation(self):
+    #def __init__(self, pyruntime):
+    #    self.pytun
+    def test_simple_compilation(self):
         # Verify building and running a trivial module (against multiple Python runtimes)
         sm = SimpleModule()
 
@@ -82,8 +93,6 @@ example_hello(PyObject *self, PyObject *args)
         # print sm.cu.as_str()
 
         for runtime in pyruntimes:
-            #print(repr(runtime.get_build_flags()))
-
             # Build the module:
             bm = BuiltModule(sm, runtime)
 
@@ -93,6 +102,49 @@ example_hello(PyObject *self, PyObject *args)
         
             # Cleanup successful test runs:
             bm.cleanup()
+
+    def test_module_with_type(self):
+        # Verify an extension with a type
+        sm = SimpleModule()
+
+        sm.cu.add_decl("""
+struct PyExampleType {
+     PyObject_HEAD
+     int i;
+};
+""")
+
+        sm.add_type_object(name = 'example_ExampleType',
+                           localname = 'ExampleType',
+                           tp_name = 'example.ExampleType',
+                           struct_name = 'struct PyExampleType')
+
+        sm.add_module_init('example', modmethods=None, moddoc='This is a doc string')
+        # print sm.cu.as_str()
+
+        for runtime in pyruntimes:
+            # Build the module:
+            bm = BuiltModule(sm, runtime)
+
+            # Verify that it built:
+            out = bm.run_command('import example; print(example.ExampleType)')
+            if runtime.is_py3k():
+                self.assertEquals(out, "<class 'example.ExampleType'>\n")
+            else:
+                self.assertEquals(out, "<type 'example.ExampleType'>\n")
+
+            # Cleanup successful test runs:
+            bm.cleanup()
+
+    def test_version_parsing(self):
+        vi  = PyVersionInfo.from_text("sys.version_info(major=2, minor=7, micro=1, releaselevel='final', serial=0)")
+        self.assertEqual(vi,
+                         PyVersionInfo(major=2, minor=7, micro=1, releaselevel='final', serial=0))
+
+        # "sys.version_info(major=2, minor=7, micro=1, releaselevel='final', serial=0)"
+        # "sys.version_info(major=3, minor=2, micro=0, releaselevel='candidate', serial=1)"
+
+                         
 
 
 if __name__ == '__main__':
