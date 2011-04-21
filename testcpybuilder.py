@@ -1,6 +1,7 @@
 import os
-import unittest
+import shutil
 import tempfile
+import unittest
 
 from subprocess import Popen, PIPE
 
@@ -58,23 +59,27 @@ example_hello(PyObject *self, PyObject *args)
         
         cflags = runtime.get_build_flags()
         args = ['gcc']
-        #args += ['-x', 'c'] # specify that it's C
         args += ['-o', modfile]
         args += cflags.split()
         args += ['-Wall',  '-Werror'] # during testing
         args += ['-shared'] # not sure why this is necessary
         args += [srcfile]
-        #args += ['-'] # read from stdin
         #print args
-        
+
+        # Invoke the compiler:
         p = Popen(args, stdin = PIPE)
         p.communicate(sm.cu.as_str())
         c = p.wait()
         assert c == 0
 
+        self.assert_(os.path.exists(modfile))
+
         # Now verify that it built:
         out = runtime.run_command('import sys; sys.path.append("%s"); import example; print(example.hello())' % tmpdir)
         self.assertEqual(out, "Hello world!\n")
+        
+        # Cleanup successful test runs:
+        shutil.rmtree(tmpdir)
         
         
 
