@@ -46,6 +46,8 @@ pytype = PyTypeObject(name = 'gcc_Location',
                       tp_new = 'PyType_GenericNew')
 cu.add_defn(pytype.c_defn())
 modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
+modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Location_repr;\n" % pytype.name
+modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Location_str;\n" % pytype.name
 modinit_preinit += pytype.c_invoke_type_ready()
 modinit_postinit += pytype.c_invoke_add_to_module()
 
