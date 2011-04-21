@@ -73,7 +73,8 @@ example_hello(PyObject *self, PyObject *args)
         assert c == 0
 
         # Now verify that it built:
-        runtime.run_command('import sys; sys.path.append("%s"); import example; print(example.hello())' % tmpdir)
+        out = runtime.run_command('import sys; sys.path.append("%s"); import example; print(example.hello())' % tmpdir)
+        self.assertEqual(out, "Hello world!\n")
         
         
 
