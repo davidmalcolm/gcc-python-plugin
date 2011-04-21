@@ -15,10 +15,49 @@ pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
               #PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')
               ]
 
+class BuiltModule:
+    """A test build of a SimpleModule for a PyRuntime, done in a tempdir"""
+    def __init__(self, sm, runtime):
+        self.sm = sm
+        self.runtime = runtime
+
+        self.tmpdir = tempfile.mkdtemp()
+
+        self.srcfile = os.path.join(self.tmpdir, 'example.c')
+        self.modfile = os.path.join(self.tmpdir, runtime.get_module_filename('example'))
+
+        f = open(self.srcfile, 'w')
+        f.write(sm.cu.as_str())
+        f.close()
+        
+        cflags = runtime.get_build_flags()
+        args = ['gcc']
+        args += ['-o', self.modfile]
+        args += cflags.split()
+        args += ['-Wall',  '-Werror'] # during testing
+        args += ['-shared'] # not sure why this is necessary
+        args += [self.srcfile]
+        #print args
+
+        # Invoke the compiler:
+        p = Popen(args)
+        p.communicate()
+        c = p.wait()
+        assert c == 0
+
+        assert os.path.exists(self.modfile)
+
+    def run_command(self, cmd):
+        """Run the command (using the appropriate PyRuntime), adjusting sys.path first"""
+        out = self.runtime.run_command('import sys; sys.path.append("%s"); %s' % (self.tmpdir, cmd))
+        return out
+
+    def cleanup(self):
+        shutil.rmtree(self.tmpdir)
+
 class SimpleTest(unittest.TestCase):
     def test_compilation(self):
-        # Verify that the module builds and runs against multiple Python runtimes
-
+        # Verify building and running a trivial module (against multiple Python runtimes)
         sm = SimpleModule()
 
         sm.cu.add_decl("""
@@ -40,49 +79,20 @@ example_hello(PyObject *self, PyObject *args)
         sm.cu.add_defn(methods.c_defn())
 
         sm.add_module_init('example', modmethods=methods, moddoc='This is a doc string')
-        #print sm.cu.as_str()
+        # print sm.cu.as_str()
 
         for runtime in pyruntimes:
-            self.build_module(runtime, sm)
             #print(repr(runtime.get_build_flags()))
 
-    def build_module(self, runtime, sm):
+            # Build the module:
+            bm = BuiltModule(sm, runtime)
 
-        tmpdir = tempfile.mkdtemp()
-
-        srcfile = os.path.join(tmpdir, 'example.c')
-        modfile = os.path.join(tmpdir, runtime.get_module_filename('example'))
-
-        f = open(srcfile, 'w')
-        f.write(sm.cu.as_str())
-        f.close()
+            # Verify that it built:
+            out = bm.run_command('import example; print(example.hello())')
+            self.assertEqual(out, "Hello world!\n")
         
-        cflags = runtime.get_build_flags()
-        args = ['gcc']
-        args += ['-o', modfile]
-        args += cflags.split()
-        args += ['-Wall',  '-Werror'] # during testing
-        args += ['-shared'] # not sure why this is necessary
-        args += [srcfile]
-        #print args
-
-        # Invoke the compiler:
-        p = Popen(args, stdin = PIPE)
-        p.communicate(sm.cu.as_str())
-        c = p.wait()
-        assert c == 0
-
-        self.assert_(os.path.exists(modfile))
-
-        # Now verify that it built:
-        out = runtime.run_command('import sys; sys.path.append("%s"); import example; print(example.hello())' % tmpdir)
-        self.assertEqual(out, "Hello world!\n")
-        
-        # Cleanup successful test runs:
-        shutil.rmtree(tmpdir)
-        
-        
-
+            # Cleanup successful test runs:
+            bm.cleanup()
 
 
 if __name__ == '__main__':
