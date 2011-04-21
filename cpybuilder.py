@@ -100,17 +100,14 @@ PyTypeObject %(name)s = {
 """ % self.__dict__)
 
     def c_invoke_type_ready(self):
-        return ("""
-    if (PyType_Ready(&%(name)s) < 0)
-        goto error;
-""" % self.__dict__)
+        return ('    if (PyType_Ready(&%(name)s) < 0)\n'
+                '        goto error;\n'
+                '\n') % self.__dict__
 
     def c_invoke_add_to_module(self):
-        return ("""
-    Py_INCREF(&%(name)s);
-    PyModule_AddObject(m, "%(localname)s", (PyObject *)&%(name)s);
-""" % self.__dict__)
-
+        return ('    Py_INCREF(&%(name)s);\n'
+                '    PyModule_AddObject(m, "%(localname)s", (PyObject *)&%(name)s);\n'
+                '\n') % self.__dict__
 
 class PyModule:
     def __init__(self, modname, modmethods, moddoc):
