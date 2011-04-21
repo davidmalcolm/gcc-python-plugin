@@ -65,6 +65,81 @@ PyTypeObject %(name)s = {
 };
 """ % self.__dict__)
 
+class PyModule:
+    def __init__(self, modname, moddoc):
+        self.modname = modname
+        self.moddoc = moddoc
+        self.modmethods = 'NULL' # FIXME
+
+    def c_initfn_decl(self):
+        return ("""
+#if PY_MAJOR_VERSION < 3
+PyMODINIT_FUNC init%(modname)s(void);
+#else
+PyMODINIT_FUNC PyInit_%(modname)s(void);
+#endif
+""" % self.__dict__)
+
+    
+    def c_initfn_def_begin(self):
+        return ("""
+#if PY_MAJOR_VERSION < 3
+PyMODINIT_FUNC init%(modname)s(void)
+#else
+PyMODINIT_FUNC PyInit_%(modname)s(void)
+#endif
+{
+    PyObject *m = NULL;
+""" % self.__dict__)
+
+
+    def c_initfn_def_end(self):
+        return ("""
+    #if PY_MAJOR_VERSION < 3
+    return;
+    #else
+    return m;
+    #endif
+
+error:
+    #if PY_MAJOR_VERSION < 3
+    return;
+    #else
+    PY_XDECREF(m);
+    return NULL;
+    #endif
+}
+""")
+
+
+    def c_py3k_moduledef(self):
+        return ("""
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef %(modname)smodule = {
+    PyModuleDef_HEAD_INIT,
+    "%(modname)s",
+    "%(moddoc)s",
+    -1,
+    NULL, NULL, NULL, NULL, NULL
+};
+#endif
+""" % self.__dict__)
+
+        
+    def c_invoke_ctor(self):
+        return ("""
+    #if PY_MAJOR_VERSION < 3
+    m = Py_InitModule3("%(modname)s", %(modmethods)s,
+                       "%(moddoc)s");
+    #else
+    m = PyModule_Create(&%(modname)smodule);
+    #endif
+    if (!m) {
+        goto error;
+    }
+
+""" % self.__dict__)
+
 class ModuleWriter:
     def __init__(self, modname):
         self.modname = modname
@@ -162,67 +237,18 @@ PyTypeObject %(name)s = {
         return '\n/**** %s ****/\n\n' % text
 
     def module_init(self, modname, modmethods, moddoc):
-        self.prototypes += ("""
-#if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC init%s(void);
-#else
-PyMODINIT_FUNC PyInit_%s(void);
-#endif
-""" % (modname, modname))
+        pymod = PyModule(modname, moddoc)
 
-        self.definitions += ("""
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef %(modname)smodule = {
-    PyModuleDef_HEAD_INIT,
-    "%(modname)s",
-    "%(moddoc)s",
-    -1,
-    NULL, NULL, NULL, NULL, NULL
-};
-#endif
 
-#if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC init%(modname)s(void)
-#else
-PyMODINIT_FUNC PyInit_%(modname)s(void)
-#endif
-{
-    PyObject *m = NULL;
-""" % locals())
-        self.indent = 1
+        self.prototypes += pymod.c_initfn_decl()
 
+        self.definitions += pymod.c_py3k_moduledef()
+
+        self.definitions += pymod.c_initfn_def_begin()
         self.definitions += self.modinit_preinit
-
-        self.definitions += ("""
-    #if PY_MAJOR_VERSION < 3
-    m = Py_InitModule3("%(modname)s", %(modmethods)s,
-                       "%(moddoc)s");
-    #else
-    m = PyModule_Create(&%(modname)smodule);
-    #endif
-    if (!m) {
-        goto error;
-    }
-""" % locals())
-
+        self.definitions += pymod.c_invoke_ctor()
         self.definitions += self.modinit_postinit
-
-        self.definitions += ("""
-    #if PY_MAJOR_VERSION < 3
-    return;
-    #else
-    return m;
-    #endif
-
-error:
-    #if PY_MAJOR_VERSION < 3
-    return;
-    #else
-    PY_XDECREF(m);
-    return NULL;
-    #endif
-}
-""")
+        self.definitions += pymod.c_initfn_def_end()
 
     def add_type(self, typename):
         self.definitions
