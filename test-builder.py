@@ -1,12 +1,12 @@
 from maketreetypes import iter_tree_types
-from builder import ModuleWriter
+from cpybuilder import CompilationUnit, SimpleModule
 
-w = ModuleWriter('tree')
-w.includes += '#include "config.h"\n'
-w.includes += '#include "system.h"\n'
-w.includes += '#include "coretypes.h"\n'
-w.includes += '#include "tree.h"\n'
-w.prototypes += ("""
+sm = SimpleModule()
+sm.cu.add_include('config.h')
+sm.cu.add_include('system.h')
+sm.cu.add_include('coretypes.h')
+sm.cu.add_include('tree.h')
+sm.cu.add_decl("""
 struct PyGccTree {
      PyObject_HEAD
      tree t;
@@ -18,13 +18,13 @@ for t in list(iter_tree_types())[:5]:
     #tp = PyTypeObject(name = 'PyType%s' % t.camel_cased_string(),
     #                  tp_name = 'tree.%s' % t.camel_cased_string(),
     #                  struct_name = 'struct PyGccTree')
-    w.add_type_object(name = 'tree_%sType' % t.camel_cased_string(),
-                      localname = t.camel_cased_string(),
-                      tp_name = 'tree.%s' % t.camel_cased_string(),
-                      struct_name = 'struct PyGccTree')
+    sm.add_type_object(name = 'tree_%sType' % t.camel_cased_string(),
+                       localname = t.camel_cased_string(),
+                       tp_name = 'tree.%s' % t.camel_cased_string(),
+                       struct_name = 'struct PyGccTree')
 
-w.module_init('tree', modmethods='NULL', moddoc='This is a doc string')
-print w.as_str()
+sm.add_module_init('tree', modmethods='NULL', moddoc='This is a doc string')
+print sm.cu.as_str()
 
 from subprocess import Popen, PIPE, check_call
 
@@ -49,7 +49,7 @@ for pyconfig in pyconfigs:
     print args
 
     p = Popen(args, stdin = PIPE)
-    p.communicate(w.as_str())
+    p.communicate(sm.cu.as_str())
     c = p.wait()
     assert c == 0
         

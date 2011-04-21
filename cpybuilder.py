@@ -164,15 +164,15 @@ static PyModuleDef %(modname)smodule = {
 """ % self.__dict__)
 
 class CompilationUnit:
+    """
+    A single C file
+    """
     def __init__(self):
         self._includes = '#include <Python.h>\n'
 
         self._prototypes = ''
         
         self._definitions = ''
-
-        self._modinit_preinit = ''
-        self._modinit_postinit = ''
 
     def add_include(self, path):
         self._includes += '#include "%s"\n' % path
@@ -193,6 +193,16 @@ class CompilationUnit:
     def make_header(self, text):
         return '\n/**** %s ****/\n\n' % text
 
+class SimpleModule:
+    """
+    A C extension module built from a single C file
+    """
+    def __init__(self):
+        self.cu = CompilationUnit()
+
+        self._modinit_preinit = ''
+        self._modinit_postinit = ''
+
     def add_type_object(self, name, localname,
                         tp_name, struct_name,
                         tp_dealloc = 'NULL', tp_repr = 'NULL',
@@ -201,21 +211,36 @@ class CompilationUnit:
             tp_new = 'PyType_GenericNew';
 
         pytype = PyTypeObject(name, localname, tp_name, struct_name, tp_dealloc, tp_repr, tp_methods, tp_init, tp_new)
-        self.add_defn(pytype.c_defn())
+        self.cu.add_defn(pytype.c_defn())
         self._modinit_preinit += pytype.c_invoke_type_ready()
         self._modinit_postinit += pytype.c_invoke_add_to_module()
 
-    def module_init(self, modname, modmethods, moddoc):
+    def add_module_init(self, modname, modmethods, moddoc):
         pymod = PyModule(modname, moddoc)
 
-        self.add_decl(pymod.c_initfn_decl())
+        self.cu.add_decl(pymod.c_initfn_decl())
 
-        self.add_defn(pymod.c_py3k_moduledef())
+        self.cu.add_defn(pymod.c_py3k_moduledef())
 
-        self.add_defn(pymod.c_initfn_def_begin())
-        self.add_defn(self._modinit_preinit)
-        self.add_defn(pymod.c_invoke_ctor())
-        self.add_defn(self._modinit_postinit)
-        self.add_defn(pymod.c_initfn_def_end())
+        self.cu.add_defn(pymod.c_initfn_def_begin())
+        self.cu.add_defn(self._modinit_preinit)
+        self.cu.add_defn(pymod.c_invoke_ctor())
+        self.cu.add_defn(self._modinit_postinit)
+        self.cu.add_defn(pymod.c_initfn_def_end())
 
 
+class PyRuntime:
+    def __init__(self, executable, config):
+        self.executable = executable
+        self.config = config
+
+    def get_build_flags(self):
+        return self.get_config_value(['--cflags', '--ldflags'])
+
+    def get_config_value(self, flags):
+        args = [self.config] + flags
+        p = Popen(args, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        return ' '.join(out.splitlines()).strip()
+
+        
