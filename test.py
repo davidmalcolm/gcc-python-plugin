@@ -23,6 +23,7 @@ def my_pre_genericize_callback(*args, **kwargs):
     print(help(t))
 
     print 't.name: %r' % t.name
+    print 't.addr: %s' % hex(t.addr)
 
     loc = t.location
 
