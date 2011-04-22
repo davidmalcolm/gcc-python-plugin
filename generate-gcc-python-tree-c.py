@@ -87,6 +87,17 @@ def generate_basic_block():
     global modinit_preinit
     global modinit_postinit
 
+    getsettable = PyGetSetDefTable('gcc_BasicBlock_getset_table',
+                                   [PyGetSetDef('preds',
+                                                'gcc_BasicBlock_get_preds',
+                                                None,
+                                                'The list of predecessor gcc.Edge instances leading into this block'),
+                                    PyGetSetDef('succs',
+                                                'gcc_BasicBlock_get_succs',
+                                                None,
+                                                'The list of successor gcc.Edge instances leading out of this block')])
+    cu.add_defn(getsettable.c_defn())
+
     pytype = PyTypeObject(identifier = 'gcc_BasicBlockType',
                           localname = 'BasicBlock',
                           tp_name = 'gcc.BasicBlock',
@@ -94,6 +105,7 @@ def generate_basic_block():
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_BasicBlock_repr',
                           #tp_str = '(reprfunc)gcc_BasicBlock_repr',
+                          tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

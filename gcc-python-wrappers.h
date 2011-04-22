@@ -15,6 +15,12 @@ PyObject *
 gcc_Location_str(struct PyGccLocation * self);
 
 PyObject *
+gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure);
+
+PyObject *
+gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure);
+
+PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
 PyObject *

@@ -60,6 +60,28 @@ error:
       typedef struct edge_def *edge;
       typedef const struct edge_def *const_edge;
  */
+PyObject *
+gcc_python_make_wrapper_edge(edge e)
+{
+    struct PyGccEdge *obj;
+
+    if (!e) {
+	Py_RETURN_NONE;
+    }
+
+    obj = PyObject_New(struct PyGccEdge, &gcc_EdgeType);
+    if (!obj) {
+        goto error;
+    }
+
+    obj->e = e;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)obj;
+      
+error:
+    return NULL;
+}
 
 /*
   "struct basic_block_def" is declared in basic-block.h, c.f:
@@ -70,21 +92,21 @@ error:
       typedef struct basic_block_def *basic_block;
       typedef const struct basic_block_def *const_basic_block;
  */
-
 PyObject *
-gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
+gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 {
     PyObject *result = NULL;
     int i;
+    edge e;
     
-    result = PyList_New(self->cfg->x_n_basic_blocks);
+    result = PyList_New(VEC_length(edge, self->bb->preds));
     if (!result) {
 	goto error;
     }
 
-    for (i = 0; i < self->cfg->x_n_basic_blocks; i++) {
+    FOR_EACH_VEC_ELT(edge, self->bb->preds, i, e) {
 	PyObject *item;
-	item = gcc_python_make_wrapper_basic_block(VEC_index(basic_block, self->cfg->x_basic_block_info, i));
+	item = gcc_python_make_wrapper_edge(e);
 	if (!item) {
 	    goto error;
 	}
@@ -98,6 +120,33 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
     return NULL;
 }
 
+PyObject *
+gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
+{
+    PyObject *result = NULL;
+    int i;
+    edge e;
+    
+    result = PyList_New(VEC_length(edge, self->bb->succs));
+    if (!result) {
+	goto error;
+    }
+
+    FOR_EACH_VEC_ELT(edge, self->bb->succs, i, e) {
+	PyObject *item;
+	item = gcc_python_make_wrapper_edge(e);
+	if (!item) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, item);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
 
 PyObject *
 gcc_python_make_wrapper_basic_block(basic_block bb)
@@ -128,6 +177,32 @@ error:
            ... snip ...
       }
 */
+PyObject *
+gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
+{
+    PyObject *result = NULL;
+    int i;
+    
+    result = PyList_New(self->cfg->x_n_basic_blocks);
+    if (!result) {
+	goto error;
+    }
+
+    for (i = 0; i < self->cfg->x_n_basic_blocks; i++) {
+	PyObject *item;
+	item = gcc_python_make_wrapper_basic_block(VEC_index(basic_block, self->cfg->x_basic_block_info, i));
+	if (!item) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, item);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
 
 PyObject *
 gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
