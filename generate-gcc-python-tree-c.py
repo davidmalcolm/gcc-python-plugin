@@ -66,6 +66,12 @@ gcc_Tree_get_location(struct PyGccTree *self, void *closure)
 }
 
 static PyObject *
+gcc_Tree_get_type(struct PyGccTree *self, void *closure)
+{
+    return gcc_python_make_wrapper_tree(TREE_TYPE(self->t));
+}
+
+static PyObject *
 gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 {
     return PyLong_FromVoidPtr(self->t);
@@ -76,6 +82,8 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 getsettable = PyGetSetDefTable('gcc_Tree_getset_table',
                                [PyGetSetDef('location', 'gcc_Tree_get_location', None,
                                             'Instance of gcc.Location indicating the source code location of this node'),
+                                PyGetSetDef('type', 'gcc_Tree_get_type', None,
+                                            'Instance of gcc.Tree giving the type of the node'),
                                 PyGetSetDef('addr', 'gcc_Tree_get_addr', None,
                                             'The address of the underlying GCC object in memory')])
 cu.add_defn(getsettable.c_defn())

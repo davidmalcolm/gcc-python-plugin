@@ -24,6 +24,7 @@ def my_pre_genericize_callback(*args, **kwargs):
 
     print 't.name: %r' % t.name
     print 't.addr: %s' % hex(t.addr)
+    print 't.type: %r' % t.type
 
     loc = t.location
 
