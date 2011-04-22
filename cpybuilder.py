@@ -77,58 +77,65 @@ class PyTypeObject:
         self.tp_new = tp_new
 
     def c_defn(self):
+        def c_ptr_field(name):
+            if hasattr(self, name):
+                val = getattr(self, name)
+            else:
+                val = None
+            return '    %s, /* %s */\n' % (nullable_ptr(val), name)
+
         result = '\n'
         result += 'PyTypeObject %(name)s = {\n' % self.__dict__
-        result += '    PyVarObject_HEAD_INIT(0, 0)\n' % self.__dict__
+        result += '    PyVarObject_HEAD_INIT(0, 0)\n'
         result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
-        result += '    0, /*tp_itemsize*/\n' % self.__dict__
-        result += '    %(tp_dealloc)s, /*tp_dealloc*/\n' % self.__dict__
-        result += '    0, /*tp_print*/\n' % self.__dict__
-        result += '    0, /*tp_getattr*/\n' % self.__dict__
-        result += '    0, /*tp_setattr*/\n' % self.__dict__
+        result += '    0, /*tp_itemsize*/\n'
+        result += c_ptr_field('tp_dealloc')
+        result += c_ptr_field('tp_print')
+        result += c_ptr_field('tp_getattr')
+        result += c_ptr_field('tp_setattr')
         result += '#if PY_MAJOR_VERSION < 3\n' % self.__dict__
         result += '    0, /*tp_compare*/\n' % self.__dict__
         result += '#else\n' % self.__dict__
         result += '    0, /*reserved*/\n' % self.__dict__
         result += '#endif\n' % self.__dict__
-        result += '    %(tp_repr)s, /*tp_repr*/\n' % self.__dict__
-        result += '    0, /*tp_as_number*/\n' % self.__dict__
-        result += '    0, /*tp_as_sequence*/\n' % self.__dict__
-        result += '    0, /*tp_as_mapping*/\n' % self.__dict__
-        result += '    0, /*tp_hash*/\n' % self.__dict__
-        result += '    0, /*tp_call*/\n' % self.__dict__
-        result += '    0, /*tp_str*/\n' % self.__dict__
-        result += '    0, /*tp_getattro*/\n' % self.__dict__
-        result += '    0, /*tp_setattro*/\n' % self.__dict__
-        result += '    0, /*tp_as_buffer*/\n' % self.__dict__
+        result += c_ptr_field('tp_repr')
+        result += c_ptr_field('tp_as_number')
+        result += c_ptr_field('tp_as_sequence')
+        result += c_ptr_field('tp_as_mapping')
+        result += c_ptr_field('tp_hash')
+        result += c_ptr_field('tp_call')
+        result += c_ptr_field('tp_str')
+        result += c_ptr_field('tp_getattro')
+        result += c_ptr_field('tp_setattro')
+        result += c_ptr_field('tp_as_buffer')
         result += '    Py_TPFLAGS_DEFAULT, /*tp_flags*/\n' % self.__dict__
-        result += '    0, /*tp_doc*/\n' % self.__dict__
-        result += '    0, /*tp_traverse*/\n' % self.__dict__
-        result += '    0, /*tp_clear*/\n' % self.__dict__
-        result += '    0, /*tp_richcompare*/\n' % self.__dict__
-        result += '    0, /*tp_weaklistoffset*/\n' % self.__dict__
-        result += '    0, /*tp_iter*/\n' % self.__dict__
-        result += '    0, /*tp_iternext*/\n' % self.__dict__
-        result += '    %(tp_methods)s, /*tp_methods*/\n' % self.__dict__
-        result += '    0, /*tp_members*/\n' % self.__dict__
-        result += '    0, /*tp_getset*/\n' % self.__dict__
-        result += '    0, /*tp_base*/\n' % self.__dict__
-        result += '    0, /*tp_dict*/\n' % self.__dict__
-        result += '    0, /*tp_descr_get*/\n' % self.__dict__
-        result += '    0, /*tp_descr_set*/\n' % self.__dict__
-        result += '    0, /*tp_dictoffset*/\n' % self.__dict__
-        result += '    %(tp_init)s, /*tp_init*/\n' % self.__dict__
-        result += '    0, /*tp_alloc*/\n' % self.__dict__
-        result += '    %(tp_new)s, /*tp_new*/\n' % self.__dict__
-        result += '    0, /*tp_free*/\n' % self.__dict__
-        result += '    0, /*tp_is_gc*/\n' % self.__dict__
-        result += '    0, /*tp_bases*/\n' % self.__dict__
-        result += '    0, /*tp_mro*/\n' % self.__dict__
-        result += '    0, /*tp_cache*/\n' % self.__dict__
-        result += '    0, /*tp_subclasses*/\n' % self.__dict__
-        result += '    0, /*tp_weaklist*/\n' % self.__dict__
-        result += '    0, /*tp_del*/\n' % self.__dict__
+        result += '    0, /*tp_doc*/\n'
+        result += c_ptr_field('tp_traverse')
+        result += c_ptr_field('tp_clear')
+        result += c_ptr_field('tp_richcompare')
+        result += '    0, /* tp_weaklistoffset */\n'
+        result += c_ptr_field('tp_iter')
+        result += c_ptr_field('tp_iternext')
+        result += c_ptr_field('tp_methods')
+        result += c_ptr_field('tp_members')
+        result += c_ptr_field('tp_getset')
+        result += c_ptr_field('tp_base')
+        result += c_ptr_field('tp_dict')
+        result += c_ptr_field('tp_descr_get')
+        result += c_ptr_field('tp_descr_set')
+        result += '    0, /* tp_dictoffset */\n'
+        result += c_ptr_field('tp_init')
+        result += c_ptr_field('tp_alloc')
+        result += c_ptr_field('tp_new')
+        result += c_ptr_field('tp_free')
+        result += c_ptr_field('tp_is_gc')
+        result += c_ptr_field('tp_bases')
+        result += c_ptr_field('tp_mro')
+        result += c_ptr_field('tp_cache')
+        result += c_ptr_field('tp_subclasses')
+        result += c_ptr_field('tp_weaklist')
+        result += c_ptr_field('tp_del')
         result += '#if PY_VERSION_HEX >= 0x02060000\n' % self.__dict__
         result += '    0, /*tp_version_tag*/\n' % self.__dict__
         result += '#endif\n' % self.__dict__
@@ -271,8 +278,8 @@ class SimpleModule:
 
     def add_type_object(self, name, localname,
                         tp_name, struct_name,
-                        tp_dealloc = 'NULL', tp_repr = 'NULL',
-                        tp_methods = 'NULL', tp_init = 'NULL',  tp_new = None):
+                        tp_dealloc = None, tp_repr = None,
+                        tp_methods = None, tp_init = None,  tp_new = None):
         if not tp_new:
             tp_new = 'PyType_GenericNew';
 
