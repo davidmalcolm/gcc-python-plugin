@@ -5,11 +5,18 @@ import gcc
 
 #import sys
 #print 'sys.path:', sys.path
-help(gcc)
+#help(gcc)
 
 def my_pass_execution_callback(*args, **kwargs):
     print('my_pass_execution_callback was called: args=%r  kwargs=%r' % (args, kwargs))
     #help(args[0])
+    (optpass, fun) = args
+    print 'optpass: %r' % optpass
+    print 'fun: %r' % fun
+    if fun:
+        print 'fun.cfg: %r' % fun.cfg
+        if fun.cfg:
+            print help(fun.cfg)
 
 def my_pre_genericize_callback(*args, **kwargs):
     print('my_pre_genericize_callback was called: args=%r  kwargs=%r' % (args, kwargs))
@@ -36,15 +43,15 @@ def my_pre_genericize_callback(*args, **kwargs):
     print(dir(loc))
     print(type(loc))
     print(repr(loc))
-    print(help(loc))
+    #print(help(loc))
     print 'loc.file: %r' % loc.file
     print 'loc.line: %r' % loc.line
 
     # raise RuntimeError('what happens if we get an error here?')
 
 
-#gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-#                      my_pass_execution_callback)
+gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
+                      my_pass_execution_callback)
 gcc.register_callback(gcc.PLUGIN_PRE_GENERICIZE,
                       my_pre_genericize_callback)
 

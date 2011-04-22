@@ -11,6 +11,8 @@ cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
+cu.add_include("function.h")
+cu.add_include("basic-block.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -57,19 +59,53 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 
 generate_location()
 
+def generate_cfg():
+    #
+    # Generate the gcc.Cfg class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    pytype = PyTypeObject(identifier = 'gcc_CfgType',
+                          localname = 'Cfg',
+                          tp_name = 'gcc.Cfg',
+                          struct_name = 'struct PyGccCfg',
+                          tp_new = 'PyType_GenericNew',
+                          #tp_repr = '(reprfunc)gcc_Cfg_repr',
+                          #tp_str = '(reprfunc)gcc_Cfg_repr',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_cfg()
+
 def generate_function():
     #
     # Generate the gcc.Function class:
     #
     global modinit_preinit
     global modinit_postinit
+    cu.add_defn("\n"
+                "static PyObject *\n"
+                "gcc_Function_get_cfg(struct PyGccFunction *self, void *closure)\n"
+                "{\n"
+                "    return gcc_python_make_wrapper_cfg(self->fun->cfg);\n"
+                "}\n"
+                "\n")
+    getsettable = PyGetSetDefTable('gcc_Function_getset_table',
+                                   [PyGetSetDef('cfg', 'gcc_Function_get_cfg', None,
+                                                'Instance of gcc.Cfg for this function (or None for early passes)')])
+    cu.add_defn(getsettable.c_defn())
+
     pytype = PyTypeObject(identifier = 'gcc_FunctionType',
                           localname = 'Function',
                           tp_name = 'gcc.Function',
                           struct_name = 'struct PyGccFunction',
                           tp_new = 'PyType_GenericNew',
                           tp_repr = '(reprfunc)gcc_Function_repr',
-                          tp_str = '(reprfunc)gcc_Function_repr')
+                          tp_str = '(reprfunc)gcc_Function_repr',
+                          tp_getset = getsettable.identifier)
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

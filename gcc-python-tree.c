@@ -50,6 +50,38 @@ error:
 }
 
 /*
+  "struct control_flow_graph" is declared in basic-block.h, c.f.:
+      struct GTY(()) control_flow_graph {
+           ... snip ...
+      }
+*/
+#include "basic-block.h"
+
+PyObject *
+gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
+{
+    struct PyGccCfg *obj;
+
+    if (!cfg) {
+	Py_RETURN_NONE;
+    }
+
+    obj = PyObject_New(struct PyGccCfg, &gcc_CfgType);
+    if (!obj) {
+        goto error;
+    }
+
+    obj->cfg = cfg;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)obj;
+      
+error:
+    return NULL;
+}
+
+
+/*
   "struct function" is declared in function.h, c.f.:
       struct GTY(()) function {
            ... snip ...
