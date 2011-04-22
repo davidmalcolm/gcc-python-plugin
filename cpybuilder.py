@@ -77,63 +77,64 @@ class PyTypeObject:
         self.tp_new = tp_new
 
     def c_defn(self):
-        return ("""
-PyTypeObject %(name)s = {
-  PyVarObject_HEAD_INIT(0, 0)
-  "%(tp_name)s", /*tp_name*/
-  sizeof(%(struct_name)s), /*tp_basicsize*/
-  0, /*tp_itemsize*/
-  %(tp_dealloc)s, /*tp_dealloc*/
-  0, /*tp_print*/
-  0, /*tp_getattr*/
-  0, /*tp_setattr*/
-  #if PY_MAJOR_VERSION < 3
-  0, /*tp_compare*/
-  #else
-  0, /*reserved*/
-  #endif
-  %(tp_repr)s, /*tp_repr*/
-  0, /*tp_as_number*/
-  0, /*tp_as_sequence*/
-  0, /*tp_as_mapping*/
-  0, /*tp_hash*/
-  0, /*tp_call*/
-  0, /*tp_str*/
-  0, /*tp_getattro*/
-  0, /*tp_setattro*/
-  0, /*tp_as_buffer*/
-  Py_TPFLAGS_DEFAULT, /*tp_flags*/
-  0, /*tp_doc*/
-  0, /*tp_traverse*/
-  0, /*tp_clear*/
-  0, /*tp_richcompare*/
-  0, /*tp_weaklistoffset*/
-  0, /*tp_iter*/
-  0, /*tp_iternext*/
-  %(tp_methods)s, /*tp_methods*/
-  0, /*tp_members*/
-  0, /*tp_getset*/
-  0, /*tp_base*/
-  0, /*tp_dict*/
-  0, /*tp_descr_get*/
-  0, /*tp_descr_set*/
-  0, /*tp_dictoffset*/
-  %(tp_init)s, /*tp_init*/
-  0, /*tp_alloc*/
-  %(tp_new)s, /*tp_new*/
-  0, /*tp_free*/
-  0, /*tp_is_gc*/
-  0, /*tp_bases*/
-  0, /*tp_mro*/
-  0, /*tp_cache*/
-  0, /*tp_subclasses*/
-  0, /*tp_weaklist*/
-  0, /*tp_del*/
-  #if PY_VERSION_HEX >= 0x02060000
-  0, /*tp_version_tag*/
-  #endif
-};
-""" % self.__dict__)
+        result = '\n'
+        result += 'PyTypeObject %(name)s = {\n' % self.__dict__
+        result += '    PyVarObject_HEAD_INIT(0, 0)\n' % self.__dict__
+        result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
+        result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
+        result += '    0, /*tp_itemsize*/\n' % self.__dict__
+        result += '    %(tp_dealloc)s, /*tp_dealloc*/\n' % self.__dict__
+        result += '    0, /*tp_print*/\n' % self.__dict__
+        result += '    0, /*tp_getattr*/\n' % self.__dict__
+        result += '    0, /*tp_setattr*/\n' % self.__dict__
+        result += '#if PY_MAJOR_VERSION < 3\n' % self.__dict__
+        result += '    0, /*tp_compare*/\n' % self.__dict__
+        result += '#else\n' % self.__dict__
+        result += '    0, /*reserved*/\n' % self.__dict__
+        result += '#endif\n' % self.__dict__
+        result += '    %(tp_repr)s, /*tp_repr*/\n' % self.__dict__
+        result += '    0, /*tp_as_number*/\n' % self.__dict__
+        result += '    0, /*tp_as_sequence*/\n' % self.__dict__
+        result += '    0, /*tp_as_mapping*/\n' % self.__dict__
+        result += '    0, /*tp_hash*/\n' % self.__dict__
+        result += '    0, /*tp_call*/\n' % self.__dict__
+        result += '    0, /*tp_str*/\n' % self.__dict__
+        result += '    0, /*tp_getattro*/\n' % self.__dict__
+        result += '    0, /*tp_setattro*/\n' % self.__dict__
+        result += '    0, /*tp_as_buffer*/\n' % self.__dict__
+        result += '    Py_TPFLAGS_DEFAULT, /*tp_flags*/\n' % self.__dict__
+        result += '    0, /*tp_doc*/\n' % self.__dict__
+        result += '    0, /*tp_traverse*/\n' % self.__dict__
+        result += '    0, /*tp_clear*/\n' % self.__dict__
+        result += '    0, /*tp_richcompare*/\n' % self.__dict__
+        result += '    0, /*tp_weaklistoffset*/\n' % self.__dict__
+        result += '    0, /*tp_iter*/\n' % self.__dict__
+        result += '    0, /*tp_iternext*/\n' % self.__dict__
+        result += '    %(tp_methods)s, /*tp_methods*/\n' % self.__dict__
+        result += '    0, /*tp_members*/\n' % self.__dict__
+        result += '    0, /*tp_getset*/\n' % self.__dict__
+        result += '    0, /*tp_base*/\n' % self.__dict__
+        result += '    0, /*tp_dict*/\n' % self.__dict__
+        result += '    0, /*tp_descr_get*/\n' % self.__dict__
+        result += '    0, /*tp_descr_set*/\n' % self.__dict__
+        result += '    0, /*tp_dictoffset*/\n' % self.__dict__
+        result += '    %(tp_init)s, /*tp_init*/\n' % self.__dict__
+        result += '    0, /*tp_alloc*/\n' % self.__dict__
+        result += '    %(tp_new)s, /*tp_new*/\n' % self.__dict__
+        result += '    0, /*tp_free*/\n' % self.__dict__
+        result += '    0, /*tp_is_gc*/\n' % self.__dict__
+        result += '    0, /*tp_bases*/\n' % self.__dict__
+        result += '    0, /*tp_mro*/\n' % self.__dict__
+        result += '    0, /*tp_cache*/\n' % self.__dict__
+        result += '    0, /*tp_subclasses*/\n' % self.__dict__
+        result += '    0, /*tp_weaklist*/\n' % self.__dict__
+        result += '    0, /*tp_del*/\n' % self.__dict__
+        result += '#if PY_VERSION_HEX >= 0x02060000\n' % self.__dict__
+        result += '    0, /*tp_version_tag*/\n' % self.__dict__
+        result += '#endif\n' % self.__dict__
+        result += '};\n' % self.__dict__
+        result +='\n'
+        return result
 
     def c_invoke_type_ready(self):
         return ('    if (PyType_Ready(&%(name)s) < 0)\n'
