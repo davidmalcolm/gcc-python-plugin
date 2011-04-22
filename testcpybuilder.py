@@ -114,10 +114,20 @@ struct PyExampleType {
 };
 """)
 
+        sm.cu.add_defn("PyObject *\n"
+                       "example_Example_repr(PyObject * self)\n"
+                       "{\n"
+                       "#if PY_MAJOR_VERSION < 3\n"
+                       "    return PyString_FromString(\"example.ExampleType('')\");\n"
+                       "#else\n"
+                       "    return PyUnicode_FromString(\"example.ExampleType('')\");\n"
+                       "#endif\n"
+                       "}\n")
         sm.add_type_object(name = 'example_ExampleType',
                            localname = 'ExampleType',
                            tp_name = 'example.ExampleType',
-                           struct_name = 'struct PyExampleType')
+                           struct_name = 'struct PyExampleType',
+                           tp_repr = 'example_Example_repr')
 
         sm.add_module_init('example', modmethods=None, moddoc='This is a doc string')
         # print sm.cu.as_str()
@@ -127,11 +137,8 @@ struct PyExampleType {
             bm = BuiltModule(sm, runtime)
 
             # Verify that it built:
-            out = bm.run_command('import example; print(example.ExampleType)')
-            if runtime.is_py3k():
-                self.assertEquals(out, "<class 'example.ExampleType'>\n")
-            else:
-                self.assertEquals(out, "<type 'example.ExampleType'>\n")
+            out = bm.run_command('import example; print(repr(example.ExampleType()))')
+            self.assertEquals(out, "example.ExampleType('')\n")
 
             # Cleanup successful test runs:
             bm.cleanup()
