@@ -7,6 +7,11 @@ def nullable_ptr(ptr):
     else:
         return 'NULL'
 
+class NamedEntity:
+    """A thing within C code that has an identifier"""
+    def __init__(self, identifier):
+        self.identifier = identifier
+
 class PyGetSetDef:
     def __init__(self, name, get, set, doc, closure=None):
         self.name = name
@@ -23,13 +28,13 @@ class PyGetSetDef:
         result += '     %s},\n' % nullable_ptr(self.closure)
         return result
 
-class PyGetSetDefTable:
-    def __init__(self, name, gsdefs):
-        self.name = name
+class PyGetSetDefTable(NamedEntity):
+    def __init__(self, identifier, gsdefs):
+        NamedEntity.__init__(self, identifier)
         self.gsdefs = gsdefs
 
     def c_defn(self):
-        result = 'static PyGetSetDef %s[] = {\n' % self.name
+        result = 'static PyGetSetDef %s[] = {\n' % self.identifier
         for gsdef in self.gsdefs:
             result += gsdef.c_defn()
         result += '    {NULL}  /* Sentinel */\n'
@@ -51,22 +56,22 @@ class PyMethodDef:
         return ('    {"%(name)s",  %(fn_name)s, %(args)s,\n'
                 '     "%(docstring)s"},\n' % self.__dict__)
 
-class PyMethodTable:
-    def __init__(self, name, methods):
-        self.name = name
+class PyMethodTable(NamedEntity):
+    def __init__(self, identifier, methods):
+        NamedEntity.__init__(self, identifier)
         self.methods = methods
 
     def c_defn(self):
-        result = 'static PyMethodDef %s[] = {\n' % self.name
+        result = 'static PyMethodDef %s[] = {\n' % self.identifier
         for method in self.methods:
             result += method.c_defn()
         result += '    {NULL, NULL, 0, NULL} /* Sentinel */\n'
         result += '};\n'
         return result
 
-class PyTypeObject:
-    def __init__(self, name, localname, tp_name, struct_name, **kwargs):
-        self.name = name
+class PyTypeObject(NamedEntity):
+    def __init__(self, identifier, localname, tp_name, struct_name, **kwargs):
+        NamedEntity.__init__(self, identifier)
         self.localname = localname
         self.tp_name = tp_name
         self.struct_name = struct_name
@@ -83,7 +88,7 @@ class PyTypeObject:
             return '    %s, /* %s */\n' % (nullable_ptr(val), name)
 
         result = '\n'
-        result += 'PyTypeObject %(name)s = {\n' % self.__dict__
+        result += 'PyTypeObject %(identifier)s = {\n' % self.__dict__
         result += '    PyVarObject_HEAD_INIT(0, 0)\n'
         result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
@@ -142,13 +147,13 @@ class PyTypeObject:
         return result
 
     def c_invoke_type_ready(self):
-        return ('    if (PyType_Ready(&%(name)s) < 0)\n'
+        return ('    if (PyType_Ready(&%(identifier)s) < 0)\n'
                 '        goto error;\n'
                 '\n') % self.__dict__
 
     def c_invoke_add_to_module(self):
-        return ('    Py_INCREF(&%(name)s);\n'
-                '    PyModule_AddObject(m, "%(localname)s", (PyObject *)&%(name)s);\n'
+        return ('    Py_INCREF(&%(identifier)s);\n'
+                '    PyModule_AddObject(m, "%(localname)s", (PyObject *)&%(identifier)s);\n'
                 '\n') % self.__dict__
 
 class PyModule:
@@ -159,7 +164,7 @@ class PyModule:
         self.modmethods = modmethods
 
         if self.modmethods:
-            self.modmethods_as_ptr = self.modmethods.name
+            self.modmethods_as_ptr = self.modmethods.identifier
         else:
             self.modmethods_as_ptr = 'NULL'
 
