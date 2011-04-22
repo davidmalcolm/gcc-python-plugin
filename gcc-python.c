@@ -125,8 +125,12 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate, PyObject *wrapped_g
     }
     result = PyObject_Call(closure->callback, args, NULL);
 
+    if (!result) {
+	PyErr_PrintEx(1);
+	goto cleanup;
+    }
+
     // FIXME: the result is ignored
-    // FIXME: exception handling?
 
 cleanup:
     Py_XDECREF(wrapped_gcc_data);
