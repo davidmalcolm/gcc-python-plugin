@@ -17,6 +17,7 @@ def my_pass_execution_callback(*args, **kwargs):
         print 'fun.cfg: %r' % fun.cfg
         if fun.cfg:
             print help(fun.cfg)
+            print 'fun.cfg.basic_blocks: %r' % fun.cfg.basic_blocks
             print 'fun.cfg.entry: %r' % fun.cfg.entry
             print 'fun.cfg.exit: %r' % fun.cfg.exit
 

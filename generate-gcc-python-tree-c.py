@@ -109,7 +109,11 @@ def generate_cfg():
     global modinit_postinit
 
     getsettable = PyGetSetDefTable('gcc_Cfg_getset_table',
-                                   [PyGetSetDef('entry', 
+                                   [PyGetSetDef('basic_blocks',
+                                                'gcc_Cfg_get_basic_blocks',
+                                                None,
+                                                'The list of gcc.BasicBlock instances in this graph'),
+                                    PyGetSetDef('entry',
                                                 cu.add_simple_getter('gcc_Cfg_get_entry',
                                                                      'PyGccCfg',
                                                                      'gcc_python_make_wrapper_basic_block(self->cfg->x_entry_block_ptr)'),

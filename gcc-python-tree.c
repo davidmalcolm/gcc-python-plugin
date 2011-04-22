@@ -70,6 +70,35 @@ error:
       typedef struct basic_block_def *basic_block;
       typedef const struct basic_block_def *const_basic_block;
  */
+
+PyObject *
+gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
+{
+    PyObject *result = NULL;
+    int i;
+    
+    result = PyList_New(self->cfg->x_n_basic_blocks);
+    if (!result) {
+	goto error;
+    }
+
+    for (i = 0; i < self->cfg->x_n_basic_blocks; i++) {
+	PyObject *item;
+	item = gcc_python_make_wrapper_basic_block(VEC_index(basic_block, self->cfg->x_basic_block_info, i));
+	if (!item) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, item);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+
 PyObject *
 gcc_python_make_wrapper_basic_block(basic_block bb)
 {
