@@ -22,6 +22,8 @@ def my_pre_genericize_callback(*args, **kwargs):
     print(str(t))
     print(help(t))
 
+    print 't.name: %r' % t.name
+
     loc = t.location
 
     print(loc)

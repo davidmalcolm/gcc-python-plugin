@@ -15,6 +15,9 @@ cu.add_include("tree.h")
 modinit_preinit = ''
 modinit_postinit = ''
 
+#
+# Generate the gcc.Location class:
+#
 cu.add_defn("""
 static PyObject *
 gcc_Location_get_file(struct PyGccLocation *self, void *closure)
@@ -50,6 +53,10 @@ modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Location_repr;\n" % pytype.
 modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Location_str;\n" % pytype.name
 modinit_preinit += pytype.c_invoke_type_ready()
 modinit_postinit += pytype.c_invoke_add_to_module()
+
+#
+# Generate the gcc.Tree class:
+#
 
 cu.add_defn("""
 static PyObject *
@@ -113,6 +120,23 @@ for code_type in type_for_code_class.values():
                           tp_init = 'NULL',
                           tp_new = 'PyType_GenericNew')
     cu.add_defn(pytype.c_defn())
+
+    if localname == 'Declaration':
+        cu.add_defn("""
+static PyObject *
+gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
+{
+    if (DECL_NAME(self->t)) {
+        return PyString_FromString(IDENTIFIER_POINTER (DECL_NAME (self->t)));
+    }
+    Py_RETURN_NONE;
+}
+""")
+        getsettable = PyGetSetDefTable('gcc_Declaration_getset_table',
+                                       [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'Location')])
+        cu.add_defn(getsettable.c_defn())
+        modinit_preinit += "\n    %s.tp_getset = %s;\n" % (code_type, 'gcc_Declaration_getset_table')
+        
     modinit_preinit += "\n    %s.tp_base = &%s;\n" % (code_type, 'gcc_TreeType')
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
