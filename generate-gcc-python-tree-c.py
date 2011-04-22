@@ -59,6 +59,48 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 
 generate_location()
 
+def generate_edge():
+    #
+    # Generate the gcc.Edge class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    pytype = PyTypeObject(identifier = 'gcc_EdgeType',
+                          localname = 'Edge',
+                          tp_name = 'gcc.Edge',
+                          struct_name = 'struct PyGccEdge',
+                          tp_new = 'PyType_GenericNew',
+                          #tp_repr = '(reprfunc)gcc_Edge_repr',
+                          #tp_str = '(reprfunc)gcc_Edge_repr',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_edge()
+
+def generate_basic_block():
+    #
+    # Generate the gcc.BasicBlock class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    pytype = PyTypeObject(identifier = 'gcc_BasicBlockType',
+                          localname = 'BasicBlock',
+                          tp_name = 'gcc.BasicBlock',
+                          struct_name = 'struct PyGccBasicBlock',
+                          tp_new = 'PyType_GenericNew',
+                          #tp_repr = '(reprfunc)gcc_BasicBlock_repr',
+                          #tp_str = '(reprfunc)gcc_BasicBlock_repr',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_basic_block()
+
 def generate_cfg():
     #
     # Generate the gcc.Cfg class:

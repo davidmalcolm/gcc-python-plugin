@@ -11,6 +11,8 @@
   gcc_python_make_wrapper_##ARG_typename(ARG_wrappedtype ARG_fieldname);
 
 DECLARE_SIMPLE_WRAPPER(PyGccLocation, location, location_t, loc)
+DECLARE_SIMPLE_WRAPPER(PyGccEdge, edge, edge, e)
+DECLARE_SIMPLE_WRAPPER(PyGccBasicBlock, basic_block, basic_block, bb)
 DECLARE_SIMPLE_WRAPPER(PyGccCfg, cfg, struct control_flow_graph *, cfg)
 DECLARE_SIMPLE_WRAPPER(PyGccFunction, function, struct function *, fun)
 DECLARE_SIMPLE_WRAPPER(PyGccTree, tree, tree, t)

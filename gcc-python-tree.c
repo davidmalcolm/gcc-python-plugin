@@ -49,13 +49,34 @@ error:
     return NULL;
 }
 
+#include "basic-block.h"
+
+/*
+  "struct edge_def" is declared in basic-block.h, c.f:
+      struct GTY(()) edge_def {
+           ... snip ...
+      }
+  and there are these typedefs to pointers defined in coretypes.h:
+      typedef struct edge_def *edge;
+      typedef const struct edge_def *const_edge;
+ */
+
+/*
+  "struct basic_block_def" is declared in basic-block.h, c.f:
+      struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_def {
+           ... snip ...
+      }
+  and there are these typedefs to pointers defined in coretypes.h:
+      typedef struct basic_block_def *basic_block;
+      typedef const struct basic_block_def *const_basic_block;
+ */
+
 /*
   "struct control_flow_graph" is declared in basic-block.h, c.f.:
       struct GTY(()) control_flow_graph {
            ... snip ...
       }
 */
-#include "basic-block.h"
 
 PyObject *
 gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
