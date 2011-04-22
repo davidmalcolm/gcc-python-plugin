@@ -148,8 +148,77 @@ gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
     return NULL;
 }
 
+/*
+  Force a 1-1 mapping between pointer values and wrapper objects
+ */
 PyObject *
-gcc_python_make_wrapper_basic_block(basic_block bb)
+gcc_python_lazily_create_wrapper(PyObject **cache,
+				 void *ptr,
+				 PyObject *(*ctor)(void *ptr))
+{
+    PyObject *key = NULL;
+    PyObject *oldobj = NULL;
+    PyObject *newobj = NULL;
+
+    /* printf("gcc_python_lazily_create_wrapper(&%p, %p, %p)\n", *cache, ptr, ctor); */
+
+    assert(cache);
+    /* ptr is allowed to be NULL */
+    assert(ctor);
+
+    /* The cache is lazily created: */
+    if (!*cache) {
+	*cache = PyDict_New();
+	if (!*cache) {
+	    return NULL;
+	}
+    }
+
+    key = PyLong_FromVoidPtr(ptr);
+    if (!key) {
+	return NULL;
+    }
+
+    oldobj = PyDict_GetItem(*cache, key);
+    if (oldobj) {
+	/* The cache already contains an object wrapping "ptr": reuse t */
+	/* printf("reusing %p for %p\n", oldobj, ptr); */
+	Py_INCREF(oldobj); /* it was a borrowed ref */
+	Py_DECREF(key);
+	return oldobj;
+    }
+
+    /* 
+       Not in the cache: we don't yet have a wrapper object for this pointer
+    */
+       
+    assert(NULL != key); /* we own a ref */
+    assert(NULL == oldobj);
+    assert(NULL == newobj);
+
+    /* Construct a wrapper : */
+
+    newobj = (*ctor)(ptr);
+    if (!newobj) {
+	Py_DECREF(key);
+	return NULL;
+    }
+
+    /* printf("created %p for %p\n", newobj, ptr); */
+
+    if (PyDict_SetItem(*cache, key, newobj)) {
+	Py_DECREF(newobj);
+	Py_DECREF(key);
+	return NULL;
+    }
+
+    Py_DECREF(key);
+    return newobj;
+}
+
+
+static PyObject *
+real_make_basic_block_wrapper(void *bb)
 {
     struct PyGccBasicBlock *obj;
 
@@ -162,13 +231,22 @@ gcc_python_make_wrapper_basic_block(basic_block bb)
         goto error;
     }
 
-    obj->bb = bb;
+    obj->bb = (basic_block)bb;
     /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
       
 error:
     return NULL;
+}
+
+static PyObject *basic_block_wrapper_cache = NULL;
+PyObject *
+gcc_python_make_wrapper_basic_block(basic_block bb)
+{
+    return gcc_python_lazily_create_wrapper(&basic_block_wrapper_cache,
+					    bb,
+					    real_make_basic_block_wrapper);
 }
 
 /*

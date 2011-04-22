@@ -22,6 +22,45 @@ def my_pass_execution_callback(*args, **kwargs):
             print 'fun.cfg.exit: %r' % fun.cfg.exit
             print 'fun.cfg.entry.succs: %r' % fun.cfg.entry.succs
             print 'fun.cfg.exit.preds: %r' % fun.cfg.exit.preds
+            
+            dot = cfg_to_dot(fun.cfg)
+            print dot
+            invoke_dot(dot)
+
+def invoke_dot(dot):
+    from subprocess import Popen, PIPE
+    p = Popen(['dot', '-Tpng', '-o', 'test.png'],
+              stdin=PIPE)
+    p.communicate(dot)
+
+    p = Popen(['eog', 'test.png'])
+    p.communicate()
+    
+
+def cfg_to_dot(cfg):
+
+    def block_id(b):
+        if b is cfg.entry:
+            return 'entry'
+        if b is cfg.exit:
+            return 'exit'
+        return 'block%i' % id(b)
+
+    def edge_to_dot(e):
+        return ('   %s -> %s;\n'
+                % (block_id(e.src), block_id(e.dest)))
+        
+    result = 'digraph G {\n'
+    for block in cfg.basic_blocks:
+        # FIXME: this will have duplicates:
+        for edge in block.succs:
+            result += edge_to_dot(edge)
+        #for edge in block.preds:
+        #    result += edge_to_dot(edge)
+        pass
+    result += '}\n'
+    return result
+    
 
 def my_pre_genericize_callback(*args, **kwargs):
     print('my_pre_genericize_callback was called: args=%r  kwargs=%r' % (args, kwargs))

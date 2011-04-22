@@ -66,6 +66,21 @@ def generate_edge():
     global modinit_preinit
     global modinit_postinit
 
+    getsettable = PyGetSetDefTable('gcc_Edge_getset_table',
+                                   [PyGetSetDef('src',
+                                                cu.add_simple_getter('gcc_Edge_get_src',
+                                                                     'PyGccEdge',
+                                                                     'gcc_python_make_wrapper_basic_block(self->e->src)'),
+                                                None,
+                                                'The source gcc.BasicBlock of this edge'),
+                                    PyGetSetDef('dest',
+                                                cu.add_simple_getter('gcc_Edge_get_dest',
+                                                                     'PyGccEdge',
+                                                                     'gcc_python_make_wrapper_basic_block(self->e->dest)'),
+                                                None,
+                                                'The destination gcc.BasicBlock of this edge')])
+    cu.add_defn(getsettable.c_defn())
+
     pytype = PyTypeObject(identifier = 'gcc_EdgeType',
                           localname = 'Edge',
                           tp_name = 'gcc.Edge',
@@ -73,6 +88,7 @@ def generate_edge():
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_Edge_repr',
                           #tp_str = '(reprfunc)gcc_Edge_repr',
+                          tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
