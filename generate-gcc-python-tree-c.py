@@ -38,7 +38,7 @@ getsettable = PyGetSetDefTable('gcc_Location_getset_table',
                                 PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file')])
 cu.add_defn(getsettable.c_defn())
 
-pytype = PyTypeObject(name = 'gcc_Location',
+pytype = PyTypeObject(name = 'gcc_LocationType',
                       localname = 'Location',
                       tp_name = 'gcc.Location',
                       struct_name = 'struct PyGccLocation',
@@ -51,6 +51,24 @@ cu.add_defn(pytype.c_defn())
 modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
 modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Location_repr;\n" % pytype.name
 modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Location_str;\n" % pytype.name
+modinit_preinit += pytype.c_invoke_type_ready()
+modinit_postinit += pytype.c_invoke_add_to_module()
+
+#
+# Generate the gcc.Function class:
+#
+pytype = PyTypeObject(name = 'gcc_FunctionType',
+                      localname = 'Function',
+                      tp_name = 'gcc.Function',
+                      struct_name = 'struct PyGccFunction',
+                      tp_dealloc = 'NULL',
+                      tp_repr = 'NULL',
+                      tp_methods = 'NULL',
+                      tp_init = 'NULL',
+                      tp_new = 'PyType_GenericNew')
+cu.add_defn(pytype.c_defn())
+#modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Function_repr;\n" % pytype.name
+#modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Function_str;\n" % pytype.name
 modinit_preinit += pytype.c_invoke_type_ready()
 modinit_postinit += pytype.c_invoke_add_to_module()
 

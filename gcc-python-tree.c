@@ -35,7 +35,7 @@ gcc_python_make_wrapper_location(location_t loc)
 {
     struct PyGccLocation *location_obj = NULL;
   
-    location_obj = PyObject_New(struct PyGccLocation, &gcc_Location);
+    location_obj = PyObject_New(struct PyGccLocation, &gcc_LocationType);
     if (!location_obj) {
         goto error;
     }
@@ -49,7 +49,39 @@ error:
     return NULL;
 }
 
+/*
+  "struct function" is declared in function.h, c.f.:
+      struct GTY(()) function {
+           ... snip ...
+      };
+*/
 
+PyObject *
+gcc_python_make_wrapper_function(struct function *fun)
+{
+    struct PyGccFunction *obj;
+
+    if (!fun) {
+	Py_RETURN_NONE;
+    }
+
+    obj = PyObject_New(struct PyGccFunction, &gcc_FunctionType);
+    if (!obj) {
+        goto error;
+    }
+
+    obj->fun = fun;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)obj;
+      
+error:
+    return NULL;
+}
+
+/*
+    Code for various tree types
+ */
 PyObject *
 gcc_Declaration_repr(struct PyGccTree * self)
 {
