@@ -139,3 +139,10 @@ gcc_python_make_wrapper_tree(tree t)
 error:
     return NULL;
 }
+
+/*
+  PEP-7  
+Local variables:
+c-basic-offset: 4
+End:
+*/

@@ -26,3 +26,10 @@ main(int argc, char **argv)
 
     return 0;
 }
+
+/*
+  PEP-7  
+Local variables:
+c-basic-offset: 4
+End:
+*/

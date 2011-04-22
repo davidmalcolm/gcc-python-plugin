@@ -77,3 +77,10 @@ gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrappe
     Py_XDECREF(args);
     return NULL;
 }
+
+/*
+  PEP-7  
+Local variables:
+c-basic-offset: 4
+End:
+*/
