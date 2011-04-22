@@ -15,17 +15,22 @@ cu.add_include("tree.h")
 modinit_preinit = ''
 modinit_postinit = ''
 
-#
-# Generate the gcc.Location class:
-#
-cu.add_defn("""
+def generate_location():
+    #
+    # Generate the gcc.Location class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    cu.add_defn("""
 static PyObject *
 gcc_Location_get_file(struct PyGccLocation *self, void *closure)
 {
     return PyString_FromString(LOCATION_FILE(self->loc));
 }
 """)
-cu.add_defn("""
+
+    cu.add_defn("""
 static PyObject *
 gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 {
@@ -33,50 +38,60 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 }
 """)
 
-getsettable = PyGetSetDefTable('gcc_Location_getset_table',
-                               [PyGetSetDef('file', 'gcc_Location_get_file', None, 'Name of the source file'),
-                                PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file')])
-cu.add_defn(getsettable.c_defn())
+    getsettable = PyGetSetDefTable('gcc_Location_getset_table',
+                                   [PyGetSetDef('file', 'gcc_Location_get_file', None, 'Name of the source file'),
+                                    PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file')])
+    cu.add_defn(getsettable.c_defn())
 
-pytype = PyTypeObject(name = 'gcc_LocationType',
-                      localname = 'Location',
-                      tp_name = 'gcc.Location',
-                      struct_name = 'struct PyGccLocation',
-                      tp_dealloc = 'NULL',
-                      tp_repr = 'NULL',
-                      tp_methods = 'NULL',
-                      tp_init = 'NULL',
-                      tp_new = 'PyType_GenericNew')
-cu.add_defn(pytype.c_defn())
-modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
-modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Location_repr;\n" % pytype.name
-modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Location_str;\n" % pytype.name
-modinit_preinit += pytype.c_invoke_type_ready()
-modinit_postinit += pytype.c_invoke_add_to_module()
+    pytype = PyTypeObject(name = 'gcc_LocationType',
+                          localname = 'Location',
+                          tp_name = 'gcc.Location',
+                          struct_name = 'struct PyGccLocation',
+                          tp_dealloc = 'NULL',
+                          tp_repr = 'NULL',
+                          tp_methods = 'NULL',
+                          tp_init = 'NULL',
+                          tp_new = 'PyType_GenericNew')
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
+    modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Location_repr;\n" % pytype.name
+    modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Location_str;\n" % pytype.name
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
 
-#
-# Generate the gcc.Function class:
-#
-pytype = PyTypeObject(name = 'gcc_FunctionType',
-                      localname = 'Function',
-                      tp_name = 'gcc.Function',
-                      struct_name = 'struct PyGccFunction',
-                      tp_dealloc = 'NULL',
-                      tp_repr = 'NULL',
-                      tp_methods = 'NULL',
-                      tp_init = 'NULL',
-                      tp_new = 'PyType_GenericNew')
-cu.add_defn(pytype.c_defn())
-#modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Function_repr;\n" % pytype.name
-#modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Function_str;\n" % pytype.name
-modinit_preinit += pytype.c_invoke_type_ready()
-modinit_postinit += pytype.c_invoke_add_to_module()
+generate_location()
 
-#
-# Generate the gcc.Tree class:
-#
+def generate_function():
+    #
+    # Generate the gcc.Function class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+    pytype = PyTypeObject(name = 'gcc_FunctionType',
+                          localname = 'Function',
+                          tp_name = 'gcc.Function',
+                          struct_name = 'struct PyGccFunction',
+                          tp_dealloc = 'NULL',
+                          tp_repr = 'NULL',
+                          tp_methods = 'NULL',
+                          tp_init = 'NULL',
+                          tp_new = 'PyType_GenericNew')
+    cu.add_defn(pytype.c_defn())
+    # modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Function_repr;\n" % pytype.name
+    # modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Function_str;\n" % pytype.name
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
 
-cu.add_defn("""
+generate_function()
+
+def generate_tree():
+    #
+    # Generate the gcc.Tree class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+    
+    cu.add_defn("""
 static PyObject *
 gcc_Tree_get_location(struct PyGccTree *self, void *closure)
 {
@@ -97,33 +112,30 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 
 """)
 
-getsettable = PyGetSetDefTable('gcc_Tree_getset_table',
-                               [PyGetSetDef('location', 'gcc_Tree_get_location', None,
-                                            'Instance of gcc.Location indicating the source code location of this node'),
-                                PyGetSetDef('type', 'gcc_Tree_get_type', None,
-                                            'Instance of gcc.Tree giving the type of the node'),
-                                PyGetSetDef('addr', 'gcc_Tree_get_addr', None,
-                                            'The address of the underlying GCC object in memory')])
-cu.add_defn(getsettable.c_defn())
-
-pytype = PyTypeObject(name = 'gcc_TreeType',
-                      localname = 'Tree',
-                      tp_name = 'gcc.Tree',
-                      struct_name = 'struct PyGccTree',
-                      tp_dealloc = 'NULL',
-                      tp_repr = 'NULL',
-                      tp_methods = 'NULL',
-                      tp_init = 'NULL',
-                      tp_new = 'PyType_GenericNew')
-cu.add_defn(pytype.c_defn())
-modinit_preinit += "\n    %s.tp_getset = gcc_Tree_getset_table;\n" % pytype.name
-modinit_preinit += pytype.c_invoke_type_ready()
-modinit_postinit += pytype.c_invoke_add_to_module()
-
-# Generate a "middle layer" of gcc.Tree subclasses, corresponding to most of the
-# values of
-#    enum_tree_code_class
-# from GCC's tree.h
+    getsettable = PyGetSetDefTable('gcc_Tree_getset_table',
+                                   [PyGetSetDef('location', 'gcc_Tree_get_location', None,
+                                                'Instance of gcc.Location indicating the source code location of this node'),
+                                    PyGetSetDef('type', 'gcc_Tree_get_type', None,
+                                                'Instance of gcc.Tree giving the type of the node'),
+                                    PyGetSetDef('addr', 'gcc_Tree_get_addr', None,
+                                                'The address of the underlying GCC object in memory')])
+    cu.add_defn(getsettable.c_defn())
+    
+    pytype = PyTypeObject(name = 'gcc_TreeType',
+                          localname = 'Tree',
+                          tp_name = 'gcc.Tree',
+                          struct_name = 'struct PyGccTree',
+                          tp_dealloc = 'NULL',
+                          tp_repr = 'NULL',
+                          tp_methods = 'NULL',
+                          tp_init = 'NULL',
+                          tp_new = 'PyType_GenericNew')
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += "\n    %s.tp_getset = gcc_Tree_getset_table;\n" % pytype.name
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+    
+generate_tree()
 
 type_for_code_class = {
     'tcc_exceptional' : 'gcc_TreeType',
@@ -139,26 +151,35 @@ type_for_code_class = {
     'tcc_expression' : 'gcc_ExpressionType',
 }
 
-for code_type in type_for_code_class.values():
-    # We've already built the base class:
-    if code_type == 'gcc_TreeType':
-        continue
+def generate_intermediate_tree_classes():
+    # Generate a "middle layer" of gcc.Tree subclasses, corresponding to most of the
+    # values of
+    #    enum_tree_code_class
+    # from GCC's tree.h
+    global modinit_preinit
+    global modinit_postinit
 
-    # Strip off the "gcc_" prefix and "Type" suffix:
-    localname = code_type[4:-4]
-    pytype = PyTypeObject(name = code_type,
-                          localname = localname,
-                          tp_name = 'gcc.%s' % localname,
-                          struct_name = 'struct PyGccTree',
-                          tp_dealloc = 'NULL',
-                          tp_repr = 'NULL',
-                          tp_methods = 'NULL',
-                          tp_init = 'NULL',
-                          tp_new = 'PyType_GenericNew')
-    cu.add_defn(pytype.c_defn())
+    
+    for code_type in type_for_code_class.values():
+        # We've already built the base class:
+        if code_type == 'gcc_TreeType':
+            continue
 
-    if localname == 'Declaration':
-        cu.add_defn("""
+        # Strip off the "gcc_" prefix and "Type" suffix:
+        localname = code_type[4:-4]
+        pytype = PyTypeObject(name = code_type,
+                              localname = localname,
+                              tp_name = 'gcc.%s' % localname,
+                              struct_name = 'struct PyGccTree',
+                              tp_dealloc = 'NULL',
+                              tp_repr = 'NULL',
+                              tp_methods = 'NULL',
+                              tp_init = 'NULL',
+                              tp_new = 'PyType_GenericNew')
+        cu.add_defn(pytype.c_defn())
+        
+        if localname == 'Declaration':
+            cu.add_defn("""
 PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 {
@@ -168,46 +189,51 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
     Py_RETURN_NONE;
 }
 """)
-        getsettable = PyGetSetDefTable('gcc_Declaration_getset_table',
-                                       [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'Location')])
-        cu.add_defn(getsettable.c_defn())
-        modinit_preinit += "\n    %s.tp_getset = %s;\n" % (code_type, 'gcc_Declaration_getset_table')
-        modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Declaration_repr;\n" % pytype.name
-        modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Declaration_repr;\n" % pytype.name
+            getsettable = PyGetSetDefTable('gcc_Declaration_getset_table',
+                                           [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'Location')])
+            cu.add_defn(getsettable.c_defn())
+            modinit_preinit += "\n    %s.tp_getset = %s;\n" % (code_type, 'gcc_Declaration_getset_table')
+            modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Declaration_repr;\n" % pytype.name
+            modinit_preinit += "\n    %s.tp_str = (reprfunc)gcc_Declaration_repr;\n" % pytype.name
+            
+        modinit_preinit += "\n    %s.tp_base = &%s;\n" % (code_type, 'gcc_TreeType')
+        modinit_preinit += pytype.c_invoke_type_ready()
+        modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_intermediate_tree_classes()
+
+
+def generate_tree_code_classes():
+    # Generate all of the concrete gcc.Tree subclasses based on the:
+    #    enum tree_code
+    # as subclasses of the above layer:
+    global modinit_preinit
+    global modinit_postinit
+    
+    for tree_type in tree_types:
+        base_type = type_for_code_class[tree_type.TYPE]
+        pytype = PyTypeObject(name = 'gcc_%sType' % tree_type.camel_cased_string(),
+                              localname = tree_type.camel_cased_string(),
+                              tp_name = 'gcc.%s' % tree_type.camel_cased_string(),
+                              struct_name = 'struct PyGccTree',
+                              tp_dealloc = 'NULL',
+                              tp_repr = 'NULL',
+                              tp_methods = 'NULL',
+                              tp_init = 'NULL',
+                              tp_new = 'PyType_GenericNew')
+        cu.add_defn(pytype.c_defn())
+        modinit_preinit += "\n    %s.tp_base = &%s;\n" % (pytype.name, base_type)
+        modinit_preinit += pytype.c_invoke_type_ready()
+        modinit_postinit += pytype.c_invoke_add_to_module()
         
-    modinit_preinit += "\n    %s.tp_base = &%s;\n" % (code_type, 'gcc_TreeType')
-    modinit_preinit += pytype.c_invoke_type_ready()
-    modinit_postinit += pytype.c_invoke_add_to_module()
 
+    cu.add_defn('\n/* Map from GCC tree codes to PyTypeObject* */\n')
+    cu.add_defn('PyTypeObject *pytype_for_tree_code[] = {\n')
+    for tree_type in tree_types:
+        cu.add_defn('    &gcc_%sType, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
+    cu.add_defn('};\n\n')
 
-
-# Generate all of the concrete gcc.Tree subclasses based on the:
-#    enum tree_code
-# as subclasses of the above layer:
-
-for tree_type in tree_types:
-    base_type = type_for_code_class[tree_type.TYPE]
-    pytype = PyTypeObject(name = 'gcc_%sType' % tree_type.camel_cased_string(),
-                          localname = tree_type.camel_cased_string(),
-                          tp_name = 'gcc.%s' % tree_type.camel_cased_string(),
-                          struct_name = 'struct PyGccTree',
-                          tp_dealloc = 'NULL',
-                          tp_repr = 'NULL',
-                          tp_methods = 'NULL',
-                          tp_init = 'NULL',
-                          tp_new = 'PyType_GenericNew')
-    cu.add_defn(pytype.c_defn())
-    modinit_preinit += "\n    %s.tp_base = &%s;\n" % (pytype.name, base_type)
-    modinit_preinit += pytype.c_invoke_type_ready()
-    modinit_postinit += pytype.c_invoke_add_to_module()
-
-
-cu.add_defn('\n/* Map from GCC tree codes to PyTypeObject* */\n')
-cu.add_defn('PyTypeObject *pytype_for_tree_code[] = {\n')
-for tree_type in tree_types:
-    cu.add_defn('    &gcc_%sType, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
-cu.add_defn('};\n\n')
-cu.add_defn("""
+    cu.add_defn("""
 PyTypeObject*
 gcc_python_autogenerated_tree_type_for_tree(tree t)
 {
@@ -220,7 +246,7 @@ gcc_python_autogenerated_tree_type_for_tree(tree t)
 """)
 
 
-cu.add_defn("""
+    cu.add_defn("""
 int gcc_python_autogenerated_tree_init_types(void)
 {
 """ + modinit_preinit + """
@@ -231,11 +257,13 @@ error:
 }
 """)
 
-cu.add_defn("""
+    cu.add_defn("""
 void gcc_python_autogenerated_tree_add_types(PyObject *m)
 {
 """ + modinit_postinit + """
 }
 """)
+
+generate_tree_code_classes()
 
 print(cu.as_str())
