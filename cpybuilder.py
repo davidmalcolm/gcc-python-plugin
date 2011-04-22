@@ -65,16 +65,14 @@ class PyMethodTable:
         return result
 
 class PyTypeObject:
-    def __init__(self, name, localname, tp_name, struct_name, tp_dealloc, tp_repr, tp_methods, tp_init, tp_new):
+    def __init__(self, name, localname, tp_name, struct_name, **kwargs):
         self.name = name
         self.localname = localname
         self.tp_name = tp_name
         self.struct_name = struct_name
-        self.tp_dealloc = tp_dealloc
-        self.tp_repr = tp_repr
-        self.tp_methods = tp_methods
-        self.tp_init = tp_init
-        self.tp_new = tp_new
+        self.__dict__.update(kwargs)
+        if not hasattr(self, 'tp_new'):
+            self.tp_new = 'PyType_GenericNew'
 
     def c_defn(self):
         def c_ptr_field(name):
@@ -277,13 +275,8 @@ class SimpleModule:
         self._modinit_postinit = ''
 
     def add_type_object(self, name, localname,
-                        tp_name, struct_name,
-                        tp_dealloc = None, tp_repr = None,
-                        tp_methods = None, tp_init = None,  tp_new = None):
-        if not tp_new:
-            tp_new = 'PyType_GenericNew';
-
-        pytype = PyTypeObject(name, localname, tp_name, struct_name, tp_dealloc, tp_repr, tp_methods, tp_init, tp_new)
+                        tp_name, struct_name, **kwargs):
+        pytype = PyTypeObject(name, localname, tp_name, struct_name, **kwargs)
         self.cu.add_defn(pytype.c_defn())
         self._modinit_preinit += pytype.c_invoke_type_ready()
         self._modinit_postinit += pytype.c_invoke_add_to_module()

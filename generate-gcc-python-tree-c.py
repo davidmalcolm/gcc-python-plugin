@@ -47,10 +47,6 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
                           localname = 'Location',
                           tp_name = 'gcc.Location',
                           struct_name = 'struct PyGccLocation',
-                          tp_dealloc = 'NULL',
-                          tp_repr = 'NULL',
-                          tp_methods = 'NULL',
-                          tp_init = 'NULL',
                           tp_new = 'PyType_GenericNew')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += "\n    %s.tp_getset = gcc_Location_getset_table;\n" % pytype.name
@@ -71,10 +67,6 @@ def generate_function():
                           localname = 'Function',
                           tp_name = 'gcc.Function',
                           struct_name = 'struct PyGccFunction',
-                          tp_dealloc = 'NULL',
-                          tp_repr = 'NULL',
-                          tp_methods = 'NULL',
-                          tp_init = 'NULL',
                           tp_new = 'PyType_GenericNew')
     cu.add_defn(pytype.c_defn())
     # modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Function_repr;\n" % pytype.name
@@ -125,10 +117,6 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                           localname = 'Tree',
                           tp_name = 'gcc.Tree',
                           struct_name = 'struct PyGccTree',
-                          tp_dealloc = 'NULL',
-                          tp_repr = 'NULL',
-                          tp_methods = 'NULL',
-                          tp_init = 'NULL',
                           tp_new = 'PyType_GenericNew')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += "\n    %s.tp_getset = gcc_Tree_getset_table;\n" % pytype.name
@@ -171,10 +159,6 @@ def generate_intermediate_tree_classes():
                               localname = localname,
                               tp_name = 'gcc.%s' % localname,
                               struct_name = 'struct PyGccTree',
-                              tp_dealloc = 'NULL',
-                              tp_repr = 'NULL',
-                              tp_methods = 'NULL',
-                              tp_init = 'NULL',
                               tp_new = 'PyType_GenericNew')
         cu.add_defn(pytype.c_defn())
         
@@ -216,10 +200,6 @@ def generate_tree_code_classes():
                               localname = tree_type.camel_cased_string(),
                               tp_name = 'gcc.%s' % tree_type.camel_cased_string(),
                               struct_name = 'struct PyGccTree',
-                              tp_dealloc = 'NULL',
-                              tp_repr = 'NULL',
-                              tp_methods = 'NULL',
-                              tp_init = 'NULL',
                               tp_new = 'PyType_GenericNew')
         cu.add_defn(pytype.c_defn())
         modinit_preinit += "\n    %s.tp_base = &%s;\n" % (pytype.name, base_type)
