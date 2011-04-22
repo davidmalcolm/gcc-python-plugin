@@ -1,5 +1,6 @@
 #include <Python.h>
 #include "gcc-python.h"
+#include "gcc-python-wrappers.h"
 
 /*
   "location_t" is the type used throughout.  Might be nice to expose this directly.
@@ -49,11 +50,39 @@ error:
 }
 
 
+PyObject *
+gcc_Declaration_repr(struct PyGccTree * self)
+{
+     PyObject *name = NULL;
+     PyObject *result = NULL;
+
+     name = gcc_Declaration_get_name(self, NULL);
+     if (!name) {
+         goto error;
+     }
+
+     result = PyString_FromFormat("gcc.Declaration('%s')",
+				  PyString_AsString(name));
+     Py_DECREF(name);
+
+     return result;
+error:
+     Py_XDECREF(name);
+     Py_XDECREF(result);
+     return NULL;
+     
+}
+
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c
    e.g. in:
      /usr/src/debug/gcc-4.6.0-20110321/gcc/print-tree.c
+   and appears to be a good place to look when figuring out how the tree data
+   works.
+
+   FIXME: do we want a unique PyGccTree per tree address? (e.g. by maintaining a dict?)
+   (what about lifetimes?)
 */
 PyObject *
 gcc_python_make_wrapper_tree(tree t)
