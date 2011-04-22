@@ -48,6 +48,13 @@ error:
     return NULL;
 }
 
+
+/* 
+   GCC's debug_tree is implemented in:
+     gcc/print-tree.c
+   e.g. in:
+     /usr/src/debug/gcc-4.6.0-20110321/gcc/print-tree.c
+*/
 PyObject *
 gcc_python_make_wrapper_tree(tree t)
 {

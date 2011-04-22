@@ -5,6 +5,8 @@ class TreeType(namedtuple('TreeType', 'SYM, STRING, TYPE, NARGS')):
         return ''.join([word.title()
                         for word in self.STRING.split('_')])
 
+    # "type" seems to be an "enum_tree_code_class"; see GCC's tree.h
+
 def iter_tree_types():
     import re
     f = open('tree-types.txt')

@@ -77,7 +77,54 @@ modinit_preinit += "\n    %s.tp_getset = gcc_Tree_getset_table;\n" % pytype.name
 modinit_preinit += pytype.c_invoke_type_ready()
 modinit_postinit += pytype.c_invoke_add_to_module()
 
+# Generate a "middle layer" of gcc.Tree subclasses, corresponding to most of the
+# values of
+#    enum_tree_code_class
+# from GCC's tree.h
+
+type_for_code_class = {
+    'tcc_exceptional' : 'gcc_TreeType',
+    'tcc_constant' : 'gcc_ConstantType',
+    'tcc_type' : 'gcc_TypeType',
+    'tcc_declaration' : 'gcc_DeclarationType',
+    'tcc_reference' : 'gcc_ReferenceType',
+    'tcc_comparison' : 'gcc_ComparisonType',
+    'tcc_unary' : 'gcc_UnaryType',
+    'tcc_binary' : 'gcc_BinaryType',
+    'tcc_statement' : 'gcc_StatementType',
+    'tcc_vl_exp' : 'gcc_VlExpType',
+    'tcc_expression' : 'gcc_ExpressionType',
+}
+
+for code_type in type_for_code_class.values():
+    # We've already built the base class:
+    if code_type == 'gcc_TreeType':
+        continue
+
+    # Strip off the "gcc_" prefix and "Type" suffix:
+    localname = code_type[4:-4]
+    pytype = PyTypeObject(name = code_type,
+                          localname = localname,
+                          tp_name = 'gcc.%s' % localname,
+                          struct_name = 'struct PyGccTree',
+                          tp_dealloc = 'NULL',
+                          tp_repr = 'NULL',
+                          tp_methods = 'NULL',
+                          tp_init = 'NULL',
+                          tp_new = 'PyType_GenericNew')
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += "\n    %s.tp_base = &%s;\n" % (code_type, 'gcc_TreeType')
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+
+
+# Generate all of the concrete gcc.Tree subclasses based on the:
+#    enum tree_code
+# as subclasses of the above layer:
+
 for tree_type in tree_types:
+    base_type = type_for_code_class[tree_type.TYPE]
     pytype = PyTypeObject(name = 'gcc_%sType' % tree_type.camel_cased_string(),
                           localname = tree_type.camel_cased_string(),
                           tp_name = 'gcc.%s' % tree_type.camel_cased_string(),
@@ -88,10 +135,11 @@ for tree_type in tree_types:
                           tp_init = 'NULL',
                           tp_new = 'PyType_GenericNew')
     cu.add_defn(pytype.c_defn())
-    modinit_preinit += "\n    %s.tp_base = &gcc_TreeType;\n" % pytype.name
+    modinit_preinit += "\n    %s.tp_base = &%s;\n" % (pytype.name, base_type)
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
-    
+
+
 cu.add_defn('\n/* Map from GCC tree codes to PyTypeObject* */\n')
 cu.add_defn('PyTypeObject *pytype_for_tree_code[] = {\n')
 for tree_type in tree_types:
