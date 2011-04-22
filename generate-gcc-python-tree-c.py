@@ -67,7 +67,9 @@ def generate_function():
                           localname = 'Function',
                           tp_name = 'gcc.Function',
                           struct_name = 'struct PyGccFunction',
-                          tp_new = 'PyType_GenericNew')
+                          tp_new = 'PyType_GenericNew',
+                          tp_repr = '(reprfunc)gcc_Function_repr',
+                          tp_str = '(reprfunc)gcc_Function_repr')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

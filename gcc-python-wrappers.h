@@ -15,6 +15,9 @@ PyObject *
 gcc_Location_str(struct PyGccLocation * self);
 
 PyObject *
+gcc_Function_repr(struct PyGccFunction * self);
+
+PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure);
 
 PyObject *

@@ -57,6 +57,37 @@ error:
 */
 
 #include "function.h"
+
+PyObject *
+gcc_Function_repr(struct PyGccFunction * self)
+{
+     PyObject *name = NULL;
+     PyObject *result = NULL;
+     tree decl;
+
+     assert(self->fun);
+     decl = self->fun->decl;
+     if (DECL_NAME(decl)) {
+	 name = PyString_FromString(IDENTIFIER_POINTER (DECL_NAME(decl)));
+     } else {
+	 name = PyString_FromString("(unnamed)");
+     }
+
+     if (!name) {
+         goto error;
+     }
+
+     result = PyString_FromFormat("gcc.Function('%s')",
+				  PyString_AsString(name));
+     Py_DECREF(name);
+
+     return result;
+error:
+     Py_XDECREF(name);
+     Py_XDECREF(result);
+     return NULL;
+}
+
 PyObject *
 gcc_python_make_wrapper_function(struct function *fun)
 {
