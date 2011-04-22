@@ -2,6 +2,8 @@
 #include <gcc-plugin.h>
 
 #include "gcc-python-closure.h"
+#include "gcc-python.h"
+#include "function.h"
 
 struct callback_closure *
 gcc_python_closure_new(PyObject *callback, PyObject *extraargs)
@@ -39,6 +41,7 @@ PyObject *
 gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrapped_gcc_data)
 {
     PyObject *args = NULL;
+    PyObject *cfun_obj = NULL;
     int i;
 
     assert(closure);
@@ -49,19 +52,25 @@ gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrappe
     if (wrapped_gcc_data) {
  	/* 
 	   Equivalent to:
-	     args = (gcc_data, ) + extraargs
+	     args = (gcc_data, cfun, ) + extraargs
 	 */
-        args = PyTuple_New(1 + PyTuple_Size(closure->extraargs));
+        args = PyTuple_New(2 + PyTuple_Size(closure->extraargs));
 
 	if (!args) {
 	    goto error;
 	}
 
+	cfun_obj = gcc_python_make_wrapper_function(cfun);
+	if (!cfun_obj) {
+	    goto error;
+	}
+
 	PyTuple_SetItem(args, 0, wrapped_gcc_data);
+	PyTuple_SetItem(args, 1, cfun_obj);
 	Py_INCREF(wrapped_gcc_data);
 	for (i = 0; i < PyTuple_Size(closure->extraargs); i++) {
 	    PyObject *item = PyTuple_GetItem(closure->extraargs, i);
-	    PyTuple_SetItem(args, i + 1, item);
+	    PyTuple_SetItem(args, i + 2, item);
 	    Py_INCREF(item);
 	}
 	
@@ -75,6 +84,7 @@ gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrappe
 
  error:
     Py_XDECREF(args);
+    Py_XDECREF(cfun_obj);
     return NULL;
 }
 

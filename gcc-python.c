@@ -9,6 +9,7 @@ int plugin_is_GPL_compatible;
 #include "plugin-version.h"
 
 #include "tree.h"
+#include "function.h"
 
 #define GCC_PYTHON_TRACE_ALL_EVENTS 0
 #if GCC_PYTHON_TRACE_ALL_EVENTS
@@ -88,11 +89,11 @@ static const char* event_name[] = {
 
 */
 
-
 static void
 trace_callback(enum plugin_event event, void *gcc_data, void *user_data)
 {
   printf("%s:%i:trace_callback(%s, %p, %p)\n", __FILE__, __LINE__, event_name[event], gcc_data, user_data);
+  printf("  cfun:%p\n", cfun);
 }
 
 #define DEFEVENT(NAME) \
