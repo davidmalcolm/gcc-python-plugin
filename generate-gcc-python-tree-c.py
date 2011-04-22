@@ -172,9 +172,19 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
     }
     Py_RETURN_NONE;
 }
+
+PyObject *
+gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
+{
+    assert(CODE_CONTAINS_STRUCT (TREE_CODE(self->t), TS_DECL_COMMON));
+
+    return gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t));
+}
 """)
             getsettable = PyGetSetDefTable('gcc_Declaration_getset_table',
-                                           [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'Location')])
+                                           [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'The name of this declaration (string)'),
+                                            PyGetSetDef('function', 'gcc_Declaration_get_function', None, 'The gcc.Function (or None) for this declaration')])
+
             cu.add_defn(getsettable.c_defn())
             modinit_preinit += "\n    %s.tp_getset = %s;\n" % (code_type, 'gcc_Declaration_getset_table')
             modinit_preinit += "\n    %s.tp_repr = (reprfunc)gcc_Declaration_repr;\n" % pytype.name
