@@ -92,19 +92,19 @@ error:
       typedef struct basic_block_def *basic_block;
       typedef const struct basic_block_def *const_basic_block;
  */
-PyObject *
-gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
+PyObject *    
+VEC_edge_as_PyList(VEC(edge,gc) *vec_edges)
 {
     PyObject *result = NULL;
     int i;
     edge e;
     
-    result = PyList_New(VEC_length(edge, self->bb->preds));
+    result = PyList_New(VEC_length(edge, vec_edges));
     if (!result) {
 	goto error;
     }
 
-    FOR_EACH_VEC_ELT(edge, self->bb->preds, i, e) {
+    FOR_EACH_VEC_ELT(edge, vec_edges, i, e) {
 	PyObject *item;
 	item = gcc_python_make_wrapper_edge(e);
 	if (!item) {
@@ -120,32 +120,17 @@ gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
     return NULL;
 }
 
+
+PyObject *
+gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
+{
+    return VEC_edge_as_PyList(self->bb->preds);
+}
+
 PyObject *
 gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result = NULL;
-    int i;
-    edge e;
-    
-    result = PyList_New(VEC_length(edge, self->bb->succs));
-    if (!result) {
-	goto error;
-    }
-
-    FOR_EACH_VEC_ELT(edge, self->bb->succs, i, e) {
-	PyObject *item;
-	item = gcc_python_make_wrapper_edge(e);
-	if (!item) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, item);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    return VEC_edge_as_PyList(self->bb->succs);
 }
 
 /*
