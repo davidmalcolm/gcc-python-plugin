@@ -108,6 +108,21 @@ def generate_cfg():
     global modinit_preinit
     global modinit_postinit
 
+    getsettable = PyGetSetDefTable('gcc_Cfg_getset_table',
+                                   [PyGetSetDef('entry', 
+                                                cu.add_simple_getter('gcc_Cfg_get_entry',
+                                                                     'PyGccCfg',
+                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_entry_block_ptr)'),
+                                                None,
+                                                'The initial gcc.BasicBlock in this graph'),
+                                    PyGetSetDef('exit', 
+                                                cu.add_simple_getter('gcc_Cfg_get_exit',
+                                                                     'PyGccCfg',
+                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_exit_block_ptr)'),
+                                                None,
+                                                'The final gcc.BasicBlock in this graph'),
+                                    ])
+    cu.add_defn(getsettable.c_defn())
     pytype = PyTypeObject(identifier = 'gcc_CfgType',
                           localname = 'Cfg',
                           tp_name = 'gcc.Cfg',
@@ -115,6 +130,7 @@ def generate_cfg():
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_Cfg_repr',
                           #tp_str = '(reprfunc)gcc_Cfg_repr',
+                          tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

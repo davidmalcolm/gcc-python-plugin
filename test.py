@@ -17,6 +17,8 @@ def my_pass_execution_callback(*args, **kwargs):
         print 'fun.cfg: %r' % fun.cfg
         if fun.cfg:
             print help(fun.cfg)
+            print 'fun.cfg.entry: %r' % fun.cfg.entry
+            print 'fun.cfg.exit: %r' % fun.cfg.exit
 
 def my_pre_genericize_callback(*args, **kwargs):
     print('my_pre_genericize_callback was called: args=%r  kwargs=%r' % (args, kwargs))

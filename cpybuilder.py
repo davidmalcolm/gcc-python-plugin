@@ -269,6 +269,17 @@ class CompilationUnit:
     def make_header(self, text):
         return '\n/**** %s ****/\n\n' % text
 
+    def add_simple_getter(self, identifier, typename, c_expression):
+        """Define a simple getter, suitable for use by a PyGetSetDef"""
+        self.add_defn("static PyObject *\n" +                      
+                      "%s(%s *self, void *closure)\n" % (identifier, typename) +
+                      "{\n" +
+                      "    return %s;\n" % c_expression + 
+                      "}\n\n")
+        return identifier
+
+
+
 class SimpleModule:
     """
     A C extension module built from a single C file

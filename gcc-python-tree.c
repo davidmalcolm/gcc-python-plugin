@@ -70,6 +70,28 @@ error:
       typedef struct basic_block_def *basic_block;
       typedef const struct basic_block_def *const_basic_block;
  */
+PyObject *
+gcc_python_make_wrapper_basic_block(basic_block bb)
+{
+    struct PyGccBasicBlock *obj;
+
+    if (!bb) {
+	Py_RETURN_NONE;
+    }
+
+    obj = PyObject_New(struct PyGccBasicBlock, &gcc_BasicBlockType);
+    if (!obj) {
+        goto error;
+    }
+
+    obj->bb = bb;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)obj;
+      
+error:
+    return NULL;
+}
 
 /*
   "struct control_flow_graph" is declared in basic-block.h, c.f.:
