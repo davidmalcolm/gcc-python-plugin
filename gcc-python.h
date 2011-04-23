@@ -1,5 +1,6 @@
 #include <gcc-plugin.h>
 #include "tree.h"
+#include "gimple.h"
 
 #define DECLARE_SIMPLE_WRAPPER(ARG_structname, ARG_typeobj, ARG_typename, ARG_wrappedtype, ARG_fieldname) \
   struct ARG_structname {           \
@@ -20,6 +21,11 @@ DECLARE_SIMPLE_WRAPPER(PyGccLocation,
 		       gcc_LocationType,
 		       location,
 		       location_t, loc)
+
+DECLARE_SIMPLE_WRAPPER(PyGccGimple, 
+		       gcc_GimpleType,
+		       gimple,
+		       gimple, stmt);
 
 DECLARE_SIMPLE_WRAPPER(PyGccEdge, 
 		       gcc_EdgeType,

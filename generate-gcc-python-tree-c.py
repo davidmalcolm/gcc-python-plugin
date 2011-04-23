@@ -59,6 +59,40 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 
 generate_location()
 
+def generate_gimple():
+    #
+    # Generate the gcc.Gimple class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    cu.add_defn("""
+static PyObject *
+gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
+{
+    return gcc_python_make_wrapper_location(gimple_location(self->stmt));
+}
+""")
+
+    getsettable = PyGetSetDefTable('gcc_Gimple_getset_table',
+                                   [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location')])
+    cu.add_defn(getsettable.c_defn())
+
+    pytype = PyTypeObject(identifier = 'gcc_GimpleType',
+                          localname = 'Gimple',
+                          tp_name = 'gcc.Gimple',
+                          struct_name = 'struct PyGccGimple',
+                          tp_new = 'PyType_GenericNew',
+                          tp_getset = getsettable.identifier,
+                          #tp_repr = '(reprfunc)gcc_Gimple_repr',
+                          #tp_str = '(reprfunc)gcc_Gimple_str',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_gimple()
+
 def generate_edge():
     #
     # Generate the gcc.Edge class:
@@ -111,7 +145,12 @@ def generate_basic_block():
                                     PyGetSetDef('succs',
                                                 'gcc_BasicBlock_get_succs',
                                                 None,
-                                                'The list of successor gcc.Edge instances leading out of this block')])
+                                                'The list of successor gcc.Edge instances leading out of this block'),
+                                    PyGetSetDef('gimple',
+                                                'gcc_BasicBlock_get_gimple',
+                                                None,
+                                                'The list of gcc.Gimple instructions, if appropriate for this pass, or None'),
+                                    ])
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_BasicBlockType',

@@ -1,6 +1,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "gimple.h"
 
 /*
   "location_t" is the type used throughout.  Might be nice to expose this directly.
@@ -48,6 +49,39 @@ gcc_python_make_wrapper_location(location_t loc)
 error:
     return NULL;
 }
+
+PyObject*
+gcc_python_make_wrapper_gimple(gimple stmt)
+{
+    struct PyGccGimple *gimple_obj = NULL;
+  
+    gimple_obj = PyObject_New(struct PyGccGimple, &gcc_GimpleType);
+    if (!gimple_obj) {
+        goto error;
+    }
+
+    gimple_obj->stmt = stmt;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)gimple_obj;
+      
+error:
+    return NULL;
+}
+
+
+//#include "rtl.h"
+/*
+  "struct rtx_def" is declarted within rtl.h, c.f:
+    struct GTY((chain_next ("RTX_NEXT (&%h)"),
+	    chain_prev ("RTX_PREV (&%h)"), variable_size)) rtx_def {
+           ... snip ...
+    }
+    
+  and seems to be the fundamental instruction type
+    
+  Seems to use RTX_NEXT() and RTX_PREV()
+*/
 
 #include "basic-block.h"
 
@@ -133,6 +167,63 @@ gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
     return VEC_edge_as_PyList(self->bb->succs);
 }
 
+PyObject *
+gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
+{
+    gimple_stmt_iterator gsi;
+    PyObject *result = NULL;
+
+    assert(self);
+    assert(self->bb);
+
+    printf("gcc_BasicBlock_get_gimple\n");
+    
+    if (self->bb->flags & BB_RTL) {
+	Py_RETURN_NONE;
+    }
+
+    if (NULL == self->bb->il.gimple) {
+	Py_RETURN_NONE;
+    }
+
+    /* FIXME: what about phi_nodes? */
+    result = PyList_New(0);
+    if (!result) {
+	goto error;
+    }
+
+    for (gsi = gsi_start (self->bb->il.gimple->seq);
+	 !gsi_end_p (gsi);
+	 gsi_next (&gsi)) {
+
+	gimple stmt = gsi_stmt(gsi);
+	PyObject *obj_stmt;
+
+	obj_stmt = gcc_python_make_wrapper_gimple(stmt);
+	if (!obj_stmt) {
+	    goto error;
+	}
+
+	if (PyList_Append(result, obj_stmt)) {
+	    goto error;
+	}
+
+	printf("  gimple: %p code: %s (%i) %s:%i num_ops=%i\n", 
+	       stmt,
+	       gimple_code_name[gimple_code(stmt)],
+	       gimple_code(stmt),
+	       gimple_filename(stmt),
+	       gimple_lineno(stmt),
+	       gimple_num_ops(stmt));
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;    
+}
+
 /*
   Force a 1-1 mapping between pointer values and wrapper objects
  */
@@ -203,8 +294,9 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
 
 
 static PyObject *
-real_make_basic_block_wrapper(void *bb)
+real_make_basic_block_wrapper(void *ptr)
 {
+    basic_block bb = (basic_block)ptr;
     struct PyGccBasicBlock *obj;
 
     if (!bb) {
@@ -216,7 +308,68 @@ real_make_basic_block_wrapper(void *bb)
         goto error;
     }
 
-    obj->bb = (basic_block)bb;
+#if 1
+    printf("bb: %p\n", bb);
+    printf("bb->flags: 0x%x\n", bb->flags);
+    printf("bb->flags & BB_RTL: %i\n", bb->flags & BB_RTL);
+    if (bb->flags & BB_RTL) {
+	printf("bb->il.rtl: %p\n", bb->il.rtl);
+    } else {
+	printf("bb->il.gimple: %p\n", bb->il.gimple);
+	if (bb->il.gimple) {
+	    /* 
+	       See http://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html
+	       and also gimple-pretty-print.c
+
+	       coretypes.h has:
+	           struct gimple_seq_d;
+		   typedef struct gimple_seq_d *gimple_seq;
+
+	       and gimple.h has:
+   	           "A double-linked sequence of gimple statements."
+		   struct GTY ((chain_next ("%h.next_free"))) gimple_seq_d {
+                        ... snip ...
+		   }
+               and:
+		   struct gimple_seq_node_d;
+		   typedef struct gimple_seq_node_d *gimple_seq_node;
+	       and:
+	           struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) gimple_seq_node_d {
+		       gimple stmt;
+		       struct gimple_seq_node_d *prev;
+		       struct gimple_seq_node_d *next;
+		   };
+	       and coretypes.h has:
+	           union gimple_statement_d;
+		   typedef union gimple_statement_d *gimple;
+	       and gimple.h has the "union gimple_statement_d", and another
+	       set of codes for this
+	    */
+
+	    printf("bb->il.gimple->seq: %p\n", bb->il.gimple->seq);
+	    printf("bb->il.gimple->phi_nodes: %p\n", bb->il.gimple->phi_nodes);
+
+	    {
+		gimple_stmt_iterator i;
+		
+		for (i = gsi_start (bb->il.gimple->seq); !gsi_end_p (i); gsi_next (&i)) {
+		    gimple stmt = gsi_stmt(i);
+		    printf("  gimple: %p code: %s (%i) %s:%i num_ops=%i\n", 
+			   stmt,
+			   gimple_code_name[gimple_code(stmt)],
+			   gimple_code(stmt),
+			   gimple_filename(stmt),
+			   gimple_lineno(stmt),
+			   gimple_num_ops(stmt));
+		    //print_generic_stmt (stderr, stmt, 0);
+		}
+	    }
+
+	}
+    }
+#endif
+
+    obj->bb = bb;
     /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
