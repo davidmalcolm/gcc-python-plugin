@@ -72,10 +72,17 @@ gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
 {
     return gcc_python_make_wrapper_location(gimple_location(self->stmt));
 }
+
+static PyObject *
+gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
+{
+    return gcc_python_make_wrapper_tree(gimple_block(self->stmt));
+}
 """)
 
     getsettable = PyGetSetDefTable('gcc_Gimple_getset_table',
-                                   [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location')])
+                                   [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location'),
+                                    PyGetSetDef('block', 'gcc_Gimple_get_block', None, 'The lexical block holding this statement, as a gcc.Tree')])
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_GimpleType',
