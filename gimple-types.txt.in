@@ -1,0 +1,4 @@
+#define DEFGSCODE(GIMPLE_symbol, printable_name, GSS_symbol)  \
+   GIMPLE_symbol, printable_name, GSS_symbol
+#include "gimple.def"
+#undef DEFGSCODE

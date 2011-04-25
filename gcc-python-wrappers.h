@@ -1,6 +1,7 @@
 #ifndef INCLUDED__WRAPPERS_H
 #define INCLUDED__WRAPPERS_H
 
+#include "gcc-python.h"
 #include "tree-pass.h"
 
 PyMODINIT_FUNC initoptpass(void);
