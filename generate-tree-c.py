@@ -59,47 +59,6 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 
 generate_location()
 
-def generate_gimple():
-    #
-    # Generate the gcc.Gimple class:
-    #
-    global modinit_preinit
-    global modinit_postinit
-
-    cu.add_defn("""
-static PyObject *
-gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
-{
-    return gcc_python_make_wrapper_location(gimple_location(self->stmt));
-}
-
-static PyObject *
-gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
-{
-    return gcc_python_make_wrapper_tree(gimple_block(self->stmt));
-}
-""")
-
-    getsettable = PyGetSetDefTable('gcc_Gimple_getset_table',
-                                   [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location'),
-                                    PyGetSetDef('block', 'gcc_Gimple_get_block', None, 'The lexical block holding this statement, as a gcc.Tree')])
-    cu.add_defn(getsettable.c_defn())
-
-    pytype = PyTypeObject(identifier = 'gcc_GimpleType',
-                          localname = 'Gimple',
-                          tp_name = 'gcc.Gimple',
-                          struct_name = 'struct PyGccGimple',
-                          tp_new = 'PyType_GenericNew',
-                          tp_getset = getsettable.identifier,
-                          #tp_repr = '(reprfunc)gcc_Gimple_repr',
-                          #tp_str = '(reprfunc)gcc_Gimple_str',
-                          )
-    cu.add_defn(pytype.c_defn())
-    modinit_preinit += pytype.c_invoke_type_ready()
-    modinit_postinit += pytype.c_invoke_add_to_module()
-
-generate_gimple()
-
 def generate_edge():
     #
     # Generate the gcc.Edge class:

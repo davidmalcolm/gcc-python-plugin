@@ -159,21 +159,76 @@ def generate_gimple_struct_subclasses():
 
 #generate_gimple_struct_subclasses()
 
+# See gcc/gimple-pretty-print.c (e.g. /usr/src/debug/gcc-4.6.0-20110321/gcc/gimple-pretty-print.c )
+# for hints on the innards of gimple, in particular, see dump_gimple_stmt
+
+def generate_gimple():
+    #
+    # Generate the gcc.Gimple class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    cu.add_defn("""
+static PyObject *
+gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
+{
+    return gcc_python_make_wrapper_location(gimple_location(self->stmt));
+}
+
+static PyObject *
+gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
+{
+    return gcc_python_make_wrapper_tree(gimple_block(self->stmt));
+}
+""")
+
+    getsettable = PyGetSetDefTable('gcc_Gimple_getset_table',
+                                   [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location'),
+                                    PyGetSetDef('block', 'gcc_Gimple_get_block', None, 'The lexical block holding this statement, as a gcc.Tree')])
+    cu.add_defn(getsettable.c_defn())
+
+    pytype = PyTypeObject(identifier = 'gcc_GimpleType',
+                          localname = 'Gimple',
+                          tp_name = 'gcc.Gimple',
+                          struct_name = 'struct PyGccGimple',
+                          tp_new = 'PyType_GenericNew',
+                          tp_getset = getsettable.identifier,
+                          tp_repr = '(reprfunc)gcc_Gimple_repr',
+                          tp_str = '(reprfunc)gcc_Gimple_str',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
+generate_gimple()
 
 def generate_gimple_subclasses():
     global modinit_preinit
     global modinit_postinit
     
     for gt in gimple_types:
-    #print gimple_types
         cc = gt.camel_cased_string()
+
+        getsettable = None
+        if cc == 'GimpleAssign':
+            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [PyGetSetDef('lhs',
+                                                    cu.add_simple_getter('gcc_GimpleAssign_get_lhs',
+                                                                         'PyGccGimple',
+                                                                         'gcc_python_make_wrapper_tree(gimple_assign_lhs(self->stmt))'),
+                                                    None,
+                                                    'Left-hand-side of the assignment, as a gcc.Tree'),
+                                        ])
+            cu.add_defn(getsettable.c_defn())
+            
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
                               struct_name = 'struct PyGccGimple',
                               tp_new = 'PyType_GenericNew',
                               tp_base = '&gcc_GimpleType',
-                              #tp_getset = getsettable.identifier,
+                              tp_getset = getsettable.identifier if getsettable else None,
                               #tp_repr = '(reprfunc)gcc_Gimple_repr',
                               #tp_str = '(reprfunc)gcc_Gimple_str',
                               )

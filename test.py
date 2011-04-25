@@ -31,7 +31,9 @@ def my_pass_execution_callback(*args, **kwargs):
                 print 'bb.gimple: %r' % bb.gimple
                 if isinstance(bb.gimple, list):
                     for stmt in bb.gimple:
-                        print '  %r: %s block: %r' % (stmt, stmt.loc, stmt.block)
+                        print '  %r: %r : %s block: %r' % (stmt, repr(str(stmt)), stmt.loc, stmt.block)
+                        if hasattr(stmt, 'lhs'):
+                            print '      stmt.lhs: %r' % stmt.lhs
 
 def invoke_dot(dot):
     from subprocess import Popen, PIPE
