@@ -7,6 +7,11 @@ import gcc
 #print 'sys.path:', sys.path
 #help(gcc)
 
+def get_src_for_loc(loc):
+    # Given a gcc.Location, get the source line as a string
+    import linecache
+    return linecache.getline(loc.file, loc.line).rstrip()
+
 def my_pass_execution_callback(*args, **kwargs):
     print('my_pass_execution_callback was called: args=%r  kwargs=%r' % (args, kwargs))
     #help(args[0])
@@ -32,6 +37,9 @@ def my_pass_execution_callback(*args, **kwargs):
                 if isinstance(bb.gimple, list):
                     for stmt in bb.gimple:
                         print '  %r: %r : %s block: %r' % (stmt, repr(str(stmt)), stmt.loc, stmt.block)
+                        print get_src_for_loc(stmt.loc)
+                        if hasattr(stmt, 'loc'):
+                            print '      stmt.loc: %r' % stmt.loc
                         if hasattr(stmt, 'lhs'):
                             print '      stmt.lhs: %r' % stmt.lhs
                         if hasattr(stmt, 'exprtype'):
