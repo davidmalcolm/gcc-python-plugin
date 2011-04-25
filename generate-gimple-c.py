@@ -185,7 +185,14 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
 
     getsettable = PyGetSetDefTable('gcc_Gimple_getset_table',
                                    [PyGetSetDef('loc', 'gcc_Gimple_get_location', None, 'Source code location of this statement, as a gcc.Location'),
-                                    PyGetSetDef('block', 'gcc_Gimple_get_block', None, 'The lexical block holding this statement, as a gcc.Tree')])
+                                    PyGetSetDef('block', 'gcc_Gimple_get_block', None, 'The lexical block holding this statement, as a gcc.Tree'),
+                                    PyGetSetDef('exprtype',
+                                                cu.add_simple_getter('gcc_Gimple_get_exprtype',
+                                                                     'PyGccGimple',
+                                                                     'gcc_python_make_wrapper_tree(gimple_expr_type(self->stmt))'),
+                                                None,
+                                                'The type of the main expression computed by this statemtne, as a gcc.Tree (which might be gcc.VoidType)'),
+                                    ])
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_GimpleType',
