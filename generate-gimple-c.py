@@ -207,20 +207,38 @@ def generate_gimple_subclasses():
     global modinit_preinit
     global modinit_postinit
     
+    def make_getset_Assign():
+        return PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                [PyGetSetDef('lhs',
+                                             cu.add_simple_getter('gcc_GimpleAssign_get_lhs',
+                                                                  'PyGccGimple',
+                                                                  'gcc_python_make_wrapper_tree(gimple_assign_lhs(self->stmt))'),
+                                             None,
+                                             'Left-hand-side of the assignment, as a gcc.Tree'),
+                                 ])
+    def make_getset_Call():
+        return PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                [PyGetSetDef('lhs',
+                                             cu.add_simple_getter('gcc_GimpleCall_get_lhs',
+                                                                  'PyGccGimple',
+                                                                  'gcc_python_make_wrapper_tree(gimple_call_lhs(self->stmt))'),
+                                             None,
+                                             'Left-hand-side of the call, as a gcc.Tree'),
+                                 ])
+
+
     for gt in gimple_types:
         cc = gt.camel_cased_string()
 
         getsettable = None
         if cc == 'GimpleAssign':
-            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
-                                       [PyGetSetDef('lhs',
-                                                    cu.add_simple_getter('gcc_GimpleAssign_get_lhs',
-                                                                         'PyGccGimple',
-                                                                         'gcc_python_make_wrapper_tree(gimple_assign_lhs(self->stmt))'),
-                                                    None,
-                                                    'Left-hand-side of the assignment, as a gcc.Tree'),
-                                        ])
+            getsettable = make_getset_Assign()
+        elif cc == 'GimpleCall':
+            getsettable = make_getset_Call()
+
+        if getsettable:
             cu.add_defn(getsettable.c_defn())
+
             
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
                               localname = cc,
