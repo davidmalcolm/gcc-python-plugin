@@ -224,6 +224,21 @@ def generate_gimple_subclasses():
                                                                   'gcc_python_make_wrapper_tree(gimple_call_lhs(self->stmt))'),
                                              None,
                                              'Left-hand-side of the call, as a gcc.Tree'),
+                                 PyGetSetDef('fn',
+                                             cu.add_simple_getter('gcc_GimpleCall_get_fn',
+                                                                  'PyGccGimple',
+                                                                  'gcc_python_make_wrapper_tree(gimple_call_fn(self->stmt))'),
+                                             None,
+                                             'The function being called, as a gcc.Tree'),
+                                 ])
+    def make_getset_Return():
+        return PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                [PyGetSetDef('retval',
+                                             cu.add_simple_getter('gcc_GimpleReturn_get_retval',
+                                                                  'PyGccGimple',
+                                                                  'gcc_python_make_wrapper_tree(gimple_return_retval(self->stmt))'),
+                                             None,
+                                             'The return value, as a gcc.Tree'),
                                  ])
 
 
@@ -235,6 +250,8 @@ def generate_gimple_subclasses():
             getsettable = make_getset_Assign()
         elif cc == 'GimpleCall':
             getsettable = make_getset_Call()
+        elif cc == 'GimpleReturn':
+            getsettable = make_getset_Return()
 
         if getsettable:
             cu.add_defn(getsettable.c_defn())
