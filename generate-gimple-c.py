@@ -191,7 +191,7 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                                                                      'PyGccGimple',
                                                                      'gcc_python_make_wrapper_tree(gimple_expr_type(self->stmt))'),
                                                 None,
-                                                'The type of the main expression computed by this statemtne, as a gcc.Tree (which might be gcc.VoidType)'),
+                                                'The type of the main expression computed by this statement, as a gcc.Tree (which might be gcc.VoidType)'),
                                     ])
     cu.add_defn(getsettable.c_defn())
 
