@@ -2,3 +2,10 @@
    GIMPLE_symbol, printable_name, GSS_symbol
 #include "gimple.def"
 #undef DEFGSCODE
+
+#define DEFGSSTRUCT(GSS_enumeration_value, structure_name, has_tree_operands) \
+   GSS_enumeration_value, structure_name, has_tree_operands
+#include "gsstruct.def"
+#undef DEFGSSTRUCT
+
+
