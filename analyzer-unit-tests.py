@@ -57,5 +57,36 @@ socket_htons(PyObject *self, PyObject *args)
         self.assertFindsError(src,
                               'buggy.c:13: Mismatching type of argument 1: expected "int *" for PyArg_ParseTuple format string "i" but got "unsigned long *"')
 
+from cpychecker import get_types
+
+class TestArgParsing(unittest.TestCase):
+    def assert_args(self, arg_str, exp_result):
+        result = get_types(None, arg_str)
+        self.assertEquals(result, exp_result)
+
+    def test_simple_cases(self):
+        self.assert_args('c',
+                         ['char *'])
+
+    def test_socketmodule_socket_htons(self):
+        self.assert_args('i:htons',
+                         ['int *'])
+
+    def test_fcntlmodule_fcntl_flock(self):
+        # FIXME: somewhat broken, we can't know what the converter callback is
+        self.assert_args("O&i:flock", 
+                         ['int ( PyObject * object , int * target )', 
+                          'int *', 
+                          'int *'])
+
+    def test_posixmodule_listdir(self):
+        self.assert_args("et#:listdir",
+                         ['const char *', 'char * *', 'int *'])
+
+    def test_bsddb_DBSequence_set_range(self):
+        self.assert_args("(LL):set_range",
+                         ['PY_LONG_LONG *', 'PY_LONG_LONG *'])
+
+
 if __name__ == '__main__':
     unittest.main()
