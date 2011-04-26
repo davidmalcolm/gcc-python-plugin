@@ -92,11 +92,10 @@ def cfg_to_dot(cfg):
                 % (align, colspan, to_html(text)))
 
     def _dot_tr(td_text):
-        return ('<tr>%s</tr>' % _dot_td(td_text))
+        return ('<tr>%s</tr>\n' % _dot_td(td_text))
 
     def block_to_dot_label(bb):
         result = '<table border="0" cellspacing="0">\n'
-        result += _dot_tr(block_id(bb))
         curloc = None
         if isinstance(bb.gimple, list):
             for stmt in bb.gimple:
@@ -104,6 +103,8 @@ def cfg_to_dot(cfg):
                     curloc = stmt.loc
                     result += _dot_tr(get_src_for_loc(stmt.loc).strip())
                 result += _dot_tr(str(stmt).strip())
+        else:
+            result += _dot_tr(block_id(bb))
         result += '</table>\n'
         return result
 
@@ -118,17 +119,11 @@ def cfg_to_dot(cfg):
         result += ('  %s [label=<%s>];\n'
                    % (block_id(block), block_to_dot_label(block)))
 
-        # FIXME: this will have duplicates:
         for edge in block.succs:
             result += edge_to_dot(edge)
+        # FIXME: this will have duplicates:
         #for edge in block.preds:
         #    result += edge_to_dot(edge)
-        pass
-
-        if isinstance(block.gimple, list):
-            for stmt in block.gimple:
-                print get_src_for_loc(stmt.loc)
-                print str(stmt).strip() # FIXME
 
     result += '}\n'
     return result
