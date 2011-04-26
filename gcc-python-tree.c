@@ -181,7 +181,7 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
     assert(self);
     assert(self->bb);
 
-    printf("gcc_BasicBlock_get_gimple\n");
+    //printf("gcc_BasicBlock_get_gimple\n");
     
     if (self->bb->flags & BB_RTL) {
 	Py_RETURN_NONE;
@@ -213,6 +213,7 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 	    goto error;
 	}
 
+#if 0
 	printf("  gimple: %p code: %s (%i) %s:%i num_ops=%i\n", 
 	       stmt,
 	       gimple_code_name[gimple_code(stmt)],
@@ -220,6 +221,7 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 	       gimple_filename(stmt),
 	       gimple_lineno(stmt),
 	       gimple_num_ops(stmt));
+#endif
     }
 
     return result;

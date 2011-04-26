@@ -21,7 +21,7 @@ def my_pass_execution_callback(*args, **kwargs):
     if fun:
         print 'fun.cfg: %r' % fun.cfg
         if fun.cfg:
-            print help(fun.cfg)
+            #print help(fun.cfg)
             print 'fun.cfg.basic_blocks: %r' % fun.cfg.basic_blocks
             print 'fun.cfg.entry: %r' % fun.cfg.entry
             print 'fun.cfg.exit: %r' % fun.cfg.exit
@@ -97,13 +97,13 @@ def my_pre_genericize_callback(*args, **kwargs):
     print(type(t))
     print(repr(t))
     print(str(t))
-    print(help(t))
+    #print(help(t))
 
     print 't.name: %r' % t.name
     print 't.addr: %s' % hex(t.addr)
     print 't.type: %r' % t.type
     print 't.function: %r' % t.function
-    print help(t.function)
+    #print help(t.function)
 
     print 't.type.type: %r' % t.type.type
 

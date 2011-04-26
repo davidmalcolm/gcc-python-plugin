@@ -12,7 +12,7 @@ gcc_python_pretty_printer_new(void)
 	return NULL;
     }
     
-    printf("gcc_python_pretty_printer_new\n");
+    //printf("gcc_python_pretty_printer_new\n");
 
     /* Gross hack for getting at a FILE* ; rewrite using fopencookie? */
     obj->buf[0] = '\0';
@@ -25,7 +25,7 @@ gcc_python_pretty_printer_new(void)
     /* Connect the pp to the (FILE*): */
     obj->pp.buffer->stream = obj->file_ptr;
 
-    printf("gcc_python_pretty_printer_new returning: %p\n", obj);
+    //printf("gcc_python_pretty_printer_new returning: %p\n", obj);
     
     return (PyObject*)obj;
 }
