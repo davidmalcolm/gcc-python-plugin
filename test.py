@@ -97,9 +97,12 @@ def cfg_to_dot(cfg):
     def block_to_dot_label(bb):
         result = '<table border="0" cellspacing="0">\n'
         result += _dot_tr(block_id(bb))
+        curloc = None
         if isinstance(bb.gimple, list):
             for stmt in bb.gimple:
-                result += _dot_tr(get_src_for_loc(stmt.loc).strip())
+                if curloc != stmt.loc:
+                    curloc = stmt.loc
+                    result += _dot_tr(get_src_for_loc(stmt.loc).strip())
                 result += _dot_tr(str(stmt).strip())
         result += '</table>\n'
         return result

@@ -69,7 +69,8 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Location_repr',
-                          tp_str = '(reprfunc)gcc_Location_str')
+                          tp_str = '(reprfunc)gcc_Location_str',
+                          tp_richcompare = 'gcc_Location_richcompare')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

@@ -16,6 +16,9 @@ PyObject *
 gcc_Location_str(struct PyGccLocation * self);
 
 PyObject *
+gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op);
+
+PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure);
 
 PyObject *
