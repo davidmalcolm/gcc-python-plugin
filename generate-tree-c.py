@@ -20,12 +20,23 @@ modinit_postinit = ''
 def generate_pass():
     global modinit_preinit
     global modinit_postinit
+
+    getsettable = PyGetSetDefTable('gcc_Pass_getset_table',
+                                   [PyGetSetDef('name',
+                                                cu.add_simple_getter('gcc_Pass_get_name',
+                                                                     'PyGccPass',
+                                                                     'PyString_FromString(self->pass->name)'),
+                                                None,
+                                                'Name of the pass'),
+                                    ])
+    cu.add_defn(getsettable.c_defn())
     
     pytype = PyTypeObject(identifier = 'gcc_PassType',
                           localname = 'Pass',
                           tp_name = 'gcc.Pass',
                           struct_name = 'struct PyGccPass',
                           tp_new = 'PyType_GenericNew',
+                          tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

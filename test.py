@@ -18,7 +18,7 @@ def my_pass_execution_callback(*args, **kwargs):
     (optpass, fun) = args
     print 'optpass: %r' % optpass
     print 'dir(optpass): %r' % dir(optpass)
-    #print 'optpass.name: %r' % optpass.name
+    print 'optpass.name: %r' % optpass.name
     print 'fun: %r' % fun
     if fun:
         print 'fun.cfg: %r' % fun.cfg
