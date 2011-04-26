@@ -24,7 +24,7 @@ class ExpectedErrorNotFound(CompilationError):
 class AnalyzerTests(unittest.TestCase):
     def assertFindsError(self, src, experr):
         sm = SimpleModule()
-        sm.cu.add_decl(src)
+        sm.cu.add_defn(src)
         try:
             bm = BuiltModule(sm, pyruntime)
             bm.build(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),

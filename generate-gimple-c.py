@@ -252,6 +252,12 @@ def generate_gimple_subclasses():
                                                                   'gcc_python_make_wrapper_tree(gimple_call_fn(self->stmt))'),
                                              None,
                                              'The function being called, as a gcc.Tree'),
+                                 PyGetSetDef('fndecl',
+                                             cu.add_simple_getter('gcc_GimpleCall_get_fndecl',
+                                                                  'PyGccGimple',
+                                                                  'gcc_python_make_wrapper_tree(gimple_call_fndecl(self->stmt))'),
+                                             None,
+                                             'The declaration of the function being called (if any), as a gcc.Tree'),
                                  exprcode_getter,
                                  ])
     def make_getset_Return():

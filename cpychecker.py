@@ -1,19 +1,31 @@
 import gcc
 import sys
 
+def get_src_for_loc(loc):
+    # Given a gcc.Location, get the source line as a string
+    import linecache
+    return linecache.getline(loc.file, loc.line).rstrip()
+
 def check_pyargs(fun):
+    def check_callsite(stmt):
+        sys.stderr.write('got call at %s\n' % stmt.loc)
+        sys.stderr.write('%s\n' % get_src_for_loc(stmt.loc))
+        sys.stderr.write(str(stmt))
+        sys.stderr.write('rhs: %r\n' % stmt.rhs)
+        sys.stderr.write('rhs: %r\n' % [str(arg) for arg in stmt.rhs])
+        for arg in stmt.rhs:
+            sys.stderr.write('  arg: %s %r\n' % (arg, arg))
+    
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
             if isinstance(bb.gimple, list):
                 for stmt in bb.gimple:
                     if isinstance(stmt, gcc.GimpleCall):
-                        sys.stderr.write(str(stmt))
-                        sys.stderr.write('GOT CALL TO %s %r\n' % (stmt.fn, stmt.fn))
-                        sys.stderr.write('rhs: %r\n' % stmt.rhs)
-                        sys.stderr.write('rhs: %r\n' % [str(arg) for arg in stmt.rhs])
-                        
-                        for arg in stmt.rhs:
-                            sys.stderr.write('  arg: %s %r\n' % (arg, arg))
+                        #sys.stderr.write('stmt.fn: %s %r\n' % (stmt.fn, stmt.fn))
+                        #sys.stderr.write('stmt.fndecl: %s %r\n' % (stmt.fndecl, stmt.fndecl))
+                        if stmt.fndecl.name == 'PyArg_ParseTuple':
+                            check_callsite(stmt)
+                        #sys.stderr.write('GOT CALL\n')
                         
                         
 
