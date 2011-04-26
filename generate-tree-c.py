@@ -57,9 +57,21 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 }
 """)
 
+    cu.add_defn("""
+static PyObject *
+gcc_Location_get_column(struct PyGccLocation *self, void *closure)
+{
+    expanded_location exploc = expand_location(self->loc);
+
+    return PyInt_FromLong(exploc.column);
+}
+""")
+
     getsettable = PyGetSetDefTable('gcc_Location_getset_table',
                                    [PyGetSetDef('file', 'gcc_Location_get_file', None, 'Name of the source file'),
-                                    PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file')])
+                                    PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file'),
+                                    PyGetSetDef('column', 'gcc_Location_get_column', None, 'Column number within source file'),
+                                    ])
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_LocationType',

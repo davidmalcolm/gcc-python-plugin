@@ -36,8 +36,9 @@ def my_pass_execution_callback(*args, **kwargs):
                 print 'bb.gimple: %r' % bb.gimple
                 if isinstance(bb.gimple, list):
                     for stmt in bb.gimple:
-                        print '  %r: %r : %s block: %r' % (stmt, repr(str(stmt)), stmt.loc, stmt.block)
+                        print '  %r: %r : %s column: %i block: %r' % (stmt, repr(str(stmt)), stmt.loc, stmt.loc.column, stmt.block)
                         print get_src_for_loc(stmt.loc)
+                        print ' ' * (stmt.loc.column-1) + '^'
                         if hasattr(stmt, 'loc'):
                             print '      stmt.loc: %r' % stmt.loc
                         if hasattr(stmt, 'lhs'):
@@ -95,17 +96,20 @@ def cfg_to_dot(cfg):
         return ('<tr>%s</tr>\n' % _dot_td(td_text))
 
     def block_to_dot_label(bb):
-        result = '<table border="0" cellspacing="0">\n'
+        # FIXME: font setting appears to work on my machine, but I invented
+        # the attribute value; it may be exercising a failure path
+        result = '<font face="monospace"><table border="0" cellspacing="0">\n'
         curloc = None
         if isinstance(bb.gimple, list):
             for stmt in bb.gimple:
                 if curloc != stmt.loc:
-                    curloc = stmt.loc
-                    result += _dot_tr(get_src_for_loc(stmt.loc).strip())
+                    curloc = stmt.loc 
+                    result += _dot_tr(get_src_for_loc(stmt.loc).rstrip())
+                    result += _dot_tr((' ' * (stmt.loc.column-1)) + '^')
                 result += _dot_tr(str(stmt).strip())
         else:
             result += _dot_tr(block_id(bb))
-        result += '</table>\n'
+        result += '</table></font>\n'
         return result
 
     def edge_to_dot(e):
