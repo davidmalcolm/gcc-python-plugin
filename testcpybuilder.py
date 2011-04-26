@@ -16,8 +16,8 @@ pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
               ]
 
 class CompilationError(CommandError):
-    def __init__(self, bm, out, err, p):
-        CommandError.__init__(self, out, err, p)
+    def __init__(self, bm):
+        CommandError.__init__(self, bm.out, bm.err, bm.p)
         self.bm = bm
     
     def _describe_activity(self):
@@ -29,30 +29,33 @@ class BuiltModule:
         self.sm = sm
         self.runtime = runtime
 
+    def build(self, extra_cflags = None):
         self.tmpdir = tempfile.mkdtemp()
 
         self.srcfile = os.path.join(self.tmpdir, 'example.c')
-        self.modfile = os.path.join(self.tmpdir, runtime.get_module_filename('example'))
+        self.modfile = os.path.join(self.tmpdir, self.runtime.get_module_filename('example'))
 
         f = open(self.srcfile, 'w')
-        f.write(sm.cu.as_str())
+        f.write(self.sm.cu.as_str())
         f.close()
         
-        cflags = runtime.get_build_flags()
+        cflags = self.runtime.get_build_flags()
         self.args = ['gcc']
         self.args += ['-o', self.modfile]
         self.args += cflags.split()
         self.args += ['-Wall',  '-Werror'] # during testing
         self.args += ['-shared'] # not sure why this is necessary
+        if extra_cflags:
+            self.args += extra_cflags
         self.args += [self.srcfile]
         #print self.args
 
         # Invoke the compiler:
-        p = Popen(self.args, stdout=PIPE, stderr=PIPE)
-        out, err = p.communicate()
-        c = p.wait()
+        self.p = Popen(self.args, stdout=PIPE, stderr=PIPE)
+        self.out, self.err = self.p.communicate()
+        c = self.p.wait()
         if c != 0:
-            raise CompilationError(self, out, err, p)
+            raise CompilationError(self)
 
         assert os.path.exists(self.modfile)
 
@@ -95,6 +98,7 @@ example_hello(PyObject *self, PyObject *args)
         for runtime in pyruntimes:
             # Build the module:
             bm = BuiltModule(sm, runtime)
+            bm.build()
 
             # Verify that it built:
             out = bm.run_command('import example; print(example.hello())')
@@ -135,6 +139,7 @@ struct PyExampleType {
         for runtime in pyruntimes:
             # Build the module:
             bm = BuiltModule(sm, runtime)
+            bm.build()
 
             # Verify that it built:
             out = bm.run_command('import example; print(repr(example.ExampleType()))')

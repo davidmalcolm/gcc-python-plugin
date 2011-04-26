@@ -53,5 +53,13 @@ TEST_CFLAGS= \
   -fplugin-arg-python-script=test.py
 
 test: plugin
-	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c 
+	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
+analyze: plugin
+	python analyzer-unit-tests.py
+
+dump_gimple:
+	gcc -fdump-tree-gimple $(shell pwd)/test.c
+
+debug: plugin
+	cc1 $(TEST_CFLAGS) $(shell pwd)/test.c 
