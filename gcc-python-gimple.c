@@ -70,6 +70,34 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
     return NULL;
 }
 
+PyObject *
+gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
+{
+    PyObject * result = NULL;
+    int num_args = gimple_call_num_args (self->stmt);
+    int i;
+
+    result = PyList_New(num_args);
+    if (!result) {
+	goto error;
+    }
+    
+    for (i = 0 ; i < num_args; i++) {
+	tree t = gimple_call_arg(self->stmt, i);
+	PyObject *obj = gcc_python_make_wrapper_tree(t);
+	if (!obj) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, obj);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
 /*
   PEP-7  
 Local variables:

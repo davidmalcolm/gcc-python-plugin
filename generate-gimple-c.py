@@ -259,6 +259,10 @@ def generate_gimple_subclasses():
                                              None,
                                              'The declaration of the function being called (if any), as a gcc.Tree'),
                                  exprcode_getter,
+                                 PyGetSetDef('args',
+                                             'gcc_GimpleCall_get_args',
+                                             None,
+                                             'The arguments for the call, as a list of gcc.Tree'),
                                  ])
     def make_getset_Return():
         return PyGetSetDefTable('gcc_%s_getset_table' % cc,
