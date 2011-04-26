@@ -98,15 +98,18 @@ def cfg_to_dot(cfg):
     def block_to_dot_label(bb):
         # FIXME: font setting appears to work on my machine, but I invented
         # the attribute value; it may be exercising a failure path
-        result = '<font face="monospace"><table border="0" cellspacing="0">\n'
+        result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
         curloc = None
         if isinstance(bb.gimple, list):
             for stmt in bb.gimple:
                 if curloc != stmt.loc:
-                    curloc = stmt.loc 
-                    result += _dot_tr(get_src_for_loc(stmt.loc).rstrip())
-                    result += _dot_tr((' ' * (stmt.loc.column-1)) + '^')
-                result += _dot_tr(str(stmt).strip())
+                    curloc = stmt.loc
+                    result += ('<tr><td>' + to_html(get_src_for_loc(stmt.loc))
+                               + '<br/>'
+                               + (' ' * (stmt.loc.column-1)) + '^'
+                               + '</td></tr>')
+                    
+                result += '<tr><td></td>' + _dot_td(str(stmt).strip()) + '</tr>'
         else:
             result += _dot_tr(block_id(bb))
         result += '</table></font>\n'
