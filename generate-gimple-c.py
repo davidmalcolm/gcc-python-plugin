@@ -221,10 +221,11 @@ def generate_gimple_subclasses():
                                   None,
                                   'The kind of the expression, as an gcc.Tree subclass (the type itself, not an instance)')
 
-    def make_getter_exprcode():
-        return 
-        
-    
+    rhs_getter = PyGetSetDef('rhs',
+                             'gcc_Gimple_get_rhs',
+                             None,
+                             'The operands on the right-hand-side of the expression, as a list of gcc.Tree instances')
+
     def make_getset_Assign():
         return PyGetSetDefTable('gcc_%s_getset_table' % cc,
                                 [PyGetSetDef('lhs',
@@ -234,6 +235,7 @@ def generate_gimple_subclasses():
                                              None,
                                              'Left-hand-side of the assignment, as a gcc.Tree'),
                                  exprcode_getter,
+                                 rhs_getter,
                                  ])
     def make_getset_Call():
         return PyGetSetDefTable('gcc_%s_getset_table' % cc,
@@ -243,6 +245,7 @@ def generate_gimple_subclasses():
                                                                   'gcc_python_make_wrapper_tree(gimple_call_lhs(self->stmt))'),
                                              None,
                                              'Left-hand-side of the call, as a gcc.Tree'),
+                                 rhs_getter,
                                  PyGetSetDef('fn',
                                              cu.add_simple_getter('gcc_GimpleCall_get_fn',
                                                                   'PyGccGimple',

@@ -50,6 +50,8 @@ def my_pass_execution_callback(*args, **kwargs):
                             print '      stmt.fn: %r' % stmt.fn
                         if hasattr(stmt, 'retval'):
                             print '      stmt.retval: %r' % stmt.retval
+                        if hasattr(stmt, 'rhs'):
+                            print '      stmt.rhs: %r' % stmt.rhs
 
 def invoke_dot(dot):
     from subprocess import Popen, PIPE

@@ -42,4 +42,29 @@ gcc_Gimple_repr(struct PyGccGimple * self);
 PyObject *
 gcc_Gimple_str(struct PyGccGimple * self);
 
+PyObject *
+gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure);
+
+#include "pretty-print.h"
+struct PyGccPrettyPrinter {
+    PyObject_HEAD
+    pretty_printer pp;
+    FILE *file_ptr;
+    char buf[1024]; /* FIXME */
+};
+
+extern PyTypeObject gcc_PrettyPrinterType;
+
+PyObject*
+gcc_python_pretty_printer_new(void);
+
+pretty_printer*
+gcc_python_pretty_printer_as_pp(PyObject *obj);
+
+PyObject*
+gcc_python_pretty_printer_as_string(PyObject *obj);
+
+void
+gcc_PrettyPrinter_dealloc(PyObject *obj);
+
 #endif /* INCLUDED__WRAPPERS_H */
