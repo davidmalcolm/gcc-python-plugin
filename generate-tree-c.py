@@ -394,12 +394,40 @@ def generate_tree_code_classes():
     
     for tree_type in tree_types:
         base_type = type_for_code_class[tree_type.TYPE]
-        pytype = PyTypeObject(identifier = 'gcc_%sType' % tree_type.camel_cased_string(),
-                              localname = tree_type.camel_cased_string(),
-                              tp_name = 'gcc.%s' % tree_type.camel_cased_string(),
+
+        cc = tree_type.camel_cased_string()
+
+        getsettable = None
+        
+        if cc == 'AddrExpr':
+            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                           [PyGetSetDef('operand',
+                                                        cu.add_simple_getter('gcc_%s_get_operand' % cc,
+                                                                             'PyGccTree',
+                                                                             'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))'),
+
+                                                        None,
+                                                        'The operand of this expression, as a gcc.Tree'),
+                                            ])
+        if cc == 'StringCst':
+            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                           [PyGetSetDef('constant',
+                                                        cu.add_simple_getter('gcc_%s_get_constant' % cc,
+                                                                             'PyGccTree',
+                                                                             'PyString_FromString(TREE_STRING_POINTER(self->t))'),
+                                                        None,
+                                                        'The operand of this expression, as a gcc.Tree'),
+                                            ])
+        if getsettable:
+            cu.add_defn(getsettable.c_defn())
+
+        pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
+                              localname = cc,
+                              tp_name = 'gcc.%s' % cc,
                               struct_name = 'struct PyGccTree',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&%s' % base_type
+                              tp_base = '&%s' % base_type,
+                              tp_getset = getsettable.identifier if getsettable else None,
                               )
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
