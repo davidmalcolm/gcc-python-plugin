@@ -376,7 +376,7 @@ real_make_basic_block_wrapper(void *ptr)
         goto error;
     }
 
-#if 1
+#if 0
     printf("bb: %p\n", bb);
     printf("bb->flags: 0x%x\n", bb->flags);
     printf("bb->flags & BB_RTL: %i\n", bb->flags & BB_RTL);
