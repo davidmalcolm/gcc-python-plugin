@@ -305,7 +305,7 @@ static void gcc_python_run_any_script(void)
         fprintf(stderr,
 		"Unable to read python script: %s\n",
 		PyString_AsString(script_name));
-	return;
+	exit(1);
     }
     PyRun_SimpleFile(fp, PyString_AsString(script_name));
     fclose(fp);
