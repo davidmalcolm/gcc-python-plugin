@@ -20,6 +20,11 @@
                                                                          \
   /* end of macro */
 
+DECLARE_SIMPLE_WRAPPER(PyGccPass,
+		       gcc_PassType,
+		       pass,
+		       struct opt_pass *, pass)
+
 DECLARE_SIMPLE_WRAPPER(PyGccLocation, 
 		       gcc_LocationType,
 		       location,

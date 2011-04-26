@@ -3,6 +3,29 @@
 #include "gcc-python-wrappers.h"
 #include "gimple.h"
 
+PyObject *
+gcc_python_make_wrapper_pass(struct opt_pass *pass)
+{
+    struct PyGccPass *pass_obj = NULL;
+
+    if (NULL == pass) {
+	Py_RETURN_NONE;
+    }
+  
+    pass_obj = PyObject_New(struct PyGccPass, &gcc_PassType);
+    if (!pass_obj) {
+        goto error;
+    }
+
+    pass_obj->pass = pass;
+    /* FIXME: do we need to do something for the GCC GC? */
+
+    return (PyObject*)pass_obj;
+      
+error:
+    return NULL;
+}
+
 /*
   "location_t" is the type used throughout.  Might be nice to expose this directly.
 

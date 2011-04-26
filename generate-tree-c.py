@@ -17,6 +17,22 @@ cu.add_include("basic-block.h")
 modinit_preinit = ''
 modinit_postinit = ''
 
+def generate_pass():
+    global modinit_preinit
+    global modinit_postinit
+    
+    pytype = PyTypeObject(identifier = 'gcc_PassType',
+                          localname = 'Pass',
+                          tp_name = 'gcc.Pass',
+                          struct_name = 'struct PyGccPass',
+                          tp_new = 'PyType_GenericNew',
+                          )
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+    
+generate_pass()
+
 def generate_pretty_printer():
     global modinit_preinit
     global modinit_postinit

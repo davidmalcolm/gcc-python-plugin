@@ -7,7 +7,7 @@
 PyMODINIT_FUNC initoptpass(void);
 
 extern PyObject *
-gcc_python_make_wrapper_opt_pass(struct opt_pass *ptr);
+gcc_python_make_wrapper_pass(struct opt_pass *pass);
 
 PyObject *
 gcc_Location_repr(struct PyGccLocation * self);
