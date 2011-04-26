@@ -30,7 +30,7 @@ def my_pass_execution_callback(*args, **kwargs):
             
             dot = cfg_to_dot(fun.cfg)
             print dot
-            #invoke_dot(dot)
+            invoke_dot(dot)
             for bb in fun.cfg.basic_blocks:
                 print 'bb: %r' % bb
                 print 'bb.gimple: %r' % bb.gimple
@@ -64,6 +64,21 @@ def invoke_dot(dot):
     
 
 def cfg_to_dot(cfg):
+    # Generate graphviz source for this gcc.Cfg instance, as a string
+
+    def to_html(self):
+        html_escape_table = {
+            "&": "&amp;",
+            '"': "&quot;",
+            "'": "&apos;",
+            ">": "&gt;",
+            "<": "&lt;",
+            
+            # 'dot' doesn't seem to like these:
+            '{': '\\{',
+            '}': '\\}',
+          }
+        return "".join(html_escape_table.get(c,c) for c in str(self))
 
     def block_id(b):
         if b is cfg.entry:
@@ -72,20 +87,49 @@ def cfg_to_dot(cfg):
             return 'exit'
         return 'block%i' % id(b)
 
+    def _dot_td(text, align="left", colspan=1):
+        return ('<td align="%s" colspan="%i">%s</td>'
+                % (align, colspan, to_html(text)))
+
+    def _dot_tr(td_text):
+        return ('<tr>%s</tr>' % _dot_td(td_text))
+
+    def block_to_dot_label(bb):
+        result = '<table border="0" cellspacing="0">\n'
+        result += _dot_tr(block_id(bb))
+        if isinstance(bb.gimple, list):
+            for stmt in bb.gimple:
+                result += _dot_tr(get_src_for_loc(stmt.loc).strip())
+                result += _dot_tr(str(stmt).strip())
+        result += '</table>\n'
+        return result
+
     def edge_to_dot(e):
         return ('   %s -> %s;\n'
                 % (block_id(e.src), block_id(e.dest)))
         
     result = 'digraph G {\n'
+    result += '  node [shape=record];\n'
     for block in cfg.basic_blocks:
+
+        result += ('  %s [label=<%s>];\n'
+                   % (block_id(block), block_to_dot_label(block)))
+
         # FIXME: this will have duplicates:
         for edge in block.succs:
             result += edge_to_dot(edge)
         #for edge in block.preds:
         #    result += edge_to_dot(edge)
         pass
+
+        if isinstance(block.gimple, list):
+            for stmt in block.gimple:
+                print get_src_for_loc(stmt.loc)
+                print str(stmt).strip() # FIXME
+
     result += '}\n'
     return result
+
     
 
 def my_pre_genericize_callback(*args, **kwargs):
