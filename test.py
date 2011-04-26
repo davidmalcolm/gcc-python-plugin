@@ -48,7 +48,7 @@ def my_pass_execution_callback(*args, **kwargs):
                         if hasattr(stmt, 'exprcode'):
                             print '      stmt.exprcode: %r' % stmt.exprcode
                         if hasattr(stmt, 'fn'):
-                            print '      stmt.fn: %r' % stmt.fn
+                            print '      stmt.fn: %r %s' % (stmt.fn, stmt.fn)
                         if hasattr(stmt, 'retval'):
                             print '      stmt.retval: %r' % stmt.retval
                         if hasattr(stmt, 'rhs'):

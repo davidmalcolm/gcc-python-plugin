@@ -600,6 +600,38 @@ error:
 /*
     Code for various tree types
  */
+
+/* FIXME:
+   This doesn't seem to be declared in any of the plugin headers:
+ */
+int
+dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
+		   bool is_stmt);
+
+PyObject *
+gcc_Tree_str(struct PyGccTree * self)
+{
+    PyObject *ppobj = gcc_python_pretty_printer_new();
+    PyObject *result = NULL;
+    if (!ppobj) {
+	return NULL;
+    }
+
+    dump_generic_node (gcc_python_pretty_printer_as_pp(ppobj),
+		       self->t, 0, 0, 0);
+    result = gcc_python_pretty_printer_as_string(ppobj);
+    if (!result) {
+	goto error;
+    }
+    
+    Py_XDECREF(ppobj);
+    return result;
+    
+ error:
+    Py_XDECREF(ppobj);
+    return NULL;
+}
+
 PyObject *
 gcc_Declaration_repr(struct PyGccTree * self)
 {
@@ -634,6 +666,8 @@ error:
      /usr/src/debug/gcc-4.6.0-20110321/gcc/print-tree.c
    and appears to be a good place to look when figuring out how the tree data
    works.
+
+   dump_generic_node is defined around line 580 of tree-pretty-print.c
 
    FIXME: do we want a unique PyGccTree per tree address? (e.g. by maintaining a dict?)
    (what about lifetimes?)

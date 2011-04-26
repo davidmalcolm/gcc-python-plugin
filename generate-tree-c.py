@@ -279,7 +279,8 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                           tp_name = 'gcc.Tree',
                           struct_name = 'struct PyGccTree',
                           tp_new = 'PyType_GenericNew',
-                          tp_getset = 'gcc_Tree_getset_table')
+                          tp_getset = 'gcc_Tree_getset_table',
+                          tp_str = '(reprfunc)gcc_Tree_str')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

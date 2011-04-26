@@ -31,6 +31,9 @@ PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
 PyObject *
+gcc_Tree_str(struct PyGccTree * self);
+
+PyObject *
 gcc_Function_repr(struct PyGccFunction * self);
 
 PyObject *

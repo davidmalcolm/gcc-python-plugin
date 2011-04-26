@@ -10,7 +10,7 @@ gcc_Gimple_repr(struct PyGccGimple * self)
 }
 
 /* FIXME:
-   This is declared in gimple-pretty-print.c, but not exposed in any headers:
+   This is declared in gimple-pretty-print.c, but not exposed in any of the plugin headers AFAIK:
 */
 void
 dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
