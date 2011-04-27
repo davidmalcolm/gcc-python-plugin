@@ -22,13 +22,23 @@ class ExpectedErrorNotFound(CompilationError):
         return result
 
 class AnalyzerTests(unittest.TestCase):
+    def build_module(self, bm):
+        bm.build(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),
+                               '-fplugin-arg-python-script=cpychecker.py'])
+
+    def assertNoErrors(self, src):
+        sm = SimpleModule()
+        sm.cu.add_defn(src)
+        bm = BuiltModule(sm, pyruntime)
+        self.build_module(bm)
+        bm.cleanup()
+
     def assertFindsError(self, src, experr):
         sm = SimpleModule()
         sm.cu.add_defn(src)
+        bm = BuiltModule(sm, pyruntime)
         try:
-            bm = BuiltModule(sm, pyruntime)
-            bm.build(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),
-                                   '-fplugin-arg-python-script=cpychecker.py'])
+            self.build_module(bm)
         except CompilationError, exc:
             if experr not in exc.err:
                 raise ExpectedErrorNotFound(experr, bm)
@@ -56,6 +66,49 @@ socket_htons(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               'buggy.c:13: Mismatching type of argument 1: expected "int *" for PyArg_ParseTuple format string "i" but got "unsigned long *"')
+
+    def test_not_enough_varargs(self):
+        src = """
+PyObject *
+not_enough_varargs(PyObject *self, PyObject *args)
+{
+	if (!PyArg_ParseTuple(args, "i")) {
+		return NULL;
+	}
+	Py_RETURN_NONE;
+}
+"""
+        self.assertFindsError(src,
+                              'example.c:13:foo:Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0')
+
+    def test_too_many_varargs(self):
+        src = """
+PyObject *
+too_many_varargs(PyObject *self, PyObject *args)
+{
+    int i, j;
+    if (!PyArg_ParseTuple(args, "i", &i, &j)) {
+	 return NULL;
+    }
+    Py_RETURN_NONE;
+}
+"""
+        self.assertFindsError(src,
+                              'example.c:14:foo:Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2')
+
+    def test_correct_usage(self):
+        src = """
+PyObject *
+correct_usage(PyObject *self, PyObject *args)
+{
+    int i;
+    if (!PyArg_ParseTuple(args, "i", &i)) {
+	 return NULL;
+    }
+    Py_RETURN_NONE;
+}
+"""
+        self.assertNoErrors(src)
 
 from cpychecker import get_types
 

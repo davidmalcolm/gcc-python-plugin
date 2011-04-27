@@ -10,6 +10,13 @@ def log(msg):
     if 1:
         sys.stderr.write('%s\n' % msg)
 
+had_errors = False
+
+def error(msg):
+    global had_errors
+    sys.stderr.write('%s\n' % msg)
+    had_errors = True
+
 def get_src_for_loc(loc):
     # Given a gcc.Location, get the source line as a string
     import linecache
@@ -24,7 +31,7 @@ class CExtensionError(Exception):
     def __str__(self):
         return '%s:%s:%s:%s' % (self.location.file, 
                                 self.location.line,
-                                self.location.current_element,
+                                'foo',
                                 self._get_desc())
 
     def _get_desc(self):
@@ -32,24 +39,24 @@ class CExtensionError(Exception):
         raise NotImplementedError
 
 class FormatStringError(CExtensionError):
-    def __init__(self, location, format_string):
+    def __init__(self, location, fmt_string):
         CExtensionError.__init__(self, location)
-        self.format_string = format_string
+        self.fmt_string = fmt_string
 
 class UnknownFormatChar(FormatStringError):
-    def __init__(self, location, format_string, ch):
-        FormatStringError.__init__(self, location, format_string)
+    def __init__(self, location, fmt_string, ch):
+        FormatStringError.__init__(self, location, fmt_string)
         self.ch = ch
 
     def _get_desc(self):
-        return "unknown format char in \"%s\": '%s'" % (self.format_string, self.ch)
+        return "unknown format char in \"%s\": '%s'" % (self.fmt_string, self.ch)
 
 class UnhandledCode(UnknownFormatChar):
     def _get_desc(self):
-        return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.format_string, self.ch)
+        return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
 
-def get_types(location, strfmt):
+def get_types(stmt, strfmt):
     """
     Generate a list of C type names from a PyArg_ParseTuple format string
     Compare to Python/getargs.c:vgetargs1
@@ -153,30 +160,34 @@ def get_types(location, strfmt):
                               
 
 class WrongNumberOfVars(FormatStringError):
-    def __init__(self, location, format_string, exp_types, num_args):
-        FormatStringError.__init__(self, location, format_string)
+    def __init__(self, location, fmt_string, exp_types, varargs):
+        FormatStringError.__init__(self, location, fmt_string)
         self.exp_types = exp_types
-        self.num_args = num_args
+        self.varargs = varargs
+
+    def _get_desc(self):
+        return '%s in call to %s with format string "%s" : expected %i extra arguments (%s), but got %i' % (
+            self._get_desc_prefix(),
+            'PyArg_ParseTuple',
+            self.fmt_string,
+            len(self.exp_types),
+            ','.join([str(t) for t in self.exp_types]),
+            len(self.varargs))
+
+    def _get_desc_prefix(self):
+        raise NotImplementedError
 
 class NotEnoughVars(WrongNumberOfVars):
-    def _get_desc(self):
-        return 'Not enough arguments in "%s" : expected %i (%s), but got %i' % (
-            self.format_string,
-            len(self.exp_types),
-            self.exp_types,
-            self.num_args)
+    def _get_desc_prefix(self):
+        return 'Not enough arguments'
 
 class TooManyVars(WrongNumberOfVars):
-    def _get_desc(self):
-        return 'Too many arguments in "%s": expected %i (%s), but got %i' % (
-            self.format_string,
-            len(self.exp_types),
-            self.exp_types,
-            self.num_args)
+    def _get_desc_prefix(self):
+        return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, location, format_string, arg_num, exp_type, actual_type):
-        super(self.__class__, self).__init__(location, format_string)
+    def __init__(self, location, fmt_string, arg_num, exp_type, actual_type):
+        super(self.__class__, self).__init__(location, fmt_string)
         self.arg_num = arg_num
         self.exp_type = exp_type
         self.actual_type = actual_type
@@ -184,7 +195,7 @@ class MismatchingType(FormatStringError):
     def _get_desc(self):
         return 'Mismatching type of argument %i in "%s": expected "%s" but got "%s"' % (
             self.arg_num,
-            self.format_string,
+            self.fmt_string,
             self.exp_type,
             self.actual_type)
 
@@ -202,10 +213,11 @@ def check_pyargs(fun):
     def check_callsite(stmt):
         log('got call at %s' % stmt.loc)
         log(get_src_for_loc(stmt.loc))
-        log('stmt: %r %s' % (stmt, stmt))
-        log('args: %r' % stmt.args)
-        for arg in stmt.args:
-            log('  arg: %s %r' % (arg, arg))
+        # log('stmt: %r %s' % (stmt, stmt))
+        # log('args: %r' % stmt.args)
+        # for arg in stmt.args:
+        #    # log('  arg: %s %r' % (arg, arg))
+            
 
         # We expect the following args:
         #   args[0]: PyObject *input_tuple
@@ -216,8 +228,29 @@ def check_pyargs(fun):
             fmt_string = get_format_string(stmt)
             if fmt_string:
                 log('fmt_string: %r' % fmt_string)
-                types = get_types(stmt.loc, fmt_string)
-                log('types: %r' % types)
+                # Figure out expected types, based on the format string...
+                try:
+                    exp_types = get_types(stmt, fmt_string)
+                except FormatStringError, exc:
+                    error(exc)
+                    return
+                # log('types: %r' % exp_types)
+
+                # ...then compare them against the actual types:
+                varargs = stmt.args[2:]
+                # log('varargs: %r' % varargs)
+                if len(varargs) < len(exp_types):
+                    error(NotEnoughVars(stmt.loc, fmt_string, exp_types, varargs))
+                    return
+
+                if len(varargs) > len(exp_types):
+                    error(TooManyVars(stmt.loc, fmt_string, exp_types, varargs))
+                    return
+                    
+                for i, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
+                    log('comparing exp_type: %r with vararg: %r' % (exp_type, vararg))
+                    #if not type_equality(exp_type, actual_type):
+                    #    error(MismatchingType(location, format_string, index+1, exp_type, actual_type))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
@@ -238,6 +271,9 @@ def on_pass_execution(optpass, fun):
     log(fun)
     if fun:
         check_pyargs(fun)
+    
+    if had_errors:
+        sys.exit(1)
 
 if __name__ == '__main__':    
     gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
