@@ -219,6 +219,7 @@ def type_equality(exp_type, vararg):
     log('dir(vararg.operand.type): %r' % dir(vararg.operand.type))
     log('vararg.operand.type.const: %r' % vararg.operand.type.const)
     log('vararg.operand.type.name: %r' % vararg.operand.type.name)
+    log('vararg.operand.type.unsigned: %r' % vararg.operand.type.unsigned)
     log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
     log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
     log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)

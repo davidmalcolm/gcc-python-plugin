@@ -450,6 +450,9 @@ def generate_tree_code_classes():
                                   "Boolean: does this type have the '%s' modifier?" % qual)
 
         if tree_type.SYM == 'INTEGER_TYPE':
+            add_simple_getter('unsigned',
+                              'PyBool_FromLong(TYPE_UNSIGNED(self->t))',
+                              "Boolean: True for 'unsigned', False for 'signed'")
             add_simple_getter('precision',
                               'PyInt_FromLong(TYPE_PRECISION(self->t))',
                               'The precision of this type in bits, as an int (e.g. 32)')
