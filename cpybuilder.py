@@ -29,9 +29,11 @@ class PyGetSetDef:
         return result
 
 class PyGetSetDefTable(NamedEntity):
-    def __init__(self, identifier, gsdefs):
+    def __init__(self, identifier, gsdefs, identifier_prefix=None, typename=None):
         NamedEntity.__init__(self, identifier)
         self.gsdefs = gsdefs
+        self.identifier_prefix = identifier_prefix
+        self.typename = typename
 
     def c_defn(self):
         result = 'static PyGetSetDef %s[] = {\n' % self.identifier
@@ -40,6 +42,14 @@ class PyGetSetDefTable(NamedEntity):
         result += '    {NULL}  /* Sentinel */\n'
         result += '};\n'
         return result
+
+    def add_simple_getter(self, cu, name, c_expression, doc):
+        assert self.identifier_prefix
+        assert self.typename
+        identifier = self.identifier_prefix + '_get_' + name
+        cu.add_simple_getter(identifier, self.typename, c_expression)
+        self.gsdefs.append(PyGetSetDef(name, identifier, None, doc))
+        
         
 
 METH_VARARGS = 'METH_VARARGS'

@@ -17,35 +17,42 @@ def error(msg):
     sys.stderr.write('%s\n' % msg)
     had_errors = True
 
-def get_src_for_loc(loc):
-    # Given a gcc.Location, get the source line as a string
-    import linecache
-    return linecache.getline(loc.file, loc.line).rstrip()
+import sys
+sys.path.append('.') # FIXME
+from gccutils import get_src_for_loc
 
+
+class RichLocation:
+    def __init__(self, loc, fnname):
+        self.loc = loc
+        self.fnname = fnname
+
+    def __str__(self):
+        return '%s:%s:%s:%s' % (self.loc.file,
+                                self.loc.line, self.loc.column,
+                                self.fnname)
 
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code
-    def __init__(self, location):
-        self.location = location
+    def __init__(self, richloc):
+        self.richloc = richloc
 
     def __str__(self):
-        return '%s:%s:%s:%s' % (self.location.file, 
-                                self.location.line,
-                                'foo',
-                                self._get_desc())
+        return '%s:%s' % (self.richloc, 
+                          self._get_desc())
 
     def _get_desc(self):
         # Hook for additional descriptive text about the error
         raise NotImplementedError
 
 class FormatStringError(CExtensionError):
-    def __init__(self, location, fmt_string):
-        CExtensionError.__init__(self, location)
+    def __init__(self, richloc, fmt_string):
+        CExtensionError.__init__(self, richloc)
         self.fmt_string = fmt_string
 
 class UnknownFormatChar(FormatStringError):
-    def __init__(self, location, fmt_string, ch):
-        FormatStringError.__init__(self, location, fmt_string)
+    def __init__(self, richloc, fmt_string, ch):
+        FormatStringError.__init__(self, richloc, fmt_string)
         self.ch = ch
 
     def _get_desc(self):
@@ -56,7 +63,7 @@ class UnhandledCode(UnknownFormatChar):
         return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
 
-def get_types(stmt, strfmt):
+def get_types(richloc, strfmt):
     """
     Generate a list of C type names from a PyArg_ParseTuple format string
     Compare to Python/getargs.c:vgetargs1
@@ -133,7 +140,7 @@ def get_types(stmt, strfmt):
                 result += ['PyTypeObject *', 'PyObject * *']
                 i += 1
             elif next == '?':
-                raise UnhandledCode(location, strfmt, c + next) # FIXME
+                raise UnhandledCode(richloc, strfmt, c + next) # FIXME
             elif next == '&':
                 # FIXME: can't really handle this case as is, fixing for fcntmodule.c
                 result += ['int ( PyObject * object , int * target )',  # converter
@@ -155,13 +162,13 @@ def get_types(stmt, strfmt):
                 result += ['char * *', 'int *']
                 i += 1
         else:
-            raise UnknownFormatChar(location, strfmt, c)
+            raise UnknownFormatChar(richloc, strfmt, c)
     return result
                               
 
 class WrongNumberOfVars(FormatStringError):
-    def __init__(self, location, fmt_string, exp_types, varargs):
-        FormatStringError.__init__(self, location, fmt_string)
+    def __init__(self, richloc, fmt_string, exp_types, varargs):
+        FormatStringError.__init__(self, richloc, fmt_string)
         self.exp_types = exp_types
         self.varargs = varargs
 
@@ -186,8 +193,8 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, location, fmt_string, arg_num, exp_type, actual_type):
-        super(self.__class__, self).__init__(location, fmt_string)
+    def __init__(self, richloc, fmt_string, arg_num, exp_type, actual_type):
+        super(self.__class__, self).__init__(richloc, fmt_string)
         self.arg_num = arg_num
         self.exp_type = exp_type
         self.actual_type = actual_type
@@ -228,6 +235,9 @@ def check_pyargs(fun):
             fmt_string = get_format_string(stmt)
             if fmt_string:
                 log('fmt_string: %r' % fmt_string)
+
+                richloc = RichLocation(stmt.loc, fun.decl.name)
+
                 # Figure out expected types, based on the format string...
                 try:
                     exp_types = get_types(stmt, fmt_string)
@@ -240,17 +250,17 @@ def check_pyargs(fun):
                 varargs = stmt.args[2:]
                 # log('varargs: %r' % varargs)
                 if len(varargs) < len(exp_types):
-                    error(NotEnoughVars(stmt.loc, fmt_string, exp_types, varargs))
+                    error(NotEnoughVars(richloc, fmt_string, exp_types, varargs))
                     return
 
                 if len(varargs) > len(exp_types):
-                    error(TooManyVars(stmt.loc, fmt_string, exp_types, varargs))
+                    error(TooManyVars(richloc, fmt_string, exp_types, varargs))
                     return
                     
                 for i, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
                     log('comparing exp_type: %r with vararg: %r' % (exp_type, vararg))
                     #if not type_equality(exp_type, actual_type):
-                    #    error(MismatchingType(location, format_string, index+1, exp_type, actual_type))
+                    #    error(MismatchingType(richloc, format_string, index+1, exp_type, actual_type))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:

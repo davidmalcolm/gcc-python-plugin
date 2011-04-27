@@ -247,7 +247,14 @@ def generate_function():
                 "\n")
     getsettable = PyGetSetDefTable('gcc_Function_getset_table',
                                    [PyGetSetDef('cfg', 'gcc_Function_get_cfg', None,
-                                                'Instance of gcc.Cfg for this function (or None for early passes)')])
+                                                'Instance of gcc.Cfg for this function (or None for early passes)'),
+                                    ],
+                                   identifier_prefix='gcc_Function',
+                                   typename='PyGccFunction')
+    getsettable.add_simple_getter(cu,
+                                  'decl', 
+                                  'gcc_python_make_wrapper_tree(self->fun->decl)',
+                                  'The declaration of this function, as a gcc.Tree instance')
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_FunctionType',

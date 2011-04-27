@@ -72,14 +72,14 @@ socket_htons(PyObject *self, PyObject *args)
 PyObject *
 not_enough_varargs(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, "i")) {
-		return NULL;
-	}
-	Py_RETURN_NONE;
+   if (!PyArg_ParseTuple(args, "i")) {
+       return NULL;
+   }
+   Py_RETURN_NONE;
 }
 """
         self.assertFindsError(src,
-                              'example.c:13:foo:Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0')
+                              'example.c:13:25:not_enough_varargs:Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0')
 
     def test_too_many_varargs(self):
         src = """
@@ -94,7 +94,7 @@ too_many_varargs(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              'example.c:14:foo:Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2')
+                              'example.c:14:26:too_many_varargs:Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2')
 
     def test_correct_usage(self):
         src = """
