@@ -366,6 +366,17 @@ plugin_init (struct plugin_name_args *plugin_info,
     return 0;
 }
 
+PyObject *
+gcc_python_string_or_none(char *str_or_null)
+{
+    if (str_or_null) {
+	return PyString_FromString(str_or_null);
+    } else {
+	Py_RETURN_NONE;
+    }
+}
+
+
 /*
   PEP-7  
 Local variables:

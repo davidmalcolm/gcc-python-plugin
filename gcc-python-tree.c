@@ -96,6 +96,10 @@ PyObject *
 gcc_python_make_wrapper_location(location_t loc)
 {
     struct PyGccLocation *location_obj = NULL;
+
+    if (UNKNOWN_LOCATION == loc) {
+	Py_RETURN_NONE;
+    }
   
     location_obj = PyObject_New(struct PyGccLocation, &gcc_LocationType);
     if (!location_obj) {
@@ -571,7 +575,7 @@ gcc_python_make_wrapper_function(struct function *fun)
     printf("struct stack_usage *su: %p\n", fun->su);
  #if 0
     printf("htab_t GTY((skip)) value_histogram\n");
-    printf("tree decl;\n");
+    printf("tree decl: %p;\n", fun->decl);
     printf("tree static_chain_decl;\n");
     printf("tree nonlocal_goto_save_area;\n");
     printf("VEC(tree,gc) *local_decls: local_decls;\n");

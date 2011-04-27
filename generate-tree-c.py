@@ -351,12 +351,16 @@ def generate_intermediate_tree_classes():
 
         # Strip off the "gcc_" prefix and "Type" suffix:
         localname = code_type[4:-4]
+
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % localname, [])
+
         pytype = PyTypeObject(identifier = code_type,
                               localname = localname,
                               tp_name = 'gcc.%s' % localname,
                               struct_name = 'struct PyGccTree',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&gcc_TreeType')
+                              tp_base = '&gcc_TreeType',
+                              tp_getset = getsettable.identifier)
         if localname == 'Declaration':
             cu.add_defn("""
 PyObject *
@@ -376,15 +380,27 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
     return gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t));
 }
 """)
-            getsettable = PyGetSetDefTable('gcc_Declaration_getset_table',
-                                           [PyGetSetDef('name', 'gcc_Declaration_get_name', None, 'The name of this declaration (string)'),
-                                            PyGetSetDef('function', 'gcc_Declaration_get_function', None, 'The gcc.Function (or None) for this declaration')])
 
-            cu.add_defn(getsettable.c_defn())
-            pytype.tp_getset = getsettable.identifier
+            getsettable.add_gsdef('name',
+                                  'gcc_Declaration_get_name',
+                                  None,
+                                  'The name of this declaration (string)')
+            getsettable.add_gsdef('function',
+                                  'gcc_Declaration_get_function',
+                                  None, 
+                                  'The gcc.Function (or None) for this declaration')
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
             pytype.tp_str = '(reprfunc)gcc_Declaration_repr'
-            
+
+        if localname == 'Type':
+            getsettable.add_gsdef('name',
+                                  cu.add_simple_getter('gcc_%s_get_name' % localname,
+                                                       'PyGccTree',
+                                                       'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))'),
+                                  None,
+                                  "The name of the type as a gcc.Tree, or None")
+
+        cu.add_defn(getsettable.c_defn())            
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
         modinit_postinit += pytype.c_invoke_add_to_module()
@@ -404,29 +420,51 @@ def generate_tree_code_classes():
 
         cc = tree_type.camel_cased_string()
 
-        getsettable = None
-        
-        if cc == 'AddrExpr':
-            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
-                                           [PyGetSetDef('operand',
-                                                        cu.add_simple_getter('gcc_%s_get_operand' % cc,
-                                                                             'PyGccTree',
-                                                                             'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))'),
+        getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [])
 
-                                                        None,
-                                                        'The operand of this expression, as a gcc.Tree'),
-                                            ])
+        if cc == 'AddrExpr':
+            getsettable.add_gsdef('operand',
+                                  cu.add_simple_getter('gcc_%s_get_operand' % cc,
+                                                       'PyGccTree',
+                                                       'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))'),
+                                  
+                                  None,
+                                  'The operand of this expression, as a gcc.Tree')
+
         if cc == 'StringCst':
-            getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
-                                           [PyGetSetDef('constant',
-                                                        cu.add_simple_getter('gcc_%s_get_constant' % cc,
-                                                                             'PyGccTree',
-                                                                             'PyString_FromString(TREE_STRING_POINTER(self->t))'),
-                                                        None,
-                                                        'The operand of this expression, as a gcc.Tree'),
-                                            ])
-        if getsettable:
-            cu.add_defn(getsettable.c_defn())
+            getsettable.add_gsdef('constant',
+                                  cu.add_simple_getter('gcc_%s_get_constant' % cc,
+                                                       'PyGccTree',
+                                                       'PyString_FromString(TREE_STRING_POINTER(self->t))'),
+                                  None,
+                                  'The operand of this expression, as a gcc.Tree')
+
+        # TYPE_QUALS for various foo_TYPE classes:
+        if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
+                             'FIXED_POINT_TYPE', 'COMPLEX_TYPE', 'VECTOR_TYPE',
+                             'ENUMERAL_TYPE', 'BOOLEAN_TYPE'):
+            for qual in ('const', 'volatile', 'restrict'):
+                getsettable.add_gsdef(qual,
+                                      cu.add_simple_getter('gcc_%s_get_%s' % (cc, qual),
+                                                           'PyGccTree',
+                                                           'PyBool_FromLong(TYPE_QUALS(self->t) & TYPE_QUAL_%s)' % qual.upper()),
+                                      None,
+                                      "Boolean: does this type have the '%s' modifier?" % qual)
+
+        def add_simple_getter(name, c_expression, doc):
+            getsettable.add_gsdef(name,
+                                  cu.add_simple_getter('gcc_%s_get_%s' % (cc, name),
+                                                       'PyGccTree',
+                                                       c_expression),
+                                  None,
+                                  doc)
+
+        if tree_type.SYM == 'INTEGER_TYPE':
+            add_simple_getter('precision',
+                              'PyInt_FromLong(TYPE_PRECISION(self->t))',
+                              'The precision of this type in bits, as an int (e.g. 32)')
+
+        cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
                               localname = cc,
@@ -434,7 +472,7 @@ def generate_tree_code_classes():
                               struct_name = 'struct PyGccTree',
                               tp_new = 'PyType_GenericNew',
                               tp_base = '&%s' % base_type,
-                              tp_getset = getsettable.identifier if getsettable else None,
+                              tp_getset = getsettable.identifier,
                               )
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()

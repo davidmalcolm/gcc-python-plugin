@@ -193,7 +193,7 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, richloc, fmt_string, arg_num, exp_type, actual_type):
+    def __init__(self, richloc, fmt_string, arg_num, exp_type, vararg):
         super(self.__class__, self).__init__(richloc, fmt_string)
         self.arg_num = arg_num
         self.exp_type = exp_type
@@ -205,6 +205,24 @@ class MismatchingType(FormatStringError):
             self.fmt_string,
             self.exp_type,
             self.actual_type)
+
+def type_equality(exp_type, vararg):
+    log('comparing exp_type: %r with vararg: %r' % (exp_type, vararg))
+    # FIXME:
+    log(dir(vararg))
+    log('vararg.operand: %r' % vararg.operand)
+    # We expect a gcc.AddrExpr with operand gcc.Declaration
+    log('dir(vararg.operand): %r' % dir(vararg.operand))
+    log('vararg.operand.type: %r' % vararg.operand.type)
+    # e.g. gcc.IntegerType
+    log('vararg.operand.type: %s' % vararg.operand.type)
+    log('dir(vararg.operand.type): %r' % dir(vararg.operand.type))
+    log('vararg.operand.type.const: %r' % vararg.operand.type.const)
+    log('vararg.operand.type.name: %r' % vararg.operand.type.name)
+    log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
+    log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
+    log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
+    return True
 
 def check_pyargs(fun):
     def get_format_string(stmt):
@@ -258,9 +276,8 @@ def check_pyargs(fun):
                     return
                     
                 for i, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
-                    log('comparing exp_type: %r with vararg: %r' % (exp_type, vararg))
-                    #if not type_equality(exp_type, actual_type):
-                    #    error(MismatchingType(richloc, format_string, index+1, exp_type, actual_type))
+                    if not type_equality(exp_type, vararg):
+                        error(MismatchingType(richloc, fmt_string, index + 1, exp_type, vararg))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:

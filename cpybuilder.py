@@ -43,14 +43,15 @@ class PyGetSetDefTable(NamedEntity):
         result += '};\n'
         return result
 
+    def add_gsdef(self, name, get, set, doc, closure=None):
+        self.gsdefs.append(PyGetSetDef(name, get, set, doc, closure=None))
+
     def add_simple_getter(self, cu, name, c_expression, doc):
         assert self.identifier_prefix
         assert self.typename
         identifier = self.identifier_prefix + '_get_' + name
         cu.add_simple_getter(identifier, self.typename, c_expression)
-        self.gsdefs.append(PyGetSetDef(name, identifier, None, doc))
-        
-        
+        self.add_gsdef(name, identifier, None, doc)
 
 METH_VARARGS = 'METH_VARARGS'
 
