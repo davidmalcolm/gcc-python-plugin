@@ -422,35 +422,6 @@ def generate_tree_code_classes():
 
         getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [])
 
-        if cc == 'AddrExpr':
-            getsettable.add_gsdef('operand',
-                                  cu.add_simple_getter('gcc_%s_get_operand' % cc,
-                                                       'PyGccTree',
-                                                       'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))'),
-                                  
-                                  None,
-                                  'The operand of this expression, as a gcc.Tree')
-
-        if cc == 'StringCst':
-            getsettable.add_gsdef('constant',
-                                  cu.add_simple_getter('gcc_%s_get_constant' % cc,
-                                                       'PyGccTree',
-                                                       'PyString_FromString(TREE_STRING_POINTER(self->t))'),
-                                  None,
-                                  'The operand of this expression, as a gcc.Tree')
-
-        # TYPE_QUALS for various foo_TYPE classes:
-        if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
-                             'FIXED_POINT_TYPE', 'COMPLEX_TYPE', 'VECTOR_TYPE',
-                             'ENUMERAL_TYPE', 'BOOLEAN_TYPE'):
-            for qual in ('const', 'volatile', 'restrict'):
-                getsettable.add_gsdef(qual,
-                                      cu.add_simple_getter('gcc_%s_get_%s' % (cc, qual),
-                                                           'PyGccTree',
-                                                           'PyBool_FromLong(TYPE_QUALS(self->t) & TYPE_QUAL_%s)' % qual.upper()),
-                                      None,
-                                      "Boolean: does this type have the '%s' modifier?" % qual)
-
         def add_simple_getter(name, c_expression, doc):
             getsettable.add_gsdef(name,
                                   cu.add_simple_getter('gcc_%s_get_%s' % (cc, name),
@@ -458,6 +429,25 @@ def generate_tree_code_classes():
                                                        c_expression),
                                   None,
                                   doc)
+
+        if cc == 'AddrExpr':
+            add_simple_getter('operand',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
+                              'The operand of this expression, as a gcc.Tree')
+
+        if cc == 'StringCst':
+            add_simple_getter('constant',
+                              'PyString_FromString(TREE_STRING_POINTER(self->t))',
+                              'The operand of this expression, as a gcc.Tree')
+
+        # TYPE_QUALS for various foo_TYPE classes:
+        if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
+                             'FIXED_POINT_TYPE', 'COMPLEX_TYPE', 'VECTOR_TYPE',
+                             'ENUMERAL_TYPE', 'BOOLEAN_TYPE'):
+            for qual in ('const', 'volatile', 'restrict'):
+                add_simple_getter(qual,
+                                  'PyBool_FromLong(TYPE_QUALS(self->t) & TYPE_QUAL_%s)' % qual.upper(),
+                                  "Boolean: does this type have the '%s' modifier?" % qual)
 
         if tree_type.SYM == 'INTEGER_TYPE':
             add_simple_getter('precision',
