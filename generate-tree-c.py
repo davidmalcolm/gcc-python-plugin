@@ -392,13 +392,46 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
             pytype.tp_str = '(reprfunc)gcc_Declaration_repr'
 
-        if localname == 'Type':
-            getsettable.add_gsdef('name',
-                                  cu.add_simple_getter('gcc_%s_get_name' % localname,
+        def add_simple_getter(name, c_expression, doc):
+            getsettable.add_gsdef(name,
+                                  cu.add_simple_getter('gcc_%s_get_%s' % (localname, name),
                                                        'PyGccTree',
-                                                       'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))'),
+                                                       c_expression),
                                   None,
-                                  "The name of the type as a gcc.Tree, or None")
+                                  doc)
+
+        if localname == 'Type':
+            add_simple_getter('name',
+                              'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))',
+                              "The name of the type as a gcc.Tree, or None")
+
+            # Add the standard C integer types as properties.
+            #
+            # Tree nodes for the standard C integer types are defined in tree.h by
+            #    extern GTY(()) tree integer_types[itk_none];
+            # with macros to look into it of this form:
+            #       #define unsigned_type_node    integer_types[itk_unsigned_int]
+            #
+            # The table is populated by tree.c:build_common_builtin_nodes
+            # but unfortunately this seems to be called after our plugin is
+            # initialized.
+            #
+            # Hence we add them as properties, so that they can be looked up on
+            # demand, rather than trying to look them up once when the module
+            # is set up
+            for std_type in ('itk_char', 'itk_signed_char',
+                             'itk_unsigned_char', 'itk_short',
+                             'itk_unsigned_short', 'itk_int',
+                             'itk_unsigned_int', 'itk_long',
+                             'itk_unsigned_long', 'itk_long_long',
+                             'itk_unsigned_long_long', 'itk_int128',
+                             'itk_unsigned_int128'):
+                # strip off the "itk_" prefix
+                assert std_type.startswith('itk_')
+                stddef = std_type[4:]
+                add_simple_getter(stddef,
+                                  'gcc_python_make_wrapper_tree(integer_types[%s])' % std_type,
+                                  "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
 
         cu.add_defn(getsettable.c_defn())            
         cu.add_defn(pytype.c_defn())

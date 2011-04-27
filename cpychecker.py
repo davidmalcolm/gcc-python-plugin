@@ -223,6 +223,28 @@ def type_equality(exp_type, vararg):
     log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
     log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
     log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
+
+    c_int = vararg.operand.type.int
+    # FIXME: we really should use gcc.Type.int, but for now it's a per-object property
+    # rather than a class attribute
+    log('c_int: %r' % c_int)
+    log('c_int: %s' % c_int)
+    log('c_int.unsigned: %r' % vararg.operand.type.unsigned)
+    log('c_int.precision: %s' % vararg.operand.type.precision)
+
+
+    # where are the builtin types? 
+    # I see /usr/src/debug/gcc-4.6.0-20110321/obj-x86_64-redhat-linux/gcc/i386-builtin-types.inc
+    # has e.g.:
+    #   ix86_builtin_type_tab[(int)IX86_BT_INT] = integer_type_node,
+    # and these seem to be set up in:  build_common_tree_nodes (bool signed_char)
+    # in tree.c
+    #   build_common_builtin_nodes uses:
+    #       built_in_decls[code] = decl;
+    #       implicit_built_in_decls[code] = decl;
+    #  and many of these are just macros in tree.h, looking in here:
+    #    extern GTY(()) tree integer_types[itk_none];
+
     return True
 
 def check_pyargs(fun):
