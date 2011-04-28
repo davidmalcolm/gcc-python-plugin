@@ -47,7 +47,9 @@ installed (grep for "PyRuntime" in the .py files).  I've been using::
     python3-devel-3.2-0.9.rc1.fc15.x86_64
 
 but you may have to hack up the `PyRuntime()` invocations in the code to get
-it to build on other machines.
+it to build on other machines.  Ultimately I want the plugin to be buildable
+against multiple python versions, so there could be a python27.so,
+python27-debug.so, python-32mu.so, python-32-dmu.so, etc (c.f. PEP-3149)
 
 There isn't an installer yet.  In theory you should be able to add these
 arguments to the gcc invocation::
