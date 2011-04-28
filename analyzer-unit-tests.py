@@ -85,8 +85,10 @@ socket_htons(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘socket_htons’:\n'
-                              '$(SRCFILE):17:26: error: Mismatching type of argument 1 in "i:htons": expected "int *" (pointing to 32 bits) but got "long unsigned int *" (pointing to 64 bits) [-fpermissive]\n')
-        # the trailing whitespace/newline is a bug
+                              '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format string "i:htons":'
+                              ' argument 3 ("&x1") had type "long unsigned int *" (pointing to 64 bits)'
+                              ' but was expecting "int *" (pointing to 32 bits) for format code "i"'
+                              ' [-fpermissive]\n')
 
     def test_not_enough_varargs(self):
         src = """

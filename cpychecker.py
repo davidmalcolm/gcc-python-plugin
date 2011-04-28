@@ -166,18 +166,20 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, fmt_string, arg_num, exp_type, vararg):
+    def __init__(self, fmt_string, arg_num, arg_fmt_string, exp_type, vararg):
         super(self.__class__, self).__init__(fmt_string)
         self.arg_num = arg_num
+        self.arg_fmt_string = arg_fmt_string
         self.exp_type = exp_type
         self.vararg = vararg
 
     def __str__(self):
-        return 'Mismatching type of argument %i in "%s": expected "%s" (pointing to %i bits) but got "%s" (pointing to %i bits)' % (
-            self.arg_num,
-            self.fmt_string,
-            self.exp_type, self.exp_type.dereference.precision,
-            self.vararg.type, self.vararg.operand.type.precision)
+        return (('Mismatching type in call to %s with format string "%s":'
+                 ' argument %i ("%s") had type "%s" (pointing to %i bits)'
+                 ' but was expecting "%s" (pointing to %i bits) for format code "%s"')
+                % ("PyArg_ParseTuple", self.fmt_string,
+                   self.arg_num, self.vararg, self.vararg.type, self.vararg.operand.type.precision,
+                   self.exp_type, self.exp_type.dereference.precision, self.arg_fmt_string))
 
 def type_equality(exp_type, vararg):
     log('comparing exp_type: %s (%r) with vararg: %s (%r)' % (exp_type, exp_type, vararg, vararg))
@@ -275,11 +277,12 @@ def check_pyargs(fun):
                 for index, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
                     # FIXME: use the correct type, and it should be a ptr to it...
                     exp_type = gcc.Type.int().pointer
+                    arg_fmt_string = 'i' # FIXME
                     # ideally this shouldn't need calling; it should just be an attribute
 
                     if not type_equality(exp_type, vararg):
                         gcc.permerror(vararg.location,
-                                      str(MismatchingType(fmt_string, index + 1, exp_type, vararg)))
+                                      str(MismatchingType(fmt_string, index + 3, arg_fmt_string, exp_type, vararg)))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
