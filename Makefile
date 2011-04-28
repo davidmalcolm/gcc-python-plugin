@@ -58,3 +58,6 @@ dump_gimple:
 
 debug: plugin
 	cc1 $(TEST_CFLAGS) $(shell pwd)/test.c 
+
+demo: plugin
+	gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c
