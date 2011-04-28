@@ -49,19 +49,21 @@ class AnalyzerTests(unittest.TestCase):
     def test_simple(self):
         #  Erroneous argument parsing of socket.htons() on 64bit big endian
         #  machines from CPython's Modules/socket.c; was fixed in svn r34931
+        #  FIXME: the original had tab indentation, but what does this mean
+        # for "column" offsets in the output?
         src = """
 extern uint16_t htons(uint16_t hostshort);
 
 PyObject *
 socket_htons(PyObject *self, PyObject *args)
 {
-	unsigned long x1, x2;
+    unsigned long x1, x2;
 
-	if (!PyArg_ParseTuple(args, "i:htons", &x1)) {
-		return NULL;
-	}
-	x2 = (int)htons((short)x1);
-	return PyInt_FromLong(x2);
+    if (!PyArg_ParseTuple(args, "i:htons", &x1)) {
+        return NULL;
+    }
+    x2 = (int)htons((short)x1);
+    return PyInt_FromLong(x2);
 }
 """
         self.assertFindsError(src,

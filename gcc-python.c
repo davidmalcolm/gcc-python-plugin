@@ -10,6 +10,7 @@ int plugin_is_GPL_compatible;
 
 #include "tree.h"
 #include "function.h"
+#include "diagnostic.h"
 
 #define GCC_PYTHON_TRACE_ALL_EVENTS 0
 #if GCC_PYTHON_TRACE_ALL_EVENTS
@@ -149,6 +150,9 @@ gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE(void *gcc_data, void *user_da
     /* gcc's handy debug function for trees, apparently from print-tree.c: */
     debug_tree(fndecl);
 
+    //printf("debug_tree(DECL_STRUCT_FUNCTION(fndecl));\n");
+    //debug_tree((tree)DECL_STRUCT_FUNCTION(fndecl));
+
     //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
     assert(fndecl);
 
@@ -219,9 +223,37 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject*
+gcc_python_permerror(PyObject *self, PyObject *args)
+{
+    PyGccLocation *loc = NULL;
+    char *msgid = NULL;
+    PyObject *result_obj = NULL;
+    bool result_b;
+
+    if (!PyArg_ParseTuple(args,
+			  "O!"
+			  "s"
+			  ":permerror",
+			  &gcc_LocationType, &loc, 
+			  &msgid)) {
+        return NULL;
+    }
+
+    /* Invoke the GCC function: */
+    result_b = permerror(loc->loc, msgid);
+
+    result_obj = PyBool_FromLong(result_b);
+
+    return result_obj;
+}
+
 static PyMethodDef GccMethods[] = {
     {"register_callback", gcc_python_register_callback, METH_VARARGS,
      "Register a callback, to be called when various GCC events occur."},
+    
+    {"permerror", gcc_python_permerror, METH_VARARGS,
+     NULL},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}

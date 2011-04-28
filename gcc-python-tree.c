@@ -660,6 +660,46 @@ gcc_Tree_str(struct PyGccTree * self)
 }
 
 PyObject *
+gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
+{
+    struct PyGccTree *treeobj1;
+    struct PyGccTree *treeobj2;
+    int cond;
+    PyObject *result_obj;
+
+    if (!PyObject_TypeCheck(o1, &gcc_TreeType)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+    if (!PyObject_TypeCheck(o2, &gcc_TreeType)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    treeobj1 = (struct PyGccTree *)o1;
+    treeobj2 = (struct PyGccTree *)o2;
+
+    switch (op) {
+    case Py_EQ:
+	cond = (treeobj1->t == treeobj2->t);
+	break;
+
+    case Py_NE:
+	cond = (treeobj1->t != treeobj2->t);
+	break;
+
+    default:
+        result_obj = Py_NotImplemented;
+        goto out;
+    }
+    result_obj = cond ? Py_True : Py_False;
+
+ out:
+    Py_INCREF(result_obj);
+    return result_obj;
+}
+
+PyObject *
 gcc_Declaration_repr(struct PyGccTree * self)
 {
     PyObject *name = NULL;

@@ -34,6 +34,9 @@ PyObject *
 gcc_Tree_str(struct PyGccTree * self);
 
 PyObject *
+gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op);
+
+PyObject *
 gcc_Function_repr(struct PyGccFunction * self);
 
 PyObject *

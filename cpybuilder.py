@@ -59,7 +59,7 @@ class PyMethodDef:
     def __init__(self, name, fn_name, args, docstring):
         self.name = name
         self.fn_name = fn_name
-        assert args in ('METH_VARARGS', ) # FIXME
+        #assert args in ('METH_VARARGS', ) # FIXME
         self.args = args        
         self.docstring = docstring
 
@@ -79,6 +79,9 @@ class PyMethodTable(NamedEntity):
         result += '    {NULL, NULL, 0, NULL} /* Sentinel */\n'
         result += '};\n'
         return result
+
+    def add_method(self, name, fn_name, args, docstring):
+        self.methods.append(PyMethodDef(name, fn_name, args, docstring))
 
 class PyTypeObject(NamedEntity):
     def __init__(self, identifier, localname, tp_name, struct_name, **kwargs):

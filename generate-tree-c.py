@@ -314,7 +314,8 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                           struct_name = 'struct PyGccTree',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = 'gcc_Tree_getset_table',
-                          tp_str = '(reprfunc)gcc_Tree_str')
+                          tp_str = '(reprfunc)gcc_Tree_str',
+                          tp_richcompare = 'gcc_Tree_richcompare')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
@@ -405,6 +406,8 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
                               'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))',
                               "The name of the type as a gcc.Tree, or None")
 
+            methods = PyMethodTable('gcc_Type_methods', [])
+
             # Add the standard C integer types as properties.
             #
             # Tree nodes for the standard C integer types are defined in tree.h by
@@ -429,10 +432,23 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
                 # strip off the "itk_" prefix
                 assert std_type.startswith('itk_')
                 stddef = std_type[4:]
-                add_simple_getter(stddef,
-                                  'gcc_python_make_wrapper_tree(integer_types[%s])' % std_type,
-                                  "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
-
+                #add_simple_getter(stddef,
+                #                  'gcc_python_make_wrapper_tree(integer_types[%s])' % std_type,
+                #                  "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
+                cu.add_defn(("""
+PyObject*
+%s(PyObject *cls, PyObject *args)
+{
+    return gcc_python_make_wrapper_tree(integer_types[%s]);
+}
+""")                           % ('gcc_Type_get_%s' % stddef,
+                               std_type))
+                methods.add_method('%s' % stddef,
+                                   'gcc_Type_get_%s' % stddef,
+                                   'METH_CLASS|METH_NOARGS',
+                                   "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
+            pytype.tp_methods = methods.identifier
+            cu.add_defn(methods.c_defn())
         cu.add_defn(getsettable.c_defn())            
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
