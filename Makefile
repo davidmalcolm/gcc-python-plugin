@@ -51,11 +51,11 @@ TEST_CFLAGS= \
 
 # Catch-all test for experimentation with the API:
 test: plugin
-	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
+	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # Selftest for the cpychecker.py code:
 analyze: plugin
-	python analyzer-unit-tests.py
+	PYTHONPATH=$(shell pwd) python analyzer-unit-tests.py
 
 # Selftest for the cpybuilder code:
 testcpybuilder:
@@ -69,4 +69,4 @@ debug: plugin
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
-	gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c
+	PYTHONPATH=$(shell pwd) gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c

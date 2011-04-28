@@ -10,8 +10,6 @@ def log(msg):
     if 0:
         sys.stderr.write('%s\n' % msg)
 
-import sys
-sys.path.append('.') # FIXME
 from gccutils import get_src_for_loc
 
 

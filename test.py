@@ -7,10 +7,13 @@ import gcc
 #print 'sys.path:', sys.path
 #help(gcc)
 
-def get_src_for_loc(loc):
-    # Given a gcc.Location, get the source line as a string
-    import linecache
-    return linecache.getline(loc.file, loc.line).rstrip()
+print(help(gcc.AddrExpr))
+print(gcc.Type)
+print(gcc.Type.char)
+print(help(gcc.Type))
+
+
+from gccutils import get_src_for_loc
 
 def my_pass_execution_callback(*args, **kwargs):
     print('my_pass_execution_callback was called: args=%r  kwargs=%r' % (args, kwargs))
