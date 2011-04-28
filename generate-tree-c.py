@@ -405,6 +405,9 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
             add_simple_getter('name',
                               'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))',
                               "The name of the type as a gcc.Tree, or None")
+            add_simple_getter('pointer',
+                              'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
+                              "The gcc.PointerType representing '(this_type *)'")
 
             methods = PyMethodTable('gcc_Type_methods', [])
 
@@ -505,6 +508,11 @@ def generate_tree_code_classes():
             add_simple_getter('precision',
                               'PyInt_FromLong(TYPE_PRECISION(self->t))',
                               'The precision of this type in bits, as an int (e.g. 32)')
+
+        if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
+            add_simple_getter('dereference',
+                              'gcc_python_make_wrapper_tree(TREE_TYPE(self->t))',
+                              "The gcc.Type that this type points to'")
 
         cu.add_defn(getsettable.c_defn())
 
