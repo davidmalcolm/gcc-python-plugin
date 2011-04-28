@@ -38,6 +38,17 @@ All of my coding so far has been on Fedora 15 x86_64, using::
 and I don't know to what extent it will be compatible with other versions and
 architectures.
 
+The code also makes some assumptions about the Python version you have
+installed (grep for "PyRuntime" in the .py files).  I've been using::
+
+    python-devel-2.7.1-5.fc15.x86_64
+    python-debug-2.7.1-5.fc15.x86_64
+    python3-debug-3.2-0.9.rc1.fc15.x86_64
+    python3-devel-3.2-0.9.rc1.fc15.x86_64
+
+but you may have to hack up the `PyRuntime()` invocations in the code to get
+it to build on other machines.
+
 There isn't an installer yet.  In theory you should be able to add these
 arguments to the gcc invocation::
 
