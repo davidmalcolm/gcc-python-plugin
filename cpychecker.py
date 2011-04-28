@@ -7,7 +7,7 @@ except ImportError:
 import sys
 
 def log(msg):
-    if 1:
+    if 0:
         sys.stderr.write('%s\n' % msg)
 
 import sys
