@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import unittest
 from subprocess import Popen, PIPE
@@ -8,23 +9,37 @@ from testcpybuilder import BuiltModule, PyRuntime, SimpleModule, CompilationErro
 pyruntime = PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config')
 
 class ExpectedErrorNotFound(CompilationError):
-    def __init__(self, experr, bm):
+    def __init__(self, expected_err, actual_err, bm):
         CompilationError.__init__(self, bm)
-        self.experr = experr
+        self.expected_err = expected_err
+        self.actual_err = actual_err
+
 
     def _describe_activity(self):
         result = 'This error was expected, but was not found:\n'
-        result += '  ' + self._indent(self.experr) + '\n'
+        result += '  ' + self._indent(self.expected_err) + '\n'
         result += '  whilst compiling:\n'
         result += '    ' + self.bm.srcfile + '\n'
         result += '  using:\n'
-        result += '    ' + ' '.join(self.bm.args)
+        result += '    ' + ' '.join(self.bm.args) + '\n'
+        
+        from difflib import unified_diff
+        for line in unified_diff(self.expected_err.splitlines(),
+                                 self.actual_err.splitlines(),
+                                 fromfile='Expected stderr',
+                                 tofile='Actual stderr',
+                                 lineterm=""):
+            result += '%s\n' % line
         return result
 
 class AnalyzerTests(unittest.TestCase):
+    def compile_src(self, bm):
+        bm.compile_src(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),
+                                     '-fplugin-arg-python-script=cpychecker.py'])
+
     def build_module(self, bm):
-        bm.build(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),
-                               '-fplugin-arg-python-script=cpychecker.py'])
+        bm.write_src()
+        self.compile_src(bm)
 
     def assertNoErrors(self, src):
         sm = SimpleModule()
@@ -38,10 +53,12 @@ class AnalyzerTests(unittest.TestCase):
         sm.cu.add_defn(src)
         bm = BuiltModule(sm, pyruntime)
         try:
-            self.build_module(bm)
+            bm.write_src()
+            experr = experr.replace('$(SRCFILE)', bm.srcfile)
+            self.compile_src(bm)
         except CompilationError, exc:
             if experr not in exc.err:
-                raise ExpectedErrorNotFound(experr, bm)
+                raise ExpectedErrorNotFound(experr, exc.err, bm)
         else:
             raise ExpectedErrorNotFound(experr, bm)
         bm.cleanup()
@@ -67,7 +84,10 @@ socket_htons(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              'buggy.c:13: Mismatching type of argument 1: expected "int *" for PyArg_ParseTuple format string "i" but got "unsigned long *"')
+                              '$(SRCFILE): In function ‘socket_htons’:\n'
+                              '$(SRCFILE):17:26: error: Mismatching type of argument 1 in "i:htons": expected "int *" but got "long unsigned int *\n'
+                              '" [-fpermissive]\n')
+        # the trailing whitespace/newline is a bug
 
     def test_not_enough_varargs(self):
         src = """
@@ -81,7 +101,8 @@ not_enough_varargs(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              'example.c:13:25:not_enough_varargs:Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0')
+                              '$(SRCFILE): In function ‘not_enough_varargs’:\n'
+                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0 [-fpermissive]\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -96,7 +117,8 @@ too_many_varargs(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              'example.c:14:26:too_many_varargs:Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2')
+                              '$(SRCFILE): In function ‘too_many_varargs’:\n'
+                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2 [-fpermissive]\n')
 
     def test_correct_usage(self):
         src = """

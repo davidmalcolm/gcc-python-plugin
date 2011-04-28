@@ -10,56 +10,29 @@ def log(msg):
     if 1:
         sys.stderr.write('%s\n' % msg)
 
-had_errors = False
-
-def error(msg):
-    global had_errors
-    sys.stderr.write('%s\n' % msg)
-    had_errors = True
-
 import sys
 sys.path.append('.') # FIXME
 from gccutils import get_src_for_loc
 
 
-class RichLocation:
-    def __init__(self, loc, fnname):
-        self.loc = loc
-        self.fnname = fnname
-
-    def __str__(self):
-        return '%s:%s:%s:%s' % (self.loc.file,
-                                self.loc.line, self.loc.column,
-                                self.fnname)
-
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code
-    def __init__(self, richloc):
-        self.richloc = richloc
-
-    def __str__(self):
-        return '%s:%s' % (self.richloc, 
-                          self._get_desc())
-
-    def _get_desc(self):
-        # Hook for additional descriptive text about the error
-        raise NotImplementedError
+    pass
 
 class FormatStringError(CExtensionError):
-    def __init__(self, richloc, fmt_string):
-        CExtensionError.__init__(self, richloc)
+    def __init__(self, fmt_string):
         self.fmt_string = fmt_string
 
 class UnknownFormatChar(FormatStringError):
-    def __init__(self, richloc, fmt_string, ch):
-        FormatStringError.__init__(self, richloc, fmt_string)
+    def __init__(self, fmt_string, ch):
+        FormatStringError.__init__(self, fmt_string)
         self.ch = ch
 
-    def _get_desc(self):
+    def __str__(self):
         return "unknown format char in \"%s\": '%s'" % (self.fmt_string, self.ch)
 
 class UnhandledCode(UnknownFormatChar):
-    def _get_desc(self):
+    def __str__(self):
         return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
 
@@ -167,12 +140,12 @@ def get_types(richloc, strfmt):
                               
 
 class WrongNumberOfVars(FormatStringError):
-    def __init__(self, richloc, fmt_string, exp_types, varargs):
-        FormatStringError.__init__(self, richloc, fmt_string)
+    def __init__(self, fmt_string, exp_types, varargs):
+        FormatStringError.__init__(self, fmt_string)
         self.exp_types = exp_types
         self.varargs = varargs
 
-    def _get_desc(self):
+    def __str__(self):
         return '%s in call to %s with format string "%s" : expected %i extra arguments (%s), but got %i' % (
             self._get_desc_prefix(),
             'PyArg_ParseTuple',
@@ -193,13 +166,13 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, richloc, fmt_string, arg_num, exp_type_str, vararg):
-        super(self.__class__, self).__init__(richloc, fmt_string)
+    def __init__(self, fmt_string, arg_num, exp_type_str, vararg):
+        super(self.__class__, self).__init__(fmt_string)
         self.arg_num = arg_num
         self.exp_type_str = exp_type_str
         self.vararg = vararg
 
-    def _get_desc(self):
+    def __str__(self):
         return 'Mismatching type of argument %i in "%s": expected "%s" but got "%s"' % (
             self.arg_num,
             self.fmt_string,
@@ -284,7 +257,7 @@ def check_pyargs(fun):
             if fmt_string:
                 log('fmt_string: %r' % fmt_string)
 
-                richloc = RichLocation(stmt.loc, fun.decl.name)
+                loc = stmt.loc
 
                 # Figure out expected types, based on the format string...
                 try:
@@ -298,16 +271,16 @@ def check_pyargs(fun):
                 varargs = stmt.args[2:]
                 # log('varargs: %r' % varargs)
                 if len(varargs) < len(exp_types):
-                    error(NotEnoughVars(richloc, fmt_string, exp_types, varargs))
+                    gcc.permerror(loc, str(NotEnoughVars(fmt_string, exp_types, varargs)))
                     return
 
                 if len(varargs) > len(exp_types):
-                    error(TooManyVars(richloc, fmt_string, exp_types, varargs))
+                    gcc.permerror(loc, str(TooManyVars(fmt_string, exp_types, varargs)))
                     return
                     
                 for index, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
                     if not type_equality(exp_type, vararg):
-                        error(MismatchingType(richloc, fmt_string, index + 1, exp_type, vararg))
+                        gcc.permerror(loc, str(MismatchingType(fmt_string, index + 1, exp_type, vararg)))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
@@ -328,9 +301,6 @@ def on_pass_execution(optpass, fun):
     log(fun)
     if fun:
         check_pyargs(fun)
-    
-    if had_errors:
-        sys.exit(1)
 
 if __name__ == '__main__':    
     gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,

@@ -344,11 +344,11 @@ class CommandError(RuntimeError):
         result += 'Stdout:\n'
         result += self._indent(self.out)
         result += 'Stderr:\n'
-        result += self._indent(self.err)
+        result += self._indent(self.err, 4)
         return result
 
-    def _indent(self, txt):
-        return '\n'.join(['  ' + line for line in txt.splitlines()])
+    def _indent(self, txt, size=2):
+        return '\n'.join([' '*size + line for line in txt.splitlines()])
     
 class PyRuntimeError(CommandError):
     def __init__(self, runtime, cmd, out, err, p):

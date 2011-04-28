@@ -29,7 +29,7 @@ class BuiltModule:
         self.sm = sm
         self.runtime = runtime
 
-    def build(self, extra_cflags = None):
+    def write_src(self, extra_cflags = None):
         self.tmpdir = tempfile.mkdtemp()
 
         self.srcfile = os.path.join(self.tmpdir, 'example.c')
@@ -38,7 +38,9 @@ class BuiltModule:
         f = open(self.srcfile, 'w')
         f.write(self.sm.cu.as_str())
         f.close()
-        
+
+
+    def compile_src(self, extra_cflags = None):
         cflags = self.runtime.get_build_flags()
         self.args = ['gcc']
         self.args += ['-o', self.modfile]
@@ -58,6 +60,10 @@ class BuiltModule:
             raise CompilationError(self)
 
         assert os.path.exists(self.modfile)
+
+    def build(self, extra_cflags = None):
+        self.write_src()
+        self.compile_src(extra_cflags)
 
     def run_command(self, cmd):
         """Run the command (using the appropriate PyRuntime), adjusting sys.path first"""
