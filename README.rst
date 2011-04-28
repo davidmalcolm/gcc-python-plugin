@@ -65,7 +65,8 @@ Overview of the code
 --------------------
 This is currently three projects in one:
 
-gcc-python-*: the plugin for GCC
+gcc-python-*: the plugin for GCC.  The entrypoint (`init_plugin`) is in
+gcc-python.c
 
 cpychecker: a script written for the plugin, in which I'm building new compiler
 warnings to help people write CPython extension code.
