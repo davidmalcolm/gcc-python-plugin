@@ -18,6 +18,8 @@ PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
+all: analyze testcpybuilder demo test
+
 plugin: python.so
 
 python.so: $(PLUGIN_OBJECT_FILES)
@@ -47,11 +49,17 @@ TEST_CFLAGS= \
   -fplugin=$(shell pwd)/python.so \
   -fplugin-arg-python-script=test.py
 
+# Catch-all test for experimentation with the API:
 test: plugin
 	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
+# Selftest for the cpychecker.py code:
 analyze: plugin
 	python analyzer-unit-tests.py
+
+# Selftest for the cpybuilder code:
+testcpybuilder:
+	python testcpybuilder.py
 
 dump_gimple:
 	gcc -fdump-tree-gimple $(shell pwd)/test.c
@@ -59,5 +67,6 @@ dump_gimple:
 debug: plugin
 	cc1 $(TEST_CFLAGS) $(shell pwd)/test.c 
 
+# A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
 	gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c
