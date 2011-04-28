@@ -60,7 +60,7 @@ class AnalyzerTests(unittest.TestCase):
             if experr not in exc.err:
                 raise ExpectedErrorNotFound(experr, exc.err, bm)
         else:
-            raise ExpectedErrorNotFound(experr, bm)
+            raise ExpectedErrorNotFound(experr, bm.err, bm)
         bm.cleanup()
                    
     def test_simple(self):
@@ -85,8 +85,7 @@ socket_htons(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘socket_htons’:\n'
-                              '$(SRCFILE):17:26: error: Mismatching type of argument 1 in "i:htons": expected "int *" but got "long unsigned int *\n'
-                              '" [-fpermissive]\n')
+                              '$(SRCFILE):17:26: error: Mismatching type of argument 1 in "i:htons": expected "int *" (pointing to 32 bits) but got "long unsigned int *" (pointing to 64 bits) [-fpermissive]\n')
         # the trailing whitespace/newline is a bug
 
     def test_not_enough_varargs(self):

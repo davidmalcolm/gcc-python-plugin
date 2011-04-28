@@ -46,15 +46,21 @@ PyObject*
 gcc_python_pretty_printer_as_string(PyObject *obj)
 {
     struct PyGccPrettyPrinter *ppobj;
+    int len;
 
     /* FIXME: */
     assert(Py_TYPE(obj) == &gcc_PrettyPrinterType);
     ppobj = (struct PyGccPrettyPrinter *)obj;
 
-    /* Flush the pp first: */
+    /* Flush the pp first.  This forcibly adds a trailing newline: */
     pp_flush(&ppobj->pp);
 
-    return PyString_FromString(ppobj->buf);
+    /* Convert to a python string, leaving off the trailing newline: */
+    len = strlen(ppobj->buf);
+    assert(len > 0);
+    assert('\n' == ppobj->buf[len - 1]);
+    return PyString_FromStringAndSize(ppobj->buf,
+				      len - 1);
 }
 
 void

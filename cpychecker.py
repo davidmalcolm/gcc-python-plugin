@@ -166,21 +166,21 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(FormatStringError):
-    def __init__(self, fmt_string, arg_num, exp_type_str, vararg):
+    def __init__(self, fmt_string, arg_num, exp_type, vararg):
         super(self.__class__, self).__init__(fmt_string)
         self.arg_num = arg_num
-        self.exp_type_str = exp_type_str
+        self.exp_type = exp_type
         self.vararg = vararg
 
     def __str__(self):
-        return 'Mismatching type of argument %i in "%s": expected "%s" but got "%s"' % (
+        return 'Mismatching type of argument %i in "%s": expected "%s" (pointing to %i bits) but got "%s" (pointing to %i bits)' % (
             self.arg_num,
             self.fmt_string,
-            self.exp_type_str,
-            self.vararg.type)
+            self.exp_type, self.exp_type.dereference.precision,
+            self.vararg.type, self.vararg.operand.type.precision)
 
-def type_equality(exp_type_str, vararg):
-    log('comparing exp_type: %r with vararg: %r' % (exp_type_str, vararg))
+def type_equality(exp_type, vararg):
+    log('comparing exp_type: %s (%r) with vararg: %s (%r)' % (exp_type, exp_type, vararg, vararg))
     # FIXME:
     log(dir(vararg))
     log('vararg.type: %r' % vararg.type)
@@ -198,20 +198,14 @@ def type_equality(exp_type_str, vararg):
     log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
     log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
 
-    if exp_type_str == 'int *':
-        c_int = gcc.Type.int()
-        # ideally this shouldn't need calling; it should just be an attribute
+    log('exp_type: %r' % exp_type)
+    log('exp_type: %s' % exp_type)
+    #log('exp_type.unsigned: %r' % exp_type.unsigned)
+    #log('exp_type.precision: %s' % exp_type.precision)
+    log(dir(gcc.Type))
 
-        log('c_int: %r' % c_int)
-        log('c_int: %s' % c_int)
-        log('c_int.unsigned: %r' % c_int.unsigned)
-        log('c_int.precision: %s' % c_int.precision)
-        log(dir(gcc.Type))
-
-        exp_type = c_int
-
-        if vararg.operand.type != exp_type:
-            return False
+    if vararg.type != exp_type:
+        return False
 
     # where are the builtin types? 
     # I see /usr/src/debug/gcc-4.6.0-20110321/obj-x86_64-redhat-linux/gcc/i386-builtin-types.inc
@@ -277,10 +271,15 @@ def check_pyargs(fun):
                 if len(varargs) > len(exp_types):
                     gcc.permerror(loc, str(TooManyVars(fmt_string, exp_types, varargs)))
                     return
-                    
+
                 for index, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
+                    # FIXME: use the correct type, and it should be a ptr to it...
+                    exp_type = gcc.Type.int().pointer
+                    # ideally this shouldn't need calling; it should just be an attribute
+
                     if not type_equality(exp_type, vararg):
-                        gcc.permerror(loc, str(MismatchingType(fmt_string, index + 1, exp_type, vararg)))
+                        gcc.permerror(vararg.location,
+                                      str(MismatchingType(fmt_string, index + 1, exp_type, vararg)))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
