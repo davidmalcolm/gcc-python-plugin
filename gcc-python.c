@@ -128,7 +128,9 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate, PyObject *wrapped_g
 
     if (!result) {
 	PyErr_PrintEx(1);
-	goto cleanup;
+
+	/* Treat an unhandled Python error as a fatal GCC-level error */
+	fatal_error("Unhandled Python exception raised within callback");
     }
 
     // FIXME: the result is ignored
