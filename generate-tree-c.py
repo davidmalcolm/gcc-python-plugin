@@ -411,6 +411,33 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
 
             methods = PyMethodTable('gcc_Type_methods', [])
 
+
+            def add_type(c_expr_for_node, typename):
+                # Expose the given global type node within the gcc.Tree API
+                #
+                # The table is populated by tree.c:build_common_builtin_nodes
+                # but unfortunately this seems to be called after our plugin is
+                # initialized.
+                #
+                # Hence we add them as properties, so that they can be looked up on
+                # demand, rather than trying to look them up once when the module
+                # is set up
+                cu.add_defn("""
+PyObject*
+%s(PyObject *cls, PyObject *args)
+{
+    return gcc_python_make_wrapper_tree(%s);
+}
+"""                         % ('gcc_Type_get_%s' % typename, c_expr_for_node))
+                if typename == 'size_t':
+                    desc = typename
+                else:
+                    desc = typename.replace('_', ' ')
+                methods.add_method('%s' % typename,
+                                   'gcc_Type_get_%s' % typename,
+                                   'METH_CLASS|METH_NOARGS',
+                                   "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % desc)
+
             # Add the standard C integer types as properties.
             #
             # Tree nodes for the standard C integer types are defined in tree.h by
@@ -418,13 +445,6 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
             # with macros to look into it of this form:
             #       #define unsigned_type_node    integer_types[itk_unsigned_int]
             #
-            # The table is populated by tree.c:build_common_builtin_nodes
-            # but unfortunately this seems to be called after our plugin is
-            # initialized.
-            #
-            # Hence we add them as properties, so that they can be looked up on
-            # demand, rather than trying to look them up once when the module
-            # is set up
             for std_type in ('itk_char', 'itk_signed_char',
                              'itk_unsigned_char', 'itk_short',
                              'itk_unsigned_short', 'itk_int',
@@ -438,18 +458,25 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
                 #add_simple_getter(stddef,
                 #                  'gcc_python_make_wrapper_tree(integer_types[%s])' % std_type,
                 #                  "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
-                cu.add_defn(("""
-PyObject*
-%s(PyObject *cls, PyObject *args)
-{
-    return gcc_python_make_wrapper_tree(integer_types[%s]);
-}
-""")                           % ('gcc_Type_get_%s' % stddef,
-                               std_type))
-                methods.add_method('%s' % stddef,
-                                   'gcc_Type_get_%s' % stddef,
-                                   'METH_CLASS|METH_NOARGS',
-                                   "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
+                add_type('integer_types[%s]' % std_type, stddef)
+
+            # Similarly,
+            #   extern GTY(()) tree global_trees[TI_MAX];
+            # holds various nodes, including many with a _TYPE suffix.
+            # Here are some of them:
+            for ti in ('TI_UINT32_TYPE', 'TI_UINT64_TYPE',
+                       'TI_FLOAT_TYPE', 'TI_DOUBLE_TYPE',
+                       'TI_LONG_DOUBLE_TYPE', 'TI_VOID_TYPE', 'TI_SIZE_TYPE'):
+                # strip off the "TI_" prefix and "_TYPE" suffix:
+                assert ti.startswith('TI_')
+                assert ti.endswith('_TYPE')
+
+                if ti == 'TI_SIZE_TYPE':
+                    name = 'size_t'
+                else:
+                    name = ti[3:-5].lower()
+                add_type('global_trees[%s]' % ti, name)
+
             pytype.tp_methods = methods.identifier
             cu.add_defn(methods.c_defn())
         cu.add_defn(getsettable.c_defn())            
