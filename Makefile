@@ -58,17 +58,17 @@ test: plugin
 
 # Selftest for the cpychecker.py code:
 analyze: plugin
-	PYTHONPATH=$(shell pwd) python analyzer-unit-tests.py
+	PYTHONPATH=$(shell pwd) python analyzer-unit-tests.py -v
 
 # Selftest for the cpybuilder code:
 testcpybuilder:
-	python testcpybuilder.py
+	python testcpybuilder.py -v
 
 dump_gimple:
 	gcc -fdump-tree-gimple $(shell pwd)/test.c
 
 debug: plugin
-	cc1 $(TEST_CFLAGS) $(shell pwd)/test.c 
+	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
