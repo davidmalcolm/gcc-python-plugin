@@ -47,6 +47,7 @@ class AnalyzerTests(unittest.TestCase):
         bm = BuiltModule(sm, pyruntime)
         self.build_module(bm)
         bm.cleanup()
+        return bm
 
     def assertFindsError(self, src, experr):
         sm = SimpleModule()
@@ -62,8 +63,22 @@ class AnalyzerTests(unittest.TestCase):
         else:
             raise ExpectedErrorNotFound(experr, bm.err, bm)
         bm.cleanup()
+        return bm
+
+    def test_bogus_format_string(self):
+        src = ('PyObject *\n'
+               'bogus_format_string(PyObject *self, PyObject *args)\n'
+               '{\n'
+               '    if (!PyArg_ParseTuple(args, "This is not a valid format string")) {\n'
+               '  	    return NULL;\n'
+               '    }\n'
+               '    Py_RETURN_NONE;\n'
+               '}\n')
+        experr = ('$(SRCFILE): In function ‘bogus_format_string’:\n'
+                  '$(SRCFILE):12:26: error: unknown format char in "This is not a valid format string": \'T\' [-fpermissive]\n')
+        self.assertFindsError(src, experr)
                    
-    def test_simple(self):
+    def test_finding_htons_error(self):
         #  Erroneous argument parsing of socket.htons() on 64bit big endian
         #  machines from CPython's Modules/socket.c; was fixed in svn r34931
         #  FIXME: the original had tab indentation, but what does this mean
@@ -135,9 +150,84 @@ correct_usage(PyObject *self, PyObject *args)
 """
         self.assertNoErrors(src)
 
-from cpychecker import get_types
+    def _test_simple_code(self, code, typename, exptypename=None):
+        if not exptypename:
+            exptypename = typename
 
-class TestArgParsing(unittest.TestCase):
+        def _test_correct_usage_of_simple_code(self, code, typename):
+            src = ('PyObject *\n'
+                   'correct_usage_of_%(code)s(PyObject *self, PyObject *args)\n'
+                   '{\n'
+                   '    %(typename)s val;\n'
+                   '    if (!PyArg_ParseTuple(args, "%(code)s", &val)) {\n'
+                   '  	    return NULL;\n'
+                   '    }\n'
+                   '    Py_RETURN_NONE;\n'
+                   '}\n') % locals()
+            self.assertNoErrors(src)
+
+        def _test_incorrect_usage_of_simple_code(self, code, typename, exptypename):
+            src = ('PyObject *\n'
+                   'incorrect_usage_of_%(code)s(PyObject *self, PyObject *args)\n'
+                   '{\n'
+                   '    void *val;\n'
+                   '    if (!PyArg_ParseTuple(args, "%(code)s", &val)) {\n'
+                   '  	    return NULL;\n'
+                   '    }\n'
+                   '    Py_RETURN_NONE;\n'
+                   '}\n') % locals()
+            experr = ('$(SRCFILE): In function ‘incorrect_usage_of_%(code)s’:\n'
+                      '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
+            bm = self.assertFindsError(src, experr)
+                                       
+
+        _test_correct_usage_of_simple_code(self, code, typename)
+        _test_incorrect_usage_of_simple_code(self, code, typename, exptypename)
+
+        
+    def test_simple_code_b(self):
+        self._test_simple_code('b', 'unsigned char')
+
+    def test_simple_code_B(self):
+        self._test_simple_code('B', 'unsigned char')
+
+    def test_simple_code_h(self):
+        self._test_simple_code('h', 'short', 'short int')
+
+    def test_simple_code_H(self):
+        self._test_simple_code('H', 'unsigned short', 'short unsigned int')
+
+    def test_simple_code_i(self):
+        self._test_simple_code('i', 'int')
+
+    def test_simple_code_I(self):
+        self._test_simple_code('I', 'unsigned int')
+
+    # ('n','Py_ssize_t'),,
+
+    def test_simple_code_l(self):
+        self._test_simple_code('l', 'long', 'long int')
+
+    def test_simple_code_k(self):
+        self._test_simple_code('k', 'unsigned long', 'long unsigned int')
+
+    # ('L','PY_LONG_LONG'),
+
+    # ('K','unsigned PY_LONG_LONG'),
+
+    def test_simple_code_f(self):
+        self._test_simple_code('f', 'float')
+
+    def test_simple_code_d(self):
+        self._test_simple_code('d', 'double')
+
+    # ('D','Py_complex'),
+
+    def test_simple_code_c(self):
+        self._test_simple_code('c', 'char')
+
+# Test disabled for now: we can't easily import this under gcc anymore:
+class TestArgParsing: # (unittest.TestCase):
     def assert_args(self, arg_str, exp_result):
         result = get_types(None, arg_str)
         self.assertEquals(result, exp_result)

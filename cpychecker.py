@@ -33,6 +33,47 @@ class UnhandledCode(UnknownFormatChar):
     def __str__(self):
         return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
+class Argument:
+    """
+    One fragment of the string arg to PyArg_ParseTuple and friends
+    """
+    def __init__(self, text, expected_types):
+        self.text = text
+        self.expected_types = expected_types
+
+class FormatString:
+    """
+    Python class representing the string arg to PyArg_ParseTuple and friends
+    """
+    def __init__(self, text):
+        self.text = text
+
+def type_of_simple_arg(arg):
+    # Convert 1-character argument code to a gcc.Type, covering the easy cases
+    #
+    # Analogous to Python/getargs.c:convertsimple, this is the same order as
+    # that function's "switch" statement:
+    simple = {'b': gcc.Type.unsigned_char,
+              'B': gcc.Type.unsigned_char,
+              'h': gcc.Type.short,
+              'H': gcc.Type.unsigned_short,
+              'i': gcc.Type.int,
+              'I': gcc.Type.unsigned_int,
+              # 'n':'Py_ssize_t',
+              'l': gcc.Type.long,
+              'k': gcc.Type.unsigned_long,
+              # 'L':'PY_LONG_LONG',
+              # 'K':'unsigned PY_LONG_LONG',
+              'f': gcc.Type.float,
+              'd': gcc.Type.double,
+              # 'D':'Py_complex',
+              'c': gcc.Type.char,
+              }
+    if arg in simple:
+        # FIXME: ideally this shouldn't need calling; it should just be an
+        # attribute:
+        return simple[arg]()
+    
 
 def get_types(richloc, strfmt):
     """
@@ -59,25 +100,9 @@ def get_types(richloc, strfmt):
         if c =='|':
             continue
 
-        # From convertsimple:
-        simple = {'b':'char',
-                  'B':'char',
-                  'h':'short',
-                  'H':'short',
-                  'i':'int',
-                  'I':'int',
-                  'n':'Py_ssize_t',
-                  'l':'long',
-                  'k':'unsigned long',
-                  'L':'PY_LONG_LONG',
-                  'K':'unsigned PY_LONG_LONG',
-                  'f':'float',
-                  'd':'double',
-                  'D':'Py_complex',
-                  'c':'char',
-                  }
-        if c in simple:
-            result.append(simple[c] + ' *')
+        simple_type = type_of_simple_arg(c)
+        if simple_type:
+            result.append(simple_type.pointer)
 
         elif c in ['s', 'z']: # string, possibly NULL/None
             if next == '#':
@@ -133,7 +158,7 @@ def get_types(richloc, strfmt):
                 result += ['char * *', 'int *']
                 i += 1
         else:
-            raise UnknownFormatChar(richloc, strfmt, c)
+            raise UnknownFormatChar(strfmt, c)
     return result
                               
 
@@ -172,12 +197,31 @@ class MismatchingType(FormatStringError):
         self.vararg = vararg
 
     def __str__(self):
+        def _describe_precision(t):
+            if hasattr(t, 'precision'):
+                return ' (pointing to %i bits)' % t.precision
+            else:
+                return ''
+
+        def _describe_vararg(va):
+            result = '"%s"' % va.type
+            if hasattr(va, 'operand'):
+                result += _describe_precision(va.operand.type)
+            return result
+
+        def _describe_exp_type(t):
+            result = '"%s"' % t
+            if hasattr(t, 'dereference'):
+                result += _describe_precision(t.dereference)
+            return result
+            
+
         return (('Mismatching type in call to %s with format string "%s":'
-                 ' argument %i ("%s") had type "%s" (pointing to %i bits)'
-                 ' but was expecting "%s" (pointing to %i bits) for format code "%s"')
+                 ' argument %i ("%s") had type %s'
+                 ' but was expecting %s for format code "%s"')
                 % ("PyArg_ParseTuple", self.fmt_string,
-                   self.arg_num, self.vararg, self.vararg.type, self.vararg.operand.type.precision,
-                   self.exp_type, self.exp_type.dereference.precision, self.arg_fmt_string))
+                   self.arg_num, self.vararg, _describe_vararg(self.vararg),
+                   _describe_exp_type(self.exp_type), self.arg_fmt_string))
 
 def type_equality(exp_type, vararg):
     log('comparing exp_type: %s (%r) with vararg: %s (%r)' % (exp_type, exp_type, vararg, vararg))
@@ -191,12 +235,16 @@ def type_equality(exp_type, vararg):
     # e.g. gcc.IntegerType
     log('vararg.operand.type: %s' % vararg.operand.type)
     log('dir(vararg.operand.type): %r' % dir(vararg.operand.type))
-    log('vararg.operand.type.const: %r' % vararg.operand.type.const)
+    if hasattr(vararg.operand.type, 'const'):
+        log('vararg.operand.type.const: %r' % vararg.operand.type.const)
     log('vararg.operand.type.name: %r' % vararg.operand.type.name)
-    log('vararg.operand.type.unsigned: %r' % vararg.operand.type.unsigned)
-    log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
-    log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
-    log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
+    if hasattr(vararg.operand.type, 'unsigned'):
+        log('vararg.operand.type.unsigned: %r' % vararg.operand.type.unsigned)
+    if hasattr(vararg.operand.type, 'precision'):
+        log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
+        log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
+    if vararg.operand.type.name:
+        log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
 
     log('exp_type: %r' % exp_type)
     log('exp_type: %s' % exp_type)
@@ -257,7 +305,7 @@ def check_pyargs(fun):
                 try:
                     exp_types = get_types(stmt, fmt_string)
                 except FormatStringError, exc:
-                    error(exc)
+                    gcc.permerror(stmt.loc, str(exc))
                     return
                 # log('types: %r' % exp_types)
 
@@ -274,9 +322,7 @@ def check_pyargs(fun):
 
                 for index, (exp_type, vararg) in enumerate(zip(exp_types, varargs)):
                     # FIXME: use the correct type, and it should be a ptr to it...
-                    exp_type = gcc.Type.int().pointer
                     arg_fmt_string = 'i' # FIXME
-                    # ideally this shouldn't need calling; it should just be an attribute
 
                     if not type_equality(exp_type, vararg):
                         gcc.permerror(vararg.location,
