@@ -107,8 +107,20 @@ class CfgPrettyPrinter:
         return self._dot_td(text, escape=0, bgcolor=bgcolor)
 
     def edge_to_dot(self, e):
-        return ('   %s -> %s;\n'
-                % (self.block_id(e.src), self.block_id(e.dest)))
+        if e.true_value:
+            attrliststr = '[label = true]'
+        elif e.false_value:
+            attrliststr = '[label = false]'
+        elif e.loop_exit:
+            attrliststr = '[label = loop_exit]'
+        elif e.fallthru:
+            attrliststr = '[label = fallthru]'
+        elif e.dfs_back:
+            attrliststr = '[label = dfs_back]'
+        else:
+            attrliststr = ''
+        return ('   %s -> %s %s;\n'
+                % (self.block_id(e.src), self.block_id(e.dest), attrliststr))
 
     def to_dot(self):
         result = 'digraph G {\n'

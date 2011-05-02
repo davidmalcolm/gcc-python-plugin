@@ -135,7 +135,20 @@ def generate_edge():
                                                                      'PyGccEdge',
                                                                      'gcc_python_make_wrapper_basic_block(self->e->dest)'),
                                                 None,
-                                                'The destination gcc.BasicBlock of this edge')])
+                                                'The destination gcc.BasicBlock of this edge')],
+                                   identifier_prefix = 'gcc_Edge',
+                                   typename = 'PyGccEdge')
+    for flag in ('EDGE_FALLTHRU', 'EDGE_ABNORMAL', 'EDGE_ABNORMAL_CALL',
+                 'EDGE_EH', 'EDGE_FAKE', 'EDGE_DFS_BACK', 'EDGE_CAN_FALLTHRU',
+                 'EDGE_IRREDUCIBLE_LOOP', 'EDGE_SIBCALL', 'EDGE_LOOP_EXIT',
+                 'EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE', 'EDGE_EXECUTABLE',
+                 'EDGE_CROSSING'):
+        assert flag.startswith('EDGE_')
+        flagname = flag[5:].lower()
+        getsettable.add_simple_getter(cu,
+                                      flagname,
+                                      'PyBool_FromLong(self->e->flags & %s)' % flag,
+                                      'Boolean, corresponding to flag %s' % flag)
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_EdgeType',
