@@ -541,6 +541,14 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(TREE_TYPE(self->t))',
                               "The gcc.Type that this type points to'")
 
+        if tree_type.SYM == 'COMPONENT_REF':
+            add_simple_getter('target',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              "The gcc.Node that for the container of the field'")
+            add_simple_getter('field',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              "The gcc.Node for the field within the referenced thing'")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,

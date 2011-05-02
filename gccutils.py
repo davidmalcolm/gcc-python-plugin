@@ -1,3 +1,5 @@
+import gcc
+
 def get_src_for_loc(loc):
     # Given a gcc.Location, get the source line as a string
     import linecache
@@ -39,9 +41,14 @@ class CfgPrettyPrinter:
             return 'exit'
         return 'block%i' % id(b)
 
-    def _dot_td(self, text, align="left", colspan=1):
-        return ('<td align="%s" colspan="%i">%s</td>'
-                % (align, colspan, self.to_html(text)))
+    def _dot_td(self, text, align="left", colspan=1, escape=1, bgcolor=None):
+        if escape:
+            text = self.to_html(text)
+        attribs = 'align="%s" colspan="%i"' % (align, colspan)
+        if bgcolor:
+            attribs += ' bgcolor="%s"' % bgcolor
+        return ('<td %s>%s</td>'
+                % (attribs, text))
 
     def _dot_tr(self, td_text):
         return ('<tr>%s</tr>\n' % self._dot_td(td_text))
@@ -51,7 +58,7 @@ class CfgPrettyPrinter:
         # the attribute value; it may be exercising a failure path
         result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
         curloc = None
-        if isinstance(bb.gimple, list):
+        if isinstance(bb.gimple, list) and bb.gimple != []:
             for stmt in bb.gimple:
                 if curloc != stmt.loc:
                     curloc = stmt.loc
@@ -60,11 +67,44 @@ class CfgPrettyPrinter:
                                + (' ' * (stmt.loc.column-1)) + '^'
                                + '</td></tr>')
                     
-                result += '<tr><td></td>' + self._dot_td(str(stmt).strip()) + '</tr>'
+                result += '<tr><td></td>' + self.stmt_to_html(stmt) + '</tr>'
         else:
+            # (prevent graphviz syntax error for empty blocks):
             result += self._dot_tr(self.block_id(bb))
         result += '</table></font>\n'
         return result
+
+    def stmt_to_html(self, stmt):
+        text = str(stmt).strip()
+        text = self.to_html(text)
+        bgcolor = None
+
+        # Work towards visualization of CPython refcounting rules.
+        # For now, paint assignments to (PyObject*) vars and to ob_refcnt
+        # fields, to highlight the areas needing tracking:
+        # print 'stmt: %s' % stmt
+        if hasattr(stmt, 'lhs'):
+            # print 'stmt.lhs: %s' % stmt.lhs
+            # print 'stmt.lhs: %r' % stmt.lhs
+            if stmt.lhs:
+                # print 'stmt.lhs.type: %s' % stmt.lhs.type
+
+                # Color assignments to (PyObject *) in red:
+                if str(stmt.lhs.type) == 'struct PyObject *':
+                    bgcolor = 'red'
+
+                # Color assignments to PTR->ob_refcnt in blue:
+                if isinstance(stmt.lhs, gcc.ComponentRef):
+                    # print(dir(stmt.lhs))
+                    # print 'stmt.lhs.target: %s' % stmt.lhs.target
+                    # print 'stmt.lhs.target.type: %s' % stmt.lhs.target.type
+                    # (presumably we need to filter these to structs that are
+                    # PyObject, or subclasses)
+                    # print 'stmt.lhs.field: %s' % stmt.lhs.field
+                    if stmt.lhs.field.name == 'ob_refcnt':
+                        bgcolor = 'blue'
+
+        return self._dot_td(text, escape=0, bgcolor=bgcolor)
 
     def edge_to_dot(self, e):
         return ('   %s -> %s;\n'
