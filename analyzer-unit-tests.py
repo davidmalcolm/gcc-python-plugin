@@ -65,6 +65,7 @@ class AnalyzerTests(unittest.TestCase):
         bm.cleanup()
         return bm
 
+class PyArg_ParseTupleTests(AnalyzerTests):
     def test_bogus_format_string(self):
         src = ('PyObject *\n'
                'bogus_format_string(PyObject *self, PyObject *args)\n'
