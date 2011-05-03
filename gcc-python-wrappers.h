@@ -57,6 +57,9 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure);
 PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure);
 
+PyObject *
+gcc_Pass_repr(struct PyGccPass * self);
+
 #include "pretty-print.h"
 struct PyGccPrettyPrinter {
     PyObject_HEAD
