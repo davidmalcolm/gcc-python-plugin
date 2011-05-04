@@ -88,13 +88,23 @@ static const char* event_name[] = {
     gcc_data=0x0
     Called from: toplev_main (argc=17, argv=0x7fffffffdfc8) at ../../gcc/toplev.c:1970
 
+  PLUGIN_FINISH_TYPE
+    gcc_data=tree
+    Called from c_parser_declspecs (parser=0x7fffef559730, specs=0x15296d0, scspec_ok=1 '\001', typespec_ok=1 '\001', start_attr_ok=<optimized out>, la=cla_nonabstract_decl) at ../../gcc/c-parser.c:2111
+
+  PLUGIN_PRAGMA
+    gcc_data=0x0
+    Called from: init_pragma at ../../gcc/c-family/c-pragma.c:1321
+    to  "Allow plugins to register their own pragmas."
 */
 
 static void
 trace_callback(enum plugin_event event, void *gcc_data, void *user_data)
 {
-  printf("%s:%i:trace_callback(%s, %p, %p)\n", __FILE__, __LINE__, event_name[event], gcc_data, user_data);
-  printf("  cfun:%p\n", cfun);
+    fprintf(stderr,
+	    "%s:%i:trace_callback(%s, %p, %p)\n",
+	    __FILE__, __LINE__, event_name[event], gcc_data, user_data);
+    fprintf(stderr, "  cfun:%p\n", cfun);
 }
 
 #define DEFEVENT(NAME) \
@@ -144,27 +154,18 @@ cleanup:
 }
 
 static void
-gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE(void *gcc_data, void *user_data)
+gcc_python_callback_for_tree(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
-    tree fndecl = (tree)gcc_data;
-
-    /* gcc's handy debug function for trees, apparently from print-tree.c: */
-    debug_tree(fndecl);
-
-    //printf("debug_tree(DECL_STRUCT_FUNCTION(fndecl));\n");
-    //debug_tree((tree)DECL_STRUCT_FUNCTION(fndecl));
-
-    //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
-    assert(fndecl);
+    tree t = (tree)gcc_data;
 
     gstate = PyGILState_Ensure();
 
     gcc_python_finish_invoking_callback(gstate, 
-					gcc_python_make_wrapper_tree(fndecl),
+					gcc_python_make_wrapper_tree(t),
 					user_data);
 }
-    
+
 static void
 gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
 {
@@ -206,7 +207,7 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
     case PLUGIN_PRE_GENERICIZE:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_PLUGIN_PASS_PRE_GENERICIZE,
+			  gcc_python_callback_for_tree,
 			  closure);
 	break;
 	
@@ -214,6 +215,13 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
 			  gcc_python_callback_for_PLUGIN_PASS_EXECUTION,
+			  closure);
+	break;
+
+    case PLUGIN_FINISH_TYPE:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_tree,
 			  closure);
 	break;
 
