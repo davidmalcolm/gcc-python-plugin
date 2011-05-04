@@ -158,6 +158,38 @@ error:
     return NULL;
 }
 
+/* Walk the chain of a tree, building a python list of wrapper gcc.Tree
+   instances */
+PyObject *
+gcc_tree_list_from_chain(tree t)
+{
+    PyObject *result = NULL;
+    
+    result = PyList_New(0);
+    if (!result) {
+	goto error;
+    }
+
+    while (t) {
+	PyObject *item;
+	item = gcc_python_make_wrapper_tree(t);
+	if (!item) {
+	    goto error;
+	}
+	if (-1 == PyList_Append(result, item)) {
+	    Py_DECREF(item);
+	    goto error;
+	}
+	t = TREE_CHAIN(t);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
 /*
   PEP-7  
 Local variables:

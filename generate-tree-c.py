@@ -583,6 +583,16 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
                               "The gcc.Node for the field within the referenced thing'")
 
+        if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
+            add_simple_getter('fields',
+                              'gcc_tree_list_from_chain(TYPE_FIELDS(self->t))',
+                              "The fields of this type")
+
+        if tree_type.SYM == 'IDENTIFIER_NODE':
+            add_simple_getter('name',
+                              'gcc_python_string_or_none(IDENTIFIER_POINTER(self->t))',
+                              "The name of this gcc.IdentifierNode, as a string'")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,

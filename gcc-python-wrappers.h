@@ -82,4 +82,7 @@ gcc_python_pretty_printer_as_string(PyObject *obj);
 void
 gcc_PrettyPrinter_dealloc(PyObject *obj);
 
+PyObject *
+gcc_tree_list_from_chain(tree t);
+
 #endif /* INCLUDED__WRAPPERS_H */

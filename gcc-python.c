@@ -412,7 +412,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 }
 
 PyObject *
-gcc_python_string_or_none(char *str_or_null)
+gcc_python_string_or_none(const char *str_or_null)
 {
     if (str_or_null) {
 	return PyString_FromString(str_or_null);
