@@ -33,6 +33,9 @@ static const char* event_name[] = {
   PLUGIN_ATTRIBUTES:
     gcc_data=0x0
     Called from: init_attributes () at ../../gcc/attribs.c:187
+    However, it seems at this point to have initialized these:
+      static const struct attribute_spec *attribute_tables[4];
+      static htab_t attribute_hash;
 
   PLUGIN_PRAGMAS:
     gcc_data=0x0
