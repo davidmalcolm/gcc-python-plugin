@@ -46,6 +46,9 @@ PyObject *
 gcc_Declaration_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_Constructor_get_elements(PyObject *self, void *closure);
+
+PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self);
 
 PyObject *

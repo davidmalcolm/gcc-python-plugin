@@ -58,9 +58,12 @@ gcc_python_pretty_printer_as_string(PyObject *obj)
     /* Convert to a python string, leaving off the trailing newline: */
     len = strlen(ppobj->buf);
     assert(len > 0);
-    assert('\n' == ppobj->buf[len - 1]);
-    return PyString_FromStringAndSize(ppobj->buf,
-				      len - 1);
+    if ('\n' == ppobj->buf[len - 1]) {
+	return PyString_FromStringAndSize(ppobj->buf,
+					  len - 1);
+    } else {
+	return PyString_FromString(ppobj->buf);
+    }
 }
 
 void

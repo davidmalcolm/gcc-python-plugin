@@ -118,6 +118,57 @@ error:
     return NULL;
 }
 
+PyObject *
+gcc_Constructor_get_elements(PyObject *self, void *closure)
+{
+    struct PyGccTree * self_as_tree;
+    PyObject *result = NULL;
+    tree node;
+    unsigned HOST_WIDE_INT cnt;
+    tree index, value;
+
+    self_as_tree = (struct PyGccTree *)self; /* FIXME */
+    node = self_as_tree->t;
+    
+    result = PyList_New(VEC_length(constructor_elt, CONSTRUCTOR_ELTS (node)));
+    if (!result) {
+	goto error;
+    }
+
+    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node),
+			      cnt, index, value) {
+	PyObject *obj_index = NULL;
+	PyObject *obj_value = NULL;
+	PyObject *obj_pair = NULL;
+	obj_index = gcc_python_make_wrapper_tree(index);
+	if (!obj_index) {
+	    goto error;
+	}
+	obj_value = gcc_python_make_wrapper_tree(value);
+	if (!obj_value) {
+	    Py_DECREF(obj_index);
+	    goto error;
+	}
+	obj_pair = PyTuple_Pack(2, obj_index, obj_value);
+	if (!obj_pair) {
+	    Py_DECREF(obj_value);
+	    Py_DECREF(obj_index);
+	    goto error;
+	}
+
+	if (-1 == PyList_SetItem(result, cnt, obj_pair)) {
+	    Py_DECREF(obj_pair);
+	    goto error;
+	}
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c

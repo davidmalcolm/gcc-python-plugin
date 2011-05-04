@@ -333,6 +333,10 @@ class SimpleBuild:
 
 class CommandError(RuntimeError):
     def __init__(self, out, err, p):
+        assert isinstance(out, str)
+        assert isinstance(err, str)
+        assert isinstance(p, Popen)
+
         self.out = out
         self.err = err
         self.p = p
@@ -343,12 +347,16 @@ class CommandError(RuntimeError):
         result += '  %s\n' % self._describe_activity()
         result += 'Stdout:\n'
         result += self._indent(self.out)
-        result += 'Stderr:\n'
+        result += '\nStderr:\n'
         result += self._indent(self.err, 4)
+        result += self._extra_info()
         return result
 
     def _indent(self, txt, size=2):
         return '\n'.join([' '*size + line for line in txt.splitlines()])
+
+    def _extra_info(self):
+        return ''
     
 class PyRuntimeError(CommandError):
     def __init__(self, runtime, cmd, out, err, p):
