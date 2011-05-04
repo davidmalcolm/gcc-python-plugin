@@ -331,6 +331,25 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                           tp_getset = 'gcc_Tree_getset_table',
                           tp_str = '(reprfunc)gcc_Tree_str',
                           tp_richcompare = 'gcc_Tree_richcompare')
+    methods = PyMethodTable('gcc_Tree_methods', [])
+    methods.add_method('debug',
+                       'gcc_Tree_debug',
+                       'METH_VARARGS',
+                       "Dump the tree to stderr")
+    cu.add_defn("""
+PyObject*
+gcc_Tree_debug(PyObject *self, PyObject *args)
+{
+    PyGccTree *tree_obj;
+    /* FIXME: type checking */
+    tree_obj = (PyGccTree *)self;
+    debug_tree(tree_obj->t);
+    Py_RETURN_NONE;
+}
+""")
+    cu.add_defn(methods.c_defn())
+    pytype.tp_methods = methods.identifier
+
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
