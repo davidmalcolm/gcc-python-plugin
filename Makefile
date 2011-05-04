@@ -24,7 +24,7 @@ PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
-all: analyze testcpybuilder demo test
+all: analyze testcpybuilder test-suite demo test
 
 plugin: python.so
 

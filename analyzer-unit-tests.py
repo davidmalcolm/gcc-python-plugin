@@ -4,6 +4,7 @@ import unittest
 from subprocess import Popen, PIPE
 
 from testcpybuilder import BuiltModule, PyRuntime, SimpleModule, CompilationError
+from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
 
 #FIXME:
 pyruntime = PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config')
@@ -42,16 +43,22 @@ class AnalyzerTests(unittest.TestCase):
         self.compile_src(bm)
 
     def assertNoErrors(self, src):
-        sm = SimpleModule()
-        sm.cu.add_defn(src)
+        if isinstance(src, SimpleModule):
+            sm = src
+        else:
+            sm = SimpleModule()
+            sm.cu.add_defn(src)
         bm = BuiltModule(sm, pyruntime)
         self.build_module(bm)
         bm.cleanup()
         return bm
 
     def assertFindsError(self, src, experr):
-        sm = SimpleModule()
-        sm.cu.add_defn(src)
+        if isinstance(src, SimpleModule):
+            sm = src
+        else:
+            sm = SimpleModule()
+            sm.cu.add_defn(src)
         bm = BuiltModule(sm, pyruntime)
         try:
             bm.write_src()
@@ -226,6 +233,42 @@ correct_usage(PyObject *self, PyObject *args)
 
     def test_simple_code_c(self):
         self._test_simple_code('c', 'char')
+
+class RefcountErrorTests(AnalyzerTests):
+    def test_correct_py_none(self):
+        sm = SimpleModule()
+        sm.cu.add_defn(
+            'PyObject *\n'
+            'correct_none(PyObject *self, PyObject *args)\n'
+            '{\n'
+            '    Py_RETURN_NONE;\n'
+            '}\n')
+        methods = PyMethodTable('test_methods',
+                                [PyMethodDef('test_method', 'correct_none',
+                                             METH_VARARGS, None)])
+        sm.cu.add_defn(methods.c_defn())
+        sm.add_module_init('buggy', modmethods=methods, moddoc=None)
+        self.assertNoErrors(sm)
+
+    def test_incorrect_py_none(self):
+        sm = SimpleModule()
+        sm.cu.add_defn(
+            'PyObject *\n'
+            'losing_refcnt_of_none(PyObject *self, PyObject *args)\n'
+            '{\n'
+            '    /* Bug: this code is missing a Py_INCREF on Py_None */\n'
+            '    return Py_None;\n'
+            '}\n')
+        methods = PyMethodTable('buggy_methods',
+                                [PyMethodDef('show_the_bug', 'losing_refcnt_of_none',
+                                             METH_VARARGS, 'Show the bug.')])
+        sm.cu.add_defn(methods.c_defn())
+        sm.add_module_init('buggy', modmethods=methods, moddoc='This is a doc string')
+        
+        experr = ('$(SRCFILE): In function ‘losing_refcnt_of_none’:\n'
+                  '$(SRCFILE):19:5: error: return of PyObject* without Py_INCREF() [-fpermissive]\n'
+                  )
+        self.assertFindsError(sm, experr)
 
 # Test disabled for now: we can't easily import this under gcc anymore:
 class TestArgParsing: # (unittest.TestCase):

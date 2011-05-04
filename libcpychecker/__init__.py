@@ -1,6 +1,7 @@
 import gcc
 
 from PyArg_ParseTuple import check_pyargs, log
+from refcounts import check_refcounts
 
 def on_pass_execution(optpass, fun):
     # Only run in one pass
