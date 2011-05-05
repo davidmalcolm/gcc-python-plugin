@@ -17,35 +17,6 @@ cu.add_include("basic-block.h")
 modinit_preinit = ''
 modinit_postinit = ''
 
-def generate_pass():
-    global modinit_preinit
-    global modinit_postinit
-
-    getsettable = PyGetSetDefTable('gcc_Pass_getset_table',
-                                   [PyGetSetDef('name',
-                                                cu.add_simple_getter('gcc_Pass_get_name',
-                                                                     'PyGccPass',
-                                                                     'PyString_FromString(self->pass->name)'),
-                                                None,
-                                                'Name of the pass'),
-                                    ])
-    cu.add_defn(getsettable.c_defn())
-    
-    pytype = PyTypeObject(identifier = 'gcc_PassType',
-                          localname = 'Pass',
-                          tp_name = 'gcc.Pass',
-                          struct_name = 'struct PyGccPass',
-                          tp_new = 'PyType_GenericNew',
-                          tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_Pass_repr',
-                          tp_str = '(reprfunc)gcc_Pass_repr',
-                          )
-    cu.add_defn(pytype.c_defn())
-    modinit_preinit += pytype.c_invoke_type_ready()
-    modinit_postinit += pytype.c_invoke_add_to_module()
-    
-generate_pass()
-
 def generate_pretty_printer():
     global modinit_preinit
     global modinit_postinit
