@@ -1,6 +1,10 @@
 from subprocess import Popen, PIPE
 import re
 
+def camel_case(txt):
+    return ''.join([word.title()
+                    for word in txt.split('_')])
+
 def nullable_ptr(ptr):
     if ptr:
         return ptr

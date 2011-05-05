@@ -1,8 +1,5 @@
 from collections import namedtuple
-
-def camel_case(txt):
-    return ''.join([word.title()
-                    for word in txt.split('_')])
+from cpybuilder import camel_case
 
 class TreeType(namedtuple('TreeType', 'SYM, STRING, TYPE, NARGS')):
     def camel_cased_string(self):
