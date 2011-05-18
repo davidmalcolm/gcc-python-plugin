@@ -22,7 +22,14 @@ def generate_pass():
                                                                      'PyString_FromString(self->pass->name)'),
                                                 None,
                                                 'Name of the pass'),
-                                    ])
+                                    ],
+                                   identifier_prefix='gcc_Pass',
+                                   typename='PyGccPass')
+    for field in ('properties_required', 'properties_provided', 'properties_destroyed'):
+        getsettable.add_simple_getter(cu,
+                                      field,
+                                      'PyInt_FromLong(self->pass->%s)' % field,
+                                      None)
     cu.add_defn(getsettable.c_defn())
     
     pytype = PyTypeObject(identifier = 'gcc_PassType',

@@ -103,3 +103,5 @@ demo: plugin
 test-suite: plugin
 	python run-test-suite.py
 
+show-ssa:
+	./gcc-with-python show-ssa.py test.c

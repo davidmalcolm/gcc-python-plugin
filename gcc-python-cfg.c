@@ -86,32 +86,18 @@ gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
     return VEC_edge_as_PyList(self->bb->succs);
 }
 
-PyObject *
-gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
+static PyObject *
+gcc_python_gimple_seq_to_list(gimple_seq seq)
 {
     gimple_stmt_iterator gsi;
     PyObject *result = NULL;
 
-    assert(self);
-    assert(self->bb);
-
-    //printf("gcc_BasicBlock_get_gimple\n");
-    
-    if (self->bb->flags & BB_RTL) {
-	Py_RETURN_NONE;
-    }
-
-    if (NULL == self->bb->il.gimple) {
-	Py_RETURN_NONE;
-    }
-
-    /* FIXME: what about phi_nodes? */
     result = PyList_New(0);
     if (!result) {
 	goto error;
     }
 
-    for (gsi = gsi_start (self->bb->il.gimple->seq);
+    for (gsi = gsi_start (seq);
 	 !gsi_end_p (gsi);
 	 gsi_next (&gsi)) {
 
@@ -143,6 +129,41 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
  error:
     Py_XDECREF(result);
     return NULL;    
+}
+
+
+PyObject *
+gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
+{
+    assert(self);
+    assert(self->bb);
+
+    if (self->bb->flags & BB_RTL) {
+	Py_RETURN_NONE;
+    }
+
+    if (NULL == self->bb->il.gimple) {
+	Py_RETURN_NONE;
+    }
+
+    return gcc_python_gimple_seq_to_list(self->bb->il.gimple->seq);
+}
+
+PyObject *
+gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
+{
+    assert(self);
+    assert(self->bb);
+
+    if (self->bb->flags & BB_RTL) {
+	Py_RETURN_NONE;
+    }
+
+    if (NULL == self->bb->il.gimple) {
+	Py_RETURN_NONE;
+    }
+
+    return gcc_python_gimple_seq_to_list(self->bb->il.gimple->phi_nodes);
 }
 
 /*

@@ -79,6 +79,10 @@ def generate_basic_block():
                                                 'gcc_BasicBlock_get_gimple',
                                                 None,
                                                 'The list of gcc.Gimple instructions, if appropriate for this pass, or None'),
+                                    PyGetSetDef('phi_nodes',
+                                                'gcc_BasicBlock_get_phi_nodes',
+                                                None,
+                                                'The list of gcc.GimplePhi phoney functions, if appropriate for this pass, or None'),
                                     ])
     cu.add_defn(getsettable.c_defn())
 

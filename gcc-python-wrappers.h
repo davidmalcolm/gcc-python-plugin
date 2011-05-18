@@ -28,6 +28,9 @@ PyObject *
 gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure);
 
 PyObject *
+gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure);
+
+PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
 PyObject *
