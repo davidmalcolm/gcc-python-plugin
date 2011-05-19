@@ -291,6 +291,23 @@ gcc_python_get_variables(PyObject *self, PyObject *args)
     return NULL;
 }
 
+static PyObject *
+gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
+{
+    const char *str;
+    tree t;
+
+    if (!PyArg_ParseTuple(args,
+			  "s:maybe_get_identifier",
+			  &str)) {
+	return NULL;
+    }
+
+    t = maybe_get_identifier(str);
+    return gcc_python_make_wrapper_tree(t);
+}
+
+
 static PyMethodDef GccMethods[] = {
     {"register_callback", gcc_python_register_callback, METH_VARARGS,
      "Register a callback, to be called when various GCC events occur."},
@@ -300,6 +317,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_variables", gcc_python_get_variables, METH_VARARGS,
      "Get all variables in this compilation unit as a list of gcc.Variable"},
+
+    {"maybe_get_identifier", gcc_python_maybe_get_identifier, METH_VARARGS,
+     "Get the gcc.Identifier with this name, if it exists, otherwise None"},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}
