@@ -57,6 +57,7 @@ class CfgPrettyPrinter:
         # FIXME: font setting appears to work on my machine, but I invented
         # the attribute value; it may be exercising a failure path
         result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
+        result += '<tr> <td>BLOCK %i</td> <td></td> </tr>' % bb.index
         curloc = None
         if isinstance(bb.phi_nodes, list):
             for phi in bb.phi_nodes:

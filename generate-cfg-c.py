@@ -83,7 +83,13 @@ def generate_basic_block():
                                                 'gcc_BasicBlock_get_phi_nodes',
                                                 None,
                                                 'The list of gcc.GimplePhi phoney functions, if appropriate for this pass, or None'),
-                                    ])
+                                    ],
+                                   identifier_prefix='gcc_BasicBlock',
+                                   typename='PyGccBasicBlock')
+    getsettable.add_simple_getter(cu,
+                                  'index',
+                                  'PyInt_FromLong(self->bb->index)',
+                                  None)
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_BasicBlockType',
