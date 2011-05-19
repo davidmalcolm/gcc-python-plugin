@@ -250,6 +250,7 @@ class RefcountErrorTests(AnalyzerTests):
         sm.add_module_init('buggy', modmethods=methods, moddoc=None)
         self.assertNoErrors(sm)
 
+    @unittest.skip("Refcount tracker doesn't yet work")
     def test_incorrect_py_none(self):
         sm = SimpleModule()
         sm.cu.add_defn(
