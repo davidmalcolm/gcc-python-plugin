@@ -29,7 +29,7 @@ PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
-all: analyze testcpybuilder test-suite demo test
+all: testcpychecker testcpybuilder test-suite demo test
 
 plugin: python.so
 
@@ -83,8 +83,8 @@ test: plugin
 	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # Selftest for the cpychecker.py code:
-analyze: plugin
-	PYTHONPATH=$(shell pwd) python analyzer-unit-tests.py -v
+testcpychecker: plugin
+	PYTHONPATH=$(shell pwd) python testcpychecker.py -v
 
 # Selftest for the cpybuilder code:
 testcpybuilder:
