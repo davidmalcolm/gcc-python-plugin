@@ -277,14 +277,6 @@ class TestArgParsing: # (unittest.TestCase):
         result = get_types(None, arg_str)
         self.assertEquals(result, exp_result)
 
-    def test_simple_cases(self):
-        self.assert_args('c',
-                         ['char *'])
-
-    def test_socketmodule_socket_htons(self):
-        self.assert_args('i:htons',
-                         ['int *'])
-
     def test_fcntlmodule_fcntl_flock(self):
         # FIXME: somewhat broken, we can't know what the converter callback is
         self.assert_args("O&i:flock", 
