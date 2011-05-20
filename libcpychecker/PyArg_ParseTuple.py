@@ -133,7 +133,7 @@ class PyArgParseFmt:
                     result.add_argument('c*', ['Py_buffer *'])
                     i += 1
                 else:
-                    result.add_argument('c', ['const char * *'])
+                    result.add_argument('c', [gcc.Type.char().const_equivalent.pointer.pointer])
                 # FIXME: seeing lots of (const char**) versus (char**) mismatches here
                 # do we care?
 

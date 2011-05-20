@@ -301,6 +301,9 @@ def generate_tree_code_classes():
                 add_simple_getter(qual,
                                   'PyBool_FromLong(TYPE_QUALS(self->t) & TYPE_QUAL_%s)' % qual.upper(),
                                   "Boolean: does this type have the '%s' modifier?" % qual)
+                add_simple_getter('%s_equivalent' % qual,
+                                  'gcc_python_make_wrapper_tree(build_qualified_type(self->t, TYPE_QUAL_%s))' % qual.upper(),
+                                  'The gcc.Type for the %s version of this type' % qual)
 
         if tree_type.SYM == 'INTEGER_TYPE':
             add_simple_getter('unsigned',

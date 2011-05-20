@@ -234,6 +234,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_simple_code_c(self):
         self._test_simple_code('c', 'char')
 
+    def test_simple_code_s(self):
+        self._test_simple_code('s', 'const char *')
+
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
         sm = SimpleModule()
