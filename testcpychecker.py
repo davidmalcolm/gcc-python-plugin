@@ -212,49 +212,6 @@ correct_usage(PyObject *self, PyObject *args)
         _test_correct_usage_of_format_code(self, code, typenames)
         _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames)
         
-    def test_format_code_b(self):
-        self._test_format_code('b', 'unsigned char')
-
-    def test_format_code_B(self):
-        self._test_format_code('B', 'unsigned char')
-
-    def test_format_code_h(self):
-        self._test_format_code('h', 'short', 'short int')
-
-    def test_format_code_H(self):
-        self._test_format_code('H', 'unsigned short', 'short unsigned int')
-
-    def test_format_code_i(self):
-        self._test_format_code('i', 'int')
-
-    def test_format_code_I(self):
-        self._test_format_code('I', 'unsigned int')
-
-    @unittest.skip("typedef lookup doesn't work yet")
-    def test_format_code_n(self):
-        self._test_format_code('n','Py_ssize_t')
-
-    def test_format_code_l(self):
-        self._test_format_code('l', 'long', 'long int')
-
-    def test_format_code_k(self):
-        self._test_format_code('k', 'unsigned long', 'long unsigned int')
-
-    # ('L','PY_LONG_LONG'),
-
-    # ('K','unsigned PY_LONG_LONG'),
-
-    def test_format_code_f(self):
-        self._test_format_code('f', 'float')
-
-    def test_format_code_d(self):
-        self._test_format_code('d', 'double')
-
-    # ('D','Py_complex'),
-
-    def test_format_code_c(self):
-        self._test_format_code('c', 'char')
-
     def test_format_code_s(self):
         self._test_format_code('s', 'const char *')
 
@@ -296,6 +253,49 @@ correct_usage(PyObject *self, PyObject *args)
 
     def test_format_code_et_hash(self):
         self._test_format_code('et#', ['const char', 'char *', 'int'])
+
+    def test_format_code_b(self):
+        self._test_format_code('b', 'unsigned char')
+
+    def test_format_code_B(self):
+        self._test_format_code('B', 'unsigned char')
+
+    def test_format_code_h(self):
+        self._test_format_code('h', 'short', 'short int')
+
+    def test_format_code_H(self):
+        self._test_format_code('H', 'unsigned short', 'short unsigned int')
+
+    def test_format_code_i(self):
+        self._test_format_code('i', 'int')
+
+    def test_format_code_I(self):
+        self._test_format_code('I', 'unsigned int')
+
+    def test_format_code_l(self):
+        self._test_format_code('l', 'long', 'long int')
+
+    def test_format_code_k(self):
+        self._test_format_code('k', 'unsigned long', 'long unsigned int')
+
+    # ('L','PY_LONG_LONG'),
+
+    # ('K','unsigned PY_LONG_LONG'),
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_n(self):
+        self._test_format_code('n','Py_ssize_t')
+
+    def test_format_code_c(self):
+        self._test_format_code('c', 'char')
+
+    def test_format_code_f(self):
+        self._test_format_code('f', 'float')
+
+    def test_format_code_d(self):
+        self._test_format_code('d', 'double')
+
+    # ('D','Py_complex'),
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
