@@ -30,14 +30,24 @@ def get_hash_size_type():
     else:
         return gcc.Type.int()
 
+# Helper functions for looking up various CPython implementation types.
+# Unfortunately, these are all typedefs, and I'm not able to get at these yet.
 def get_Py_buffer():
-    # FIXME: we ought to be looking up "Py_buffer", but unfortunately it's a
-    # typedef, and I'm not able to get at these yet.
     raise NotImplementedError # for now
 
 def Py_UNICODE():
-    # FIXME: we ought to be looking up "Py_UNICODE", but unfortunately it's
-    # another typedef, and I'm not able to get at these yet.
+    raise NotImplementedError # for now
+
+def get_PyObject():
+    raise NotImplementedError # for now
+
+def get_PyTypeObject():
+    raise NotImplementedError # for now
+
+def get_PyStringObject():
+    raise NotImplementedError # for now
+
+def get_PyUnicodeObject():
     raise NotImplementedError # for now
 
 class CExtensionError(Exception):
@@ -186,12 +196,14 @@ class PyArgParseFmt:
                 else:
                     result.add_argument('u', [Py_UNICODE().pointer])
             elif c == 'S':
-                result.add_argument('S', ['PyObject * *'])
+                result.add_argument('S', [get_PyStringObject().pointer.pointer])
             elif c == 'U':
-                result.add_argument('U', ['PyObject * *'])
+                result.add_argument('U', [get_PyUnicodeObject().pointer.pointer])
             elif c == 'O': # object
                 if next == '!':
-                    result += ['PyTypeObject *', 'PyObject * *']
+                    result.add_argument('O!',
+                                        [get_PyTypeObject().pointer,
+                                         get_PyObject().pointer.pointer])
                     i += 1
                 elif next == '?':
                     raise UnhandledCode(richloc, fmt_string, c + next) # FIXME
@@ -201,19 +213,26 @@ class PyArgParseFmt:
                                'int *'] # FIXME, anything
                     i += 1
                 else:
-                    result.add_argument('O', ['PyObject * *'])
+                    result.add_argument('O',
+                                        [get_PyObject().pointer.pointer])
             elif c == 'w':
                 if next == '#':
-                    result += ['char * *', 'Py_ssize_t *']
+                    result.add_argument('w#',
+                                        [gcc.Type.char().pointer.pointer,
+                                         get_Py_ssize_t().pointer])
                     i += 1
                 elif next == '*':
                     result.add_argument('w*', [get_Py_buffer().pointer])
                     i += 1
                 else:
-                    result.add_argument('w', ['char * *'])
+                    result.add_argument('w', [gcc.Type.char().pointer.pointer])
             elif c == 't':
                 if next == '#':
-                    result.add_argument('t#', ['char * *', 'int *'])
+                    result.add_argument('t#',
+                                        [gcc.Type.char().pointer.pointer,
+                                         get_hash_size_type().pointer])
+                    # Note: reading CPython sources indicates it's a FETCH_SIZE
+                    # type, not an int, as the docs current suggest
                     i += 1
             else:
                 raise UnknownFormatChar(fmt_string, c)

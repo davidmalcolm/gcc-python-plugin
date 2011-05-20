@@ -168,8 +168,11 @@ correct_usage(PyObject *self, PyObject *args)
             exptypenames = [exptypenames]
 
         def get_function_name(header, code):
-            return '%s_%s' % (header,
-                              code.replace('*', '_star').replace('#', '_hash'))
+            name = '%s_%s' % (header, code)
+            name = name.replace('*', '_star')
+            name = name.replace('#', '_hash')
+            name = name.replace('!', '_bang')
+            return name
 
         def _test_correct_usage_of_format_code(self, code, typenames):
             # Generate a C function that uses the format code correctly, and verify
@@ -296,6 +299,39 @@ correct_usage(PyObject *self, PyObject *args)
         self._test_format_code('d', 'double')
 
     # ('D','Py_complex'),
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_O(self):
+        self._test_format_code('O', ['PyObject *'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_O_bang(self):
+        self._test_format_code('O!', ['PyTypeObject', 'PyObject *'])
+
+    # O& (object) [converter, anything]
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_S(self):
+        self._test_format_code('S', ['PyStringObject *'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_U(self):
+        self._test_format_code('U', ['PyUnicodeObject *'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_t_hash(self):
+        self._test_format_code('t#', ['char *', 'Py_ssize_t'])
+
+    def test_format_code_w(self):
+        self._test_format_code('w', 'char *')
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_w_hash(self):
+        self._test_format_code('w#', ['char *', 'Py_ssize_t'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_w_star(self):
+        self._test_format_code('w*', ['Py_buffer'])
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
