@@ -13,6 +13,7 @@ cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
 cu.add_include("function.h")
 cu.add_include("basic-block.h")
+cu.add_include("c-common.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -312,6 +313,9 @@ def generate_tree_code_classes():
             add_simple_getter('precision',
                               'PyInt_FromLong(TYPE_PRECISION(self->t))',
                               'The precision of this type in bits, as an int (e.g. 32)')
+            add_simple_getter('signed_equivalent',
+                              'gcc_python_make_wrapper_tree(c_common_signed_type(self->t))',
+                              'The gcc.IntegerType for the signed version of this type')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
             add_simple_getter('dereference',

@@ -13,6 +13,22 @@ def log(msg):
 
 from gccutils import get_src_for_loc
 
+def get_const_char_ptr():
+   return gcc.Type.char().const_equivalent.pointer
+
+def get_Py_ssize_t():
+    # FIXME: ideally, we ought to be getting at the Py_ssize_t typedef, since
+    # pyport.h embeds some preprocessor logic for this.  Unfortunately there
+    # doesn't seem to be a good way of getting at that. So for now, always just
+    # use the signed version of size_t:
+    ssize_t = gcc.Type.size_t().signed_equivalent
+    return ssize_t
+
+def get_Py_buffer():
+    # FIXME: we ought to be looking up "Py_buffer", but unfortunately it's a
+    # typedef, and I'm not able to get at these yet.
+    raise NotImplementedError # for now
+
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code
     pass
@@ -46,7 +62,6 @@ def _type_of_simple_arg(arg):
               'H': gcc.Type.unsigned_short,
               'i': gcc.Type.int,
               'I': gcc.Type.unsigned_int,
-              # 'n':'Py_ssize_t',
               'l': gcc.Type.long,
               'k': gcc.Type.unsigned_long,
               # 'L':'PY_LONG_LONG',
@@ -60,6 +75,9 @@ def _type_of_simple_arg(arg):
         # FIXME: ideally this shouldn't need calling; it should just be an
         # attribute:
         return simple[arg]()
+
+    if arg == 'n':
+        return get_Py_ssize_t()
 
 class PyArgParseArgument:
     """
@@ -125,15 +143,19 @@ class PyArgParseFmt:
             elif c in ['s', 'z']: # string, possibly NULL/None
                 if next == '#':
                     if True: # FIXME: is PY_SSIZE_T_CLEAN defined?
-                        result.add_argument('c#', ['const char * *', 'Py_ssize_t *'])
+                        result.add_argument('c#',
+                                            [get_const_char_ptr().pointer,
+                                             get_Py_ssize_t().pointer])
                     else:
-                        result.add_argument('c#', ['const char * *', 'int *'])
+                        result.add_argument('c#',
+                                            [get_const_char_ptr().pointer,
+                                             gcc.Type.int().pointer])
                     i += 1
                 elif next == '*':
-                    result.add_argument('c*', ['Py_buffer *'])
+                    result.add_argument('c*', [get_Py_buffer().pointer])
                     i += 1
                 else:
-                    result.add_argument('c', [gcc.Type.char().const_equivalent.pointer.pointer])
+                    result.add_argument('c', [get_const_char_ptr().pointer])
                 # FIXME: seeing lots of (const char**) versus (char**) mismatches here
                 # do we care?
 
@@ -169,7 +191,7 @@ class PyArgParseFmt:
                     result += ['char * *', 'Py_ssize_t *']
                     i += 1
                 elif next == '*':
-                    result.add_argument('w*', ['Py_buffer *'])
+                    result.add_argument('w*', [get_Py_buffer().pointer])
                     i += 1
                 else:
                     result.add_argument('w', ['char * *'])
@@ -250,7 +272,7 @@ def type_equality(exp_type, vararg):
     log('comparing exp_type: %s (%r) with vararg: %s (%r)' % (exp_type, exp_type, vararg, vararg))
     # FIXME:
     log(dir(vararg))
-    log('vararg.type: %r' % vararg.type)
+    log('vararg.type: %r %s' % (vararg.type, vararg.type) )
     log('vararg.operand: %r' % vararg.operand)
     # We expect a gcc.AddrExpr with operand gcc.Declaration
     log('dir(vararg.operand): %r' % dir(vararg.operand))
@@ -269,8 +291,9 @@ def type_equality(exp_type, vararg):
     if vararg.operand.type.name:
         log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
 
-    log('exp_type: %r' % exp_type)
-    log('exp_type: %s' % exp_type)
+    log('exp_type: %r %s' % (exp_type, exp_type))
+    log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
+
     #log('exp_type.unsigned: %r' % exp_type.unsigned)
     #log('exp_type.precision: %s' % exp_type.precision)
     log(dir(gcc.Type))

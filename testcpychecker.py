@@ -158,25 +158,39 @@ correct_usage(PyObject *self, PyObject *args)
 """
         self.assertNoErrors(src)
 
-    def _test_simple_code(self, code, typename, exptypename=None):
-        if not exptypename:
-            exptypename = typename
+    def _test_simple_code(self, code, typenames, exptypenames=None):
+        if not exptypenames:
+            exptypenames = typenames
 
-        def _test_correct_usage_of_simple_code(self, code, typename):
+        if isinstance(typenames, str):
+            typenames = [typenames]
+        if isinstance(exptypenames, str):
+            exptypenames = [exptypenames]
+
+        def get_function_name(header, code):
+            return '%s_%s' % (header,
+                              code.replace('*', '_star').replace('#', '_hash'))
+
+        def _test_correct_usage_of_simple_code(self, code, typenames):
+            function_name = get_function_name('correct_usage_of', code)
             src = ('PyObject *\n'
-                   'correct_usage_of_%(code)s(PyObject *self, PyObject *args)\n'
-                   '{\n'
-                   '    %(typename)s val;\n'
-                   '    if (!PyArg_ParseTuple(args, "%(code)s", &val)) {\n'
-                   '  	    return NULL;\n'
-                   '    }\n'
-                   '    Py_RETURN_NONE;\n'
-                   '}\n') % locals()
+                   '%(function_name)s(PyObject *self, PyObject *args)\n'
+                   '{\n') % locals()
+            for i, typename in enumerate(typenames):
+                src += ('    %(typename)s val%(i)s;\n') % locals()
+            params = ', '.join('&val%i' % i for i in range(len(typenames)))
+            src += ('    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
+                    '              return NULL;\n'
+                    '    }\n'
+                    '    Py_RETURN_NONE;\n'
+                    '}\n') % locals()
             self.assertNoErrors(src)
 
-        def _test_incorrect_usage_of_simple_code(self, code, typename, exptypename):
+        def _test_incorrect_usage_of_simple_code(self, code, typenames, exptypenames):
+            exptypename = exptypenames[0]
+            function_name = get_function_name('incorrect_usage_of', code)
             src = ('PyObject *\n'
-                   'incorrect_usage_of_%(code)s(PyObject *self, PyObject *args)\n'
+                   '%(function_name)s(PyObject *self, PyObject *args)\n'
                    '{\n'
                    '    void *val;\n'
                    '    if (!PyArg_ParseTuple(args, "%(code)s", &val)) {\n'
@@ -188,10 +202,8 @@ correct_usage(PyObject *self, PyObject *args)
                       '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
             bm = self.assertFindsError(src, experr)
                                        
-
-        _test_correct_usage_of_simple_code(self, code, typename)
-        _test_incorrect_usage_of_simple_code(self, code, typename, exptypename)
-
+        _test_correct_usage_of_simple_code(self, code, typenames)
+        _test_incorrect_usage_of_simple_code(self, code, typenames, exptypenames)
         
     def test_simple_code_b(self):
         self._test_simple_code('b', 'unsigned char')
@@ -211,7 +223,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_simple_code_I(self):
         self._test_simple_code('I', 'unsigned int')
 
-    # ('n','Py_ssize_t'),,
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_simple_code_n(self):
+        self._test_simple_code('n','Py_ssize_t')
 
     def test_simple_code_l(self):
         self._test_simple_code('l', 'long', 'long int')
@@ -236,6 +250,25 @@ correct_usage(PyObject *self, PyObject *args)
 
     def test_simple_code_s(self):
         self._test_simple_code('s', 'const char *')
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_simple_code_s_hash(self):
+        self._test_simple_code('s#', ['const char *', 'Py_ssize_t'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_simple_code_s_star(self):
+        self._test_simple_code('s*', ['Py_buffer'])
+
+    def test_simple_code_z(self):
+        self._test_simple_code('z', 'const char *')
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_simple_code_z_hash(self):
+        self._test_simple_code('z#', ['const char *', 'Py_ssize_t'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_simple_code_z_star(self):
+        self._test_simple_code('z*', ['Py_buffer'])
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
