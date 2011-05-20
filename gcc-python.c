@@ -319,7 +319,7 @@ static PyMethodDef GccMethods[] = {
      "Get all variables in this compilation unit as a list of gcc.Variable"},
 
     {"maybe_get_identifier", gcc_python_maybe_get_identifier, METH_VARARGS,
-     "Get the gcc.Identifier with this name, if it exists, otherwise None"},
+     "Get the gcc.IdentifierNode with this name, if it exists, otherwise None"},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}
