@@ -24,9 +24,20 @@ def get_Py_ssize_t():
     ssize_t = gcc.Type.size_t().signed_equivalent
     return ssize_t
 
+def get_hash_size_type():
+    if True: # FIXME: is PY_SSIZE_T_CLEAN defined?
+        return get_Py_ssize_t()
+    else:
+        return gcc.Type.int()
+
 def get_Py_buffer():
     # FIXME: we ought to be looking up "Py_buffer", but unfortunately it's a
     # typedef, and I'm not able to get at these yet.
+    raise NotImplementedError # for now
+
+def Py_UNICODE():
+    # FIXME: we ought to be looking up "Py_UNICODE", but unfortunately it's
+    # another typedef, and I'm not able to get at these yet.
     raise NotImplementedError # for now
 
 class CExtensionError(Exception):
@@ -142,14 +153,9 @@ class PyArgParseFmt:
 
             elif c in ['s', 'z']: # string, possibly NULL/None
                 if next == '#':
-                    if True: # FIXME: is PY_SSIZE_T_CLEAN defined?
-                        result.add_argument('c#',
-                                            [get_const_char_ptr().pointer,
-                                             get_Py_ssize_t().pointer])
-                    else:
-                        result.add_argument('c#',
-                                            [get_const_char_ptr().pointer,
-                                             gcc.Type.int().pointer])
+                    result.add_argument('c#',
+                                        [get_const_char_ptr().pointer,
+                                         get_hash_size_type().pointer])
                     i += 1
                 elif next == '*':
                     result.add_argument('c*', [get_Py_buffer().pointer])
@@ -161,14 +167,24 @@ class PyArgParseFmt:
 
             elif c == 'e':
                 if next in ['s', 't']:
-                    arg = PyArgParseArgument('e' + next, ['const char *', 'char * *'])
+                    arg = PyArgParseArgument('e' + next,
+                                             [get_const_char_ptr(),
+                                              gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
                         if fmt_string[i] == '#':
                             arg.code += '#'
-                            arg.expected_types.append('int *')
+                            arg.expected_types.append(gcc.Type.int().pointer)
                             i+=1
                     result.args.append(arg)
+            elif c == 'u':
+                if next == '#':
+                    result.add_argument('u#',
+                                        [Py_UNICODE().pointer,
+                                         get_hash_size_type().pointer])
+                    i += 1
+                else:
+                    result.add_argument('u', [Py_UNICODE().pointer])
             elif c == 'S':
                 result.add_argument('S', ['PyObject * *'])
             elif c == 'U':
@@ -293,6 +309,8 @@ def type_equality(exp_type, vararg):
 
     log('exp_type: %r %s' % (exp_type, exp_type))
     log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
+
+    assert isinstance(exp_type, gcc.Type)
 
     #log('exp_type.unsigned: %r' % exp_type.unsigned)
     #log('exp_type.precision: %s' % exp_type.precision)

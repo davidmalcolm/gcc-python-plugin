@@ -172,6 +172,8 @@ correct_usage(PyObject *self, PyObject *args)
                               code.replace('*', '_star').replace('#', '_hash'))
 
         def _test_correct_usage_of_format_code(self, code, typenames):
+            # Generate a C function that uses the format code correctly, and verify
+            # that it compiles with gcc with the cpychecker script, without errors
             function_name = get_function_name('correct_usage_of', code)
             src = ('PyObject *\n'
                    '%(function_name)s(PyObject *self, PyObject *args)\n'
@@ -187,18 +189,23 @@ correct_usage(PyObject *self, PyObject *args)
             self.assertNoErrors(src)
 
         def _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames):
+            # Generate a C function that uses the format code, with the
+            # correct number of arguments, but all of the arguments being of
+            # the incorrect type; compile it with cpychecker, and verify that there's
+            # a warning
             exptypename = exptypenames[0]
             function_name = get_function_name('incorrect_usage_of', code)
+            params = ', '.join('&val' for i in range(len(typenames)))
             src = ('PyObject *\n'
                    '%(function_name)s(PyObject *self, PyObject *args)\n'
                    '{\n'
                    '    void *val;\n'
-                   '    if (!PyArg_ParseTuple(args, "%(code)s", &val)) {\n'
+                   '    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
                    '  	    return NULL;\n'
                    '    }\n'
                    '    Py_RETURN_NONE;\n'
                    '}\n') % locals()
-            experr = ('$(SRCFILE): In function ‘incorrect_usage_of_%(code)s’:\n'
+            experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
                       '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
             bm = self.assertFindsError(src, experr)
                                        
@@ -269,6 +276,26 @@ correct_usage(PyObject *self, PyObject *args)
     @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_z_star(self):
         self._test_format_code('z*', ['Py_buffer'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_u(self):
+        self._test_format_code('u', 'Py_UNICODE *')
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_u_hash(self):
+        self._test_format_code('u#', ['Py_UNICODE *', 'int'])
+
+    def test_format_code_es(self):
+        self._test_format_code('es', ['const char', 'char *'])
+
+    def test_format_code_et(self):
+        self._test_format_code('et', ['const char', 'char *'])
+
+    def test_format_code_es_hash(self):
+        self._test_format_code('es#', ['const char', 'char *', 'int'])
+
+    def test_format_code_et_hash(self):
+        self._test_format_code('et#', ['const char', 'char *', 'int'])
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
