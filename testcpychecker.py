@@ -158,7 +158,7 @@ correct_usage(PyObject *self, PyObject *args)
 """
         self.assertNoErrors(src)
 
-    def _test_simple_code(self, code, typenames, exptypenames=None):
+    def _test_format_code(self, code, typenames, exptypenames=None):
         if not exptypenames:
             exptypenames = typenames
 
@@ -171,7 +171,7 @@ correct_usage(PyObject *self, PyObject *args)
             return '%s_%s' % (header,
                               code.replace('*', '_star').replace('#', '_hash'))
 
-        def _test_correct_usage_of_simple_code(self, code, typenames):
+        def _test_correct_usage_of_format_code(self, code, typenames):
             function_name = get_function_name('correct_usage_of', code)
             src = ('PyObject *\n'
                    '%(function_name)s(PyObject *self, PyObject *args)\n'
@@ -186,7 +186,7 @@ correct_usage(PyObject *self, PyObject *args)
                     '}\n') % locals()
             self.assertNoErrors(src)
 
-        def _test_incorrect_usage_of_simple_code(self, code, typenames, exptypenames):
+        def _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames):
             exptypename = exptypenames[0]
             function_name = get_function_name('incorrect_usage_of', code)
             src = ('PyObject *\n'
@@ -202,73 +202,73 @@ correct_usage(PyObject *self, PyObject *args)
                       '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
             bm = self.assertFindsError(src, experr)
                                        
-        _test_correct_usage_of_simple_code(self, code, typenames)
-        _test_incorrect_usage_of_simple_code(self, code, typenames, exptypenames)
+        _test_correct_usage_of_format_code(self, code, typenames)
+        _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames)
         
-    def test_simple_code_b(self):
-        self._test_simple_code('b', 'unsigned char')
+    def test_format_code_b(self):
+        self._test_format_code('b', 'unsigned char')
 
-    def test_simple_code_B(self):
-        self._test_simple_code('B', 'unsigned char')
+    def test_format_code_B(self):
+        self._test_format_code('B', 'unsigned char')
 
-    def test_simple_code_h(self):
-        self._test_simple_code('h', 'short', 'short int')
+    def test_format_code_h(self):
+        self._test_format_code('h', 'short', 'short int')
 
-    def test_simple_code_H(self):
-        self._test_simple_code('H', 'unsigned short', 'short unsigned int')
+    def test_format_code_H(self):
+        self._test_format_code('H', 'unsigned short', 'short unsigned int')
 
-    def test_simple_code_i(self):
-        self._test_simple_code('i', 'int')
+    def test_format_code_i(self):
+        self._test_format_code('i', 'int')
 
-    def test_simple_code_I(self):
-        self._test_simple_code('I', 'unsigned int')
+    def test_format_code_I(self):
+        self._test_format_code('I', 'unsigned int')
 
     @unittest.skip("typedef lookup doesn't work yet")
-    def test_simple_code_n(self):
-        self._test_simple_code('n','Py_ssize_t')
+    def test_format_code_n(self):
+        self._test_format_code('n','Py_ssize_t')
 
-    def test_simple_code_l(self):
-        self._test_simple_code('l', 'long', 'long int')
+    def test_format_code_l(self):
+        self._test_format_code('l', 'long', 'long int')
 
-    def test_simple_code_k(self):
-        self._test_simple_code('k', 'unsigned long', 'long unsigned int')
+    def test_format_code_k(self):
+        self._test_format_code('k', 'unsigned long', 'long unsigned int')
 
     # ('L','PY_LONG_LONG'),
 
     # ('K','unsigned PY_LONG_LONG'),
 
-    def test_simple_code_f(self):
-        self._test_simple_code('f', 'float')
+    def test_format_code_f(self):
+        self._test_format_code('f', 'float')
 
-    def test_simple_code_d(self):
-        self._test_simple_code('d', 'double')
+    def test_format_code_d(self):
+        self._test_format_code('d', 'double')
 
     # ('D','Py_complex'),
 
-    def test_simple_code_c(self):
-        self._test_simple_code('c', 'char')
+    def test_format_code_c(self):
+        self._test_format_code('c', 'char')
 
-    def test_simple_code_s(self):
-        self._test_simple_code('s', 'const char *')
-
-    @unittest.skip("typedef lookup doesn't work yet")
-    def test_simple_code_s_hash(self):
-        self._test_simple_code('s#', ['const char *', 'Py_ssize_t'])
+    def test_format_code_s(self):
+        self._test_format_code('s', 'const char *')
 
     @unittest.skip("typedef lookup doesn't work yet")
-    def test_simple_code_s_star(self):
-        self._test_simple_code('s*', ['Py_buffer'])
-
-    def test_simple_code_z(self):
-        self._test_simple_code('z', 'const char *')
+    def test_format_code_s_hash(self):
+        self._test_format_code('s#', ['const char *', 'Py_ssize_t'])
 
     @unittest.skip("typedef lookup doesn't work yet")
-    def test_simple_code_z_hash(self):
-        self._test_simple_code('z#', ['const char *', 'Py_ssize_t'])
+    def test_format_code_s_star(self):
+        self._test_format_code('s*', ['Py_buffer'])
+
+    def test_format_code_z(self):
+        self._test_format_code('z', 'const char *')
 
     @unittest.skip("typedef lookup doesn't work yet")
-    def test_simple_code_z_star(self):
-        self._test_simple_code('z*', ['Py_buffer'])
+    def test_format_code_z_hash(self):
+        self._test_format_code('z#', ['const char *', 'Py_ssize_t'])
+
+    @unittest.skip("typedef lookup doesn't work yet")
+    def test_format_code_z_star(self):
+        self._test_format_code('z*', ['Py_buffer'])
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
