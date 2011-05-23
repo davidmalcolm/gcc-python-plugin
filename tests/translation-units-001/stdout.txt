@@ -2,3 +2,7 @@ len(gcc.get_translation_units()): 1
 type(u): <type 'gcc.TranslationUnitDecl'>
 u.language: 'GNU C'
 type(u.block): <type 'gcc.Block'>
+v.name: 'test_typedef'
+type(v): gcc.TypeDecl('test_typedef')
+v.name: 'test_var'
+type(v): gcc.VarDecl('test_var')

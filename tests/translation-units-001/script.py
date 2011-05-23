@@ -9,6 +9,14 @@ def on_pass_execution(p, data):
         print 'type(u): %s' % type(u)
         print 'u.language: %r' % u.language
         print 'type(u.block): %s' % type(u.block)
+        for v in u.block.vars:
+            if v.name == 'test_typedef':
+                print 'v.name: %r' % v.name
+                print 'type(v): %s' % v
+
+            if v.name == 'test_var':
+                print 'v.name: %r' % v.name
+                print 'type(v): %s' % v
         #print 'u.block: %s' % u.block
         #u.block.debug()
 

@@ -357,6 +357,11 @@ def generate_tree_code_classes():
                               'PyString_FromString(TRANSLATION_UNIT_LANGUAGE(self->t))',
                                "The source language of this translation unit, as a string")
 
+        if tree_type.SYM == 'BLOCK':
+            add_simple_getter('vars',
+                              'gcc_tree_list_from_chain(BLOCK_VARS(self->t))',
+                               "The list of gcc.Tree for the declarations and labels in this block")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
