@@ -55,6 +55,9 @@ def run_test(testdir):
     out = TestStream(os.path.join(testdir, 'stdout.txt'))
     err = TestStream(os.path.join(testdir, 'stderr.txt'))
 
+    env = dict(os.environ)
+    env['PYTHONPATH'] = os.getcwd()
+
     args = ['gcc']
     args += ['-c']
     args += ['-o', outfile]
@@ -69,7 +72,7 @@ def run_test(testdir):
     #print args
 
     # Invoke the compiler:
-    p = Popen(args, stdout=PIPE, stderr=PIPE)
+    p = Popen(args, env=env, stdout=PIPE, stderr=PIPE)
     out.actual, err.actual = p.communicate()
     #print 'out: %r' % out.actual
     #print 'err: %r' % err.actual

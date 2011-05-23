@@ -5,6 +5,15 @@ def get_src_for_loc(loc):
     import linecache
     return linecache.getline(loc.file, loc.line).rstrip()
 
+def get_global_typedef(name):
+    # Look up a typedef in global scope by name, returning a gcc.TypeDecl,
+    # or None if not found
+    for u in gcc.get_translation_units():
+        for v in u.block.vars:
+            if isinstance(v, gcc.TypeDecl):
+                if v.name == name:
+                    return v
+
 def invoke_dot(dot):
     from subprocess import Popen, PIPE
     p = Popen(['dot', '-Tpng', '-o', 'test.png'],

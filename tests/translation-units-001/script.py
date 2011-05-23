@@ -1,6 +1,7 @@
-# Verify that we can lookup identifiers by name
-
+# Verify that we can use gcc.get_translation_units()
 import gcc
+
+from gccutils import get_global_typedef
 
 def on_pass_execution(p, data):
     if p.name == 'visibility':
@@ -19,6 +20,10 @@ def on_pass_execution(p, data):
                 print 'type(v): %s' % v
         #print 'u.block: %s' % u.block
         #u.block.debug()
+
+        td = get_global_typedef('test_typedef')
+        print 'td: %s' % td
+
 
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,

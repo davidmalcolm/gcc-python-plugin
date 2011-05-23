@@ -6,3 +6,4 @@ v.name: 'test_typedef'
 type(v): gcc.TypeDecl('test_typedef')
 v.name: 'test_var'
 type(v): gcc.VarDecl('test_var')
+td: gcc.TypeDecl('test_typedef')
