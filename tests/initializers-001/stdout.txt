@@ -6,21 +6,21 @@ len(gcc.get_variables()) is 3
      elements[0]:
        value: {.first_field=89, .second_field=(char *) "turtle"}
        elements[0].elements[0]:
-         idx2: gcc.Declaration('first_field')
+         idx2: gcc.FieldDecl('first_field')
          value2: 89
          idx2.name: 'first_field'
        elements[0].elements[1]:
-         idx2: gcc.Declaration('second_field')
+         idx2: gcc.FieldDecl('second_field')
          value2: (char *) "turtle"
          idx2.name: 'second_field'
      elements[1]:
        value: {.first_field=37, .second_field=(char *) "lion"}
        elements[1].elements[0]:
-         idx2: gcc.Declaration('first_field')
+         idx2: gcc.FieldDecl('first_field')
          value2: 37
          idx2.name: 'first_field'
        elements[1].elements[1]:
-         idx2: gcc.Declaration('second_field')
+         idx2: gcc.FieldDecl('second_field')
          value2: (char *) "lion"
          idx2.name: 'second_field'
 1: var.decl.name = 'g'
@@ -33,30 +33,30 @@ len(gcc.get_variables()) is 3
      elements[0]:
        value: {.first_field=42, .second_field=(char *) "giraffe"}
        elements[0].elements[0]:
-         idx2: gcc.Declaration('first_field')
+         idx2: gcc.FieldDecl('first_field')
          value2: 42
          idx2.name: 'first_field'
        elements[0].elements[1]:
-         idx2: gcc.Declaration('second_field')
+         idx2: gcc.FieldDecl('second_field')
          value2: (char *) "giraffe"
          idx2.name: 'second_field'
      elements[1]:
        value: {.first_field=37, .second_field=(char *) "elephant"}
        elements[1].elements[0]:
-         idx2: gcc.Declaration('first_field')
+         idx2: gcc.FieldDecl('first_field')
          value2: 37
          idx2.name: 'first_field'
        elements[1].elements[1]:
-         idx2: gcc.Declaration('second_field')
+         idx2: gcc.FieldDecl('second_field')
          value2: (char *) "elephant"
          idx2.name: 'second_field'
      elements[2]:
        value: {.first_field=72, .second_field=(char *) "sea otter"}
        elements[2].elements[0]:
-         idx2: gcc.Declaration('first_field')
+         idx2: gcc.FieldDecl('first_field')
          value2: 72
          idx2.name: 'first_field'
        elements[2].elements[1]:
-         idx2: gcc.Declaration('second_field')
+         idx2: gcc.FieldDecl('second_field')
          value2: (char *) "sea otter"
          idx2.name: 'second_field'
