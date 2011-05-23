@@ -23,6 +23,8 @@ def on_pass_execution(p, data):
 
         td = get_global_typedef('test_typedef')
         print 'td: %s' % td
+        print 'td.name: %r' % td.name
+        print 'type(td.type): %s' % type(td.type)
 
 
 
