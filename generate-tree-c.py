@@ -348,7 +348,14 @@ def generate_tree_code_classes():
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
                               "The elements of this constructor, as a list of (index, gcc.Tree) pairs")
-        
+
+        if tree_type.SYM == 'TRANSLATION_UNIT_DECL':
+            add_simple_getter('block',
+                              'gcc_python_make_wrapper_tree(DECL_INITIAL(self->t))',
+                               "The gcc.Block for this namespace")
+            add_simple_getter('language',
+                              'PyString_FromString(TRANSLATION_UNIT_LANGUAGE(self->t))',
+                               "The source language of this translation unit, as a string")
 
         cu.add_defn(getsettable.c_defn())
 

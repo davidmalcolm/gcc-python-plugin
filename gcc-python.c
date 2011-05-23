@@ -307,6 +307,12 @@ gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
     return gcc_python_make_wrapper_tree(t);
 }
 
+static PyObject *
+gcc_python_get_translation_units(PyObject *self, PyObject *args)
+{
+    return VEC_tree_as_PyList(all_translation_units);
+}
+
 
 static PyMethodDef GccMethods[] = {
     {"register_callback", gcc_python_register_callback, METH_VARARGS,
@@ -320,6 +326,9 @@ static PyMethodDef GccMethods[] = {
 
     {"maybe_get_identifier", gcc_python_maybe_get_identifier, METH_VARARGS,
      "Get the gcc.IdentifierNode with this name, if it exists, otherwise None"},
+
+    {"get_translation_units", gcc_python_get_translation_units, METH_VARARGS,
+     "Get a list of all gcc.TranslationUnitDecl"},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}

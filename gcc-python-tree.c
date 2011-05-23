@@ -243,6 +243,34 @@ gcc_tree_list_from_chain(tree t)
     return NULL;
 }
 
+PyObject *
+VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes)
+{
+    PyObject *result = NULL;
+    int i;
+    tree t;
+
+    result = PyList_New(VEC_length(tree, vec_nodes));
+    if (!result) {
+	goto error;
+    }
+
+    FOR_EACH_VEC_ELT(tree, vec_nodes, i, t) {
+	PyObject *item;
+	item = gcc_python_make_wrapper_tree(t);
+	if (!item) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, item);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
 /*
   PEP-7  
 Local variables:

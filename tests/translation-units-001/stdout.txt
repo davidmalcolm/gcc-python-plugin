@@ -1,0 +1,4 @@
+len(gcc.get_translation_units()): 1
+type(u): <type 'gcc.TranslationUnitDecl'>
+u.language: 'GNU C'
+type(u.block): <type 'gcc.Block'>
