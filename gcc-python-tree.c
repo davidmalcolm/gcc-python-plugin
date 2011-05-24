@@ -275,5 +275,6 @@ VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes)
   PEP-7  
 Local variables:
 c-basic-offset: 4
+indent-tabs-mode: nil
 End:
 */

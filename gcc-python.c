@@ -503,5 +503,6 @@ gcc_python_string_or_none(const char *str_or_null)
   PEP-7  
 Local variables:
 c-basic-offset: 4
+indent-tabs-mode: nil
 End:
 */

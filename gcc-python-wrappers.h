@@ -91,4 +91,12 @@ gcc_PrettyPrinter_dealloc(PyObject *obj);
 PyObject *
 gcc_tree_list_from_chain(tree t);
 
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/
+
 #endif /* INCLUDED__WRAPPERS_H */

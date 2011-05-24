@@ -132,5 +132,12 @@ VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 #define gcc_python_int_from_long PyInt_FromLong
 #endif
 
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/
 
 #endif /* INCLUDED__GCC_PYTHON_H */

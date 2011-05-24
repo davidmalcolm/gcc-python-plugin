@@ -30,5 +30,6 @@ error:
   PEP-7  
 Local variables:
 c-basic-offset: 4
+indent-tabs-mode: nil
 End:
 */

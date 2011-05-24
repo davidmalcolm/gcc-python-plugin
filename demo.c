@@ -33,3 +33,11 @@ too_many_varargs(PyObject *self, PyObject *args)
     }
     Py_RETURN_NONE;
 }
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/
