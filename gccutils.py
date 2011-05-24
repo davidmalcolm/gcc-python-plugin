@@ -18,7 +18,7 @@ def invoke_dot(dot):
     from subprocess import Popen, PIPE
     p = Popen(['dot', '-Tpng', '-o', 'test.png'],
               stdin=PIPE)
-    p.communicate(dot)
+    p.communicate(dot.encode('ascii'))
 
     p = Popen(['eog', 'test.png'])
     p.communicate()
