@@ -103,12 +103,12 @@ gcc_Declaration_repr(struct PyGccTree * self)
 	    goto error;
 	}
 
-	result = PyString_FromFormat("%s('%s')",
-				     Py_TYPE(self)->tp_name,
-				     PyString_AsString(name));
+        result = gcc_python_string_from_format("%s('%s')",
+                                               Py_TYPE(self)->tp_name,
+                                               gcc_python_string_as_string(name));
 	Py_DECREF(name);
     } else {
-	result = PyString_FromFormat("%s(%u)",
+        result = gcc_python_string_from_format("%s(%u)",
 				     Py_TYPE(self)->tp_name,
 				     DECL_UID (self->t));
     }

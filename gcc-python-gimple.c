@@ -6,7 +6,7 @@
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self)
 {
-    return PyString_FromFormat("%s()", Py_TYPE(self)->tp_name);
+    return gcc_python_string_from_format("%s()", Py_TYPE(self)->tp_name);
 }
 
 /* FIXME:

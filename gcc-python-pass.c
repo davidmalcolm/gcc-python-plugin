@@ -9,9 +9,9 @@
 PyObject *
 gcc_Pass_repr(struct PyGccPass *self)
 {
-     return PyString_FromFormat("gcc.%s(name='%s')",
-				Py_TYPE(self)->tp_name,
-				self->pass->name);
+     return gcc_python_string_from_format("gcc.%s(name='%s')",
+                                          Py_TYPE(self)->tp_name,
+                                          self->pass->name);
 }
 
 static PyTypeObject *

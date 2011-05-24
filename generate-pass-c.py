@@ -19,7 +19,7 @@ def generate_pass():
                                    [PyGetSetDef('name',
                                                 cu.add_simple_getter('gcc_Pass_get_name',
                                                                      'PyGccPass',
-                                                                     'PyString_FromString(self->pass->name)'),
+                                                                     'gcc_python_string_from_string(self->pass->name)'),
                                                 None,
                                                 'Name of the pass'),
                                     ],
@@ -28,7 +28,7 @@ def generate_pass():
     for field in ('properties_required', 'properties_provided', 'properties_destroyed'):
         getsettable.add_simple_getter(cu,
                                       field,
-                                      'PyInt_FromLong(self->pass->%s)' % field,
+                                      'gcc_python_int_from_long(self->pass->%s)' % field,
                                       None)
     cu.add_defn(getsettable.c_defn())
     

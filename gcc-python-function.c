@@ -14,29 +14,26 @@
 PyObject *
 gcc_Function_repr(struct PyGccFunction * self)
 {
-     PyObject *name = NULL;
+     const char *name = NULL;
      PyObject *result = NULL;
      tree decl;
 
      assert(self->fun);
      decl = self->fun->decl;
      if (DECL_NAME(decl)) {
-	 name = PyString_FromString(IDENTIFIER_POINTER (DECL_NAME(decl)));
+         name = IDENTIFIER_POINTER (DECL_NAME(decl));
      } else {
-	 name = PyString_FromString("(unnamed)");
+         name = "(unnamed)";
      }
 
      if (!name) {
          goto error;
      }
 
-     result = PyString_FromFormat("gcc.Function('%s')",
-				  PyString_AsString(name));
-     Py_DECREF(name);
-
+     result = gcc_python_string_from_format("gcc.Function('%s')",
+                                            name);
      return result;
 error:
-     Py_XDECREF(name);
      Py_XDECREF(result);
      return NULL;
 }

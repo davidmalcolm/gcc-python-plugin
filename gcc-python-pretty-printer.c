@@ -59,10 +59,10 @@ gcc_python_pretty_printer_as_string(PyObject *obj)
     len = strlen(ppobj->buf);
     assert(len > 0);
     if ('\n' == ppobj->buf[len - 1]) {
-	return PyString_FromStringAndSize(ppobj->buf,
-					  len - 1);
+	return gcc_python_string_from_string_and_size(ppobj->buf,
+						      len - 1);
     } else {
-	return PyString_FromString(ppobj->buf);
+	return gcc_python_string_from_string(ppobj->buf);
     }
 }
 

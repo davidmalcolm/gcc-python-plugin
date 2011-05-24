@@ -134,7 +134,7 @@ PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 {
     if (DECL_NAME(self->t)) {
-        return PyString_FromString(IDENTIFIER_POINTER (DECL_NAME (self->t)));
+        return gcc_python_string_from_string(IDENTIFIER_POINTER (DECL_NAME (self->t)));
     }
     Py_RETURN_NONE;
 }
@@ -291,7 +291,7 @@ def generate_tree_code_classes():
 
         if cc == 'StringCst':
             add_simple_getter('constant',
-                              'PyString_FromString(TREE_STRING_POINTER(self->t))',
+                              'gcc_python_string_from_string(TREE_STRING_POINTER(self->t))',
                               'The operand of this expression, as a gcc.Tree')
 
         # TYPE_QUALS for various foo_TYPE classes:
@@ -311,7 +311,7 @@ def generate_tree_code_classes():
                               'PyBool_FromLong(TYPE_UNSIGNED(self->t))',
                               "Boolean: True for 'unsigned', False for 'signed'")
             add_simple_getter('precision',
-                              'PyInt_FromLong(TYPE_PRECISION(self->t))',
+                              'gcc_python_int_from_long(TYPE_PRECISION(self->t))',
                               'The precision of this type in bits, as an int (e.g. 32)')
             add_simple_getter('signed_equivalent',
                               'gcc_python_make_wrapper_tree(c_common_signed_type(self->t))',
@@ -354,7 +354,7 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(DECL_INITIAL(self->t))',
                                "The gcc.Block for this namespace")
             add_simple_getter('language',
-                              'PyString_FromString(TRANSLATION_UNIT_LANGUAGE(self->t))',
+                              'gcc_python_string_from_string(TRANSLATION_UNIT_LANGUAGE(self->t))',
                                "The source language of this translation unit, as a string")
 
         if tree_type.SYM == 'BLOCK':

@@ -115,5 +115,22 @@ gcc_python_string_or_none(const char *str_or_null);
 PyObject *
 VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 
+/* Python 2 vs Python 3 compat: */
+#if PY_MAJOR_VERSION == 3
+/* Python 3: use PyUnicode for "str" and PyLong for "int": */
+#define gcc_python_string_from_format PyUnicode_FromFormat
+#define gcc_python_string_from_string PyUnicode_FromString
+#define gcc_python_string_from_string_and_size PyUnicode_FromStringAndSize
+#define gcc_python_string_as_string _PyUnicode_AsString
+#define gcc_python_int_from_long PyLong_FromLong
+#else
+/* Python 2: use PyString for "str" and PyInt for "int": */
+#define gcc_python_string_from_format PyString_FromFormat
+#define gcc_python_string_from_string PyString_FromString
+#define gcc_python_string_from_string_and_size PyString_FromStringAndSize
+#define gcc_python_string_as_string PyString_AsString
+#define gcc_python_int_from_long PyInt_FromLong
+#endif
+
 
 #endif /* INCLUDED__GCC_PYTHON_H */

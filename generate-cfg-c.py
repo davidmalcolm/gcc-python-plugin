@@ -88,7 +88,7 @@ def generate_basic_block():
                                    typename='PyGccBasicBlock')
     getsettable.add_simple_getter(cu,
                                   'index',
-                                  'PyInt_FromLong(self->bb->index)',
+                                  'gcc_python_int_from_long(self->bb->index)',
                                   None)
     cu.add_defn(getsettable.c_defn())
 

@@ -16,17 +16,17 @@
 PyObject *
 gcc_Location_repr(struct PyGccLocation * self)
 {
-     return PyString_FromFormat("gcc.Location(file='%s', line=%i)",
-				LOCATION_FILE(self->loc),
-				LOCATION_LINE(self->loc));
+     return gcc_python_string_from_format("gcc.Location(file='%s', line=%i)",
+                                          LOCATION_FILE(self->loc),
+                                          LOCATION_LINE(self->loc));
 }
 
 PyObject *
 gcc_Location_str(struct PyGccLocation * self)
 {
-     return PyString_FromFormat("%s:%i",
-				LOCATION_FILE(self->loc),
-				LOCATION_LINE(self->loc));
+     return gcc_python_string_from_format("%s:%i",
+                                          LOCATION_FILE(self->loc),
+                                          LOCATION_LINE(self->loc));
 }
 
 PyObject *
