@@ -341,12 +341,36 @@ static struct
     PyObject *argument_tuple;
 } gcc_python_globals;
 
+#if PY_MAJOR_VERSION == 3
+static struct PyModuleDef gcc_module_def = {
+    PyModuleDef_HEAD_INIT,
+    "gcc",   /* name of module */
+    NULL,
+    -1,
+    GccMethods
+};
+#endif
+
+static PyMODINIT_FUNC PyInit_gcc(void)
+{
+    PyObject *m;
+#if PY_MAJOR_VERSION == 3
+    m = PyModule_Create(&gcc_module_def);
+#else
+    m = Py_InitModule("gcc", GccMethods);
+#endif
+    gcc_python_globals.module = m;
+
+#if PY_MAJOR_VERSION == 3
+    return m;
+#endif
+}
+
 static int
 gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
 {
     int i;
 
-    gcc_python_globals.module = Py_InitModule("gcc", GccMethods);
     if (!gcc_python_globals.module) {
         return 0;
     }
@@ -430,7 +454,12 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     //printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
+    PyImport_AppendInittab("gcc", PyInit_gcc);
+
     Py_Initialize();
+
+    PyImport_ImportModule("gcc");
+
     PyEval_InitThreads();
   
     if (!gcc_python_init_gcc_module(plugin_info)) {
