@@ -11,18 +11,13 @@ def log(msg):
     if 0:
         sys.stderr.write('%s\n' % msg)
 
-from gccutils import get_src_for_loc
+from gccutils import get_src_for_loc, get_global_typedef
 
 def get_const_char_ptr():
    return gcc.Type.char().const_equivalent.pointer
 
 def get_Py_ssize_t():
-    # FIXME: ideally, we ought to be getting at the Py_ssize_t typedef, since
-    # pyport.h embeds some preprocessor logic for this.  Unfortunately there
-    # doesn't seem to be a good way of getting at that. So for now, always just
-    # use the signed version of size_t:
-    ssize_t = gcc.Type.size_t().signed_equivalent
-    return ssize_t
+    return get_global_typedef('Py_ssize_t')
 
 def get_hash_size_type():
     if True: # FIXME: is PY_SSIZE_T_CLEAN defined?
@@ -33,22 +28,22 @@ def get_hash_size_type():
 # Helper functions for looking up various CPython implementation types.
 # Unfortunately, these are all typedefs, and I'm not able to get at these yet.
 def get_Py_buffer():
-    raise NotImplementedError # for now
+    return get_global_typedef('Py_buffer')
 
 def Py_UNICODE():
-    raise NotImplementedError # for now
+    return get_global_typedef('Py_UNICODE')
 
 def get_PyObject():
-    raise NotImplementedError # for now
+    return get_global_typedef('PyObject')
 
 def get_PyTypeObject():
-    raise NotImplementedError # for now
+    return get_global_typedef('PyTypeObject')
 
 def get_PyStringObject():
-    raise NotImplementedError # for now
+    return get_global_typedef('PyStringObject')
 
 def get_PyUnicodeObject():
-    raise NotImplementedError # for now
+    return get_global_typedef('PyUnicodeObject')
 
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code
@@ -100,13 +95,21 @@ def _type_of_simple_arg(arg):
     if arg == 'n':
         return get_Py_ssize_t()
 
-class PyArgParseArgument:
+class FormatUnit:
     """
     One fragment of the string arg to PyArg_ParseTuple and friends
     """
-    def __init__(self, code, expected_types):
+    def __init__(self, code):
         self.code = code
+
+class ConcreteUnit(FormatUnit):
+    def __init__(self, code, expected_types):
+        FormatUnit.__init__(self, code)
         self.expected_types = expected_types
+
+class Converter(FormatUnit):
+    def __init__(self, code):
+        FormatUnit.__init__(self, code) # FIXME: how to handle this?
 
 class PyArgParseFmt:
     """
@@ -117,14 +120,14 @@ class PyArgParseFmt:
         self.args = []
 
     def add_argument(self, code, expected_types):
-        self.args.append(PyArgParseArgument(code, expected_types))
+        self.args.append(ConcreteUnit(code, expected_types))
 
     def num_expected(self):
         return len(list(self.iter_exp_types()))
 
     def iter_exp_types(self):
         """
-        Yield a sequence of (PyArgParseArgument, gcc.Type) pairs, representing
+        Yield a sequence of (FormatUnit, gcc.Type) pairs, representing
         the expected types of the varargs
         """
         for arg in self.args:
@@ -177,9 +180,9 @@ class PyArgParseFmt:
 
             elif c == 'e':
                 if next in ['s', 't']:
-                    arg = PyArgParseArgument('e' + next,
-                                             [get_const_char_ptr(),
-                                              gcc.Type.char().pointer.pointer])
+                    arg = ConcreteUnit('e' + next,
+                                       [get_const_char_ptr(),
+                                        gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
                         if fmt_string[i] == '#':
@@ -190,11 +193,11 @@ class PyArgParseFmt:
             elif c == 'u':
                 if next == '#':
                     result.add_argument('u#',
-                                        [Py_UNICODE().pointer,
+                                        [Py_UNICODE().pointer.pointer,
                                          get_hash_size_type().pointer])
                     i += 1
                 else:
-                    result.add_argument('u', [Py_UNICODE().pointer])
+                    result.add_argument('u', [Py_UNICODE().pointer.pointer])
             elif c == 'S':
                 result.add_argument('S', [get_PyStringObject().pointer.pointer])
             elif c == 'U':
@@ -209,9 +212,16 @@ class PyArgParseFmt:
                     raise UnhandledCode(richloc, fmt_string, c + next) # FIXME
                 elif next == '&':
                     # FIXME: can't really handle this case as is, fixing for fcntmodule.c
-                    result += ['int ( PyObject * object , int * target )',  # converter
-                               'int *'] # FIXME, anything
+                    result.args.append(Converter('O&'))
                     i += 1
+                    #'O&',
+                    #[gcc.Type.int().pointer, # FIXME: this is a converter
+                    #
+                    #                     # FIXME: this should be obtained from the
+                    #                     # converter's type:
+                    #                     gcc.Type.int().pointer])
+                    #result += ['int ( PyObject * object , int * target )',  # converter
+                    #           'int *'] # FIXME, anything
                 else:
                     result.add_argument('O',
                                         [get_PyObject().pointer.pointer])
@@ -303,54 +313,37 @@ class MismatchingType(ParsedFormatStringError):
                    self.arg_num, self.vararg, _describe_vararg(self.vararg),
                    _describe_exp_type(self.exp_type), self.arg_fmt_string))
 
-def type_equality(exp_type, vararg):
-    log('comparing exp_type: %s (%r) with vararg: %s (%r)' % (exp_type, exp_type, vararg, vararg))
-    # FIXME:
-    log(dir(vararg))
-    log('vararg.type: %r %s' % (vararg.type, vararg.type) )
-    log('vararg.operand: %r' % vararg.operand)
-    # We expect a gcc.AddrExpr with operand gcc.Declaration
-    log('dir(vararg.operand): %r' % dir(vararg.operand))
-    log('vararg.operand.type: %r' % vararg.operand.type)
-    # e.g. gcc.IntegerType
-    log('vararg.operand.type: %s' % vararg.operand.type)
-    log('dir(vararg.operand.type): %r' % dir(vararg.operand.type))
-    if hasattr(vararg.operand.type, 'const'):
-        log('vararg.operand.type.const: %r' % vararg.operand.type.const)
-    log('vararg.operand.type.name: %r' % vararg.operand.type.name)
-    if hasattr(vararg.operand.type, 'unsigned'):
-        log('vararg.operand.type.unsigned: %r' % vararg.operand.type.unsigned)
-    if hasattr(vararg.operand.type, 'precision'):
-        log('vararg.operand.type.precision: %r' % vararg.operand.type.precision)
-        log('dir(vararg.operand.type.name): %r' % dir(vararg.operand.type.name))
-    if vararg.operand.type.name:
-        log('vararg.operand.type.name.location: %r' % vararg.operand.type.name.location)
-
-    log('exp_type: %r %s' % (exp_type, exp_type))
+def type_equality(exp_type, actual_type):
+    log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
     log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
 
-    assert isinstance(exp_type, gcc.Type)
+    assert isinstance(exp_type, gcc.Type) or isinstance(exp_type, gcc.TypeDecl)
+    assert isinstance(actual_type, gcc.Type) or isinstance(actual_type, gcc.TypeDecl)
 
-    #log('exp_type.unsigned: %r' % exp_type.unsigned)
-    #log('exp_type.precision: %s' % exp_type.precision)
-    log(dir(gcc.Type))
+    # Try direct comparison:
+    if actual_type == exp_type:
+        return True
 
-    if vararg.type != exp_type:
-        return False
+    # Sometimes we get the typedef rather than the type, for both exp and
+    # actual.  Compare using the actual types, but report using the typedefs
+    # so that we can report that e.g.
+    #   PyObject * *
+    # was expected, rather than:
+    #   struct PyObject * *
+    if isinstance(exp_type, gcc.TypeDecl):
+        if type_equality(exp_type.type, actual_type):
+            return True
 
-    # where are the builtin types? 
-    # I see /usr/src/debug/gcc-4.6.0-20110321/obj-x86_64-redhat-linux/gcc/i386-builtin-types.inc
-    # has e.g.:
-    #   ix86_builtin_type_tab[(int)IX86_BT_INT] = integer_type_node,
-    # and these seem to be set up in:  build_common_tree_nodes (bool signed_char)
-    # in tree.c
-    #   build_common_builtin_nodes uses:
-    #       built_in_decls[code] = decl;
-    #       implicit_built_in_decls[code] = decl;
-    #  and many of these are just macros in tree.h, looking in here:
-    #    extern GTY(()) tree integer_types[itk_none];
+    if isinstance(actual_type, gcc.TypeDecl):
+        if type_equality(exp_type, actual_type.type):
+            return True
 
-    return True
+    # Dereference for pointers (and ptrs to ptrs etc):
+    if isinstance(actual_type, gcc.PointerType) and isinstance(exp_type, gcc.PointerType):
+        if type_equality(actual_type.dereference, exp_type.dereference):
+            return True
+
+    return False
 
 def check_pyargs(fun):
     def get_format_string(stmt):
@@ -407,7 +400,7 @@ def check_pyargs(fun):
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
-                    if not type_equality(exp_type, vararg):
+                    if not type_equality(exp_type, vararg.type):
                         gcc.permerror(vararg.location,
                                       str(MismatchingType(fmt, index + 3, exp_arg.code, exp_type, vararg)))
     

@@ -362,6 +362,11 @@ def generate_tree_code_classes():
                               'gcc_tree_list_from_chain(BLOCK_VARS(self->t))',
                                "The list of gcc.Tree for the declarations and labels in this block")
 
+        if tree_type.SYM == 'TYPE_DECL':
+            add_simple_getter('pointer',
+                              'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
+                              "The gcc.PointerType representing '(this_type *)'")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,

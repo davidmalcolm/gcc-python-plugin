@@ -158,6 +158,46 @@ correct_usage(PyObject *self, PyObject *args)
 """
         self.assertNoErrors(src)
 
+    def get_function_name(self, header, code):
+        name = '%s_%s' % (header, code)
+        name = name.replace('*', '_star')
+        name = name.replace('#', '_hash')
+        name = name.replace('!', '_bang')
+        name = name.replace('&', '_amp')
+        return name
+
+    def make_src_for_correct_function(self, code, typenames, params=None):
+        # Generate a C function that uses the format code correctly, and verify
+        # that it compiles with gcc with the cpychecker script, without errors
+        function_name = self.get_function_name('correct_usage_of', code)
+        src = ('PyObject *\n'
+               '%(function_name)s(PyObject *self, PyObject *args)\n'
+               '{\n') % locals()
+        for i, typename in enumerate(typenames):
+            src += ('    %(typename)s val%(i)s;\n') % locals()
+        if not params:
+            params = ', '.join('&val%i' % i for i in range(len(typenames)))
+        src += ('    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
+                '              return NULL;\n'
+                '    }\n'
+                '    Py_RETURN_NONE;\n'
+                '}\n') % locals()
+        return src
+
+    def make_src_for_incorrect_function(self, code, typenames):
+        function_name = self.get_function_name('incorrect_usage_of', code)
+        params = ', '.join('&val' for i in range(len(typenames)))
+        src = ('PyObject *\n'
+               '%(function_name)s(PyObject *self, PyObject *args)\n'
+               '{\n'
+               '    void *val;\n'
+               '    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
+               '  	    return NULL;\n'
+               '    }\n'
+               '    Py_RETURN_NONE;\n'
+               '}\n') % locals()
+        return src, function_name
+
     def _test_format_code(self, code, typenames, exptypenames=None):
         if not exptypenames:
             exptypenames = typenames
@@ -167,28 +207,8 @@ correct_usage(PyObject *self, PyObject *args)
         if isinstance(exptypenames, str):
             exptypenames = [exptypenames]
 
-        def get_function_name(header, code):
-            name = '%s_%s' % (header, code)
-            name = name.replace('*', '_star')
-            name = name.replace('#', '_hash')
-            name = name.replace('!', '_bang')
-            return name
-
         def _test_correct_usage_of_format_code(self, code, typenames):
-            # Generate a C function that uses the format code correctly, and verify
-            # that it compiles with gcc with the cpychecker script, without errors
-            function_name = get_function_name('correct_usage_of', code)
-            src = ('PyObject *\n'
-                   '%(function_name)s(PyObject *self, PyObject *args)\n'
-                   '{\n') % locals()
-            for i, typename in enumerate(typenames):
-                src += ('    %(typename)s val%(i)s;\n') % locals()
-            params = ', '.join('&val%i' % i for i in range(len(typenames)))
-            src += ('    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
-                    '              return NULL;\n'
-                    '    }\n'
-                    '    Py_RETURN_NONE;\n'
-                    '}\n') % locals()
+            src = self.make_src_for_correct_function(code, typenames)
             self.assertNoErrors(src)
 
         def _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames):
@@ -197,17 +217,7 @@ correct_usage(PyObject *self, PyObject *args)
             # the incorrect type; compile it with cpychecker, and verify that there's
             # a warning
             exptypename = exptypenames[0]
-            function_name = get_function_name('incorrect_usage_of', code)
-            params = ', '.join('&val' for i in range(len(typenames)))
-            src = ('PyObject *\n'
-                   '%(function_name)s(PyObject *self, PyObject *args)\n'
-                   '{\n'
-                   '    void *val;\n'
-                   '    if (!PyArg_ParseTuple(args, "%(code)s", %(params)s)) {\n'
-                   '  	    return NULL;\n'
-                   '    }\n'
-                   '    Py_RETURN_NONE;\n'
-                   '}\n') % locals()
+            src, function_name = self.make_src_for_incorrect_function(code, typenames)
             experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
                       '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
             bm = self.assertFindsError(src, experr)
@@ -218,32 +228,26 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_s(self):
         self._test_format_code('s', 'const char *')
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_s_hash(self):
         self._test_format_code('s#', ['const char *', 'Py_ssize_t'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_s_star(self):
         self._test_format_code('s*', ['Py_buffer'])
 
     def test_format_code_z(self):
         self._test_format_code('z', 'const char *')
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_z_hash(self):
         self._test_format_code('z#', ['const char *', 'Py_ssize_t'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_z_star(self):
         self._test_format_code('z*', ['Py_buffer'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_u(self):
         self._test_format_code('u', 'Py_UNICODE *')
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_u_hash(self):
-        self._test_format_code('u#', ['Py_UNICODE *', 'int'])
+        self._test_format_code('u#', ['Py_UNICODE *', 'Py_ssize_t']) # not an int
 
     def test_format_code_es(self):
         self._test_format_code('es', ['const char', 'char *'])
@@ -285,9 +289,8 @@ correct_usage(PyObject *self, PyObject *args)
 
     # ('K','unsigned PY_LONG_LONG'),
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_n(self):
-        self._test_format_code('n','Py_ssize_t')
+        self._test_format_code('n', 'Py_ssize_t')
 
     def test_format_code_c(self):
         self._test_format_code('c', 'char')
@@ -300,36 +303,43 @@ correct_usage(PyObject *self, PyObject *args)
 
     # ('D','Py_complex'),
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_O(self):
         self._test_format_code('O', ['PyObject *'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_O_bang(self):
         self._test_format_code('O!', ['PyTypeObject', 'PyObject *'])
 
-    # O& (object) [converter, anything]
+    def test_format_code_O_amp(self):
+        # O& (object) [converter, anything]
+        # Converter should be a function of the form:
+        #   int conv(object, T* val_addr)
+        # args should be: converter, T*
+        src = self.make_src_for_correct_function('O&', ['int'],
+                                                 params='my_converter, &val0')
+        src = 'extern int my_converter(PyObject *obj, int *i);\n\n' + src
+        # self.assertNoErrors(src)
 
-    @unittest.skip("typedef lookup doesn't work yet")
+        #self._test_format_code('O&', ['PyTypeObject', 'PyObject *'])
+        #self.assert_args("O&",
+        #                 ['int ( PyObject * object , int * target )',
+        #                  'int *',
+        #                  'int *'])
+
     def test_format_code_S(self):
         self._test_format_code('S', ['PyStringObject *'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_U(self):
         self._test_format_code('U', ['PyUnicodeObject *'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_t_hash(self):
         self._test_format_code('t#', ['char *', 'Py_ssize_t'])
 
     def test_format_code_w(self):
         self._test_format_code('w', 'char *')
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_w_hash(self):
         self._test_format_code('w#', ['char *', 'Py_ssize_t'])
 
-    @unittest.skip("typedef lookup doesn't work yet")
     def test_format_code_w_star(self):
         self._test_format_code('w*', ['Py_buffer'])
 
@@ -382,10 +392,6 @@ class TestArgParsing: # (unittest.TestCase):
                          ['int ( PyObject * object , int * target )', 
                           'int *', 
                           'int *'])
-
-    def test_posixmodule_listdir(self):
-        self.assert_args("et#:listdir",
-                         ['const char *', 'char * *', 'int *'])
 
     def test_bsddb_DBSequence_set_range(self):
         self.assert_args("(LL):set_range",
