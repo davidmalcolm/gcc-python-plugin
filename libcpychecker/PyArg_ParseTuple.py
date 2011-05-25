@@ -95,7 +95,6 @@ def _type_of_simple_arg(arg):
               'k': gcc.Type.unsigned_long,
               'f': gcc.Type.float,
               'd': gcc.Type.double,
-              # 'D':'Py_complex',
               'c': gcc.Type.char,
               }
     if arg in simple:
