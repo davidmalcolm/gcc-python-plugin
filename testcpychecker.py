@@ -224,6 +224,9 @@ correct_usage(PyObject *self, PyObject *args)
                                        
         _test_correct_usage_of_format_code(self, code, typenames)
         _test_incorrect_usage_of_format_code(self, code, typenames, exptypenames)
+
+    # The following test cases are intended to be in the same order as the API
+    # documentation at http://docs.python.org/c-api/arg.html
         
     def test_format_code_s(self):
         self._test_format_code('s', 'const char *')
