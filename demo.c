@@ -34,6 +34,18 @@ too_many_varargs(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject *
+kwargs_example(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    double x, y;
+    char *keywords[] = {"x", "y"};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "(ff):kwargs_example", keywords, &x, &y)) {
+	 return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
 /*
   PEP-7
 Local variables:

@@ -281,19 +281,20 @@ class PyArgParseFmt:
         return result
 
 class ParsedFormatStringError(FormatStringError):
-    def __init__(self, fmt):
+    def __init__(self, funcname, fmt):
         FormatStringError.__init__(self, fmt.fmt_string)
+        self.funcname = funcname
         self.fmt = fmt
 
 class WrongNumberOfVars(ParsedFormatStringError):
-    def __init__(self, fmt, varargs):
-        ParsedFormatStringError.__init__(self, fmt)
+    def __init__(self, funcname, fmt, varargs):
+        ParsedFormatStringError.__init__(self, funcname, fmt)
         self.varargs = varargs
 
     def __str__(self):
         return '%s in call to %s with format string "%s" : expected %i extra arguments (%s), but got %i' % (
             self._get_desc_prefix(),
-            'PyArg_ParseTuple',
+            self.funcname,
             self.fmt.fmt_string,
             self.fmt.num_expected(),
             ','.join([str(exp_type) for (arg, exp_type) in self.fmt.iter_exp_types()]),
@@ -311,8 +312,8 @@ class TooManyVars(WrongNumberOfVars):
         return 'Too many arguments'
 
 class MismatchingType(ParsedFormatStringError):
-    def __init__(self, fmt, arg_num, arg_fmt_string, exp_type, vararg):
-        super(self.__class__, self).__init__(fmt)
+    def __init__(self, funcname, fmt, arg_num, arg_fmt_string, exp_type, vararg):
+        super(self.__class__, self).__init__(funcname, fmt)
         self.arg_num = arg_num
         self.arg_fmt_string = arg_fmt_string
         self.exp_type = exp_type
@@ -341,7 +342,7 @@ class MismatchingType(ParsedFormatStringError):
         return (('Mismatching type in call to %s with format string "%s":'
                  ' argument %i ("%s") had type %s'
                  ' but was expecting %s for format code "%s"')
-                % ("PyArg_ParseTuple", self.fmt.fmt_string,
+                % (self.funcname, self.fmt.fmt_string,
                    self.arg_num, self.vararg, _describe_vararg(self.vararg),
                    _describe_exp_type(self.exp_type), self.arg_fmt_string))
 
@@ -378,8 +379,8 @@ def type_equality(exp_type, actual_type):
     return False
 
 def check_pyargs(fun):
-    def get_format_string(stmt):
-        fmt_code = stmt.args[1]
+    def get_format_string(stmt, format_idx):
+        fmt_code = stmt.args[format_idx]
         # We can only cope with the easy case, when it's a AddrExpr(StringCst())
         # i.e. a reference to a string constant, i.e. a string literal in the C
         # source:
@@ -388,7 +389,7 @@ def check_pyargs(fun):
             if isinstance(operand, gcc.StringCst):
                 return operand.constant
 
-    def check_callsite(stmt):
+    def check_callsite(stmt, funcname, format_idx, varargs_idx):
         log('got call at %s' % stmt.loc)
         log(get_src_for_loc(stmt.loc))
         # log('stmt: %r %s' % (stmt, stmt))
@@ -403,7 +404,7 @@ def check_pyargs(fun):
         #   args[2...]: output pointers
 
         if len(stmt.args) > 1:
-            fmt_string = get_format_string(stmt)
+            fmt_string = get_format_string(stmt, format_idx)
             if fmt_string:
                 log('fmt_string: %r' % fmt_string)
 
@@ -421,20 +422,22 @@ def check_pyargs(fun):
                 log('exp_types: %r' % exp_types)
 
                 # ...then compare them against the actual types:
-                varargs = stmt.args[2:]
+                varargs = stmt.args[varargs_idx:]
                 # log('varargs: %r' % varargs)
                 if len(varargs) < len(exp_types):
-                    gcc.permerror(loc, str(NotEnoughVars(fmt, varargs)))
+                    gcc.permerror(loc, str(NotEnoughVars(funcname, fmt, varargs)))
                     return
 
                 if len(varargs) > len(exp_types):
-                    gcc.permerror(loc, str(TooManyVars(fmt, varargs)))
+                    gcc.permerror(loc, str(TooManyVars(funcname, fmt, varargs)))
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
                     if not type_equality(exp_type, vararg.type):
                         gcc.permerror(vararg.location,
-                                      str(MismatchingType(fmt, index + 3, exp_arg.code, exp_type, vararg)))
+                                      str(MismatchingType(funcname, fmt,
+                                                          index + varargs_idx + 1,
+                                                          exp_arg.code, exp_type, vararg)))
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
@@ -444,5 +447,7 @@ def check_pyargs(fun):
                         #log('stmt.fn: %s %r' % (stmt.fn, stmt.fn))
                         #log('stmt.fndecl: %s %r' % (stmt.fndecl, stmt.fndecl))
                         if stmt.fndecl.name == 'PyArg_ParseTuple':
-                            check_callsite(stmt)
+                            check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
+                        elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
+                            check_callsite(stmt, 'PyArg_ParseTupleAndKeywords', 2, 4)
 

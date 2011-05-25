@@ -198,6 +198,13 @@ correct_usage(PyObject *self, PyObject *args)
                '}\n') % locals()
         return src, function_name
 
+    def get_funcname(self):
+        return 'PyArg_ParseTuple'
+
+    def get_expected_error(self):
+        return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
+                '$(SRCFILE):13:26: error: Mismatching type in call to %(funcname)s with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"')
+
     def _test_format_code(self, code, typenames, exptypenames=None):
         if not exptypenames:
             exptypenames = typenames
@@ -218,8 +225,8 @@ correct_usage(PyObject *self, PyObject *args)
             # a warning
             exptypename = exptypenames[0]
             src, function_name = self.make_src_for_incorrect_function(code, typenames)
-            experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
-                      '$(SRCFILE):13:26: error: Mismatching type in call to PyArg_ParseTuple with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"' % locals())
+            funcname = self.get_funcname()
+            experr = self.get_expected_error() % locals()
             bm = self.assertFindsError(src, experr)
                                        
         _test_correct_usage_of_format_code(self, code, typenames)
@@ -363,6 +370,48 @@ correct_usage(PyObject *self, PyObject *args)
             experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
                       '$(SRCFILE):12:26: error: mismatched parentheses in format string "%(code)s"' % locals())
             bm = self.assertFindsError(src, experr)
+
+class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
+    def get_funcname(self):
+        return 'PyArg_ParseTupleAndKeywords'
+
+    def get_expected_error(self):
+        return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
+                '$(SRCFILE):14:37: error: Mismatching type in call to %(funcname)s with format string "%(code)s": argument 5 ("&val") had type "void * *" but was expecting "%(exptypename)s *"')
+
+    def make_src_for_correct_function(self, code, typenames, params=None):
+        # Generate a C function that uses the format code correctly, and verify
+        # that it compiles with gcc with the cpychecker script, without errors
+        function_name = self.get_function_name('correct_usage_of', code)
+        src = ('PyObject *\n'
+               '%(function_name)s(PyObject *self, PyObject *args, PyObject *kw)\n'
+               '{\n') % locals()
+        src += '    char *keywords[] = {"fake_keyword", NULL};\n'
+        for i, typename in enumerate(typenames):
+            src += ('    %(typename)s val%(i)s;\n') % locals()
+        if not params:
+            params = ', '.join('&val%i' % i for i in range(len(typenames)))
+        src += ('    if (!PyArg_ParseTupleAndKeywords(args, kw, "%(code)s", keywords, %(params)s)) {\n'
+                '              return NULL;\n'
+                '    }\n'
+                '    Py_RETURN_NONE;\n'
+                '}\n') % locals()
+        return src
+
+    def make_src_for_incorrect_function(self, code, typenames):
+        function_name = self.get_function_name('incorrect_usage_of', code)
+        params = ', '.join('&val' for i in range(len(typenames)))
+        src = ('PyObject *\n'
+               '%(function_name)s(PyObject *self, PyObject *args, PyObject *kw)\n'
+               '{\n'
+               '    void *val;\n'
+               '    char *keywords[] = {"fake_keyword", NULL};\n'
+               '    if (!PyArg_ParseTupleAndKeywords(args, kw, "%(code)s", keywords, %(params)s)) {\n'
+               '        return NULL;\n'
+               '    }\n'
+               '    Py_RETURN_NONE;\n'
+               '}\n') % locals()
+        return src, function_name
 
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
