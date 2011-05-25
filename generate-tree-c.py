@@ -316,6 +316,9 @@ def generate_tree_code_classes():
             add_simple_getter('signed_equivalent',
                               'gcc_python_make_wrapper_tree(c_common_signed_type(self->t))',
                               'The gcc.IntegerType for the signed version of this type')
+            add_simple_getter('unsigned_equivalent',
+                              'gcc_python_make_wrapper_tree(c_common_unsigned_type(self->t))',
+                              'The gcc.IntegerType for the unsigned version of this type')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
             add_simple_getter('dereference',

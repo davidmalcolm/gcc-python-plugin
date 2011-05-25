@@ -285,9 +285,11 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_k(self):
         self._test_format_code('k', 'unsigned long', 'long unsigned int')
 
-    # ('L','PY_LONG_LONG'),
+    def test_format_code_L(self):
+        self._test_format_code('L', 'PY_LONG_LONG', 'long long int')
 
-    # ('K','unsigned PY_LONG_LONG'),
+    def test_format_code_K(self):
+        self._test_format_code('K', 'unsigned PY_LONG_LONG', 'long long unsigned int')
 
     def test_format_code_n(self):
         self._test_format_code('n', 'Py_ssize_t')

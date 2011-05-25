@@ -33,6 +33,13 @@ def get_Py_buffer():
 def Py_UNICODE():
     return get_global_typedef('Py_UNICODE')
 
+def get_PY_LONG_LONG():
+    # pyport.h can supply PY_LONG_LONG as a #define, as a typedef, or not at all
+    # FIXME
+    # If we have "long long", pyport.h uses that.
+    # Assume so for now:
+    return gcc.Type.long_long()
+
 def get_PyObject():
     return get_global_typedef('PyObject')
 
@@ -80,8 +87,6 @@ def _type_of_simple_arg(arg):
               'I': gcc.Type.unsigned_int,
               'l': gcc.Type.long,
               'k': gcc.Type.unsigned_long,
-              # 'L':'PY_LONG_LONG',
-              # 'K':'unsigned PY_LONG_LONG',
               'f': gcc.Type.float,
               'd': gcc.Type.double,
               # 'D':'Py_complex',
@@ -94,6 +99,12 @@ def _type_of_simple_arg(arg):
 
     if arg == 'n':
         return get_Py_ssize_t()
+
+    if arg == 'L':
+        return get_PY_LONG_LONG()
+
+    if arg == 'K':
+        return get_PY_LONG_LONG().unsigned_equivalent
 
 class FormatUnit:
     """
