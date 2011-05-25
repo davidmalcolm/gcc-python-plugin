@@ -303,7 +303,8 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_d(self):
         self._test_format_code('d', 'double')
 
-    # ('D','Py_complex'),
+    def test_format_code_D(self):
+        self._test_format_code('D', 'Py_complex')
 
     def test_format_code_O(self):
         self._test_format_code('O', ['PyObject *'])

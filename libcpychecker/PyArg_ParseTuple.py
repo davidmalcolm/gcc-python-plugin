@@ -52,6 +52,9 @@ def get_PyStringObject():
 def get_PyUnicodeObject():
     return get_global_typedef('PyUnicodeObject')
 
+def get_Py_complex():
+    return get_global_typedef('Py_complex')
+
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code
     pass
@@ -105,6 +108,9 @@ def _type_of_simple_arg(arg):
 
     if arg == 'K':
         return get_PY_LONG_LONG().unsigned_equivalent
+
+    if arg == 'D':
+        return get_Py_complex()
 
 class FormatUnit:
     """
