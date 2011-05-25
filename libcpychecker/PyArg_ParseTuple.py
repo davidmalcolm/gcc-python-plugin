@@ -75,7 +75,10 @@ class UnhandledCode(UnknownFormatChar):
     def __str__(self):
         return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
-        
+
+class MismatchedParentheses(FormatStringError):
+    def __str__(self):
+        return "mismatched parentheses in format string \"%s\"" % (self.fmt_string, )
 
 def _type_of_simple_arg(arg):
     # Convert 1-character argument code to a gcc.Type, covering the easy cases
@@ -160,6 +163,7 @@ class PyArgParseFmt:
         """
         result = PyArgParseFmt(fmt_string)
         i = 0
+        paren_nesting = 0
         while i < len(fmt_string):
             c = fmt_string[i]
             i += 1
@@ -168,8 +172,16 @@ class PyArgParseFmt:
             else:
                 next = None
 
-            if c in ['(', ')']:
+            if c == '(':
+                paren_nesting += 1
                 continue
+
+            if c == ')':
+                if paren_nesting > 0:
+                    paren_nesting -= 1
+                    continue
+                else:
+                    raise MismatchedParentheses(fmt_string)
 
             if c in [':', ';']:
                 break
@@ -263,6 +275,10 @@ class PyArgParseFmt:
                     i += 1
             else:
                 raise UnknownFormatChar(fmt_string, c)
+
+        if paren_nesting > 0:
+            raise MismatchedParentheses(fmt_string)
+
         return result
 
 class ParsedFormatStringError(FormatStringError):

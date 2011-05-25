@@ -349,6 +349,21 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_w_star(self):
         self._test_format_code('w*', ['Py_buffer'])
 
+    def test_mismatched_parentheses(self):
+        for code in ['(', ')', '(()']:
+            function_name = 'fn'
+            src = ('PyObject *\n'
+                   '%(function_name)s(PyObject *self, PyObject *args)\n'
+                   '{\n') % locals()
+            src += ('    if (!PyArg_ParseTuple(args, "%(code)s")) {\n'
+                    '              return NULL;\n'
+                    '    }\n'
+                    '    Py_RETURN_NONE;\n'
+                    '}\n') % locals()
+            experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
+                      '$(SRCFILE):12:26: error: mismatched parentheses in format string "%(code)s"' % locals())
+            bm = self.assertFindsError(src, experr)
+
 class RefcountErrorTests(AnalyzerTests):
     def test_correct_py_none(self):
         sm = SimpleModule()
