@@ -1,3 +1,8 @@
+# Attempt to check that C code is implementing CPython's reference-counting
+# rules.  See:
+#   http://docs.python.org/c-api/intro.html#reference-counts
+# for a description of how such code is meant to be written
+
 import gcc
 
 from gccutils import cfg_to_dot, invoke_dot
