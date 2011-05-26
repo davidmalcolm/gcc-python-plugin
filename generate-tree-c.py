@@ -27,12 +27,6 @@ def generate_tree():
     
     cu.add_defn("""
 static PyObject *
-gcc_Tree_get_location(struct PyGccTree *self, void *closure)
-{
-    return gcc_python_make_wrapper_location(DECL_SOURCE_LOCATION(self->t));
-}
-
-static PyObject *
 gcc_Tree_get_type(struct PyGccTree *self, void *closure)
 {
     return gcc_python_make_wrapper_tree(TREE_TYPE(self->t));
@@ -47,9 +41,7 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 """)
 
     getsettable = PyGetSetDefTable('gcc_Tree_getset_table',
-                                   [PyGetSetDef('location', 'gcc_Tree_get_location', None,
-                                                'Instance of gcc.Location indicating the source code location of this node'),
-                                    PyGetSetDef('type', 'gcc_Tree_get_type', None,
+                                   [PyGetSetDef('type', 'gcc_Tree_get_type', None,
                                                 'Instance of gcc.Tree giving the type of the node'),
                                     PyGetSetDef('addr', 'gcc_Tree_get_addr', None,
                                                 'The address of the underlying GCC object in memory')])
@@ -146,6 +138,12 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
 
     return gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t));
 }
+
+static PyObject *
+gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
+{
+    return gcc_python_make_wrapper_location(DECL_SOURCE_LOCATION(self->t));
+}
 """)
 
             getsettable.add_gsdef('name',
@@ -156,6 +154,10 @@ gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
                                   'gcc_Declaration_get_function',
                                   None, 
                                   'The gcc.Function (or None) for this declaration')
+            getsettable.add_gsdef('location',
+                                  'gcc_Declaration_get_location',
+                                  None,
+                                  'The gcc.Location for this declaration')
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
             pytype.tp_str = '(reprfunc)gcc_Declaration_repr'
 
@@ -245,6 +247,12 @@ PyObject*
 
             pytype.tp_methods = methods.identifier
             cu.add_defn(methods.c_defn())
+
+        if localname == 'Expression':
+            add_simple_getter('location',
+                              'gcc_python_make_wrapper_location(EXPR_LOCATION(self->t))',
+                              "The source location of this expression")
+
         cu.add_defn(getsettable.c_defn())            
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
