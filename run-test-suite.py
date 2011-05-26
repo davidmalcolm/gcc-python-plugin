@@ -1,3 +1,14 @@
+# Test cases are in the form of subdirectories of the "tests" directory
+#
+# A test consists of:
+#   input.c: C source code to be compiled
+#   script.py: a Python script to be run by GCC during said compilation
+#   stdout.txt: (optional) the expected stdout from GCC (empty if not present)
+#   stderr.txt: (optional) as per stdout.txt
+#
+# This runner either invokes all tests, or just a subset, if supplied the
+# names of the subdirectories as arguments
+
 import glob
 import os
 import sys
@@ -84,8 +95,21 @@ def run_test(testdir):
     out.check_for_diff(out.actual, err.actual, p, args, 'stdout')
     err.check_for_diff(out.actual, err.actual, p, args, 'stderr')
 
+
+from optparse import OptionParser
+parser = OptionParser()
+(options, args) = parser.parse_args()
+
+# print (options, args)
+
+if len(args) > 0:
+    # Just run the given tests
+    testdirs = [os.path.join('tests', d) for d in args]
+else:
+    # Run all the tests
+    testdirs = sorted(glob.glob('tests/*'))
+
 had_errors = False
-testdirs = sorted(glob.glob('tests/*'))
 for testdir in testdirs:
     try:
         print ('%s: ' % testdir),
