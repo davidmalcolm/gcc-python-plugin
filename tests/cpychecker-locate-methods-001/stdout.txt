@@ -1,0 +1,7 @@
+len(methods): 2
+m[0]:
+  decl: gcc.FunctionDecl('my_method_A')
+  loc: tests/cpychecker-locate-methods-001/input.c:16
+m[1]:
+  decl: gcc.FunctionDecl('my_method_B')
+  loc: tests/cpychecker-locate-methods-001/input.c:17
