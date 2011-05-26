@@ -5,6 +5,8 @@
 #   script.py: a Python script to be run by GCC during said compilation
 #   stdout.txt: (optional) the expected stdout from GCC (empty if not present)
 #   stderr.txt: (optional) as per stdout.txt
+#   getopts.py: (optional) if present, stdout from this script is
+#               added to GCC's invocation options
 #
 # This runner either invokes all tests, or just a subset, if supplied the
 # names of the subdirectories as arguments
@@ -74,6 +76,15 @@ def run_test(testdir):
     args += ['-o', outfile]
     args += ['-fplugin=%s' % os.path.abspath('python.so'),
              '-fplugin-arg-python-script=%s' % script_py]
+
+    getopts_py = os.path.join(testdir, 'getopts.py')
+    if os.path.exists(getopts_py):
+        p = Popen([sys.executable, getopts_py], stdout=PIPE, stderr=PIPE)
+        opts_out, opts_err = p.communicate()
+        c = p.wait()
+        if c != 0:
+            raise CommandError()
+        args += [opts_out.strip()]
     #args += cflags.split()
     #args += ['-Wall',  '-Werror'] # during testing
     #args += ['-shared'] # not sure why this is necessary
