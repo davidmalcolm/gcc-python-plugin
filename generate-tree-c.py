@@ -378,6 +378,18 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
                               "The gcc.PointerType representing '(this_type *)'")
 
+        if tree_type.SYM == 'SSA_NAME':
+            # c.f. "struct GTY(()) tree_ssa_name":
+            add_simple_getter('var',
+                              'gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t))',
+                              "The variable being referenced'")
+            add_simple_getter('def_stmt',
+                              'gcc_python_make_wrapper_gimple(SSA_NAME_DEF_STMT(self->t))',
+                              "The gcc.Gimple statement which defines this SSA name'")
+            add_simple_getter('version',
+                              'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',
+                              "The SSA version number of this SSA name'")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
