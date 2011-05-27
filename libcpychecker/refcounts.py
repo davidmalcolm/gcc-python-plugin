@@ -194,23 +194,29 @@ class State:
         self.loc = loc
         self.data = data
 
+    def copy(self):
+        return self.__class__(loc, self.data.copy())
+
     def __str__(self):
-        return '%s: %s' % (self.loc, self.data)
+        return '%s: %s%s' % (self.loc, self.data, self._extra())
 
     def __repr__(self):
-        return '%s: %s' % (self.loc, self.data)
+        return '%s: %s%s' % (self.loc, self.data, self._extra())
 
     def make_assignment(self, key, value):
-        new = self.__class__(self.loc.next_loc(), self.data.copy())
+        new = self.copy()
+        new.loc = self.loc.next_loc()
         new.data[str(key)] = value
         return new
 
     def update_loc(self, newloc):
-        return self.__class__(newloc, self.data.copy())
+        new = self.copy()
+        new.loc = newloc
+        return new
 
     def use_next_loc(self):
         newloc = self.loc.next_loc()
-        return self.__class__(newloc, self.data.copy())
+        return self.update_loc(newloc)
 
 class Trace:
     """A sequence of State"""
@@ -232,6 +238,11 @@ class Trace:
         for i, state in enumerate(self.states):
             log('  %i: %s' % (i, state), indent + 1 )
 
+    def return_value(self):
+        last_stmt = self.states[-1].loc.get_stmt()
+        assert isinstance(last_stmt, gcc.GimpleReturn)
+        return self.states[-1].eval_expr(last_stmt.retval)
+
 def true_edge(bb):
     for e in bb.succs:
         if e.true_value:
@@ -243,14 +254,35 @@ def false_edge(bb):
             return e
 
 class MyState(State):
+    def __init__(self, loc, data, owned_refs):
+        State.__init__(self, loc, data)
+        self.owned_refs = owned_refs
+
+    def copy(self):
+        return self.__class__(self.loc, self.data.copy(), self.owned_refs[:])
+
+    def _extra(self):
+        return ' %s' % self.owned_refs
+
+    def make_assignment(self, key, value, additional_ptr=None):
+        newstate = State.make_assignment(self, key, value)
+        if additional_ptr:
+            newstate.owned_refs.append(additional_ptr)
+        return newstate
+
     def next_states(self, oldstate):
         # Return a list of State instances, based on input State
         stmt = self.loc.get_stmt()
         if stmt:
             return self._next_states_for_stmt(stmt, oldstate)
         else:
-            return [MyState(loc, self.data.copy())
-                    for loc in self.loc.next_locs()]
+            result = []
+            for loc in self.loc.next_locs():
+                newstate = self.copy()
+                newstate.loc = loc
+                result.append(newstate)
+            log('result: %s' % result)
+            return result
 
     def _next_states_for_stmt(self, stmt, oldstate):
         log('_next_states_for_stmt: %r %s' % (stmt, stmt), 2)
@@ -290,7 +322,8 @@ class MyState(State):
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
             fnname = stmt.fn.operand.name
             if fnname in ('PyList_New', 'PyLong_FromLong'):
-                return [self.make_assignment(stmt.lhs, NonNullPtrValue(1)),
+                nonnull = NonNullPtrValue(1)
+                return [self.make_assignment(stmt.lhs, nonnull, nonnull),
                         self.make_assignment(stmt.lhs, NullPtrValue())]
             #elif fnname in ('PyList_SetItem'):
             #    pass
@@ -359,7 +392,8 @@ def iter_traces(fun, prefix=None):
     if prefix is None:
         prefix = Trace()
         curstate = MyState(Location.get_block_start(fun.cfg.entry),
-                        {})
+                           {},
+                           [])
     else:
         curstate = prefix.states[-1]
 
@@ -395,10 +429,10 @@ def check_refcounts(fun):
     traces = iter_traces(fun)
     for i, trace in enumerate(traces):
         trace.log('TRACE %i' % i, 0)
+        log('trace.return_value(): %s' % trace.return_value())
 
     if 1:
         dot = cfg_to_dot(fun.cfg)
         invoke_dot(dot)
 
 
-        
