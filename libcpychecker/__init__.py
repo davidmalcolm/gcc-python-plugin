@@ -6,12 +6,24 @@ from refcounts import check_refcounts
 def on_pass_execution(optpass, fun):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
-    if optpass.name != '*warn_function_return':
-        return
+    #log(optpass)
+    if optpass.name == '*warn_function_return':
+        if fun:
+            log(fun)
+            check_pyargs(fun)
 
-    log(fun)
-    if fun:
-        check_pyargs(fun)
+    if optpass.name == 'release_ssa':
+        # SSA data needed:
+        assert optpass.properties_required & (1<<5)
+        # methods = get_all_PyMethodDef_methods()
+        # log('methods: %s' % methods)
+        check_refcounts(fun)
+
+def is_a_method_callback(decl):
+    methods = get_all_PyMethodDef_methods()
+    log('methods: %s' % methods)
+    # FIXME
+    
 
 def get_all_PyMethodDef_methods():
     # Locate all initializers for PyMethodDef, returning a list of

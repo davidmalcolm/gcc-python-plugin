@@ -413,7 +413,7 @@ class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
                '}\n') % locals()
         return src, function_name
 
-@unittest.skip("Refcount tracker doesn't yet work")
+#@unittest.skip("Refcount tracker doesn't yet work")
 class RefcountErrorTests(AnalyzerTests):
     def add_method_table(self, cu, fn_name):
         methods = PyMethodTable('test_methods',
@@ -479,13 +479,12 @@ class RefcountErrorTests(AnalyzerTests):
             '       invocation of Py_DECREF(list): */\n'
             '    if (!item)\n'
             '        return NULL;\n'
-            '    PyList_SetItem(list, 0, item);\n'
+            '    PyList_SET_ITEM(list, 0, item);\n'
             '    return list;\n')
         experr = ('$(SRCFILE): In function ‘missing_decref’:\n'
                   '$(SRCFILE):19:5: error: missing Py_DECREF() [-fpermissive]\n')
         self.assertFindsError(sm, experr)
 
-    #@unittest.skip("Refcount tracker doesn't yet work")
     def test_incorrect_py_none(self):
         sm = self.make_mod_method('losing_refcnt_of_none',
             '    /* Bug: this code is missing a Py_INCREF on Py_None */\n'
@@ -508,11 +507,6 @@ class TestArgParsing: # (unittest.TestCase):
                          ['int ( PyObject * object , int * target )', 
                           'int *', 
                           'int *'])
-
-    def test_bsddb_DBSequence_set_range(self):
-        self.assert_args("(LL):set_range",
-                         ['PY_LONG_LONG *', 'PY_LONG_LONG *'])
-
 
 if __name__ == '__main__':
     unittest.main()
