@@ -290,6 +290,21 @@ def generate_gimple_subclasses():
                                       None)
         return getsettable
 
+    def make_getset_Phi():
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [exprcode_getter],
+                                       'gcc_GimplePhi',
+                                       'PyGccGimple')
+        getsettable.add_simple_getter(cu,
+                                      'lhs',
+                                      'gcc_python_make_wrapper_tree(gimple_phi_result(self->stmt))',
+                                      None)
+        getsettable.add_gsdef('args',
+                              'gcc_GimplePhi_get_args',
+                              None,
+                              'Get a list of (gcc.Tree, gcc.Edge) pairs representing the possible (expr, edge) inputs') # FIXME: should we instead have a dict here?
+        return getsettable
+
     for gt in gimple_types:
         cc = gt.camel_cased_string()
 
@@ -302,6 +317,8 @@ def generate_gimple_subclasses():
             getsettable = make_getset_Cond()
         elif cc == 'GimpleReturn':
             getsettable = make_getset_Return()
+        elif cc == 'GimplePhi':
+            getsettable = make_getset_Phi()
 
         if getsettable:
             cu.add_defn(getsettable.c_defn())

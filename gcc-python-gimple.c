@@ -2,6 +2,8 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gimple.h"
+#include "tree-flow.h"
+#include "tree-flow-inline.h"
 
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self)
@@ -89,6 +91,40 @@ gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
 	    goto error;
 	}
 	PyList_SetItem(result, i, obj);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+PyObject *
+gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
+{
+    /* See e.g. gimple-pretty-print.c:dump_gimple_phi */
+    PyObject * result = NULL;
+    int num_args = gimple_phi_num_args (self->stmt);
+    int i;
+
+    result = PyList_New(num_args);
+    if (!result) {
+        goto error;
+    }
+
+    for (i = 0 ; i < num_args; i++) {
+        tree arg_def = gimple_phi_arg_def(self->stmt, i);
+        edge arg_edge = gimple_phi_arg_edge(self->stmt, i);
+        /* fwiw, there's also gimple_phi_arg_has_location and gimple_phi_arg_location */
+        PyObject *tuple_obj;
+        tuple_obj = Py_BuildValue("O&O&",
+                                  gcc_python_make_wrapper_tree, arg_def,
+                                  gcc_python_make_wrapper_edge, arg_edge);
+        if (!tuple_obj) {
+            goto error;
+        }
+        PyList_SET_ITEM(result, i, tuple_obj);
     }
 
     return result;
