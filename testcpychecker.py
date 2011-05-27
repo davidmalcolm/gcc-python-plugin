@@ -413,38 +413,84 @@ class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
                '}\n') % locals()
         return src, function_name
 
+@unittest.skip("Refcount tracker doesn't yet work")
 class RefcountErrorTests(AnalyzerTests):
-    def test_correct_py_none(self):
+    def add_method_table(self, cu, fn_name):
+        methods = PyMethodTable('test_methods',
+                                [PyMethodDef('test_method', fn_name,
+                                             METH_VARARGS, None)])
+        cu.add_defn(methods.c_defn())
+        return methods
+
+    def add_module(self, sm, methods):
+        sm.add_module_init('buggy', modmethods=methods, moddoc=None)
+
+    def make_mod_method(self, function_name, body):
         sm = SimpleModule()
         sm.cu.add_defn(
+            'int val;\n'
             'PyObject *\n'
-            'correct_none(PyObject *self, PyObject *args)\n'
-            '{\n'
-            '    Py_RETURN_NONE;\n'
-            '}\n')
-        methods = PyMethodTable('test_methods',
-                                [PyMethodDef('test_method', 'correct_none',
-                                             METH_VARARGS, None)])
-        sm.cu.add_defn(methods.c_defn())
-        sm.add_module_init('buggy', modmethods=methods, moddoc=None)
+            '%(function_name)s(PyObject *self, PyObject *args)\n' % locals()
+            +'{\n'
+            + body
+            + '}\n')
+        methods = self.add_method_table(sm.cu, function_name)
+        self.add_module(sm, methods)
+        return sm
+
+    def test_correct_py_none(self):
+        sm = self.make_mod_method('correct_none',
+            '    Py_RETURN_NONE;\n')
         self.assertNoErrors(sm)
 
-    @unittest.skip("Refcount tracker doesn't yet work")
+    def test_correct_object_ctor(self):
+        sm = self.make_mod_method('correct_object_ctor',
+            '    /* This code is correct: the API call returns a \n'
+            '       new reference.  Use some temporaries to make things more\n'
+            '       difficult for the checker.: */\n'
+            '    PyObject *tmpA;\n'
+            '    PyObject *tmpB;\n'
+            '    tmpA = PyLong_FromLong(0x1000);\n'
+            '    tmpB = tmpA;\n'
+            '    return tmpB;\n')
+        self.assertNoErrors(sm)
+
+    def test_too_many_increfs(self):
+        sm = self.make_mod_method('too_many_increfs',
+            '    PyObject *tmp;\n'
+            '    tmp = PyLong_FromLong(0x1000);\n'
+            '    /* This INCREF is redundant, and introduces a leak: */\n'
+            '    Py_INCREF(tmp);\n'
+            '    return tmp;\n')
+        experr = ('$(SRCFILE): In function ‘too_many_increfs’:\n'
+                  '$(SRCFILE):19:5: error: additional Py_INCREF() [-fpermissive]\n'
+                  )
+        self.assertFindsError(sm, experr)
+
+    def test_missing_decref(self):
+        sm = self.make_mod_method('missing_decref',
+            '    PyObject *list;\n'
+            '    PyObject *item;\n'
+            '    list = PyList_New(1);\n'
+            '    if (!list)\n'
+            '        return NULL;\n'
+            '    item = PyLong_FromLong(42);\n'
+            '    /* This error handling is incorrect: it\'s missing an\n'
+            '       invocation of Py_DECREF(list): */\n'
+            '    if (!item)\n'
+            '        return NULL;\n'
+            '    PyList_SetItem(list, 0, item);\n'
+            '    return list;\n')
+        experr = ('$(SRCFILE): In function ‘missing_decref’:\n'
+                  '$(SRCFILE):19:5: error: missing Py_DECREF() [-fpermissive]\n')
+        self.assertFindsError(sm, experr)
+
+    #@unittest.skip("Refcount tracker doesn't yet work")
     def test_incorrect_py_none(self):
-        sm = SimpleModule()
-        sm.cu.add_defn(
-            'PyObject *\n'
-            'losing_refcnt_of_none(PyObject *self, PyObject *args)\n'
-            '{\n'
+        sm = self.make_mod_method('losing_refcnt_of_none',
             '    /* Bug: this code is missing a Py_INCREF on Py_None */\n'
             '    return Py_None;\n'
             '}\n')
-        methods = PyMethodTable('buggy_methods',
-                                [PyMethodDef('show_the_bug', 'losing_refcnt_of_none',
-                                             METH_VARARGS, 'Show the bug.')])
-        sm.cu.add_defn(methods.c_defn())
-        sm.add_module_init('buggy', modmethods=methods, moddoc='This is a doc string')
-        
         experr = ('$(SRCFILE): In function ‘losing_refcnt_of_none’:\n'
                   '$(SRCFILE):19:5: error: return of PyObject* without Py_INCREF() [-fpermissive]\n'
                   )
