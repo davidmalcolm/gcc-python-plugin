@@ -243,16 +243,16 @@ def false_edge(bb):
             return e
 
 class MyState(State):
-    def next_states(self):
+    def next_states(self, oldstate):
         # Return a list of State instances, based on input State
         stmt = self.loc.get_stmt()
         if stmt:
-            return self._next_states_for_stmt(stmt)
+            return self._next_states_for_stmt(stmt, oldstate)
         else:
             return [MyState(loc, self.data.copy())
                     for loc in self.loc.next_locs()]
 
-    def _next_states_for_stmt(self, stmt):
+    def _next_states_for_stmt(self, stmt, oldstate):
         log('_next_states_for_stmt: %r %s' % (stmt, stmt), 2)
         log('dir(stmt): %s' % dir(stmt), 3)
         if isinstance(stmt, gcc.GimpleCall):
@@ -262,7 +262,7 @@ class MyState(State):
         elif isinstance(stmt, gcc.GimpleCond):
             return self._next_states_for_GimpleCond(stmt)
         elif isinstance(stmt, gcc.GimplePhi):
-            return [self.use_next_loc()]
+            return self._next_states_for_GimplePhi(stmt, oldstate)
         elif isinstance(stmt, gcc.GimpleReturn):
             return []
         elif isinstance(stmt, gcc.GimpleAssign):
@@ -324,6 +324,19 @@ class MyState(State):
             return [self.update_loc(Location.get_block_start(e.dest))
                     for e in self.loc.bb.succs]
 
+    def _next_states_for_GimplePhi(self, stmt, oldstate):
+        log('stmt: %s' % stmt)
+        log('stmt.lhs: %s' % stmt.lhs)
+        log('stmt.args: %s' % stmt.args)
+        # Choose the correct new value, based on the edge we came in on
+        for expr, edge in stmt.args:
+            if edge.src == oldstate.loc.bb:
+                # Update the LHS appropriately:
+                next = self.use_next_loc()
+                next.data[str(stmt.lhs)] = self.eval_expr(expr)
+                return [next]
+        raise AnalysisError('incoming edge not found')
+
     def eval_condition(self, stmt):
         lhs = self.eval_expr(stmt.lhs)
         rhs = self.eval_expr(stmt.rhs)
@@ -345,13 +358,20 @@ def iter_traces(fun, prefix=None):
     log('iter_traces(%r, %r)' % (fun, prefix))
     if prefix is None:
         prefix = Trace()
-        state = MyState(Location.get_block_start(fun.cfg.entry),
+        curstate = MyState(Location.get_block_start(fun.cfg.entry),
                         {})
     else:
-        state = prefix.states[-1]
+        curstate = prefix.states[-1]
+
+    # We need the prevstate to handle Phi nodes
+    if len(prefix.states) > 1:
+        prevstate = prefix.states[-2]
+    else:
+        prevstate = None
+
     prefix.log('PREFIX', 1)
-    log('  %s:%s' % (fun.decl.name, state.loc))
-    nextstates = state.next_states()
+    log('  %s:%s' % (fun.decl.name, curstate.loc))
+    nextstates = curstate.next_states(prevstate)
     log('states: %s' % nextstates, 2)
 
     if len(nextstates) > 0:
