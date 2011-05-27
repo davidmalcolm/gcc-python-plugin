@@ -276,8 +276,19 @@ def generate_gimple_subclasses():
 
 
     def make_getset_Cond():
-        return PyGetSetDefTable('gcc_%s_getset_table' % cc,
-                                [exprcode_getter])
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [exprcode_getter],
+                                       'gcc_GimpleCond',
+                                       'PyGccGimple')
+        getsettable.add_simple_getter(cu,
+                                      'lhs',
+                                      'gcc_python_make_wrapper_tree(gimple_cond_lhs(self->stmt))',
+                                      None)
+        getsettable.add_simple_getter(cu,
+                                      'rhs',
+                                      'gcc_python_make_wrapper_tree(gimple_cond_rhs(self->stmt))',
+                                      None)
+        return getsettable
 
     for gt in gimple_types:
         cc = gt.camel_cased_string()
