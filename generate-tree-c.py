@@ -300,7 +300,12 @@ def generate_tree_code_classes():
         if cc == 'StringCst':
             add_simple_getter('constant',
                               'gcc_python_string_from_string(TREE_STRING_POINTER(self->t))',
-                              'The operand of this expression, as a gcc.Tree')
+                              'The actual value of this constant, as a str')
+
+        if cc == 'IntegerCst':
+            add_simple_getter('constant',
+                              'gcc_python_int_from_double_int(TREE_INT_CST(self->t))',
+                              'The actual value of this constant, as an int/long')
 
         # TYPE_QUALS for various foo_TYPE classes:
         if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 

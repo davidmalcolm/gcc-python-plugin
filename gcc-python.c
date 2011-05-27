@@ -527,6 +527,17 @@ gcc_python_string_or_none(const char *str_or_null)
     }
 }
 
+PyObject *
+gcc_python_int_from_double_int(double_int di)
+{
+    /* For now, only cope with "small" ints: */
+    if (di.high != 0) {
+        PyErr_SetString(PyExc_OverflowError, "gcc_python_int_from_double_int needs work to cope with larger values");
+        return NULL;
+    }
+    return PyLong_FromLongLong(di.low);
+}
+
 
 /*
   PEP-7  

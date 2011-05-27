@@ -115,6 +115,10 @@ gcc_python_string_or_none(const char *str_or_null);
 PyObject *
 VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 
+PyObject *
+gcc_python_int_from_double_int(double_int di);
+
+
 /* Python 2 vs Python 3 compat: */
 #if PY_MAJOR_VERSION == 3
 /* Python 3: use PyUnicode for "str" and PyLong for "int": */
