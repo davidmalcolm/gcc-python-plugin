@@ -481,18 +481,20 @@ class RefcountErrorTests(AnalyzerTests):
             '        return NULL;\n'
             '    PyList_SET_ITEM(list, 0, item);\n'
             '    return list;\n')
-        experr = ('$(SRCFILE): In function ‘missing_decref’:\n'
-                  '$(SRCFILE):19:5: error: missing Py_DECREF() [-fpermissive]\n')
+        experr = ('$(SRCFILE):21:10: error: leak of PyObject* reference acquired at call to PyList_New at $(SRCFILE):21 [-fpermissive]\n'
+                  '  $(SRCFILE):22: taking False path at     if (!list)\n'
+                  '    $(SRCFILE):24: reaching here     item = PyLong_FromLong(42);\n'
+                  '  $(SRCFILE):27: taking True path at     if (!item)\n'
+                  '  $(SRCFILE):21: returning 0\n')
         self.assertFindsError(sm, experr)
 
     def test_incorrect_py_none(self):
         sm = self.make_mod_method('losing_refcnt_of_none',
             '    /* Bug: this code is missing a Py_INCREF on Py_None */\n'
-            '    return Py_None;\n'
-            '}\n')
+            '    return Py_None;\n')
         experr = ('$(SRCFILE): In function ‘losing_refcnt_of_none’:\n'
-                  '$(SRCFILE):19:5: error: return of PyObject* without Py_INCREF() [-fpermissive]\n'
-                  )
+                  '$(SRCFILE):20:5: error: return of PyObject* (&_Py_NoneStruct) without Py_INCREF() [-fpermissive]\n'
+                  '  $(SRCFILE):20: suggest use of "Py_RETURN_NONE;"\n')
         self.assertFindsError(sm, experr)
 
 # Test disabled for now: we can't easily import this under gcc anymore:

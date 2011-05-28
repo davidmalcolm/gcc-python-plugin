@@ -3,6 +3,7 @@
 #   http://docs.python.org/c-api/intro.html#reference-counts
 # for a description of how such code is meant to be written
 
+import sys
 import gcc
 
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
@@ -198,6 +199,18 @@ class NonNullPtrValue(PtrValue):
     def __repr__(self):
         return 'NonNullPtrValue(%i)' % self.refdelta
 
+class PtrToGlobal(NonNullPtrValue):
+    def __init__(self, refdelta, stmt, name):
+        NonNullPtrValue.__init__(self, refdelta, stmt)
+        self.name = name
+
+    def __str__(self):
+        if self.stmt:
+            return ('&%s acquired at %s'
+                    % (self.name, describe_stmt(self.stmt)))
+        else:
+            return ('&%s' % self.name)
+
 class State:
     """A Location with a dict of vars and values"""
     def __init__(self, loc, data):
@@ -305,7 +318,7 @@ class MyState(State):
         log('dir(stmt): %s' % dir(stmt), 3)
         if isinstance(stmt, gcc.GimpleCall):
             return self._next_states_for_GimpleCall(stmt)
-        elif isinstance(stmt, gcc.GimpleDebug):
+        elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
             return [self.use_next_loc()]
         elif isinstance(stmt, gcc.GimpleCond):
             return self._next_states_for_GimpleCond(stmt)
@@ -326,6 +339,14 @@ class MyState(State):
                 return self.data[str(expr)]
             else:
                 return UnknownValue()
+        if isinstance(expr, gcc.AddrExpr):
+            #log(dir(expr))
+            #log(expr.operand)
+            # Handle Py_None, which is a #define of (&_Py_NoneStruct)
+            if isinstance(expr.operand, gcc.VarDecl):
+                if expr.operand.name == '_Py_NoneStruct':
+                    # FIXME: do we need a stmt?
+                    return PtrToGlobal(1, None, expr.operand.name)
         return UnknownValue()
 
     def _next_states_for_GimpleCall(self, stmt):
@@ -416,7 +437,19 @@ class MyState(State):
         return UnknownValue()
 
     def _next_states_for_GimpleAssign(self, stmt):
-        return [self.use_next_loc()] # for now
+        log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
+        log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
+
+        nextstate = self.use_next_loc()
+        if isinstance(stmt.lhs, gcc.MemRef):
+            value = self.eval_expr(stmt.rhs[0])
+            log('value: %s %r' % (value, value))
+            # We're writing a value to memory; if it's a PyObject*
+            # then we're surrending a reference on it:
+            if value in nextstate.owned_refs:
+                log('removing ownership of %s' % value)
+                nextstate.owned_refs.remove(value)
+        return [nextstate] # for now
 
 def iter_traces(fun, prefix=None):
     # Traverse the tree of traces of program state
@@ -453,6 +486,9 @@ def iter_traces(fun, prefix=None):
         prefix.log('FINISHED TRACE', 1)
         return [prefix]
 
+def extra_text(msg, indent):
+    sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
+
 def check_refcounts(fun):
     #ops = Operations(fun)
 
@@ -467,10 +503,22 @@ def check_refcounts(fun):
         # Ideally, we should "own" exactly one reference, and it should be
         # the return value.  Anything else is an error (and there are other
         # kinds of error...)
-        if len(trace.final_references()) > 0:
-            for ref in trace.final_references():
-                if ref == trace.return_value():
-                    continue
+        final_refs = trace.final_references()
+        if return_value in final_refs:
+            final_refs.remove(return_value)
+        else:
+            if isinstance(return_value, NonNullPtrValue):
+                gcc.permerror(trace.get_last_stmt().loc,
+                              ('return of PyObject* (%s)'
+                               ' without Py_INCREF()'
+                               % return_value))
+                if str(return_value) == '&_Py_NoneStruct':
+                    extra_text('%s: suggest use of "Py_RETURN_NONE;"'
+                               % trace.get_last_stmt().loc, 1)
+
+        # Anything remaining is a leak:
+        if len(final_refs) > 0:
+            for ref in final_refs:
                 gcc.permerror(ref.stmt.loc,
                               'leak of PyObject* reference acquired at %s'
                               % describe_stmt(ref.stmt))
@@ -483,21 +531,23 @@ def check_refcounts(fun):
                     if isinstance(stmt, gcc.GimpleCond):
                         nextstate = trace.states[j+1]
                         next_stmt = nextstate.loc.get_stmt()
-                        log('%s: taking %s path at %s'
-                            % (stmt.loc,
-                               nextstate.prior_bool,
-                               get_src_for_loc(stmt.loc)), 1)
+                        extra_text('%s: taking %s path at %s'
+                                   % (stmt.loc,
+                                      nextstate.prior_bool,
+                                      get_src_for_loc(stmt.loc)), 1)
                         #log(next_stmt, 3)
                         # FIXME: phi nodes don't have locations:
                         if hasattr(next_stmt, 'loc'):
                             if next_stmt.loc:
-                                log('%s: reaching here %s'
-                                    % (next_stmt.loc,
-                                       get_src_for_loc(next_stmt.loc)), 2)
-                log('%s: returning %s'
-                    % (ref.stmt.loc, return_value), 1) # FIXME: loc is wrong
+                                extra_text('%s: reaching here %s'
+                                           % (next_stmt.loc,
+                                              get_src_for_loc(next_stmt.loc)),
+                                           2)
+                extra_text('%s: returning %s'
+                           % (ref.stmt.loc, return_value),
+                           1) # FIXME: loc is wrong
 
-    if 1:
+    if 0:
         dot = cfg_to_dot(fun.cfg)
         invoke_dot(dot)
 
