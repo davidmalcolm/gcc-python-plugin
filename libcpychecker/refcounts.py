@@ -334,6 +334,20 @@ class MyState(State):
             log('args[%i]: %s %r' % (i, arg, arg), 4)
 
     def _next_states_for_GimpleCond(self, stmt):
+        def make_nextstate_for_true(stmt):
+            e = true_edge(self.loc.bb)
+            assert e
+            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate.prior_bool = True
+            return nextstate
+
+        def make_nextstate_for_false(stmt):
+            e = false_edge(self.loc.bb)
+            assert e
+            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate.prior_bool = False
+            return nextstate
+
         log('stmt.exprcode: %s' % stmt.exprcode, 4)
         log('stmt.exprtype: %s' % stmt.exprtype, 4)
         log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs), 4)
@@ -343,19 +357,17 @@ class MyState(State):
         boolval = self.eval_condition(stmt)
         if boolval is True:
             log('taking True edge', 2)
-            e = true_edge(self.loc.bb)
-            assert e
-            return [self.update_loc(Location.get_block_start(e.dest))]
+            nextstate = make_nextstate_for_true(stmt)
+            return [nextstate]
         elif boolval is False:
             log('taking False edge', 2)
-            e = false_edge(self.loc.bb)
-            assert e
-            return [self.update_loc(Location.get_block_start(e.dest))]
+            nextstate = make_nextstate_for_false(stmt)
+            return [nextstate]
         else:
             assert isinstance(boolval, UnknownValue)
             # We don't have enough information; both branches are possible:
-            return [self.update_loc(Location.get_block_start(e.dest))
-                    for e in self.loc.bb.succs]
+            return [make_nextstate_for_true(stmt),
+                    make_nextstate_for_false(stmt)]
 
     def _next_states_for_GimplePhi(self, stmt, oldstate):
         log('stmt: %s' % stmt)
