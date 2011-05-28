@@ -337,9 +337,14 @@ class MyState(State):
             log('dir(stmt.fn.operand): %s' % dir(stmt.fn.operand), 4)
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
             fnname = stmt.fn.operand.name
+            # Function returning new references:
             if fnname in ('PyList_New', 'PyLong_FromLong'):
                 nonnull = NonNullPtrValue(1, stmt)
                 return [self.make_assignment(stmt.lhs, nonnull, nonnull),
+                        self.make_assignment(stmt.lhs, NullPtrValue())]
+            # Function returning borrowed references:
+            elif fnname in ('Py_InitModule4_64',):
+                return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
                         self.make_assignment(stmt.lhs, NullPtrValue())]
             #elif fnname in ('PyList_SetItem'):
             #    pass
