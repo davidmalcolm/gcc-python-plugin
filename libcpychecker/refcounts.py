@@ -5,7 +5,7 @@
 
 import gcc
 
-from gccutils import cfg_to_dot, invoke_dot
+from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 
 from PyArg_ParseTuple import log
 
@@ -177,13 +177,23 @@ class NullPtrValue(PtrValue):
     def __repr__(self):
         return 'NullPtrValue()'
 
+def describe_stmt(stmt):
+    if isinstance(stmt, gcc.GimpleCall):
+        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
+            fnname = stmt.fn.operand.name
+            return 'call to %s at %s' % (fnname, stmt.loc)
+    else:
+        return str(stmt.loc)
+
 class NonNullPtrValue(PtrValue):
-    def __init__(self, refdelta):
+    def __init__(self, refdelta, stmt):
         PtrValue.__init__(self, True)
         self.refdelta = refdelta
+        self.stmt = stmt
 
     def __str__(self):
-        return 'non-NULL(%s refs)' % self.refdelta
+        return ('non-NULL(%s refs) acquired at %s'
+                % (self.refdelta, describe_stmt(self.stmt)))
 
     def __repr__(self):
         return 'NonNullPtrValue(%i)' % self.refdelta
@@ -238,10 +248,16 @@ class Trace:
         for i, state in enumerate(self.states):
             log('  %i: %s' % (i, state), indent + 1 )
 
+    def get_last_stmt(self):
+        return self.states[-1].loc.get_stmt()
+
     def return_value(self):
-        last_stmt = self.states[-1].loc.get_stmt()
+        last_stmt = self.get_last_stmt()
         assert isinstance(last_stmt, gcc.GimpleReturn)
         return self.states[-1].eval_expr(last_stmt.retval)
+
+    def final_references(self):
+        return self.states[-1].owned_refs
 
 def true_edge(bb):
     for e in bb.succs:
@@ -322,7 +338,7 @@ class MyState(State):
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
             fnname = stmt.fn.operand.name
             if fnname in ('PyList_New', 'PyLong_FromLong'):
-                nonnull = NonNullPtrValue(1)
+                nonnull = NonNullPtrValue(1, stmt)
                 return [self.make_assignment(stmt.lhs, nonnull, nonnull),
                         self.make_assignment(stmt.lhs, NullPtrValue())]
             #elif fnname in ('PyList_SetItem'):
@@ -441,7 +457,40 @@ def check_refcounts(fun):
     traces = iter_traces(fun)
     for i, trace in enumerate(traces):
         trace.log('TRACE %i' % i, 0)
+        return_value = trace.return_value()
         log('trace.return_value(): %s' % trace.return_value())
+        # Ideally, we should "own" exactly one reference, and it should be
+        # the return value.  Anything else is an error (and there are other
+        # kinds of error...)
+        if len(trace.final_references()) > 0:
+            for ref in trace.final_references():
+                if ref == trace.return_value():
+                    continue
+                gcc.permerror(ref.stmt.loc,
+                              'leak of PyObject* reference acquired at %s'
+                              % describe_stmt(ref.stmt))
+                log('ref: %s' % ref, 1)
+                # Print more details about the path through the function that
+                # leads to the error:
+                for j in range(len(trace.states)):
+                    state = trace.states[j]
+                    stmt = state.loc.get_stmt()
+                    if isinstance(stmt, gcc.GimpleCond):
+                        nextstate = trace.states[j+1]
+                        next_stmt = nextstate.loc.get_stmt()
+                        log('%s: taking %s path at %s'
+                            % (stmt.loc,
+                               nextstate.prior_bool,
+                               get_src_for_loc(stmt.loc)), 1)
+                        #log(next_stmt, 3)
+                        # FIXME: phi nodes don't have locations:
+                        if hasattr(next_stmt, 'loc'):
+                            if next_stmt.loc:
+                                log('%s: reaching here %s'
+                                    % (next_stmt.loc,
+                                       get_src_for_loc(next_stmt.loc)), 2)
+                log('%s: returning %s'
+                    % (ref.stmt.loc, return_value), 1) # FIXME: loc is wrong
 
     if 1:
         dot = cfg_to_dot(fun.cfg)
