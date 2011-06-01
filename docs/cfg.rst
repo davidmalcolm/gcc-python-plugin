@@ -1,7 +1,21 @@
-Control Flow Graphs
-===================
+Working with Functions and Control Flow Graphs
+==============================================
 
-You can get at the control flow graph of a :py:class:`gcc.Function` via its ``cfg`` attribute.  This is an instance of gcc.Cfg
+Many of the plugin events are called for each function within the source code being compiled.  Each time, the plugin passes a :py:class:`gcc.Function` instance as a parameter to your callback, so that you can work on it.
+
+You can get at the control flow graph of a :py:class:`gcc.Function` via its ``cfg`` attribute.  This is an instance of :py:class:`gcc.Cfg`.
+
+.. py:class:: gcc.Function
+
+   Wrapper around one of GCC's ``struct function *``
+
+   .. py:attribute:: cfg
+
+      An instance of :py:class:`gcc.Cfg` for this function (or None during early passes)
+
+   .. py:attribute:: decl
+
+      The declaration of this function, as a :py:class:`gcc.Tree`
 
 .. py:class:: gcc.Cfg
 
@@ -67,7 +81,7 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its ``cf
 
 .. py:class:: gcc.Edge
 
-  A wrapper around GCC's "edge" type.
+  A wrapper around GCC's `edge` type.
 
   .. py:attribute:: src
   
