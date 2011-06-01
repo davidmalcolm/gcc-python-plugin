@@ -63,7 +63,7 @@ In the meantime, the main way to write scripts is to register callback functions
 to be called when various events happen during compilation, such as using
 :py:data::`gcc.PLUGIN_PASS_EXECUTION` to piggyback off of an existing GCC pass.
 
-.. py:function:: gcc.register_callback
+.. py:function:: gcc.register_callback(event_id, function, *extraargs)
 
    Wire up a python function as a callback.  It will be called when the given
    event occurs during compilation.  For some events, the callback will be
@@ -240,11 +240,20 @@ classes, but these don't do anything different yet at the Python level.
 Generating custom errors and warnings
 =====================================
 
-.. py:function:: gcc.permerror(str)
+.. py:function:: gcc.permerror(loc, str)
 
-   Wrapper around GCC's `permerror` function
+   This is a wrapper around GCC's `permerror` function.
 
-   Emit a permissive error, suppressable using "-fpermissive".
+   Expects an instance of :py:class:`gcc.Location` (not None) and a string
+
+   Emit a "permissive" error at that location, intended for things that really
+   ought to be errors, but might be present in legacy code.
+
+   In theory it's suppressable using "-fpermissive" at the GCC command line
+   (which turns it into a warning), but this only seems to be legal for C++
+   source files.
+
+   Returns True if the warning was actually printed, False otherwise
 
 Global data access
 ==================
