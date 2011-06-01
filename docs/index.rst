@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   basics.rst
    cfg.rst
 
 The plugin is a work-in-progress; the API may well change.
