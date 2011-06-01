@@ -1,3 +1,7 @@
+
+   .. For documenting Python in RST form, see e.g.:
+   .. http://sphinx.pocoo.org/domains.html#the-python-domain
+
 Basic usage of the plugin
 =========================
 
@@ -199,3 +203,123 @@ scripts:
     gcc_data=0x0
     Called from: init_pragma at ../../gcc/c-family/c-pragma.c:1321
     to  "Allow plugins to register their own pragmas."
+
+Optimization passes
+===================
+
+.. py:class:: gcc.Pass
+
+   This wraps one of GCC's `struct opt_pass *`, but the wrapper class is still
+   a work-in-progress.  Hopefully we'll eventually be able to subclass this and
+   allow creating custom passes written in Python.
+
+   Beware:  "pass" is a reserved word in Python, so use e.g. `ps` as a variable
+   name for an instance of gcc.Pass
+
+   .. py:attribute:: name
+
+      The name of the pass, as a string
+
+   .. py:attribute:: properties_required
+   .. py:attribute:: properties_provided
+   .. py:attribute:: properties_destroyed
+
+      Currently these are int bitfields.
+
+There are four subclasses of gcc.Pass:
+
+.. py:class:: gcc.GimplePass
+.. py:class:: gcc.RtlPass
+.. py:class:: gcc.SimpleIpaPass
+.. py:class:: gcc.IpaPass
+
+reflecting the internal data layouts within GCC's implementation of the
+classes, but these don't do anything different yet at the Python level.
+
+
+Generating custom errors and warnings
+=====================================
+
+.. py:function:: gcc.permerror(str)
+
+   Wrapper around GCC's `permerror` function
+
+   Emit a permissive error, suppressable using "-fpermissive".
+
+Global data access
+==================
+
+.. py:function:: gcc.get_variables()
+
+      Get all variables in this compilation unit as a list of
+      :py:class:`gcc.Variable`
+
+.. py:function:: gcc.maybe_get_identifier(str)
+
+      Get the :py:class:`gcc.IdentifierNode` with this name, if it exists,
+      otherwise None.  (However, after the front-end has run, the identifier
+      node may no longer point at anything useful to you; see
+      :py:func:`gccutils.get_global_typedef` for an example of working
+      around this)
+
+.. py:function:: gcc.get_translation_units()
+
+      Get a list of all :py:class:`gcc.TranslationUnitDecl` for the compilation
+      units within this invocation of GCC (that's "source code files" for the
+      layperson).
+
+      .. py:class:: gcc.TranslationUnitDecl
+
+         Subclass of :py:class:`gcc.Tree` representing a compilation unit
+
+	    .. py:attribute:: block
+
+               The :py:class:`gcc.Block` representing global scope within this
+               source file.
+
+	    .. py:attribute:: language
+
+	       The source language of this translation unit, as a string
+	       (e.g. "GNU C")
+
+.. py:function:: gccutils.get_global_typedef(name):
+
+      Given a string `name`, look for a C/C++ `typedef` in global scope with
+      that name, returning it as a :py:class:`gcc.TypeDecl`, or None if it
+      wasn't found
+
+
+Working with source code
+========================
+
+.. py:function:: gccutils.get_src_for_loc(loc)
+
+      Given a :py:class:`gcc.Location`, get the source line as a string
+      (without trailing whitespace or newlines)
+
+.. py:class:: gcc.Location
+
+   Wrapper around GCC's `location_t`, representing a location within the source
+   code.  Use :py:func:`gccutils.get_src_for_loc` to get at the line of actual
+   source code.
+
+   The output from __repr__ looks like this::
+
+      gcc.Location(file='./src/test.c', line=42)
+
+   The output from__str__  looks like this::
+
+      ./src/test.c:42
+
+   .. py:attribute:: file
+
+      (string) Name of the source file (or header file)
+
+   .. py:attribute:: line
+
+      (int) Line number within source file (starting at 1, not 0)
+
+   .. py:attribute:: column
+
+      (int) Column number within source file  (starting at 1, not 0)
+

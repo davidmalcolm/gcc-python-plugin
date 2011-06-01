@@ -1,4 +1,4 @@
-Working with Functions and Control Flow Graphs
+Working with functions and control flow graphs
 ==============================================
 
 Many of the plugin events are called for each function within the source code
