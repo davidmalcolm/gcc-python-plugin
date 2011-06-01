@@ -282,7 +282,7 @@ Global data access
 	       The source language of this translation unit, as a string
 	       (e.g. "GNU C")
 
-.. py:function:: gccutils.get_global_typedef(name):
+.. py:function:: gccutils.get_global_typedef(name)
 
       Given a string `name`, look for a C/C++ `typedef` in global scope with
       that name, returning it as a :py:class:`gcc.TypeDecl`, or None if it
