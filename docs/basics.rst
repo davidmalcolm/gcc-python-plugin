@@ -6,7 +6,9 @@ Basic usage of the plugin
 =========================
 
 The process for building and installing the plugin is still a bit messy; you'll
-need to read the Makefile and use your own judgement.
+need to read the Makefile and use your own judgement.  Some notes on GCC plugins
+can be seen at http://gcc.gnu.org/wiki/plugins and
+http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
 
 
 You can invoke a Python script like this::
