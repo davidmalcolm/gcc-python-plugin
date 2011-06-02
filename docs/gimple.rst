@@ -7,6 +7,17 @@ TODO
 
 .. py:class:: gcc.Gimple
 
+   A statement, in GCC's Gimple representation.
+
+   The __str__ method is implemented using GCC's own pretty-printer for gimple,
+   so e.g.::
+
+      str(stmt)
+
+   might return::
+
+      'D.3259 = (long unsigned int) i;'
+
    .. py:attribute:: loc
 
       Source code location of this statement, as a :py:class:`gcc.Location` (or None)

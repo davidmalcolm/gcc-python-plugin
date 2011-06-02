@@ -23,6 +23,17 @@ the code passing through GCC.
 
      (long) The address of the underlying GCC object in memory
 
+   The __str__ method is implemented using GCC's own pretty-printer for trees,
+   so e.g.::
+
+      str(t)
+
+   might return::
+
+      'int <T531> (int, char * *)'
+
+   for a `gcc.FunctionDecl`
+
 There are numerous subclasses of gcc.Tree, each typically named after either
 one of the `enum tree_code_class` or `enum tree_code` values, with the names
 converted to Camel Case.
