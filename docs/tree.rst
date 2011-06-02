@@ -21,6 +21,14 @@ the code passing through GCC.
 
      (long) The address of the underlying GCC object in memory
 
+There are numerous subclasses of gcc.Tree, each typically named after either
+one of the `enum tree_code_class` or `enum tree_code` values, with the names
+converted to Camel Case.
+
+For example a :py:class:`gcc.Binary` is a wrapper around a `tree` of type
+`tcc_binary`, and  a :py:class:`gcc.PlusExpr` is a wrapper around a `tree` of
+type `PLUS_EXPR`.
+
 Notable subclasses:
 
 .. py:class:: gcc.Binary
@@ -33,30 +41,122 @@ Notable subclasses:
    Has subclasses for the various kinds of binary expression.  These
    include:
 
-      ============================    ==============    ======================
-      Subclass                        enum tree_code    C/C++ operators
-      ============================    ==============    ======================
-      .. py:class:: BitAndExpr        BIT_AND_EXPR      &, &=  (bitwise "and")
-      .. py:class:: BitIorExpr
-      .. py:class:: BitXorExpr
-      .. py:class:: CeilDivExpr
-      .. py:class:: CeilModExpr
-      .. py:class:: CompareExpr
-      .. py:class:: CompareGExpr
-      .. py:class:: CompareLExpr
-      .. py:class:: ComplexExpr
-      .. py:class:: ExactDivExpr
-      .. py:class:: FloorDivExpr
-      .. py:class:: FloorModExpr
-      .. py:class:: LrotateExpr
-      .. py:class:: LshiftExpr
-      .. py:class:: MaxExpr
-      .. py:class:: MinExpr
-      .. py:class:: MinusExpr
-      .. py:class:: MinusNomodExpr
-      .. py:class:: MultExpr
-      .. py:class:: PlusExpr
-      ============================    ==============    ======================
+   .. These tables correspond to GCC's "tree.def"
+
+   Simple arithmetic:
+
+      ============================    ======================  ==============
+      Subclass                        C/C++ operators         enum tree_code
+      ============================    ======================  ==============
+      .. py:class:: gcc.PlusExpr      `+`                     PLUS_EXPR
+      .. py:class:: gcc.MinusExpr     `-`                     MINUS_EXPR
+      .. py:class:: gcc.MultExpr      `*`                     MULT_EXPR
+      ============================    ======================  ==============
+
+   Pointer addition:
+
+      =================================    =================  =================
+      Subclass                             C/C++ operators    enum tree_code
+      =================================    =================  =================
+      .. py:class:: gcc.PointerPlusExpr                       POINTER_PLUS_EXPR
+      =================================    =================  =================
+
+   Various division operations:
+
+      ==============================  ===============
+      Subclass                        C/C++ operators
+      ==============================  ===============
+      .. py:class:: gcc.TruncDivExr
+      .. py:class:: gcc.CeilDivExpr
+      .. py:class:: gcc.FloorDivExpr
+      .. py:class:: gcc.RoundDivExpr
+      ==============================  ===============
+
+   The remainder counterparts of the above division operators:
+
+      ==============================  ===============
+      Subclass                        C/C++ operators
+      ==============================  ===============
+      .. py:class:: gcc.TruncModExpr
+      .. py:class:: gcc.CeilModExpr
+      .. py:class:: gcc.FloorModExpr
+      .. py:class:: gcc.RoundModExpr
+      ==============================  ===============
+
+   Division for reals:
+
+      ===================================  ======================
+      Subclass                             C/C++ operators
+      ===================================  ======================
+      .. py:class:: gcc.RdivExpr
+      ===================================  ======================
+
+   Division that does not need rounding (e.g. for pointer subtraction in C):
+
+      ===================================  ======================
+      Subclass                             C/C++ operators
+      ===================================  ======================
+      .. py:class:: gcc.ExactDivExpr
+      ===================================  ======================
+
+   Max and min:
+
+      ===================================  ======================
+      Subclass                             C/C++ operators
+      ===================================  ======================
+      .. py:class:: gcc.MaxExpr
+      .. py:class:: gcc.MinExpr
+      ===================================  ======================
+
+    Shift and rotate operations:
+
+      ===================================  ======================
+      Subclass                             C/C++ operators
+      ===================================  ======================
+      .. py:class:: gcc.LrotateExpr
+      .. py:class:: gcc.LshiftExpr
+      .. py:class:: gcc.RrotateExpr
+      .. py:class:: gcc.RshiftExpr
+      ===================================  ======================
+
+   Bitwise binary expressions:
+
+      ===================================  =========================
+      Subclass                             C/C++ operators
+      ===================================  =========================
+      .. py:class:: gcc.BitAndExpr         `&`, `&=` (bitwise "and")
+      .. py:class:: gcc.BitIorExpr         `|`, `|=` (bitwise "or")
+      .. py:class:: gcc.BitXorExpr         `^`, `^=` (bitwise "xor")
+      ===================================  =========================
+
+  Other gcc.Binary subclasses:
+
+      ========================================  ==================================
+      Subclass                                  Usage
+      ========================================  ==================================
+      .. py:class:: gcc.CompareExpr
+      .. py:class:: gcc.CompareGExpr
+      .. py:class:: gcc.CompareLExpr
+      .. py:class:: gcc.ComplexExpr
+      .. py:class:: gcc.MinusNomodExpr
+      .. py:class:: gcc.PlusNomodExpr
+      .. py:class:: gcc.RangeExpr
+      .. py:class:: gcc.UrshiftExpr
+      .. py:class:: gcc.VecExtractevenExpr
+      .. py:class:: gcc.VecExtractoddExpr
+      .. py:class:: gcc.VecInterleavehighExpr
+      .. py:class:: gcc.VecInterleavelowExpr
+      .. py:class:: gcc.VecLshiftExpr
+      .. py:class:: gcc.VecPackFixTruncExpr
+      .. py:class:: gcc.VecPackSatExpr
+      .. py:class:: gcc.VecPackTruncExpr
+      .. py:class:: gcc.VecRshiftExpr
+      .. py:class:: gcc.WidenMultExpr
+      .. py:class:: gcc.WidenMultHiExpr
+      .. py:class:: gcc.WidenMultLoExpr
+      .. py:class:: gcc.WidenSumExpr
+      ========================================  ==================================
+ 
 
 
 
@@ -68,34 +168,39 @@ Notable subclasses:
    Corresponds to the `tcc_unary` value of `enum tree_code` within
    GCC's own C sources.
 
-      ==================================    ========================    ========================
-      Subclass                              enum tree_code              C/C++ operators
-      ==================================    ========================    ========================
-      .. py:class:: AbsExpr                 ABS_EXPR
-      .. py:class:: AddrSpaceConvertExpr    ADDR_SPACE_CONVERT_EXPR
-      .. py:class:: BitNotExpr              BIT_NOT_EXPR                ~ (bitwise "not")
-      .. py:class:: CastExpr
-      .. py:class:: ConjExpr
-      .. py:class:: ConstCastExpr
-      .. py:class:: ConvertExpr
-      .. py:class:: DynamicCastExpr
-      .. py:class:: FixTruncExpr
-      .. py:class:: FixedConvertExpr
-      .. py:class:: FloatExpr
-      .. py:class:: NegateExpr
-      .. py:class:: NoexceptExpr
-      .. py:class:: NonLvalueExpr
-      .. py:class:: NopExpr
-      .. py:class:: ParenExpr
-      .. py:class:: ReducMaxExpr
-      .. py:class:: ReducMinExpr
-      .. py:class:: ReducPlusExpr
-      .. py:class:: ReinterpretCastExpr
-      .. py:class:: StaticCastExpr
-      .. py:class:: UnaryPlusExpr
-      ==================================    ========================    ========================
+      ======================================  ==================================================
+      Subclass                                Meaning; C/C++ operators
+      ======================================  ==================================================
+      .. py:class:: gcc.AbsExpr               Absolute value
+      .. py:class:: gcc.AddrSpaceConvertExpr  Conversion of pointers between address spaces
+      .. py:class:: gcc.BitNotExpr            `~` (bitwise "not")
+      .. py:class:: gcc.CastExpr
+      .. py:class:: gcc.ConjExpr              For complex types: complex conjugate
+      .. py:class:: gcc.ConstCastExpr
+      .. py:class:: gcc.ConvertExpr
+      .. py:class:: gcc.DynamicCastExpr
+      .. py:class:: gcc.FixTruncExpr          Convert real to fixed-point, via truncation
+      .. py:class:: gcc.FixedConvertExpr
+      .. py:class:: gcc.FloatExpr             Convert integer to real
+      .. py:class:: gcc.NegateExpr            Unary negation
+      .. py:class:: gcc.NoexceptExpr
+      .. py:class:: gcc.NonLvalueExpr
+      .. py:class:: gcc.NopExpr
+      .. py:class:: gcc.ParenExpr
+      .. py:class:: gcc.ReducMaxExpr
+      .. py:class:: gcc.ReducMinExpr
+      .. py:class:: gcc.ReducPlusExpr
+      .. py:class:: gcc.ReinterpretCastExpr
+      .. py:class:: gcc.StaticCastExpr
+      .. py:class:: gcc.UnaryPlusExpr
+      ======================================  ==================================================
 
+   Template:
 
+      ===================================  ======================
+      Subclass                             C/C++ operators
+      ===================================  ======================
+      ===================================  ======================
 
 TODO
 
