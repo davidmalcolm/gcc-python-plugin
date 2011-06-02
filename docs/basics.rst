@@ -2,6 +2,8 @@
    .. For documenting Python in RST form, see e.g.:
    .. http://sphinx.pocoo.org/domains.html#the-python-domain
 
+.. py:currentmodule:: gcc
+
 Basic usage of the plugin
 =========================
 

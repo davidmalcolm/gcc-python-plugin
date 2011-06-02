@@ -1,6 +1,8 @@
 gcc.Tree and its subclasses
 ===========================
 
+.. py:currentmodule:: gcc
+
 The various language front-ends for GCC emit "tree" structures (which I believe
 are actually graphs), used throughout the rest of the internal representation of
 the code passing through GCC.
