@@ -13,6 +13,8 @@ Contents:
 
    basics.rst
    cfg.rst
+   tree.rst
+   gimple.rst
 
 The plugin is a work-in-progress; the API may well change.
 
