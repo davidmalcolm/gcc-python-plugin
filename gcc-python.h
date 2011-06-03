@@ -118,6 +118,10 @@ VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 PyObject *
 gcc_python_int_from_double_int(double_int di);
 
+PyObject *
+gcc_python_lazily_create_wrapper(PyObject **cache,
+				 void *ptr,
+				 PyObject *(*ctor)(void *ptr));
 
 /* Python 2 vs Python 3 compat: */
 #if PY_MAJOR_VERSION == 3

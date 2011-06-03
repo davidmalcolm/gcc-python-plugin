@@ -180,13 +180,11 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
    works.
 
    dump_generic_node is defined around line 580 of tree-pretty-print.c
-
-   FIXME: do we want a unique PyGccTree per tree address? (e.g. by maintaining a dict?)
-   (what about lifetimes?)
 */
-PyObject *
-gcc_python_make_wrapper_tree(tree t)
+static PyObject *
+real_make_tree_wrapper(void *t)
 {
+
     struct PyGccTree *tree_obj = NULL;
     PyTypeObject* tp;
 
@@ -209,6 +207,20 @@ gcc_python_make_wrapper_tree(tree t)
       
 error:
     return NULL;
+}
+
+/*
+   Ensure we have a unique PyGccTree per tree address (by maintaining a dict)
+   (what about lifetimes?)
+*/
+static PyObject *tree_wrapper_cache = NULL;
+
+PyObject *
+gcc_python_make_wrapper_tree(tree t)
+{
+    return gcc_python_lazily_create_wrapper(&tree_wrapper_cache,
+					    t,
+					    real_make_tree_wrapper);
 }
 
 /* Walk the chain of a tree, building a python list of wrapper gcc.Tree
