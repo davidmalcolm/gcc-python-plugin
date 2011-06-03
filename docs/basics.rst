@@ -94,6 +94,21 @@ well-documented there, and may be subject to change.  I've tried to document
 what I've seen in GCC 4.6 here, but it's worth experimenting and printing args
 and kwargs as shown above.
 
+If an exception occurs during a callback, and isn't handled by a try/except
+before returning into the plugin, the plugin prints the traceback to stderr and
+treats it as a fatal error, terminating the compile::
+
+  Traceback (most recent call last):
+    File "test.py", line 38, in my_pass_execution_callback
+      dot = gccutils.tree_to_dot(fun)
+  NameError: global name 'gccutils' is not defined
+  /home/david/test.c: In function ‘main’:
+  /home/david/test.c:28:1: fatal error: Unhandled Python exception raised within callback
+  compilation terminated.
+  The bug is not reproducible, so it is likely a hardware or OS problem.
+
+(Obviously the error message above could be improved: the final line is incorrect and misleading)
+
 Currently useful callback events
 --------------------------------
 
