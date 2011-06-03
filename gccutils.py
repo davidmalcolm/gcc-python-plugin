@@ -82,17 +82,19 @@ class TextualPrettyPrinter(PrettyPrinter):
         return indent * ' '
 
     def pformat(self, obj, indent):
-        return self._recursive_format_obj(obj, indent, set(), 0)
+        return self._recursive_format_obj(obj, set(), 0)
 
-    def _recursive_format_obj(self, obj, indent, visited, depth):
+    def indent(self, prefix, txt):
+        return '\n'.join([prefix + line for line in txt.splitlines()])
+
+    def _recursive_format_obj(self, obj, visited, depth):
         def str_for_kv(key, value):
-            return self.make_indent(indent) + '%s = %s\n' % (key, value)
+            return '  %s = %s\n' % (key, value)
 
         assert isinstance(obj, gcc.Tree)
         visited.add(obj.addr)
 
-        result = self.make_indent(indent) + '<%s\n' % obj.__class__.__name__
-        indent += 1
+        result = '<%s\n' % obj.__class__.__name__
         r = repr(obj)
         s = str(obj)
         result += str_for_kv('repr()', r)
@@ -111,17 +113,18 @@ class TextualPrettyPrinter(PrettyPrinter):
                                              '... (%s)' % self.attr_to_str(name, repr(value)))
                     else:
                         # Recurse
-                        result += str_for_kv('.%s' % name, '')
-                        result += self._recursive_format_obj(value,
-                                indent + len(name) + 4,
-                                visited, depth + 1)
+                        formatted_value = self._recursive_format_obj(value,
+                                              visited, depth + 1)
+                        indented_value = self.indent(' ' * (len(name) + 6),
+                                                     formatted_value)
+                        result += str_for_kv('.%s' % name,
+                                             indented_value.lstrip())
                     continue
             # Otherwise: just print short version of the attribute:
             result += str_for_kv('.%s' % name,
                                  self.attr_to_str(name, value))
 
-        indent -= 1
-        result += self.make_indent(indent) + '>\n'
+        result += '>\n'
         return result
 
 class DotPrettyPrinter(PrettyPrinter):
