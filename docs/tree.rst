@@ -75,6 +75,36 @@ Declarations
 
       The :py:class:`gcc.Location` for this declaration
 
+.. py:class:: gcc.FuncDecl
+
+   A subclass of `gcc.Declaration` indicating the declaration of a function.
+   Internally, this wraps a `(struct tree_function_decl *)`
+
+   .. py:attribute:: function
+
+      The :py:class:`gcc.Function` for this declaration
+
+  ..        Declaration
+  ..            ClassMethodDecl
+  ..            ConstDecl
+  ..            DebugExprDecl
+  ..            FieldDecl
+  ..            FunctionDecl
+  ..            ImportedDecl
+  ..            InstanceMethodDecl
+  ..            KeywordDecl
+  ..            LabelDecl
+  ..            NamespaceDecl
+  ..            ParmDecl
+  ..            PropertyDecl
+  ..            ResultDecl
+  ..            TemplateDecl
+  ..            TranslationUnitDecl
+  ..            TypeDecl
+  ..            UsingDecl
+  ..            VarDecl
+
+
 Types
 -----
 

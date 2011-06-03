@@ -131,14 +131,6 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
     Py_RETURN_NONE;
 }
 
-PyObject *
-gcc_Declaration_get_function(struct PyGccTree *self, void *closure)
-{
-    assert(CODE_CONTAINS_STRUCT (TREE_CODE(self->t), TS_DECL_COMMON));
-
-    return gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t));
-}
-
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
@@ -150,10 +142,6 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   'gcc_Declaration_get_name',
                                   None,
                                   'The name of this declaration (string)')
-            getsettable.add_gsdef('function',
-                                  'gcc_Declaration_get_function',
-                                  None, 
-                                  'The gcc.Function (or None) for this declaration')
             getsettable.add_gsdef('location',
                                   'gcc_Declaration_get_location',
                                   None,
@@ -382,6 +370,11 @@ def generate_tree_code_classes():
             add_simple_getter('pointer',
                               'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
                               "The gcc.PointerType representing '(this_type *)'")
+
+        if tree_type.SYM == 'FUNCTION_DECL':
+            add_simple_getter('function',
+                              'gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t))',
+                              'The gcc.Function (or None) for this declaration')
 
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":
