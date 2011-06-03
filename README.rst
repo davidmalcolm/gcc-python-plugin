@@ -94,6 +94,44 @@ Coding style: Python and GCC each have their own coding style guide for C.
 I've chosen to follow Python's (PEP-7), as I prefer it (although my code is
 admittedly a mess in places).
 
+Debugging
+---------
+
+gcc can launch subprocesses, so it can be fiddly to debug.
+
+When debugging, I've generally been adding "-v" to the gcc command line
+(verbose), so that it outputs the commands that it's running.  I can then use
+this to launch::
+
+   $ gdb --args PROGRAM WITH ARGS
+
+I've also been running into this error from gdb::
+
+  [Thread debugging using libthread_db enabled]
+  Cannot find new threads: generic error
+
+Apparently this happens when debugging a process that uses dlopen to load a
+library that pulls in libpthread (as does gcc when loading in my plugin), and
+a workaround is to link cc1 with -lpthread
+
+The workaround I've been using (to avoid the need to build my own gcc) is to
+use LD_PRELOAD, either like this::
+
+   LD_PRELOAD=libpthread.so.0 gdb --args ./cc1 ...
+
+or this::
+
+   (gdb) set environment LD_PRELOAD libpthread.so.0
+
+Handy tricks
+
+Given a (PyGccTree *) named "self"::
+
+   (gdb) call debug_tree(self->t)
+
+will use GCC's prettyprinter to dump the embedded (tree*) and its descendants
+to stderr; it can help to put a breakpoint on that function too, to explore the
+insides of that type.
 
 Enjoy!
 David Malcolm <dmalcolm@redhat.com>
