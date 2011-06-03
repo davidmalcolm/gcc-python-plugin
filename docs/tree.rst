@@ -11,7 +11,7 @@ the code passing through GCC.
 
    A ``gcc.Tree`` is a wrapper around GCC's `tree` type
 
-   .. py:attribute:: debug()
+   .. py:method:: debug()
 
       Dump the tree to stderr, using GCC's own diagnostic routines
 
