@@ -22,9 +22,109 @@ def invoke_dot(dot):
 
     p = Popen(['eog', 'test.png'])
     p.communicate()
-    
 
-class DotPrettyPrinter:
+def pprint(obj):
+    pp = TextualPrettyPrinter()
+    pp.pprint(obj)
+
+def pformat(obj):
+    pp = TextualPrettyPrinter()
+    return pp.pformat(obj)
+
+
+class PrettyPrinter(object):
+    def __init__(self):
+        self.show_addr = False
+
+    def attr_to_str(self, name, value):
+        if name == 'addr':
+            return hex(value)
+        if isinstance(value, str):
+            return repr(value)
+        return str(value)
+
+    def iter_tree_attrs(self, obj):
+        # Iterate through the interesting attributes of the object:
+        for name in dir(obj):
+            # Ignore private and "magic" attributes:
+            if name.startswith('_'):
+                continue
+            value = getattr(obj, name)
+            # Ignore methods:
+            if hasattr(value, '__call__'):
+                continue
+            if not self.show_addr:
+                if name == 'addr':
+                    continue
+            # Don't follow infinite chains, e.g.
+            # ptr to ptr to ... of a type:
+            if isinstance(obj, gcc.Type):
+                if (name == 'pointer' or
+                    name.endswith('equivalent')):
+                    continue
+
+            #print 'attr %r    obj.%s: %r' % (name, name, value)
+            yield (name, value)
+
+
+class TextualPrettyPrinter(PrettyPrinter):
+    """Convert objects to nice textual dumps, loosely based on Python's pprint
+    module"""
+    def __init__(self):
+        super(TextualPrettyPrinter, self).__init__()
+        self.maxdepth = 5
+
+    def pprint(self, obj):
+        import sys
+        sys.stdout.write(self.pformat(obj, 0))
+
+    def make_indent(self, indent):
+        return indent * ' '
+
+    def pformat(self, obj, indent):
+        return self._recursive_format_obj(obj, indent, set(), 0)
+
+    def _recursive_format_obj(self, obj, indent, visited, depth):
+        def str_for_kv(key, value):
+            return self.make_indent(indent) + '%s = %s\n' % (key, value)
+
+        assert isinstance(obj, gcc.Tree)
+        visited.add(obj.addr)
+
+        result = self.make_indent(indent) + '<%s\n' % obj.__class__.__name__
+        indent += 1
+        r = repr(obj)
+        s = str(obj)
+        result += str_for_kv('repr()', r)
+        if s != r:
+            result += str_for_kv('str()', '%r' % s)
+
+        # Show MRO, stripping off this type from front and "object" from end:
+        superclasses = obj.__class__.__mro__[1:-1]
+        result += str_for_kv('superclasses',
+                             superclasses)
+        for name, value in self.iter_tree_attrs(obj):
+            if depth < self.maxdepth:
+                if isinstance(value, gcc.Tree):
+                    if value.addr in visited:
+                        result += str_for_kv('.%s' % name,
+                                             '... (%s)' % self.attr_to_str(name, repr(value)))
+                    else:
+                        # Recurse
+                        result += str_for_kv('.%s' % name, '')
+                        result += self._recursive_format_obj(value,
+                                indent + len(name) + 4,
+                                visited, depth + 1)
+                    continue
+            # Otherwise: just print short version of the attribute:
+            result += str_for_kv('.%s' % name,
+                                 self.attr_to_str(name, value))
+
+        indent -= 1
+        result += self.make_indent(indent) + '>\n'
+        return result
+
+class DotPrettyPrinter(PrettyPrinter):
     # Base class for various kinds of data visualizations that use graphviz
     # (aka ".dot" source files)
     def to_html(self, text):
@@ -166,13 +266,6 @@ class TreePrettyPrinter(DotPrettyPrinter):
         self.show_addr = False
         self.maxdepth = 6 # for now
 
-    def attr_to_str(self, name, value):
-        if name == 'addr':
-            return hex(value)
-        if isinstance(value, str):
-            return repr(value)
-        return str(value)
-
     def tr_for_kv(self, key, value):
         return ('<tr> %s %s</tr>\n'
                 % (self._dot_td(key),
@@ -182,7 +275,6 @@ class TreePrettyPrinter(DotPrettyPrinter):
         result = '<table cellborder="0" border="0" cellspacing="0">\n'
         r = repr(obj)
         s = str(obj)
-        print obj.__class__.__mro__[1]
         result += self.tr_for_kv('repr()', r)
         if s != r:
             result += self.tr_for_kv('str()', '%r' % s)
@@ -192,28 +284,12 @@ class TreePrettyPrinter(DotPrettyPrinter):
         result += self.tr_for_kv('superclasses',
                                  superclasses)
 
-        for name, value in self.iter_attrs(obj):
+        for name, value in self.iter_tree_attrs(obj):
             result += ('<tr> %s %s </tr>\n'
                        % (self._dot_td(name),
                           self._dot_td(self.attr_to_str(name, value))))
         result += '</table>\n'
         return result
-
-    def iter_attrs(self, obj):
-        # Iterate through the interesting attributes of the object:
-        for name in dir(obj):
-            # Ignore private and "magic" attributes:
-            if name.startswith('_'):
-                continue
-            value = getattr(obj, name)
-            # Ignore methods:
-            if hasattr(value, '__call__'):
-                continue
-            if not self.show_addr:
-                if name == 'addr':
-                    continue
-            #print 'attr %r    obj.%s: %r' % (name, name, value)
-            yield (name, value)
 
     def tree_id(self, obj):
         return 'id%s' % id(obj)
@@ -229,15 +305,9 @@ class TreePrettyPrinter(DotPrettyPrinter):
         result = self.tree_to_dot(obj)
         visited.add(obj.addr)
         if depth < self.maxdepth:
-            for name, value in self.iter_attrs(obj):
+            for name, value in self.iter_tree_attrs(obj):
                 if isinstance(value, gcc.Tree):
                     if value.addr not in visited:
-                        # Don't follow infinite chains, e.g.
-                        # ptr to ptr to ... of a type:
-                        if isinstance(obj, gcc.Type):
-                            if (name == 'pointer' or
-                                name.endswith('equivalent')):
-                                continue
                         # Recurse
                         result += self.recursive_tree_to_dot(value,
                                                              visited, depth + 1)
