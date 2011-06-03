@@ -163,6 +163,8 @@ class TreePrettyPrinter(DotPrettyPrinter):
         print 'root: %s' % root
         assert isinstance(root, gcc.Tree)
         self.root = root
+        self.show_addr = False
+        self.maxdepth = 6 # for now
 
     def attr_to_str(self, name, value):
         if name == 'addr':
@@ -171,11 +173,25 @@ class TreePrettyPrinter(DotPrettyPrinter):
             return repr(value)
         return str(value)
 
+    def tr_for_kv(self, key, value):
+        return ('<tr> %s %s</tr>\n'
+                % (self._dot_td(key),
+                   self._dot_td(value)))
+
     def label_for_tree(self, obj):
         result = '<table cellborder="0" border="0" cellspacing="0">\n'
-        result += ('<tr> %s </tr>\n'
-                   % (self._dot_td(obj, colspan=2)))
-        #self._dot_td('')))
+        r = repr(obj)
+        s = str(obj)
+        print obj.__class__.__mro__[1]
+        result += self.tr_for_kv('repr()', r)
+        if s != r:
+            result += self.tr_for_kv('str()', '%r' % s)
+
+        # Show MRO, stripping off this type from front and "object" from end:
+        superclasses = obj.__class__.__mro__[1:-1]
+        result += self.tr_for_kv('superclasses',
+                                 superclasses)
+
         for name, value in self.iter_attrs(obj):
             result += ('<tr> %s %s </tr>\n'
                        % (self._dot_td(name),
@@ -193,22 +209,50 @@ class TreePrettyPrinter(DotPrettyPrinter):
             # Ignore methods:
             if hasattr(value, '__call__'):
                 continue
+            if not self.show_addr:
+                if name == 'addr':
+                    continue
             #print 'attr %r    obj.%s: %r' % (name, name, value)
             yield (name, value)
 
+    def tree_id(self, obj):
+        return 'id%s' % id(obj)
+
     def tree_to_dot(self, obj):
         assert isinstance(obj, gcc.Tree)
-        result = ('  %s [label=<%s>];\n'
-                  % ('foo', self.label_for_tree(obj)))
-        for name, value in self.iter_attrs(obj):
-            print 'attr %r    obj.%s: %r' % (name, name, value)
+        return ('  %s [label=<%s>];\n'
+                % (self.tree_id(obj), self.label_for_tree(obj)))
+
+    def recursive_tree_to_dot(self, obj, visited, depth):
+        print('recursive_tree_to_dot(%r, %r)' % (obj, visited))
+        assert isinstance(obj, gcc.Tree)
+        result = self.tree_to_dot(obj)
+        visited.add(obj.addr)
+        if depth < self.maxdepth:
+            for name, value in self.iter_attrs(obj):
+                if isinstance(value, gcc.Tree):
+                    if value.addr not in visited:
+                        # Don't follow infinite chains, e.g.
+                        # ptr to ptr to ... of a type:
+                        if isinstance(obj, gcc.Type):
+                            if (name == 'pointer' or
+                                name.endswith('equivalent')):
+                                continue
+                        # Recurse
+                        result += self.recursive_tree_to_dot(value,
+                                                             visited, depth + 1)
+                    # Add edge:
+                    result += ('   %s -> %s [label = %s];\n'
+                               % (self.tree_id(obj),
+                                  self.tree_id(value),
+                                  name))
         return result
 
     def to_dot(self):
         self.root.debug()
         result = 'digraph G {\n'
         result += '  node [shape=record];\n'
-        result += self.tree_to_dot(self.root)
+        result += self.recursive_tree_to_dot(self.root, set(), 0)
         result += '}\n'
         return result
 
