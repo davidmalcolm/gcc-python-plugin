@@ -8,7 +8,7 @@ import gcc
 import sys
 
 def log(msg, indent=0):
-    if 1:
+    if 0:
         sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
 
 from gccutils import get_src_for_loc, get_global_typedef
