@@ -96,6 +96,16 @@ Coding style: Python and GCC each have their own coding style guide for C.
 I've chosen to follow Python's (PEP-7), as I prefer it (although my code is
 admittedly a mess in places).
 
+You'll find API documentation within the "docs" directory, written in the
+reStructuredText format (as is this file, in fact).  If you have Sphinx
+installed (http://sphinx.pocoo.org/), you can regenerate these docs using::
+
+   make html
+
+within the `docs` directory.  Sphinx is the `python-sphinx` package on a
+Fedora/RHEL box.
+
+
 Debugging
 ---------
 
