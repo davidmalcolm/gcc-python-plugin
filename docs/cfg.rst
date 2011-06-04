@@ -45,7 +45,9 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
           dot = gccutils.cfg_to_dot(fun.cfg)
 	  gccutils.invoke_dot(dot)
 
-       on this C code::
+       on this C code:
+
+       .. code-block:: c
 
           int
           main(int argc, char **argv)

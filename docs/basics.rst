@@ -13,7 +13,9 @@ can be seen at http://gcc.gnu.org/wiki/plugins and
 http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
 
 
-You can invoke a Python script like this::
+You can invoke a Python script like this:
+
+.. code-block:: bash
 
   gcc -fplugin=python.so -fplugin-arg-python-script=PATH_TO_SCRIPT.py OTHER_ARGS
 
@@ -39,11 +41,15 @@ Accessing parameters
 
    Exposes the arguments passed to the plugin as a dictionary.
 
-   For example, running::
+   For example, running:
 
-      gcc -fplugin=python.so -fplugin-arg-python-script=script.py -fplugin-arg-python-foo=bar
+   .. code-block:: bash
 
-   with script.py containing::
+      gcc -fplugin=python.so \
+          -fplugin-arg-python-script=test.py \
+          -fplugin-arg-python-foo=bar
+
+   with `script.py` containing::
 
       import gcc
       print(gcc.argument_dict)
@@ -57,7 +63,8 @@ Accessing parameters
 
   Exposes the arguments passed to the plugin as a tuple of (key, value) pairs,
   so you have ordering.  (Probably worth removing, and replacing
-  :py:data:`argument_dict` with an OrderedDict instead)
+  :py:data:`argument_dict` with an OrderedDict instead; what about
+  duplicate args though?)
 
 Wiring up callbacks
 -------------------
@@ -96,7 +103,9 @@ and kwargs as shown above.
 
 If an exception occurs during a callback, and isn't handled by a try/except
 before returning into the plugin, the plugin prints the traceback to stderr and
-treats it as a fatal error, terminating the compile::
+treats it as a fatal error, terminating the compile:
+
+.. code-block:: pytb
 
   Traceback (most recent call last):
     File "test.py", line 38, in my_pass_execution_callback
