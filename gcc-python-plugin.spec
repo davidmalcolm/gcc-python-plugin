@@ -15,6 +15,8 @@ BuildRequires:  python-debug
 BuildRequires:  python3-devel
 BuildRequires:  python3-debug
 
+BuildRequires:  python-sphinx
+
 %global gcc_plugins_dir %(gcc --print-file-name=plugin)
 
 %description
@@ -48,6 +50,12 @@ Group:   Development/Languages
 %description  -n gcc-python3-debug-plugin
 GCC plugin embedding debug build of Python 3
 
+%package docs
+Summary: API documentation for the GCC Python plugin
+Group:   Development/Languages
+
+%description docs
+This package contains API documentation for the GCC Python plugin
 
 
 
@@ -83,6 +91,9 @@ BuildPlugin \
 #BuildPlugin \
 #  python3-debug-config \
 #  python3.so
+
+cd docs
+make html
 
 
 %install
@@ -121,7 +132,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc README.rst
 #%{gcc_plugins_dir}/python3-debug.so
 
-
+%files docs
+%defattr(-,root,root,-)
+%doc docs/_build/html
 
 %changelog
 * Tue May 24 2011 David Malcolm <dmalcolm@redhat.com> - 0.1-1
