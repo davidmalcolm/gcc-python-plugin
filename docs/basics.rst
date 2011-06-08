@@ -72,7 +72,7 @@ Wiring up callbacks
 Hopefully we'll eventually have the ability to write new GCC passes in Python.
 In the meantime, the main way to write scripts is to register callback functions
 to be called when various events happen during compilation, such as using
-:py:data::`gcc.PLUGIN_PASS_EXECUTION` to piggyback off of an existing GCC pass.
+:py:data:`gcc.PLUGIN_PASS_EXECUTION` to piggyback off of an existing GCC pass.
 
 .. py:function:: gcc.register_callback(event_id, function, *extraargs)
 
@@ -116,7 +116,8 @@ treats it as a fatal error, terminating the compile:
   compilation terminated.
   The bug is not reproducible, so it is likely a hardware or OS problem.
 
-(Obviously the error message above could be improved: the final line is incorrect and misleading)
+(Obviously the error message above could be improved: the final line is
+incorrect and misleading)
 
 Currently useful callback events
 --------------------------------
@@ -131,7 +132,7 @@ Currently useful callback events
 
    where `ps` is a :py:class:`gcc.Pass` and `fun` is a :py:class:`gcc.Function`.
    Your callback will typically be called many times: there are many passes,
-   and each can be invoked zero or more times per function (in the code bein
+   and each can be invoked zero or more times per function (in the code being
    compiled)
 
 .. py:data:: gcc.PLUGIN_PRE_GENERICIZE
