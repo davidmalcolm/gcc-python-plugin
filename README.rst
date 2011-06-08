@@ -83,8 +83,9 @@ This is currently three projects in one:
 gcc-python-*: the plugin for GCC.  The entrypoint (`init_plugin`) is in
 gcc-python.c
 
-cpychecker: a script written for the plugin, in which I'm building new compiler
-warnings to help people write CPython extension code.
+libcpychecker and cpychecker.py: a Python library (and a driver script),
+written for the plugin, in which I'm building new compiler warnings to
+help people find bugs in CPython extension code.
 
 cpybuilder: a handy module for programatically generating C source code for
 CPython extensions.  I use this both to generate parts of the GCC plugin, and
