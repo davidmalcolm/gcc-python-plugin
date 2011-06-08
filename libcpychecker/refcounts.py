@@ -38,56 +38,6 @@ def stmt_is_return_of_objptr(stmt):
             if type_is_pyobjptr(stmt.retval.type):
                 return True
 
-class Operations:
-    def __init__(self, fun):
-        self.fun = fun
-
-        self.assigns_to_count = []
-        self.assigns_to_objptr = []
-        self.returns_of_objptr = []
-
-        for bb in fun.cfg.basic_blocks:
-            if isinstance(bb.gimple, list):
-                for stmt in bb.gimple:
-                    # log(stmt)
-                    # log(repr(stmt))
-                    if stmt_is_assignment_to_count(stmt):
-                        log('%s: assignment to count: %s' % (stmt.loc, stmt))
-                        self.assigns_to_count.append(stmt)
-                    if stmt_is_assignment_to_objptr(stmt):
-                        log('%s: assignment to objptr: %s' % (stmt.loc, stmt))
-                        self.assigns_to_objptr.append(stmt)
-                    if stmt_is_return_of_objptr(stmt):
-                        log('%s: return of objptr: %s' % (stmt.loc, stmt))
-                        log('stmt.retval: %s %r' % (stmt.retval, stmt.retval))
-                        if isinstance(stmt.retval, gcc.SsaName):
-                            log('dir(stmt.retval): %s' % dir(stmt.retval))
-                            log('stmt.retval.def_stmt: %s %r' % (stmt.retval.def_stmt, stmt.retval.def_stmt))
-                            log('dir(stmt.retval.def_stmt): %s' % dir(stmt.retval.def_stmt))
-                            if isinstance(stmt.retval.def_stmt, gcc.GimpleCall):
-                                log('stmt.retval.def_stmt.fn: %s %r' % (stmt.retval.def_stmt.fn, stmt.retval.def_stmt.fn))
-                                log('stmt.retval.def_stmt.args: %s %r' % (stmt.retval.def_stmt.args, stmt.retval.def_stmt.args))
-                                for i, arg in enumerate(stmt.retval.def_stmt.args):
-                                    log('  args[%i]: %s %r' % (i, arg, arg))
-                            log('stmt.retval.def_stmt.rhs: %s' % stmt.retval.def_stmt.rhs)
-                            log('stmt.retval.var: %s' % stmt.retval.var)
-                            log('dir(stmt.retval.var): %s' % dir(stmt.retval.var))
-                        self.returns_of_objptr.append(stmt)
-
-        log(self.returns_of_objptr)
-        log(self.assigns_to_count)
-
-        # Highly-simplistic first pass at refcount tracking:
-        if len(self.returns_of_objptr) > 0:
-            if self.assigns_to_count == []:
-                # We're returning a PyObject *, but not modifying a refcount
-                # FIXME: if we're calling various APIs, this would affect the count
-                # Otherwise, this is a bug:
-                for r in self.returns_of_objptr:
-                    if r.loc:
-                        gcc.permerror(r.loc, 'return of PyObject* without Py_INCREF()')
-
-
 class Location:
     """A location within a CFG: a gcc.BasicBlock together with an index into
     either the gimple list, or the phi_nodes list"""
