@@ -171,10 +171,17 @@ class State:
         return self.__class__(loc, self.data.copy())
 
     def __str__(self):
-        return '%s: %s%s' % (self.loc, self.data, self._extra())
+        return '%s: %s%s' % (self.data, self.loc, self._extra())
 
     def __repr__(self):
-        return '%s: %s%s' % (self.loc, self.data, self._extra())
+        return '%s: %s%s' % (self.data, self.loc, self._extra())
+
+    def log(self, indent):
+        log('data: %s' % (self.data, ), indent)
+        log('extra: %s' % (self._extra(), ), indent)
+        log('loc: %s' % self.loc, indent)
+        if self.loc.get_stmt():
+            log('%s' % self.loc.get_stmt().loc, indent + 1)
 
     def make_assignment(self, key, value):
         new = self.copy()
@@ -195,21 +202,29 @@ class Trace:
     """A sequence of State"""
     def __init__(self):
         self.states = []
+        self.err = None
 
     def add(self, state):
         assert isinstance(state, State)
         self.states.append(state)
         return self
 
+    def add_error(self, err):
+        self.err = err
+
     def copy(self):
         t = Trace()
         t.states = self.states[:]
+        t.err = self.err # FIXME: should this be a copy?
         return t
 
     def log(self, name, indent):
         log('%s:' % name, indent)
         for i, state in enumerate(self.states):
-            log('  %i: %s' % (i, state), indent + 1 )
+            log('%i:' % i, indent + 1)
+            state.log(indent + 2)
+        if self.err:
+            log('  Trace ended with error: %s' % self.err, indent + 1)
 
     def get_last_stmt(self):
         return self.states[-1].loc.get_stmt()
