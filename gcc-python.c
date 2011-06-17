@@ -451,6 +451,7 @@ static void gcc_python_run_any_script(void)
 {
     PyObject* script_name;
     FILE *fp;
+    int result;
   
     script_name = PyDict_GetItemString(gcc_python_globals.argument_dict, "script");
     if (!script_name) {
@@ -464,8 +465,12 @@ static void gcc_python_run_any_script(void)
                 gcc_python_string_as_string(script_name));
 	exit(1);
     }
-    PyRun_SimpleFile(fp, gcc_python_string_as_string(script_name));
+    result = PyRun_SimpleFile(fp, gcc_python_string_as_string(script_name));
     fclose(fp);
+    if (-1 == result) {
+        /* Error running the python script */
+        exit(1);
+    }
 }
 
 
