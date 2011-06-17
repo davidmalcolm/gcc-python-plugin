@@ -1,0 +1,12 @@
+my_callback:
+  args: (1, 2, 3)
+  kwargs: {'foo': 'bar', 'baz': 'qux'}
+my_callback:
+  args: ()
+  kwargs: {'foo': 'bar', 'baz': 'qux'}
+my_callback:
+  args: (1, 2, 3)
+  kwargs: {}
+my_callback:
+  args: ()
+  kwargs: {}

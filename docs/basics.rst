@@ -74,7 +74,7 @@ In the meantime, the main way to write scripts is to register callback functions
 to be called when various events happen during compilation, such as using
 :py:data:`gcc.PLUGIN_PASS_EXECUTION` to piggyback off of an existing GCC pass.
 
-.. py:function:: gcc.register_callback(event_id, function, *extraargs)
+.. py:function:: gcc.register_callback(event_id, function, [extraargs,] **kwargs)
 
    Wire up a python function as a callback.  It will be called when the given
    event occurs during compilation.  For some events, the callback will be
@@ -94,6 +94,10 @@ to be called when various events happen during compilation, such as using
    You can pass additional arguments when registering the callback - they will
    be passed to the callback after any normal arguments.  This is denoted in the
    descriptions of events below by `*extraargs`.
+
+   You can also supply keyword arguments: they will be passed on as keyword
+   arguments to the callback.  This is denoted in the description of events
+   below by `**kwargs`.
 
 The various events are exposed as constants within the `gcc` module and
 directly wrap GCC's plugin mechanism.  The exact arguments you get aren't
@@ -128,7 +132,7 @@ Currently useful callback events
 
    Arguments passed to the callback are:
 
-      (`ps`, `fun`, `*extraargs`)
+      (`ps`, `fun`, `*extraargs`, `**kwargs`)
 
    where `ps` is a :py:class:`gcc.Pass` and `fun` is a :py:class:`gcc.Function`.
    Your callback will typically be called many times: there are many passes,
@@ -139,10 +143,18 @@ Currently useful callback events
 
    Arguments passed to the callback are:
 
-      (`fndecl`, `*extraargs`)
+      (`fndecl`, `*extraargs`, `**kwargs`)
 
    where `fndecl` is a :py:class:`gcc.Tree` representing a function declaration
    within the source code being compiled.
+
+.. py:data:: gcc.PLUGIN_FINISH_UNIT
+
+   Called when GCC has finished compiling a particular translation unit.
+
+   Arguments passed to the callback are:
+
+      (`*extraargs`, `**kwargs`)
 
 Other callback events
 ---------------------
@@ -211,11 +223,6 @@ scripts:
 
     gcc_data=0x0
     Called from: tree_rest_of_compilation (fndecl=0x7ffff16b1f00) at ../../gcc/tree-optimize.c:425
-
-.. py:data:: gcc.PLUGIN_FINISH_UNIT
-
-    gcc_data=0x0
-    Called from: compile_file () at ../../gcc/toplev.c:668
 
 .. py:data:: gcc.PLUGIN_FINISH
 

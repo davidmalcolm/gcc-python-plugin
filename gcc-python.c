@@ -121,16 +121,19 @@ static void trace_callback_for_##NAME(void *gcc_data, void *user_data) \
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
 static void
-gcc_python_finish_invoking_callback(PyGILState_STATE gstate, PyObject *wrapped_gcc_data, void *user_data)
+gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
+                                    int expect_wrapped_data, PyObject *wrapped_gcc_data,
+                                    void *user_data)
 {
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
     PyObject *result = NULL;
 
     assert(closure);
-    /* We take ownership of wrapped_gcc_data, which could also be NULL */
-
-    if (!wrapped_gcc_data) {
+    /* We take ownership of wrapped_gcc_data.
+       For some callbacks types it will always be NULL; for others, it's only
+       NULL if an error has occurred: */
+    if (expect_wrapped_data && !wrapped_gcc_data) {
         goto cleanup;
     }
 
@@ -138,7 +141,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate, PyObject *wrapped_g
     if (!args) {
         goto cleanup;
     }
-    result = PyObject_Call(closure->callback, args, NULL);
+    result = PyObject_Call(closure->callback, args, closure->kwargs);
 
     if (!result) {
 	PyErr_PrintEx(1);
@@ -166,7 +169,7 @@ gcc_python_callback_for_tree(void *gcc_data, void *user_data)
     gstate = PyGILState_Ensure();
 
     gcc_python_finish_invoking_callback(gstate, 
-					gcc_python_make_wrapper_tree(t),
+					1, gcc_python_make_wrapper_tree(t),
 					user_data);
 }
 
@@ -182,14 +185,28 @@ gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
     gstate = PyGILState_Ensure();
 
     gcc_python_finish_invoking_callback(gstate, 
-					gcc_python_make_wrapper_pass(pass),
+					1, gcc_python_make_wrapper_pass(pass),
+					user_data);
+}
+
+
+
+static void
+gcc_python_callback_for_FINISH_UNIT(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+					0, NULL,
 					user_data);
 }
 
 
 
 static PyObject*
-gcc_python_register_callback(PyObject *self, PyObject *args)
+gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int event;
     PyObject *callback = NULL;
@@ -202,7 +219,7 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
 
     //printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
 
-    closure = gcc_python_closure_new(callback, extraargs);
+    closure = gcc_python_closure_new(callback, extraargs, kwargs);
     if (!closure) {
         return PyErr_NoMemory();
     }
@@ -219,6 +236,13 @@ gcc_python_register_callback(PyObject *self, PyObject *args)
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
 			  gcc_python_callback_for_PLUGIN_PASS_EXECUTION,
+			  closure);
+	break;
+
+    case PLUGIN_FINISH_UNIT:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_FINISH_UNIT,
 			  closure);
 	break;
 
@@ -315,7 +339,9 @@ gcc_python_get_translation_units(PyObject *self, PyObject *args)
 
 
 static PyMethodDef GccMethods[] = {
-    {"register_callback", gcc_python_register_callback, METH_VARARGS,
+    {"register_callback",
+     (PyCFunction)gcc_python_register_callback,
+     (METH_VARARGS | METH_KEYWORDS),
      "Register a callback, to be called when various GCC events occur."},
     
     {"permerror", gcc_python_permerror, METH_VARARGS,

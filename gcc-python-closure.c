@@ -6,12 +6,13 @@
 #include "function.h"
 
 struct callback_closure *
-gcc_python_closure_new(PyObject *callback, PyObject *extraargs)
+gcc_python_closure_new(PyObject *callback, PyObject *extraargs, PyObject *kwargs)
 {
     struct callback_closure *closure;
 
     assert(callback);
-    // extraargs can be NULL
+    /* extraargs can be NULL
+       kwargs can also be NULL */
 
     closure = PyMem_New(struct callback_closure, 1);
     if (!closure) {
@@ -32,6 +33,11 @@ gcc_python_closure_new(PyObject *callback, PyObject *extraargs)
 	if (!closure->extraargs) {
 	    return NULL;  // singleton, so can't happen, really
 	}
+    }
+
+    closure->kwargs = kwargs;
+    if (kwargs) {
+	Py_INCREF(kwargs);
     }
 
     return closure;
