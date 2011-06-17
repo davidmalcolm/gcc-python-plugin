@@ -34,8 +34,20 @@ class TestStream:
         else:
             self.expdata = ''
 
+    def _cleanup(self, text):
+        result = ''
+        for line in text.splitlines():
+            if line.startswith("Preprocessed source stored into"):
+                # Handle stuff like this that changes every time:
+                # "Preprocessed source stored into /tmp/ccRm9Xgx.out file, please attach this to your bugreport."
+                continue
+            result += line + '\n'
+        return result
+
     def check_for_diff(self, out, err, p, args, label):
-        if self.actual != self.expdata:
+        actual = self._cleanup(self.actual)
+        expdata = self._cleanup(self.expdata)
+        if actual != expdata:
             raise UnexpectedOutput(out, err, p, args, self, label)
 
     def diff(self, label):
@@ -99,8 +111,16 @@ def run_test(testdir):
     #print 'out: %r' % out.actual
     #print 'err: %r' % err.actual
     c = p.wait()
-    if c != 0:
-        raise CompilationError(out.actual, err.actual, p, args)
+
+    # Check exit code:
+    if err.expdata == '':
+        # Expect a successful exit:
+        if c != 0:
+            raise CompilationError(out.actual, err.actual, p, args)
+    else:
+        # Expect a failed exit:
+        if c == 0:
+            raise CompilationError(out.actual, err.actual, p, args)
     
     assert os.path.exists(outfile)
     out.check_for_diff(out.actual, err.actual, p, args, 'stdout')

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "tests/callback-exception/script.py", line 5, in my_callback
+    raise RuntimeError("This is a test of raising an exception")
+RuntimeError: This is a test of raising an exception
+tests/callback-exception/input.c:1:0: fatal error: Unhandled Python exception raised within callback
+compilation terminated.
+Preprocessed source stored into /tmp/ccoXoK9s.out file, please attach this to your bugreport.
