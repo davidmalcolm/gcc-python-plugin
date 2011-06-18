@@ -18,7 +18,7 @@ def on_finish_unit():
     # Pick some types that ought to be arch-independent and thus suitable
     # for a unit test
     dump_integer_type(gcc.Type.unsigned_char())
-    #dump_integer_type(gcc.Type.signed_char())
+    dump_integer_type(gcc.Type.signed_char())
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       on_finish_unit)

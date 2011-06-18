@@ -559,14 +559,28 @@ gcc_python_string_or_none(const char *str_or_null)
 }
 
 PyObject *
-gcc_python_int_from_double_int(double_int di)
+gcc_python_int_from_double_int(double_int di, bool is_unsigned)
 {
-    /* For now, only cope with "small" ints: */
-    if (di.high != 0) {
-        PyErr_SetString(PyExc_OverflowError, "gcc_python_int_from_double_int needs work to cope with larger values");
-        return NULL;
-    }
-    return PyLong_FromLongLong(di.low);
+    /*
+      "double_int" is declared in gcc/double-int.h as a pair of HOST_WIDE_INT.
+      These in turn are defined in gcc/hwint.h as a #define to one of "long",
+      "long long", or "__int64".
+
+      It appears that they can be interpreted as either "unsigned" or "signed"
+     */
+
+    /* How to convert this to a PyLong object?
+       We "cheat", and take it through the decimal representation, then convert
+       from decimal.  This is probably slow, but is (I hope) at least correct.
+     */
+    char buf[512]; /* FIXME */
+    FILE *f;
+
+    buf[0] = '\0';
+    f = fmemopen(buf, sizeof(buf), "w");
+    dump_double_int (f, di, is_unsigned);
+    fclose(f);
+    return PyLong_FromString(buf, NULL, 10);
 }
 
 

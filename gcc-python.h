@@ -116,7 +116,7 @@ PyObject *
 VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 
 PyObject *
-gcc_python_int_from_double_int(double_int di);
+gcc_python_int_from_double_int(double_int di, bool is_unsigned);
 
 PyObject *
 gcc_python_lazily_create_wrapper(PyObject **cache,

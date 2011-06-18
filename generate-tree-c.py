@@ -291,9 +291,10 @@ def generate_tree_code_classes():
                               'The actual value of this constant, as a str')
 
         if cc == 'IntegerCst':
-            add_simple_getter('constant',
-                              'gcc_python_int_from_double_int(TREE_INT_CST(self->t))',
-                              'The actual value of this constant, as an int/long')
+            getsettable.add_gsdef('constant',
+                                  'gcc_IntegerConstant_get_constant',
+                                  None,
+                                  'The actual value of this constant, as an int/long')
 
         # TYPE_QUALS for various foo_TYPE classes:
         if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 

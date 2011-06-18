@@ -299,6 +299,11 @@ Global data access
       Get all variables in this compilation unit as a list of
       :py:class:`gcc.Variable`
 
+.. py:function:: gccutils.get_variables_as_dict()
+
+      Get a dictionary of all variables, where the keys are the variable names
+      (as strings), and the values are instances of :py:class:`gcc.Variable`
+
 .. py:function:: gcc.maybe_get_identifier(str)
 
       Get the :py:class:`gcc.IdentifierNode` with this name, if it exists,

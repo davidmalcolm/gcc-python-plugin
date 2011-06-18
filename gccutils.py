@@ -14,6 +14,12 @@ def get_global_typedef(name):
                 if v.name == name:
                     return v
 
+def get_variables_as_dict():
+    result = {}
+    for var in gcc.get_variables():
+        result[var.decl.name] = var
+    return result
+
 def invoke_dot(dot):
     from subprocess import Popen, PIPE
     p = Popen(['dot', '-Tpng', '-o', 'test.png'],

@@ -171,6 +171,14 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
     return NULL;
 }
 
+PyObject *
+gcc_IntegerConstant_get_constant(struct PyGccTree * self)
+{
+    tree type = TREE_TYPE(self->t);
+    return gcc_python_int_from_double_int(TREE_INT_CST(self->t),
+                                          TYPE_UNSIGNED(type));
+}
+
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c
