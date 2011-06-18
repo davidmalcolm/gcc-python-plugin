@@ -13,7 +13,7 @@ can be seen at http://gcc.gnu.org/wiki/plugins and
 http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
 
 
-You can invoke a Python script like this:
+Once you've built the plugin, you can invoke a Python script like this:
 
 .. code-block:: bash
 
