@@ -49,7 +49,7 @@ Accessing parameters
           -fplugin-arg-python-script=test.py \
           -fplugin-arg-python-foo=bar
 
-   with `script.py` containing::
+   with `test.py` containing::
 
       import gcc
       print(gcc.argument_dict)
