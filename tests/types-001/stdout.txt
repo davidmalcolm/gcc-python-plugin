@@ -1,0 +1,6 @@
+gcc.Type: 'unsigned char'
+  t.const: False
+  t.unsigned: True
+  t.precision: 8
+  t.min_value.constant: 0L
+  t.max_value.constant: 255L

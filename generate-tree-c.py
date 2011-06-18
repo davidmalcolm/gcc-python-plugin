@@ -320,6 +320,12 @@ def generate_tree_code_classes():
             add_simple_getter('unsigned_equivalent',
                               'gcc_python_make_wrapper_tree(c_common_unsigned_type(self->t))',
                               'The gcc.IntegerType for the unsigned version of this type')
+            add_simple_getter('max_value',
+                              'gcc_python_make_wrapper_tree(TYPE_MAX_VALUE(self->t))',
+                              'The maximum possible value for this type, as a gcc.IntegerCst')
+            add_simple_getter('min_value',
+                              'gcc_python_make_wrapper_tree(TYPE_MIN_VALUE(self->t))',
+                              'The minimum possible value for this type, as a gcc.IntegerCst')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
             add_simple_getter('dereference',
