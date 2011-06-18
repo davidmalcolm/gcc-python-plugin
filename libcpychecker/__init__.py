@@ -3,7 +3,7 @@ import gcc
 from PyArg_ParseTuple import check_pyargs, log
 from refcounts import check_refcounts
 
-def on_pass_execution(optpass, fun):
+def on_pass_execution(optpass, fun, show_traces=False, *args, **kwargs):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
     #log(optpass)
@@ -17,7 +17,7 @@ def on_pass_execution(optpass, fun):
         assert optpass.properties_required & (1<<5)
         # methods = get_all_PyMethodDef_methods()
         # log('methods: %s' % methods)
-        check_refcounts(fun)
+        check_refcounts(fun, show_traces)
 
 def is_a_method_callback(decl):
     methods = get_all_PyMethodDef_methods()
@@ -54,6 +54,7 @@ def get_all_PyMethodDef_methods():
                                 result.append(decl)
     return result
 
-def main():
+def main(**kwargs):
     gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-                          on_pass_execution)
+                          on_pass_execution,
+                          **kwargs)

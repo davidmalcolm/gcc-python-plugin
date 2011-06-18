@@ -8,6 +8,7 @@ import gcc
 
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 
+from absinterp import *
 from PyArg_ParseTuple import log
 
 def stmt_is_assignment_to_count(stmt):
@@ -110,57 +111,6 @@ class Location:
             else:
                 return None
 
-class UnknownValue:
-    pass
-
-class PtrValue:
-    """An abstract (PyObject*) value"""
-    def __init__(self, nonnull):
-        self.nonnull = nonnull
-
-class NullPtrValue(PtrValue):
-    def __init__(self):
-        PtrValue.__init__(self, False)
-
-    def __str__(self):
-        return 'NULL'
-
-    def __repr__(self):
-        return 'NullPtrValue()'
-
-def describe_stmt(stmt):
-    if isinstance(stmt, gcc.GimpleCall):
-        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-            fnname = stmt.fn.operand.name
-            return 'call to %s at %s' % (fnname, stmt.loc)
-    else:
-        return str(stmt.loc)
-
-class NonNullPtrValue(PtrValue):
-    def __init__(self, refdelta, stmt):
-        PtrValue.__init__(self, True)
-        self.refdelta = refdelta
-        self.stmt = stmt
-
-    def __str__(self):
-        return ('non-NULL(%s refs) acquired at %s'
-                % (self.refdelta, describe_stmt(self.stmt)))
-
-    def __repr__(self):
-        return 'NonNullPtrValue(%i)' % self.refdelta
-
-class PtrToGlobal(NonNullPtrValue):
-    def __init__(self, refdelta, stmt, name):
-        NonNullPtrValue.__init__(self, refdelta, stmt)
-        self.name = name
-
-    def __str__(self):
-        if self.stmt:
-            return ('&%s acquired at %s'
-                    % (self.name, describe_stmt(self.stmt)))
-        else:
-            return ('&%s' % self.name)
-
 class State:
     """A Location with a dict of vars and values"""
     def __init__(self, loc, data):
@@ -176,12 +126,16 @@ class State:
     def __repr__(self):
         return '%s: %s%s' % (self.data, self.loc, self._extra())
 
-    def log(self, indent):
-        log('data: %s' % (self.data, ), indent)
-        log('extra: %s' % (self._extra(), ), indent)
-        log('loc: %s' % self.loc, indent)
+    def log(self, logger, indent):
+        logger('data: %s' % (self.data, ), indent)
+        logger('extra: %s' % (self._extra(), ), indent)
+
+        # FIXME: derived class/extra:
+        self.resources.log(logger, indent)
+
+        logger('loc: %s' % self.loc, indent)
         if self.loc.get_stmt():
-            log('%s' % self.loc.get_stmt().loc, indent + 1)
+            logger('%s' % self.loc.get_stmt().loc, indent + 1)
 
     def make_assignment(self, key, value):
         new = self.copy()
@@ -218,21 +172,23 @@ class Trace:
         t.err = self.err # FIXME: should this be a copy?
         return t
 
-    def log(self, name, indent):
-        log('%s:' % name, indent)
+    def log(self, logger, name, indent):
+        logger('%s:' % name, indent)
         for i, state in enumerate(self.states):
-            log('%i:' % i, indent + 1)
-            state.log(indent + 2)
+            logger('%i:' % i, indent + 1)
+            state.log(logger, indent + 2)
         if self.err:
-            log('  Trace ended with error: %s' % self.err, indent + 1)
+            logger('  Trace ended with error: %s' % self.err, indent + 1)
 
     def get_last_stmt(self):
         return self.states[-1].loc.get_stmt()
 
     def return_value(self):
         last_stmt = self.get_last_stmt()
-        assert isinstance(last_stmt, gcc.GimpleReturn)
-        return self.states[-1].eval_expr(last_stmt.retval)
+        if isinstance(last_stmt, gcc.GimpleReturn):
+            return self.states[-1].eval_expr(last_stmt.retval)
+        else:
+            return None
 
     def final_references(self):
         return self.states[-1].owned_refs
@@ -247,16 +203,51 @@ def false_edge(bb):
         if e.false_value:
             return e
 
-class MyState(State):
-    def __init__(self, loc, data, owned_refs):
-        State.__init__(self, loc, data)
-        self.owned_refs = owned_refs
+class Resources:
+    # Resource tracking for a state
+    def __init__(self):
+        # Resources that we've acquired:
+        self._acquisitions = []
+
+        # Resources that we've released:
+        self._releases = []
 
     def copy(self):
-        return self.__class__(self.loc, self.data.copy(), self.owned_refs[:])
+        new = Resources()
+        new._acquisitions = self._acquisitions[:]
+        new._releases = self._releases[:]
+        return new
+
+    def acquire(self, resource):
+        self._acquisitions.append(resource)
+
+    def release(self, resource):
+        self._releases.append(resource)
+
+    def log(self, logger, indent):
+        logger('resources:', indent)
+        logger('acquisitions: %s' % self._acquisitions, indent + 1)
+        logger('releases: %s' % self._releases, indent + 1)
+
+
+class MyState(State):
+    def __init__(self, loc, data, owned_refs, resources):
+        State.__init__(self, loc, data)
+        self.owned_refs = owned_refs
+        self.resources = resources
+
+    def copy(self):
+        return self.__class__(self.loc, self.data.copy(), self.owned_refs[:],
+                              self.resources.copy())
 
     def _extra(self):
         return ' %s' % self.owned_refs
+
+    def acquire(self, resource):
+        self.resources.acquire(resource)
+
+    def release(self, resource):
+        self.resources.release(resource)
 
     def make_assignment(self, key, value, additional_ptr=None):
         newstate = State.make_assignment(self, key, value)
@@ -335,6 +326,11 @@ class MyState(State):
             #elif fnname in ('PyList_SetItem'):
             #    pass
             else:
+                from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
+
+                if fnname in c_stdio_functions:
+                    return handle_c_stdio_function(self, fnname, stmt)
+
                 raise "don't know how to handle that function"
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
         for i, arg in enumerate(stmt.args):
@@ -424,7 +420,8 @@ def iter_traces(fun, prefix=None):
         prefix = Trace()
         curstate = MyState(Location.get_block_start(fun.cfg.entry),
                            {},
-                           [])
+                           [],
+                           Resources())
     else:
         curstate = prefix.states[-1]
 
@@ -434,9 +431,19 @@ def iter_traces(fun, prefix=None):
     else:
         prevstate = None
 
-    prefix.log('PREFIX', 1)
+    prefix.log(log, 'PREFIX', 1)
     log('  %s:%s' % (fun.decl.name, curstate.loc))
-    nextstates = curstate.next_states(prevstate)
+    try:
+        nextstates = curstate.next_states(prevstate)
+        assert isinstance(nextstates, list)
+    except PredictedError, err:
+        # We're at a terminating state:
+        err.loc = prefix.get_last_stmt().loc
+        trace_with_err = prefix.copy()
+        trace_with_err.add_error(err)
+        trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
+        return [trace_with_err]
+
     log('states: %s' % nextstates, 2)
 
     if len(nextstates) > 0:
@@ -448,21 +455,58 @@ def iter_traces(fun, prefix=None):
         return result
     else:
         # We're at a terminating state:
-        prefix.log('FINISHED TRACE', 1)
+        prefix.log(log, 'FINISHED TRACE', 1)
         return [prefix]
 
 def extra_text(msg, indent):
     sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
 
-def check_refcounts(fun):
-    #ops = Operations(fun)
+def describe_trace(trace):
+    # Print more details about the path through the function that
+    # leads to the error:
+    awaiting_target = None
+    for j in range(len(trace.states)-1):
+        state = trace.states[j]
+        nextstate = trace.states[j+1]
+        stmt = state.loc.get_stmt()
+        next_stmt = nextstate.loc.get_stmt()
+        if state.loc.bb != nextstate.loc.bb:
+            if stmt:
+                extra_text('%s: taking %s path at %s'
+                           % (stmt.loc,
+                              nextstate.prior_bool,
+                              get_src_for_loc(stmt.loc)), 1)
+            first_loc_in_next_bb = get_first_loc_in_block(nextstate.loc.bb)
+            if first_loc_in_next_bb:
+                        extra_text('%s: reaching here %s'
+                                   % (first_loc_in_next_bb,
+                                      get_src_for_loc(first_loc_in_next_bb)),
+                                   2)
 
+def check_refcounts(fun, show_traces):
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
     traces = iter_traces(fun)
+    if show_traces:
+        traces = list(traces)
+        for i, trace in enumerate(traces):
+            def my_logger(item, indent=0):
+                sys.stdout.write('%s%s\n' % ('  ' * indent, item))
+            trace.log(my_logger, 'TRACE %i' % i, 0)
+
     for i, trace in enumerate(traces):
-        trace.log('TRACE %i' % i, 0)
+        trace.log(log, 'TRACE %i' % i, 0)
+        if trace.err:
+            # This trace bails early with a fatal error; it probably doesn't
+            # have a return value
+            log('trace.err: %s %r' % (trace.err, trace.err))
+            gcc.permerror(trace.err.loc,
+                          str(trace.err))
+            describe_trace(trace)
+            # FIXME: in our example this ought to mention where the values came from
+            continue
+        # Otherwise, the trace proceeds normally
         return_value = trace.return_value()
         log('trace.return_value(): %s' % trace.return_value())
         # Ideally, we should "own" exactly one reference, and it should be
