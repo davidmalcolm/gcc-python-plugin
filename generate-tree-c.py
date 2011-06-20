@@ -312,9 +312,6 @@ def generate_tree_code_classes():
             add_simple_getter('unsigned',
                               'PyBool_FromLong(TYPE_UNSIGNED(self->t))',
                               "Boolean: True for 'unsigned', False for 'signed'")
-            add_simple_getter('precision',
-                              'gcc_python_int_from_long(TYPE_PRECISION(self->t))',
-                              'The precision of this type in bits, as an int (e.g. 32)')
             add_simple_getter('signed_equivalent',
                               'gcc_python_make_wrapper_tree(c_common_signed_type(self->t))',
                               'The gcc.IntegerType for the signed version of this type')
@@ -327,6 +324,11 @@ def generate_tree_code_classes():
             add_simple_getter('min_value',
                               'gcc_python_make_wrapper_tree(TYPE_MIN_VALUE(self->t))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
+
+        if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
+            add_simple_getter('precision',
+                              'gcc_python_int_from_long(TYPE_PRECISION(self->t))',
+                              'The precision of this type in bits, as an int (e.g. 32)')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
             add_simple_getter('dereference',

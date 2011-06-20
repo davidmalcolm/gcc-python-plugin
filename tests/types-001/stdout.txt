@@ -10,3 +10,9 @@ gcc.Type: 'signed char'
   t.precision: 8
   t.min_value.constant: -128L
   t.max_value.constant: 127L
+gcc.Type: 'float'
+  t.const: False
+  t.precision: 32
+gcc.Type: 'double'
+  t.const: False
+  t.precision: 64

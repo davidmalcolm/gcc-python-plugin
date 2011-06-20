@@ -20,5 +20,13 @@ def on_finish_unit():
     dump_integer_type(gcc.Type.unsigned_char())
     dump_integer_type(gcc.Type.signed_char())
 
+    def dump_real_type(t):
+        print('gcc.Type: %r' % str(t))
+        print('  t.const: %r' % t.const)
+        print('  t.precision: %r' % t.precision)
+
+    dump_real_type(gcc.Type.float())
+    dump_real_type(gcc.Type.double())
+
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       on_finish_unit)

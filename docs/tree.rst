@@ -251,6 +251,15 @@ Types
 
       The gcc.IntegerType for the unsigned version of this type
 
+.. py:class:: gcc.FloatType
+
+   Subclass of gcc.Type representing C's `float` and `double` types
+
+   .. py:attribute:: precision
+
+      (int) The precision of this type in bits (32 for `float`; 64 for
+      `double`)
+
 .. py:class:: gcc.PointerType
 .. py:class:: gcc.ArrayType
 .. py:class:: gcc.VectorType
