@@ -331,7 +331,10 @@ class MyState(State):
                 if fnname in c_stdio_functions:
                     return handle_c_stdio_function(self, fnname, stmt)
 
-                raise "don't know how to handle that function"
+                # Unknown function:
+                log('Invocation of unknown function: %r' % fnname)
+                return [self.make_assignment(stmt.lhs, UnknownValue())]
+
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
         for i, arg in enumerate(stmt.args):
             log('args[%i]: %s %r' % (i, arg, arg), 4)
