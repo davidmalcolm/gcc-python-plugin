@@ -153,7 +153,7 @@ else:
     testdirs = find_tests_below('tests')
 
 num_passes = 0
-num_fails = 0
+failed_tests = []
 for testdir in testdirs:
     try:
         print('%s: ' % testdir),
@@ -163,9 +163,12 @@ for testdir in testdirs:
     except RuntimeError, err:
         print('FAIL')
         print err
-        num_fails += 1
+        failed_tests.append(testdir)
     
-print('%i successes; %i failures' % (num_passes, num_fails))
-if num_fails > 0:
+print('%i successes; %i failures' % (num_passes, len(failed_tests)))
+if len(failed_tests) > 0:
+    print('Failed tests:')
+    for test in failed_tests:
+        print('  %s' % test)
     sys.exit(1)
 
