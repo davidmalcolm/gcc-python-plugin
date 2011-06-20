@@ -1,3 +1,4 @@
+import gcc
 from gccutils import get_src_for_loc
 
 class AbstractValue:
