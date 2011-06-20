@@ -1,2 +1,0 @@
-tests/cpychecker-fileptr-missing-error-check-001/input.c: In function ‘missing_error_check’:
-tests/cpychecker-fileptr-missing-error-check-001/input.c:9:11: error: fclose can be called with NULL as parameter 1; NULL value from     FILE *f = fopen(filename, "r"); [-fpermissive]
