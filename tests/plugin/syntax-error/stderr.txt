@@ -1,4 +1,4 @@
-  File "tests/plugin/syntax-error/script.py", line 1
+  File "tests/plugin/syntax-error/script.py", line 18
     Test handling of Python syntax errors.
                 ^
 SyntaxError: invalid syntax

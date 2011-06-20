@@ -136,12 +136,14 @@ def run_test(testdir):
         # Expect a successful exit:
         if c != 0:
             raise CompilationError(out.actual, err.actual, p, args)
+        assert os.path.exists(outfile)
     else:
         # Expect a failed exit:
         if c == 0:
+            sys.stderr.write(out.diff('stdout'))
+            sys.stderr.write(err.diff('stderr'))
             raise CompilationError(out.actual, err.actual, p, args)
     
-    assert os.path.exists(outfile)
     out.check_for_diff(out.actual, err.actual, p, args, 'stdout')
     err.check_for_diff(out.actual, err.actual, p, args, 'stderr')
 

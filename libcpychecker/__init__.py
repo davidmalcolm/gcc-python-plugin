@@ -22,7 +22,7 @@ from refcounts import check_refcounts
 
 def on_pass_execution(optpass, fun,
                       show_traces=False,
-                      check_refcounts=False,
+                      verify_refcounting=False,
                       *args, **kwargs):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
@@ -33,7 +33,7 @@ def on_pass_execution(optpass, fun,
             check_pyargs(fun)
 
     # The refcount code is too buggy for now to be on by default:
-    if not check_refcounts:
+    if not verify_refcounting:
         return
 
     if optpass.name == 'release_ssa':
