@@ -294,7 +294,7 @@ class MyState(State):
             if str(expr) in self.data:
                 return self.data[str(expr)]
             else:
-                return UnknownValue()
+                return UnknownValue(expr.type, None)
         if isinstance(expr, gcc.AddrExpr):
             #log(dir(expr))
             #log(expr.operand)
@@ -303,13 +303,17 @@ class MyState(State):
                 if expr.operand.name == '_Py_NoneStruct':
                     # FIXME: do we need a stmt?
                     return PtrToGlobal(1, None, expr.operand.name)
-        return UnknownValue()
+        if expr is None:
+            return None
+        return UnknownValue(expr.type, None) # FIXME
 
     def _next_states_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
         log('dir(stmt.fn): %s' % dir(stmt.fn), 4)
         log('stmt.fn.operand: %s' % stmt.fn.operand, 4)
+        returntype = stmt.fn.type.dereference.type
+        log('returntype: %s' % returntype)
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             log('dir(stmt.fn.operand): %s' % dir(stmt.fn.operand), 4)
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
@@ -333,7 +337,8 @@ class MyState(State):
 
                 # Unknown function:
                 log('Invocation of unknown function: %r' % fnname)
-                return [self.make_assignment(stmt.lhs, UnknownValue())]
+                return [self.make_assignment(stmt.lhs,
+                                             UnknownValue(returntype, stmt))]
 
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
         for i, arg in enumerate(stmt.args):
@@ -398,7 +403,7 @@ class MyState(State):
                 return False
             if isinstance(lhs, NullPtrValue) and rhs == 0:
                 return True
-        return UnknownValue()
+        return UnknownValue(None, stmt)
 
     def _next_states_for_GimpleAssign(self, stmt):
         log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))

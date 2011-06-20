@@ -27,8 +27,12 @@ class InvalidlyNullParameter(PredictedError):
                 % (self.fnname, self.paramidx, self.nullvalue))
 
 
-class UnknownValue:
-    pass
+class UnknownValue(AbstractValue):
+    def __str__(self):
+        return 'unknown %s from %s' % (self.gcctype, self.stmt)
+
+    def __repr__(self):
+        return 'UnknownValue(%r, %r)' % (self.gcctype, self.stmt)
 
 class PtrValue:
     """An abstract (PyObject*) value"""
