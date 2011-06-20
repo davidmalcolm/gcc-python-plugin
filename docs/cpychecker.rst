@@ -42,7 +42,7 @@ followed by its current status):
   * errors in PyArg_ParseTuple and friends:
 
      * type mismatches e.g. `int` vs `long` (often leads to flaws on big-endian
-       64-bit architectures, where sizeof(int) == sizeof(long)
+       64-bit architectures, where sizeof(int) != sizeof(long))
        [MOSTLY IMPLEMENTED FOR PyArg_Parse*, NOT IMPLEMENTED FOR Py_BuildValue]
 
      * reference-counting errors, for the cases where objects are returned with
