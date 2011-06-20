@@ -164,8 +164,12 @@ for testdir in testdirs:
         print('FAIL')
         print err
         failed_tests.append(testdir)
-    
-print('%i successes; %i failures' % (num_passes, len(failed_tests)))
+
+def num(count, singular, plural):
+    return '%i %s' % (count, singular if count == 1 else plural)
+
+print('%s; %s' % (num(num_passes, "success", "successes"),
+                  num(len(failed_tests), "failure", "failures")))
 if len(failed_tests) > 0:
     print('Failed tests:')
     for test in failed_tests:
