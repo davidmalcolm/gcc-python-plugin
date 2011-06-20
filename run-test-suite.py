@@ -1,4 +1,5 @@
-# Test cases are in the form of subdirectories of the "tests" directory
+# Test cases are in the form of subdirectories of the "tests" directory; any
+# subdirectory containing a "script.py" is regarded as a test case.
 #
 # A test consists of:
 #   input.c: C source code to be compiled
@@ -9,7 +10,8 @@
 #               added to GCC's invocation options
 #
 # This runner either invokes all tests, or just a subset, if supplied the
-# names of the subdirectories as arguments
+# names of the subdirectories as arguments.  All test cases within the given
+# directories will be run.
 
 import glob
 import os
@@ -133,24 +135,37 @@ parser = OptionParser()
 
 # print (options, args)
 
+def find_tests_below(path):
+    result = []
+    for dirpath, dirnames, filenames in os.walk(path):
+        if 'script.py' in filenames:
+            result.append(dirpath)
+    return result
+
+
 if len(args) > 0:
-    # Just run the given tests
-    testdirs = [os.path.join('tests', d) for d in args]
+    # Just run the given tests (or test subdirectories)
+    testdirs = []
+    for path in args:
+        testdirs += find_tests_below(path)
 else:
     # Run all the tests
-    testdirs = sorted(glob.glob('tests/*'))
+    testdirs = find_tests_below('tests')
 
-had_errors = False
+num_passes = 0
+num_fails = 0
 for testdir in testdirs:
     try:
-        print ('%s: ' % testdir),
+        print('%s: ' % testdir),
         run_test(testdir)
-        print 'OK'
+        print('OK')
+        num_passes += 1
     except RuntimeError, err:
-        had_errors = True
-        print 'FAIL'
+        print('FAIL')
         print err
+        num_fails += 1
     
-if had_errors:
+print('%i successes; %i failures' % (num_passes, num_fails))
+if num_fails > 0:
     sys.exit(1)
 
