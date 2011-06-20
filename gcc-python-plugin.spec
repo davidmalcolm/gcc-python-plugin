@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
 Group:          Development/Languages
-License:        LGPLv3+
+License:        GPLv3+
 URL:            FIXME
 Source0:        gcc-python-plugin-0.1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)

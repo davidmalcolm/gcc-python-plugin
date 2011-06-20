@@ -5,7 +5,7 @@ This is a plugin for GCC, which links against libpython, and (I hope) allows
 you to invoke arbitrary Python scripts from inside the compiler.  The aim is to
 allow you to write GCC plugins in Python.
 
-The plugin is Free Software, licensed under the LGPLv3 (or later).
+The plugin is Free Software, licensed under the GPLv3 (or later).
 
 It's still at the "experimental proof-of-concept stage"; expect crashes and
 tracebacks (I'm new to insides of GCC, and I may have misunderstood things).

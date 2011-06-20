@@ -48,7 +48,7 @@ that it's only possible to use one or the other within a particular invocation
 of "gcc", due to awkward dynamic-linker symbol collisions between the two
 versions of Python).
 
-The plugin is Free Software, licensed under the LGPLv3 (or later).
+The plugin is Free Software, licensed under the GPLv3 (or later).
 
 
 Indices and tables
