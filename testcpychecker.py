@@ -125,10 +125,9 @@ socket_htons(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘socket_htons’:\n'
-                              '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format string "i:htons":'
-                              ' argument 3 ("&x1") had type "long unsigned int *" (pointing to 64 bits)'
-                              ' but was expecting "int *" (pointing to 32 bits) for format code "i"'
-                              ' [-fpermissive]\n')
+                              '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format code "i:htons" [-fpermissive]\n'
+                              '  argument 3 ("&x1") had type "long unsigned int *" (pointing to 64 bits)\n'
+                              '  but was expecting "int *" (pointing to 32 bits) for format code "i"\n')
 
     def test_not_enough_varargs(self):
         src = """
@@ -218,9 +217,23 @@ correct_usage(PyObject *self, PyObject *args)
     def get_funcname(self):
         return 'PyArg_ParseTuple'
 
+    def get_argindex(self):
+        return 3
+
+    def get_linenum(self):
+        return 13
+
+    def get_colnum(self):
+        return 26
+
     def get_expected_error(self):
         return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
-                '$(SRCFILE):13:26: error: Mismatching type in call to %(funcname)s with format string "%(code)s": argument 3 ("&val") had type "void * *" but was expecting "%(exptypename)s *"')
+                '$(SRCFILE):%(linenum)i:%(colnum)i: error: Mismatching type in call to %(funcname)s with format code "%(code)s" [-fpermissive]\n'
+                '  argument %(argindex)i ("&val") had type "void * *"\n'
+                '  but was expecting "%(exptypename)s *"')
+        # we stop there, to avoid spelling out the various possible
+        #    (pointing to N bits)
+        # variants of the message
 
     def _test_format_code(self, code, typenames, exptypenames=None):
         if not exptypenames:
@@ -243,6 +256,9 @@ correct_usage(PyObject *self, PyObject *args)
             exptypename = exptypenames[0]
             src, function_name = self.make_src_for_incorrect_function(code, typenames)
             funcname = self.get_funcname()
+            argindex = self.get_argindex()
+            linenum = self.get_linenum()
+            colnum = self.get_colnum()
             experr = self.get_expected_error() % locals()
             bm = self.assertFindsError(src, experr)
                                        
@@ -392,9 +408,14 @@ class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
     def get_funcname(self):
         return 'PyArg_ParseTupleAndKeywords'
 
-    def get_expected_error(self):
-        return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
-                '$(SRCFILE):14:37: error: Mismatching type in call to %(funcname)s with format string "%(code)s": argument 5 ("&val") had type "void * *" but was expecting "%(exptypename)s *"')
+    def get_argindex(self):
+        return 5
+
+    def get_linenum(self):
+        return 14
+
+    def get_colnum(self):
+        return 37
 
     def make_src_for_correct_function(self, code, typenames, params=None):
         # Generate a C function that uses the format code correctly, and verify

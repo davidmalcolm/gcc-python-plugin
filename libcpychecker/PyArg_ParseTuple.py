@@ -336,7 +336,7 @@ class MismatchingType(ParsedFormatStringError):
         self.exp_type = exp_type
         self.vararg = vararg
 
-    def __str__(self):
+    def extra_info(self):
         def _describe_precision(t):
             if hasattr(t, 'precision'):
                 return ' (pointing to %i bits)' % t.precision
@@ -355,13 +355,14 @@ class MismatchingType(ParsedFormatStringError):
                 result += _describe_precision(t.dereference)
             return result
             
-
-        return (('Mismatching type in call to %s with format string "%s":'
-                 ' argument %i ("%s") had type %s'
-                 ' but was expecting %s for format code "%s"')
-                % (self.funcname, self.fmt.fmt_string,
-                   self.arg_num, self.vararg, _describe_vararg(self.vararg),
+        return ('  argument %i ("%s") had type %s\n'
+                '  but was expecting %s for format code "%s"\n'
+                % (self.arg_num, self.vararg, _describe_vararg(self.vararg),
                    _describe_exp_type(self.exp_type), self.arg_fmt_string))
+
+    def __str__(self):
+        return ('Mismatching type in call to %s with format code "%s"'
+                % (self.funcname, self.fmt.fmt_string))
 
 def type_equality(exp_type, actual_type):
     log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
@@ -451,10 +452,12 @@ def check_pyargs(fun):
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
                     if not type_equality(exp_type, vararg.type):
+                        err = MismatchingType(funcname, fmt,
+                                              index + varargs_idx + 1,
+                                              exp_arg.code, exp_type, vararg)
                         gcc.permerror(vararg.location,
-                                      str(MismatchingType(funcname, fmt,
-                                                          index + varargs_idx + 1,
-                                                          exp_arg.code, exp_type, vararg)))
+                                      str(err))
+                        sys.stderr.write(err.extra_info())
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
