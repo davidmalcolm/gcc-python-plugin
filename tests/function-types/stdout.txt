@@ -1,0 +1,4 @@
+fn_type_decl.name: 'example_fn_type'
+str(fn_type): 'int example_fn_type (char, float)'
+str(fn_type.type): 'int'
+argument_types: ['char', 'float']

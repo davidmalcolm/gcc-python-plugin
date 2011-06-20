@@ -378,6 +378,12 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
                               "The gcc.PointerType representing '(this_type *)'")
 
+        if tree_type.SYM == 'FUNCTION_TYPE':
+            getsettable.add_gsdef('argument_types',
+                                  'gcc_FunctionType_get_argument_types',
+                                  None,
+                                  "A tuple of gcc.Type instances, representing the argument types of this function type")
+
         if tree_type.SYM == 'FUNCTION_DECL':
             add_simple_getter('function',
                               'gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t))',

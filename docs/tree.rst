@@ -285,6 +285,19 @@ Additional attributes for various gcc.Type subclasses:
 
       The gcc.Type for the `restrict` version of this type
 
+
+.. py:class:: gcc.FunctionType
+
+   Subclass of gcc.Type representing the type of a given function (or or a
+   typedef to a function type, e.g. for callbacks).
+
+   The `type` attribute holds the return type.
+
+   .. py:attribute:: argument_types
+
+      A tuple of gcc.Type instances, representing the function's argument
+      types
+
 Constants
 ---------
 

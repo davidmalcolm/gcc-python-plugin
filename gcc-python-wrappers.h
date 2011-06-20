@@ -49,6 +49,9 @@ PyObject *
 gcc_Declaration_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_FunctionType_get_argument_types(struct PyGccTree * self);
+
+PyObject *
 gcc_Constructor_get_elements(PyObject *self, void *closure);
 
 PyObject *

@@ -121,6 +121,56 @@ error:
 }
 
 PyObject *
+gcc_FunctionType_get_argument_types(struct PyGccTree * self)
+{
+    PyObject *result;
+    PyObject *item;
+    int i, size;
+    tree iter;
+    tree head = TYPE_ARG_TYPES(self->t);
+
+    /* Get length of chain */
+    for (size = 0, iter = head;
+         iter && iter != error_mark_node;
+         iter = TREE_CHAIN(iter), size++) {
+        /* empty */
+    }
+
+    /* "size" should now be the length of the chain */
+
+    /* The last element in the list is a VOID_TYPE; don't add this;
+       see dump_function_declaration() in gcc/tree-pretty-print.c */
+    assert(size>0);
+    size--;
+
+    result = PyTuple_New(size);
+    if (!result) {
+        return NULL;
+    }
+
+    /* Iterate, but don't visit the final element: */
+    for (i = 0, iter = head;
+         iter && TREE_CHAIN(iter) && iter != error_mark_node;
+         iter = TREE_CHAIN(iter), i++) {
+
+        assert(i<size);
+
+	item = gcc_python_make_wrapper_tree(TREE_VALUE(iter));
+	if (!item) {
+	    goto error;
+	}
+	PyTuple_SetItem(result, i, item);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+
+PyObject *
 gcc_Constructor_get_elements(PyObject *self, void *closure)
 {
     struct PyGccTree * self_as_tree;
