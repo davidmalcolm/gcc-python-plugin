@@ -3,7 +3,10 @@ import gcc
 from PyArg_ParseTuple import check_pyargs, log
 from refcounts import check_refcounts
 
-def on_pass_execution(optpass, fun, show_traces=False, *args, **kwargs):
+def on_pass_execution(optpass, fun,
+                      show_traces=False,
+                      check_refcounts=False,
+                      *args, **kwargs):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
     #log(optpass)
@@ -11,6 +14,10 @@ def on_pass_execution(optpass, fun, show_traces=False, *args, **kwargs):
         if fun:
             log(fun)
             check_pyargs(fun)
+
+    # The refcount code is too buggy for now to be on by default:
+    if not check_refcounts:
+        return
 
     if optpass.name == 'release_ssa':
         # SSA data needed:
