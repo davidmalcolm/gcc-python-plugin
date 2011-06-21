@@ -30,8 +30,13 @@ I use::
 
     make
 
-to run the tests, which finishes by running ``make demo``, which expects to
-fail, demonstrating the new compiler errors.
+to build the plugin and run the tests
+
+You can also use::
+
+   make demo
+
+to demonstrate the new compiler errors.
 
 All of my coding so far has been on Fedora 15 x86_64, using::
 

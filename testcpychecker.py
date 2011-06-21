@@ -451,7 +451,7 @@ class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
                '}\n') % locals()
         return src, function_name
 
-#@unittest.skip("Refcount tracker doesn't yet work")
+@unittest.skip("Refcount tracker doesn't yet work")
 class RefcountErrorTests(AnalyzerTests):
     def add_method_table(self, cu, fn_name):
         methods = PyMethodTable('test_methods',

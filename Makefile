@@ -40,13 +40,15 @@ PLUGIN_SOURCE_FILES= \
 PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
 GCCPLUGINS_DIR:= $(shell $(GCC) --print-file-name=plugin)
 
-PYTHON_CONFIG=python-debug-config
+PYTHON_CONFIG=python-config
+#PYTHON_CONFIG=python-debug-config
+
 PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
 PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 
-all: testcpychecker testcpybuilder test-suite demo test
+all: testcpybuilder test-suite testcpychecker
 
 plugin: python.so
 
@@ -95,7 +97,7 @@ TEST_CFLAGS= \
   -fplugin=$(shell pwd)/python.so \
   -fplugin-arg-python-script=test.py
 
-# Catch-all test for experimentation with the API:
+# A catch-all test for quick experimentation with the API:
 test: plugin
 	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 

@@ -16,4 +16,6 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-PYTHONPATH=$(pwd) gcc -fplugin=$(pwd)/python.so -fplugin-arg-python-script=$@
+# Invoke "show-docs.py", with a dummy source file
+./gcc-with-python show-docs.py test.c
+

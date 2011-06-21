@@ -27,8 +27,8 @@ from cpybuilder import *
 
 # FIXME: this will need tweaking:
 pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
-              PyRuntime('/usr/bin/python2.7-debug', '/usr/bin/python2.7-debug-config'),
-              PyRuntime('/usr/bin/python3.2mu', '/usr/bin/python3.2mu-config'),
+              #PyRuntime('/usr/bin/python2.7-debug', '/usr/bin/python2.7-debug-config'),
+              #PyRuntime('/usr/bin/python3.2mu', '/usr/bin/python3.2mu-config'),
               #PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')
               ]
 

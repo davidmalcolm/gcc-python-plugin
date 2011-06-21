@@ -1,4 +1,3 @@
-#!/bin/sh
 #   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
 #   Copyright 2011 Red Hat, Inc.
 #
@@ -16,4 +15,5 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-PYTHONPATH=$(pwd) gcc -fplugin=$(pwd)/python.so -fplugin-arg-python-script=$@
+import gcc
+help(gcc)

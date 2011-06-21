@@ -23,11 +23,29 @@
 Basic usage of the plugin
 =========================
 
-The process for building and installing the plugin is still a bit messy; you'll
-need to read the Makefile and use your own judgement.  Some notes on GCC plugins
-can be seen at http://gcc.gnu.org/wiki/plugins and
-http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
+To build the plugin, run:
 
+.. code-block:: bash
+
+   make plugin
+
+To build the plugin and run the selftests, run:
+
+.. code-block:: bash
+
+   make
+
+You can also use::
+
+   make demo
+
+to demonstrate the new compiler errors.
+
+There isn't a well-defined process yet for installing the plugin (though the
+rpm specfile in the source tree contains some work-in-progress towards this).
+
+Some notes on GCC plugins can be seen at http://gcc.gnu.org/wiki/plugins and
+http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
 
 Once you've built the plugin, you can invoke a Python script like this:
 
@@ -40,15 +58,43 @@ you have to supply absolute paths to the plugin, and to the script.  (There's
 also a gccutil.py, and you have to set PYTHONPATH for the plugin to be able to
 find it).
 
-The exact API is still in flux; you can currently connect to events by
-registering callbacks e.g. to be called for each function in the source at
-different passes.
+There is also a helper script, `gcc-with-python`, which expects a python script
+as its first argument, then regular gcc arguments:
 
-It exposes GCC's various types as Python objects, within a "gcc" module.  You
-can see the API by running::
+.. code-block:: bash
+
+  ./gcc-with-python PATH_TO_SCRIPT.py other args follow
+
+For example, this command will use graphviz to draw how GCC "sees" the
+internals of each function in `test.c` (within its SSA representation):
+
+.. code-block:: bash
+
+  ./gcc-with-python show-ssa.py test.c
+
+
+Most of the rest of this document describes the Python API visible for
+scripting.
+
+The plugin GCC's various types as Python objects, within a "gcc" module.  You
+can see the API by running the following within a script::
 
     import gcc
     help(gcc)
+
+To make this easier, there's a script to do this for you:
+
+.. code-block:: bash
+
+  ./gcc-python-docs
+
+from where you can review the built-in documentation strings (this document
+may be easier to follow though).
+
+The exact API is still in flux: and may well change (this is an early version
+of the code; we may have to change things as GCC changes in future releases
+also).
+
 
 Accessing parameters
 --------------------
