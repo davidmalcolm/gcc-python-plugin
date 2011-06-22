@@ -1,0 +1,43 @@
+Help on class Parameter in module gcc:
+
+class Parameter(__builtin__.object)
+ |  Data descriptors defined here:
+ |  
+ |  current_value
+ |      (int/long)
+ |  
+ |  default_value
+ |      (int/long)
+ |  
+ |  help
+ |      (string) A short description of the option.
+ |  
+ |  max_value
+ |      (int/long) The maximum acceptable value, if greater than min_value
+ |  
+ |  min_value
+ |      (int/long) The minimum acceptable value
+ |  
+ |  option
+ |      (string) The name used with the `--param <name>=<value>' switch to set this value
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  __new__ = <built-in method __new__ of type object>
+ |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+
+ggc-min-expand
+  param.option: 'ggc-min-expand'
+  param.current_value: 62
+  param.default_value: 62
+  param.max_value: 0
+  param.min_value: 0
+  param.help: 'Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap'
+ggc-min-heapsize
+  param.option: 'ggc-min-heapsize'
+  param.current_value: 60567
+  param.default_value: 60567
+  param.max_value: 0
+  param.min_value: 0
+  param.help: 'Minimum heap size before we start collecting garbage, in kilobytes'

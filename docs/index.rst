@@ -33,6 +33,7 @@ Contents:
    tree.rst
    gimple.rst
    cpychecker.rst
+   misc.rst
 
 This document describes the Python plugin I've written for GCC.  In theory the
 plugin allows you to write Python scripts that can run inside GCC as it

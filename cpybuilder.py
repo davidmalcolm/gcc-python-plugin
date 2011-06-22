@@ -313,7 +313,29 @@ class CompilationUnit:
                       "}\n\n")
         return identifier
 
+    def add_simple_setter(self, identifier, typename, attrname, c_typecheck_fn, c_assignment):
+        """Define a simple setter, suitable for use by a PyGetSetDef"""
+        self.add_defn("static int\n" +
+                      "%s(%s *self, PyObject *value, void *closure)\n" % (identifier, typename) +
+                      "{\n" +
+                      "    if (! %s(value)) {\n" % c_typecheck_fn +
+                      "        PyErr_SetString(PyExc_TypeError,\n" +
+                      '                        "%s must be an int");\n' % attrname +
+                      '        return -1;\n'
+                      '    }\n' +
+                      '    %s;\n' % c_assignment +
+                      "    return 0;\n"
+                      "}\n\n")
+        return identifier
 
+    def add_simple_int_setter(self, identifier, typename, attrname, c_assignment):
+        """
+        Define a simple setter for an int-valued attribute, suitable for use
+        by a PyGetSetDef
+        """
+        return self.add_simple_setter(identifier, typename, attrname,
+                                      'PyInt_Check',
+                                      c_assignment)
 
 class SimpleModule:
     """
