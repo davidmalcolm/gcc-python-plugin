@@ -44,8 +44,18 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
 
   A ``gcc.Cfg`` is a wrapper around GCC's `struct control_flow_graph`.
 
-  It has attributes ``entry`` and ``exit``, both of which are instances of
-  :py:class:`gcc.BasicBlock`.
+  .. py:attribute:: basic_blocks
+
+     List of :py:class:`gcc.BasicBlock`, giving all of the basic blocks within
+     this CFG
+
+  .. py:attribute:: entry
+
+     Instance of :py:class:`gcc.BasicBlock`: the entrypoint for this CFG
+
+  .. py:attribute:: exit
+
+     Instance of :py:class:`gcc.BasicBlock`: the final one within this CFG
 
   You can use ``gccutils.cfg_to_dot`` to render a gcc.Cfg as a graphviz
   diagram.  It will render the diagram, showing each basic block, with
