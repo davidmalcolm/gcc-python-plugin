@@ -20,6 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "gcc-python-compat.h"
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
@@ -29,12 +30,6 @@ gcc_Gimple_repr(struct PyGccGimple * self)
 {
     return gcc_python_string_from_format("%s()", Py_TYPE(self)->tp_name);
 }
-
-/* FIXME:
-   This is declared in gimple-pretty-print.c, but not exposed in any of the plugin headers AFAIK:
-*/
-void
-dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
 
 PyObject *
 gcc_Gimple_str(struct PyGccGimple * self)

@@ -20,6 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "gcc-python-compat.h"
 #include "gimple.h"
 
 //#include "rtl.h"
@@ -38,13 +39,6 @@
 /*
     Code for various tree types
  */
-
-/* FIXME:
-   This doesn't seem to be declared in any of the plugin headers:
- */
-int
-dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
-		   bool is_stmt);
 
 PyObject *
 gcc_Tree_str(struct PyGccTree * self)
