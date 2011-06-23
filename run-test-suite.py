@@ -33,6 +33,7 @@
 import glob
 import os
 import sys
+from distutils.sysconfig import get_python_inc
 
 from subprocess import Popen, PIPE
 from cpybuilder import CommandError
@@ -107,6 +108,12 @@ def run_test(testdir):
     args += ['-o', outfile]
     args += ['-fplugin=%s' % os.path.abspath('python.so'),
              '-fplugin-arg-python-script=%s' % script_py]
+
+    # Special-case: add the python include dir (for this runtime) if the C code
+    # uses Python.h:
+    code = open(c_input, 'r').read()
+    if '#include <Python.h>' in code:
+        args += ['-I' + get_python_inc()]
 
     getopts_py = os.path.join(testdir, 'getopts.py')
     if os.path.exists(getopts_py):
