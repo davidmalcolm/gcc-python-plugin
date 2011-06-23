@@ -99,12 +99,12 @@ class TextualPrettyPrinter(PrettyPrinter):
 
     def pprint(self, obj):
         import sys
-        sys.stdout.write(self.pformat(obj, 0))
+        sys.stdout.write(self.pformat(obj))
 
     def make_indent(self, indent):
         return indent * ' '
 
-    def pformat(self, obj, indent):
+    def pformat(self, obj):
         return self._recursive_format_obj(obj, set(), 0)
 
     def indent(self, prefix, txt):
