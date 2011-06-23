@@ -435,3 +435,16 @@ Working with source code
 
       (int) Column number within source file  (starting at 1, not 0)
 
+Debugging
+=========
+
+You can place a forced breakpoint in your script using this standard Python
+one-liner::
+
+   import pdb; pdb.set_trace()
+
+This will interrupt the compile and put you in pdb's interactive debugger,
+from which you can examine data.
+
+See http://docs.python.org/library/pdb.html#debugger-commands for more
+information
