@@ -527,7 +527,61 @@ static void gcc_python_run_any_script(void)
     }
 }
 
+int
+setup_sys(struct plugin_name_args *plugin_info)
+{
+    /*
 
+     * Sets up "sys.plugin_full_name" as plugin_info->full_name.  This is the
+     path to the plugin (as specified with -fplugin=)
+
+     * Sets up "sys.plugin_base_name" as plugin_info->base_name.  This is the
+     short name, of the plugin (filename without .so suffix)
+
+     * Add the directory containing the plugin to "sys.path", so that it can
+     find modules relative to itself without needing PYTHONPATH to be set up.
+     (sys.path has already been initialized by the call to Py_Initialize)
+
+    */
+    int result = 0; /* failure */
+    PyObject *full_name = NULL;
+    PyObject *base_name = NULL;
+    const char *program =
+      "import sys;\n"
+      "import os;\n"
+      "sys.path.append(os.path.abspath(os.path.dirname(sys.plugin_full_name)))\n";
+
+    /* Setup "sys.plugin_full_name" */
+    full_name = PyString_FromString(plugin_info->full_name);
+    if (!full_name) {
+        goto error;
+    }
+    if (-1 == PySys_SetObject("plugin_full_name", full_name)) {
+        goto error;
+    }
+
+    /* Setup "sys.plugin_base_name" */
+    base_name = PyString_FromString(plugin_info->base_name);
+    if (!base_name) {
+        goto error;
+    }
+    if (-1 == PySys_SetObject("plugin_base_name", base_name)) {
+        goto error;
+    }
+
+    /* Add the plugin's path to sys.path */
+    if (-1 == PyRun_SimpleString(program)) {
+        goto error;
+    }
+
+    /* Success: */
+    result = 1;
+
+ error:
+    Py_XDECREF(full_name);
+    Py_XDECREF(base_name);
+    return result;
+}
 
 int
 plugin_init (struct plugin_name_args *plugin_info,
@@ -548,6 +602,10 @@ plugin_init (struct plugin_name_args *plugin_info,
     PyEval_InitThreads();
   
     if (!gcc_python_init_gcc_module(plugin_info)) {
+        return 1;
+    }
+
+    if (!setup_sys(plugin_info)) {
         return 1;
     }
 

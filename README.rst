@@ -63,10 +63,11 @@ arguments to the gcc invocation::
 
     gcc -fplugin=python.so -fplugin-arg-python-script=PATH_TO_SCRIPT.py OTHER_ARGS
 
-and have it run your script as the plugin starts up.  However at the moment
-you have to supply absolute paths to the plugin, and to the script.  (There's
-also a gccutil.py, and you have to set PYTHONPATH for the plugin to be able to
-find it).
+and have it run your script as the plugin starts up.
+
+The plugin automatically adds the absolute path to its own directory to the
+end of its `sys.path`, so that it can find support modules, such as gccutils.py
+and `libcpychecker`.
 
 The exact API is still in flux; you can currently connect to events by
 registering callbacks e.g. to be called for each function in the source at

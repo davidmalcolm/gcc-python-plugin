@@ -1,4 +1,3 @@
-#!/bin/sh
 #   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
 #   Copyright 2011 Red Hat, Inc.
 #
@@ -16,4 +15,16 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-gcc -fplugin=$(pwd)/python.so -fplugin-arg-python-script=$@
+# Verify the things the plugin exposes within the sys module
+import sys
+import os
+
+assert hasattr(sys, 'plugin_full_name')
+assert os.path.exists(sys.plugin_full_name)
+
+assert hasattr(sys, 'plugin_base_name')
+assert sys.plugin_base_name == 'python' # for now
+
+# Verify that the plugin's directory is in sys.path, as an absolute path:
+plugin_dir = os.path.abspath(os.path.dirname(sys.plugin_full_name))
+assert plugin_dir in sys.path

@@ -104,11 +104,11 @@ TEST_CFLAGS= \
 
 # A catch-all test for quick experimentation with the API:
 test: plugin
-	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
+	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # Selftest for the cpychecker.py code:
 testcpychecker: plugin
-	PYTHONPATH=$(shell pwd) python testcpychecker.py -v
+	python testcpychecker.py -v
 
 # Selftest for the cpybuilder code:
 testcpybuilder:
@@ -118,11 +118,11 @@ dump_gimple:
 	gcc -fdump-tree-gimple $(shell pwd)/test.c
 
 debug: plugin
-	PYTHONPATH=$(shell pwd) gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
+	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
-	PYTHONPATH=$(shell pwd) gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c
+	gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) $(shell pwd)/demo.c
 
 test-suite: plugin
 	python run-test-suite.py
