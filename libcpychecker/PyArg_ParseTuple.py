@@ -464,7 +464,6 @@ def check_pyargs(fun):
             if isinstance(bb.gimple, list):
                 for stmt in bb.gimple:
                     if isinstance(stmt, gcc.GimpleCall):
-                        from gccutils import pprint
                         if stmt.fndecl:
                             if stmt.fndecl.name == 'PyArg_ParseTuple':
                                 check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
