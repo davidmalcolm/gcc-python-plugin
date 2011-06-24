@@ -364,7 +364,7 @@ class MismatchingType(ParsedFormatStringError):
         return ('Mismatching type in call to %s with format code "%s"'
                 % (self.funcname, self.fmt.fmt_string))
 
-def type_equality(exp_type, actual_type):
+def compatible_type(exp_type, actual_type):
     log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
     log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
 
@@ -382,16 +382,32 @@ def type_equality(exp_type, actual_type):
     # was expected, rather than:
     #   struct PyObject * *
     if isinstance(exp_type, gcc.TypeDecl):
-        if type_equality(exp_type.type, actual_type):
+        if compatible_type(exp_type.type, actual_type):
             return True
 
     if isinstance(actual_type, gcc.TypeDecl):
-        if type_equality(exp_type, actual_type.type):
+        if compatible_type(exp_type, actual_type.type):
             return True
 
     # Dereference for pointers (and ptrs to ptrs etc):
     if isinstance(actual_type, gcc.PointerType) and isinstance(exp_type, gcc.PointerType):
-        if type_equality(actual_type.dereference, exp_type.dereference):
+        if compatible_type(actual_type.dereference, exp_type.dereference):
+            return True
+
+    # Don't be too fussy about typedefs to integer types
+    # For instance:
+    #   typedef unsigned PY_LONG_LONG gdb_py_ulongest;
+    # gives a different IntegerType instance to that of
+    #   gcc.Type.long_long().unsigned_equivalent
+    # As long as the size, signedness etc are the same, let it go
+    if isinstance(actual_type, gcc.IntegerType) and isinstance(exp_type, gcc.IntegerType):
+        def compare_int_types():
+            for attr in ('precision', 'unsigned',
+                         'const', 'volatile', 'restrict'):
+                if getattr(actual_type, attr) != getattr(exp_type, attr):
+                    return False
+            return True
+        if compare_int_types():
             return True
 
     return False
@@ -451,7 +467,7 @@ def check_pyargs(fun):
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
-                    if not type_equality(exp_type, vararg.type):
+                    if not compatible_type(exp_type, vararg.type):
                         err = MismatchingType(funcname, fmt,
                                               index + varargs_idx + 1,
                                               exp_arg.code, exp_type, vararg)
