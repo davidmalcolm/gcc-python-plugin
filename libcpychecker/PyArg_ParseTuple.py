@@ -464,10 +464,10 @@ def check_pyargs(fun):
             if isinstance(bb.gimple, list):
                 for stmt in bb.gimple:
                     if isinstance(stmt, gcc.GimpleCall):
-                        #log('stmt.fn: %s %r' % (stmt.fn, stmt.fn))
-                        #log('stmt.fndecl: %s %r' % (stmt.fndecl, stmt.fndecl))
-                        if stmt.fndecl.name == 'PyArg_ParseTuple':
-                            check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
-                        elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
-                            check_callsite(stmt, 'PyArg_ParseTupleAndKeywords', 2, 4)
+                        from gccutils import pprint
+                        if stmt.fndecl:
+                            if stmt.fndecl.name == 'PyArg_ParseTuple':
+                                check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
+                            elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
+                                check_callsite(stmt, 'PyArg_ParseTupleAndKeywords', 2, 4)
 
