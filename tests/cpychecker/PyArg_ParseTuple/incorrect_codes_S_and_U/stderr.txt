@@ -1,0 +1,7 @@
+tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U/input.c: In function ‘incorrect_usage_of_S_and_U’:
+tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U/input.c:29:26: error: Mismatching type in call to PyArg_ParseTuple with format code "SU" [-fpermissive]
+  argument 3 ("&val1") had type "int *" (pointing to 32 bits)
+  but was expecting one of "PyStringObject * *" or "PyObject * *" for format code "S"
+tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U/input.c:29:26: error: Mismatching type in call to PyArg_ParseTuple with format code "SU" [-fpermissive]
+  argument 4 ("&val2") had type "int *" (pointing to 32 bits)
+  but was expecting one of "PyUnicodeObject * *" or "PyObject * *" for format code "U"

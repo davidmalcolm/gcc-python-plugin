@@ -244,9 +244,11 @@ class PyArgParseFmt:
                 else:
                     result.add_argument('u', [Py_UNICODE().pointer.pointer])
             elif c == 'S':
-                result.add_argument('S', [get_PyStringObject().pointer.pointer])
+                result.add_argument('S', [(get_PyStringObject().pointer.pointer,
+                                           get_PyObject().pointer.pointer)])
             elif c == 'U':
-                result.add_argument('U', [get_PyUnicodeObject().pointer.pointer])
+                result.add_argument('U', [(get_PyUnicodeObject().pointer.pointer,
+                                           get_PyObject().pointer.pointer)])
             elif c == 'O': # object
                 if next == '!':
                     result.add_argument('O!',
@@ -350,7 +352,10 @@ class MismatchingType(ParsedFormatStringError):
             return result
 
         def _describe_exp_type(t):
-            result = '"%s"' % t
+            if isinstance(t, tuple):
+                result = 'one of ' + ' or '.join(['"%s"' % tp for tp in t])
+            else:
+                result = '"%s"' % t
             if hasattr(t, 'dereference'):
                 result += _describe_precision(t.dereference)
             return result
@@ -367,6 +372,15 @@ class MismatchingType(ParsedFormatStringError):
 def compatible_type(exp_type, actual_type):
     log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
     log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
+
+    # Support exp_type being actually a tuple of expected types (we need this
+    # for "S" and "U"):
+    if isinstance(exp_type, tuple):
+        for exp in exp_type:
+            if compatible_type(exp, actual_type):
+                return True
+        # Didn't match any of them:
+        return False
 
     assert isinstance(exp_type, gcc.Type) or isinstance(exp_type, gcc.TypeDecl)
     assert isinstance(actual_type, gcc.Type) or isinstance(actual_type, gcc.TypeDecl)

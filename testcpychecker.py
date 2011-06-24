@@ -371,11 +371,10 @@ correct_usage(PyObject *self, PyObject *args)
         #                  'int *',
         #                  'int *'])
 
-    def test_format_code_S(self):
-        self._test_format_code('S', ['PyStringObject *'])
-
-    def test_format_code_U(self):
-        self._test_format_code('U', ['PyUnicodeObject *'])
+    # Codes "S" and "U" require some special treatment, as they can support
+    # multiple types.  We tests them via these selftests:
+    #	tests/cpychecker/PyArg_ParseTuple/correct_codes_S_and_U/
+    #	tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U/
 
     def test_format_code_t_hash(self):
         self._test_format_code('t#', ['char *', 'Py_ssize_t'])
