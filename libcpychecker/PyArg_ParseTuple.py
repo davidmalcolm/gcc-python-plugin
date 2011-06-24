@@ -32,6 +32,9 @@ def log(msg, indent=0):
 
 from gccutils import get_src_for_loc, get_global_typedef
 
+def get_const_char_ptr():
+    return gcc.Type.char().const_equivalent.pointer
+
 def get_const_char_ptr_ptr():
     if const_correctness:
         return gcc.Type.char().const_equivalent.pointer.pointer
@@ -231,7 +234,7 @@ class PyArgParseFmt:
             elif c == 'e':
                 if next in ['s', 't']:
                     arg = ConcreteUnit('e' + next,
-                                       [get_const_char_ptr_ptr(),
+                                       [get_const_char_ptr(),
                                         gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
