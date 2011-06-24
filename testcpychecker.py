@@ -142,7 +142,7 @@ not_enough_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘not_enough_varargs’:\n'
-                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 0 [-fpermissive]\n')
+                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments ("int *" (pointing to 32 bits)), but got 0 [-fpermissive]\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -158,7 +158,7 @@ too_many_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘too_many_varargs’:\n'
-                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments (int *), but got 2 [-fpermissive]\n')
+                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments ("int *" (pointing to 32 bits)), but got 2 [-fpermissive]\n')
 
     def test_correct_usage(self):
         src = """

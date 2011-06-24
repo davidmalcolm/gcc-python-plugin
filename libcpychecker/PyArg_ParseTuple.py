@@ -153,9 +153,89 @@ class ConcreteUnit(FormatUnit):
         FormatUnit.__init__(self, code)
         self.expected_types = expected_types
 
-class Converter(FormatUnit):
+    def get_expected_types(self):
+        return self.expected_types
+
+
+# Handle the "O&" format code
+class Conversion(FormatUnit):
     def __init__(self, code):
-        FormatUnit.__init__(self, code) # FIXME: how to handle this?
+        FormatUnit.__init__(self, code)
+        self.callback = ConverterCallbackType(self)
+        self.result = ConverterResultType(self)
+
+    def get_expected_types(self):
+        # We will discover the actual types as we go, using "self" to bind
+        # together the two arguments
+        return [self.callback, self.result]
+
+class AwkwardType:
+    pass
+
+class ConverterCallbackType(AwkwardType):
+    def __init__(self, conv):
+        self.conv = conv
+        self.actual_type = None
+
+    def is_compatible(self, actual_type):
+        # We should be encountering a function pointer of type:
+        #   int (fn)(PyObject *, T*)
+        # The result type (next argument) should be a T*
+        if not isinstance(actual_type, gcc.PointerType):
+            return False
+
+        signature = actual_type.dereference
+        if not isinstance(signature, gcc.FunctionType):
+            return False
+
+        # Check return type:
+        if signature.type != gcc.Type.int():
+            return False
+
+        # Check argument types:
+        if len(signature.argument_types) != 2:
+            return False
+
+        if not compatible_type(signature.argument_types[0],
+                               get_PyObject().pointer):
+            return False
+
+        if not isinstance(signature.argument_types[1], gcc.PointerType):
+            return False
+
+        # Write back to the ConverterResultType with the second arg:
+        log('2nd argument of converter should be of type %s' % signature.argument_types[1])
+        self.conv.result.type = signature.argument_types[1]
+        self.actual_type = actual_type
+
+        return True
+
+    def describe(self):
+        return '"int (converter)(PyObject *, T*)" for some type T'
+
+class ConverterResultType(AwkwardType):
+    def __init__(self, conv):
+        self.conv = conv
+        self.type = None
+
+    def is_compatible(self, actual_type):
+        if not isinstance(actual_type, gcc.PointerType):
+            return False
+
+        # If something went wrong with figuring out the type, we can't check
+        # it:
+        if self.type is None:
+            return True
+
+        return compatible_type(self.type, actual_type)
+
+    def describe(self):
+        if self.type:
+            return ('%s (from second argument of %s)'
+                    % (describe_type(self.type),
+                       describe_type(self.conv.callback.actual_type)))
+        else:
+            return '"T*" for some type T'
 
 class PyArgParseFmt:
     """
@@ -177,7 +257,7 @@ class PyArgParseFmt:
         the expected types of the varargs
         """
         for arg in self.args:
-            for exp_type in arg.expected_types:
+            for exp_type in arg.get_expected_types():
                 yield (arg, exp_type)
 
     @classmethod
@@ -266,17 +346,8 @@ class PyArgParseFmt:
                 elif next == '?':
                     raise UnhandledCode(richloc, fmt_string, c + next) # FIXME
                 elif next == '&':
-                    # FIXME: can't really handle this case as is, fixing for fcntmodule.c
-                    result.args.append(Converter('O&'))
+                    result.args.append(Conversion('O&'))
                     i += 1
-                    #'O&',
-                    #[gcc.Type.int().pointer, # FIXME: this is a converter
-                    #
-                    #                     # FIXME: this should be obtained from the
-                    #                     # converter's type:
-                    #                     gcc.Type.int().pointer])
-                    #result += ['int ( PyObject * object , int * target )',  # converter
-                    #           'int *'] # FIXME, anything
                 else:
                     result.add_argument('O',
                                         [get_PyObject().pointer.pointer])
@@ -313,6 +384,32 @@ class ParsedFormatStringError(FormatStringError):
         self.funcname = funcname
         self.fmt = fmt
 
+def describe_precision(t):
+    if hasattr(t, 'precision'):
+        return ' (pointing to %i bits)' % t.precision
+    else:
+        return ''
+
+def describe_type(t):
+    if isinstance(t, AwkwardType):
+        return t.describe()
+    if isinstance(t, tuple):
+        result = 'one of ' + ' or '.join(['"%s"' % tp for tp in t])
+    else:
+        # Special-case handling of function types, to avoid embedding the ID:
+        #   c.f. void (*<T792>) (void)
+        if isinstance(t, gcc.PointerType):
+            if isinstance(t.dereference, gcc.FunctionType):
+                signature = t.dereference
+                return ('"%s (*fn) (%s)"' %
+                        (signature.type,
+                         ', '.join([str(argtype)
+                                    for argtype in signature.argument_types])))
+        result = '"%s"' % t
+    if hasattr(t, 'dereference'):
+        result += describe_precision(t.dereference)
+    return result
+
 class WrongNumberOfVars(ParsedFormatStringError):
     def __init__(self, funcname, fmt, varargs):
         ParsedFormatStringError.__init__(self, funcname, fmt)
@@ -324,7 +421,7 @@ class WrongNumberOfVars(ParsedFormatStringError):
             self.funcname,
             self.fmt.fmt_string,
             self.fmt.num_expected(),
-            ','.join([str(exp_type) for (arg, exp_type) in self.fmt.iter_exp_types()]),
+            ', '.join([describe_type(exp_type) for (arg, exp_type) in self.fmt.iter_exp_types()]),
             len(self.varargs))
 
     def _get_desc_prefix(self):
@@ -347,31 +444,16 @@ class MismatchingType(ParsedFormatStringError):
         self.vararg = vararg
 
     def extra_info(self):
-        def _describe_precision(t):
-            if hasattr(t, 'precision'):
-                return ' (pointing to %i bits)' % t.precision
-            else:
-                return ''
-
         def _describe_vararg(va):
             result = '"%s"' % va.type
             if hasattr(va, 'operand'):
-                result += _describe_precision(va.operand.type)
+                result += describe_precision(va.operand.type)
             return result
 
-        def _describe_exp_type(t):
-            if isinstance(t, tuple):
-                result = 'one of ' + ' or '.join(['"%s"' % tp for tp in t])
-            else:
-                result = '"%s"' % t
-            if hasattr(t, 'dereference'):
-                result += _describe_precision(t.dereference)
-            return result
-            
         return ('  argument %i ("%s") had type %s\n'
                 '  but was expecting %s for format code "%s"\n'
-                % (self.arg_num, self.vararg, _describe_vararg(self.vararg),
-                   _describe_exp_type(self.exp_type), self.arg_fmt_string))
+                % (self.arg_num, self.vararg, describe_type(self.vararg.type),
+                   describe_type(self.exp_type), self.arg_fmt_string))
 
     def __str__(self):
         return ('Mismatching type in call to %s with format code "%s"'
@@ -389,6 +471,10 @@ def compatible_type(exp_type, actual_type):
                 return True
         # Didn't match any of them:
         return False
+
+    # Support the "O&" converter code:
+    if isinstance(exp_type, AwkwardType):
+        return exp_type.is_compatible(actual_type)
 
     assert isinstance(exp_type, gcc.Type) or isinstance(exp_type, gcc.TypeDecl)
     assert isinstance(actual_type, gcc.Type) or isinstance(actual_type, gcc.TypeDecl)
@@ -493,7 +579,11 @@ def check_pyargs(fun):
                         err = MismatchingType(funcname, fmt,
                                               index + varargs_idx + 1,
                                               exp_arg.code, exp_type, vararg)
-                        gcc.permerror(vararg.location,
+                        if hasattr(vararg, 'location'):
+                            loc = vararg.location
+                        else:
+                            loc = stmt.loc
+                        gcc.permerror(loc,
                                       str(err))
                         sys.stderr.write(err.extra_info())
     
