@@ -24,14 +24,21 @@ import gcc
 
 import sys
 
+const_correctness = True
+
 def log(msg, indent=0):
     if 0:
         sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
 
 from gccutils import get_src_for_loc, get_global_typedef
 
-def get_const_char_ptr():
-   return gcc.Type.char().const_equivalent.pointer
+def get_const_char_ptr_ptr():
+    if const_correctness:
+        return gcc.Type.char().const_equivalent.pointer.pointer
+    else:
+        # Allow people to be sloppy about const-correctness here:
+        return (gcc.Type.char().const_equivalent.pointer.pointer,
+                gcc.Type.char().pointer.pointer)
 
 def get_Py_ssize_t():
     return get_global_typedef('Py_ssize_t')
@@ -212,21 +219,19 @@ class PyArgParseFmt:
             elif c in ['s', 'z']: # string, possibly NULL/None
                 if next == '#':
                     result.add_argument(c + '#',
-                                        [get_const_char_ptr().pointer,
+                                        [get_const_char_ptr_ptr(),
                                          get_hash_size_type().pointer])
                     i += 1
                 elif next == '*':
                     result.add_argument(c + '*', [get_Py_buffer().pointer])
                     i += 1
                 else:
-                    result.add_argument(c, [get_const_char_ptr().pointer])
-                # FIXME: seeing lots of (const char**) versus (char**) mismatches here
-                # do we care?
+                    result.add_argument(c, [get_const_char_ptr_ptr()])
 
             elif c == 'e':
                 if next in ['s', 't']:
                     arg = ConcreteUnit('e' + next,
-                                       [get_const_char_ptr(),
+                                       [get_const_char_ptr_ptr(),
                                         gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
