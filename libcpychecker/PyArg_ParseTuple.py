@@ -211,15 +211,15 @@ class PyArgParseFmt:
 
             elif c in ['s', 'z']: # string, possibly NULL/None
                 if next == '#':
-                    result.add_argument('c#',
+                    result.add_argument(c + '#',
                                         [get_const_char_ptr().pointer,
                                          get_hash_size_type().pointer])
                     i += 1
                 elif next == '*':
-                    result.add_argument('c*', [get_Py_buffer().pointer])
+                    result.add_argument(c + '*', [get_Py_buffer().pointer])
                     i += 1
                 else:
-                    result.add_argument('c', [get_const_char_ptr().pointer])
+                    result.add_argument(c, [get_const_char_ptr().pointer])
                 # FIXME: seeing lots of (const char**) versus (char**) mismatches here
                 # do we care?
 
