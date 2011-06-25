@@ -126,8 +126,11 @@ socket_htons(PyObject *self, PyObject *args)
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘socket_htons’:\n'
                               '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format code "i:htons" [-fpermissive]\n'
-                              '  argument 3 ("&x1") had type "long unsigned int *" (pointing to 64 bits)\n'
-                              '  but was expecting "int *" (pointing to 32 bits) for format code "i"\n')
+                              '  argument 3 ("&x1") had type\n'
+                              '    "long unsigned int *" (pointing to 64 bits)\n'
+                              '  but was expecting\n'
+                              '    "int *" (pointing to 32 bits)\n'
+                              '  for format code "i"\n')
 
     def test_not_enough_varargs(self):
         src = """
@@ -142,7 +145,11 @@ not_enough_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘not_enough_varargs’:\n'
-                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments ("int *" (pointing to 32 bits)), but got 0 [-fpermissive]\n')
+                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i"\n'
+                              '  expected 1 extra arguments:\n'
+                              '    "int *" (pointing to 32 bits)\n'
+                              '  but got none\n'
+                              ' [-fpermissive]\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -158,7 +165,13 @@ too_many_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               '$(SRCFILE): In function ‘too_many_varargs’:\n'
-                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i" : expected 1 extra arguments ("int *" (pointing to 32 bits)), but got 2 [-fpermissive]\n')
+                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i"\n'
+                              '  expected 1 extra arguments:\n'
+                              '    "int *" (pointing to 32 bits)\n'
+                              '  but got 2:\n'
+                              '    "int *" (pointing to 32 bits)\n'
+                              '    "int *" (pointing to 32 bits)\n'
+                              ' [-fpermissive]\n')
 
     def test_correct_usage(self):
         src = """
@@ -229,8 +242,10 @@ correct_usage(PyObject *self, PyObject *args)
     def get_expected_error(self):
         return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
                 '$(SRCFILE):%(linenum)i:%(colnum)i: error: Mismatching type in call to %(funcname)s with format code "%(code)s" [-fpermissive]\n'
-                '  argument %(argindex)i ("&val") had type "void * *"\n'
-                '  but was expecting "%(exptypename)s *"')
+                '  argument %(argindex)i ("&val") had type\n'
+                '    "void * *"\n'
+                '  but was expecting\n'
+                '    "%(exptypename)s *"')
         # we stop there, to avoid spelling out the various possible
         #    (pointing to N bits)
         # variants of the message

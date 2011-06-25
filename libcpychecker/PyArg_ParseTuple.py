@@ -416,13 +416,21 @@ class WrongNumberOfVars(ParsedFormatStringError):
         self.varargs = varargs
 
     def __str__(self):
-        return '%s in call to %s with format string "%s" : expected %i extra arguments (%s), but got %i' % (
-            self._get_desc_prefix(),
-            self.funcname,
-            self.fmt.fmt_string,
-            self.fmt.num_expected(),
-            ', '.join([describe_type(exp_type) for (arg, exp_type) in self.fmt.iter_exp_types()]),
-            len(self.varargs))
+        result = ('%s in call to %s with format string "%s"\n'
+                  '  expected %i extra arguments:\n'
+                  % (self._get_desc_prefix(),
+                     self.funcname,
+                     self.fmt.fmt_string,
+                     self.fmt.num_expected()))
+        for (arg, exp_type) in self.fmt.iter_exp_types():
+            result += '    %s\n' % describe_type(exp_type)
+        if len(self.varargs) == 0:
+            result += '  but got none\n'
+        else:
+            result += '  but got %i:\n' % len(self.varargs)
+        for arg in self.varargs:
+            result += '    %s\n' % describe_type(arg.type)
+        return result
 
     def _get_desc_prefix(self):
         raise NotImplementedError
@@ -450,8 +458,11 @@ class MismatchingType(ParsedFormatStringError):
                 result += describe_precision(va.operand.type)
             return result
 
-        return ('  argument %i ("%s") had type %s\n'
-                '  but was expecting %s for format code "%s"\n'
+        return ('  argument %i ("%s") had type\n'
+                '    %s\n'
+                '  but was expecting\n'
+                '    %s\n'
+                '  for format code "%s"\n'
                 % (self.arg_num, self.vararg, describe_type(self.vararg.type),
                    describe_type(self.exp_type), self.arg_fmt_string))
 
