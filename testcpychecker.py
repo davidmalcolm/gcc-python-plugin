@@ -370,21 +370,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_O_bang(self):
         self._test_format_code('O!', ['PyTypeObject', 'PyObject *'])
 
-    def test_format_code_O_amp(self):
-        # O& (object) [converter, anything]
-        # Converter should be a function of the form:
-        #   int conv(object, T* val_addr)
-        # args should be: converter, T*
-        src = self.make_src_for_correct_function('O&', ['int'],
-                                                 params='my_converter, &val0')
-        src = 'extern int my_converter(PyObject *obj, int *i);\n\n' + src
-        # self.assertNoErrors(src)
-
-        #self._test_format_code('O&', ['PyTypeObject', 'PyObject *'])
-        #self.assert_args("O&",
-        #                 ['int ( PyObject * object , int * target )',
-        #                  'int *',
-        #                  'int *'])
+    # Code "O&" is tested by:
+    #   tests/cpychecker/PyArg_ParseTuple/correct_converter/
+    #   tests/cpychecker/PyArg_ParseTuple/incorrect_converters/
 
     # Codes "S" and "U" require some special treatment, as they can support
     # multiple types.  We tests them via these selftests:
