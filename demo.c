@@ -65,6 +65,21 @@ kwargs_example(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_RETURN_NONE;
 }
 
+
+extern int convert_to_ssize(PyObject *, Py_ssize_t *);
+
+PyObject *
+buggy_converter(PyObject *self, PyObject *args)
+{
+    int i;
+
+    if (!PyArg_ParseTuple(args, "O&", convert_to_ssize, &i)) {
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
 /*
   PEP-7
 Local variables:
