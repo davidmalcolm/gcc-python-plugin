@@ -1,0 +1,14 @@
+fn: gcc.Function('main')
+fn.decl.name: 'main'
+return type: 'int'
+argument types: ['int', 'char * *']
+gimple[0]:
+  str(stmt): '__builtin_puts (&"Hello, python"[0]);'
+  repr(stmt): 'gcc.GimpleCall()'
+  type(stmt.fn): <type 'gcc.AddrExpr'>
+  str(stmt.fn): '__builtin_puts'
+  str(stmt.args[0]): '&"Hello, python"[0]'
+  str(stmt.lhs): None
+gimple[1]:
+  str(stmt): 'return;'
+  repr(stmt): 'gcc.GimpleReturn()'

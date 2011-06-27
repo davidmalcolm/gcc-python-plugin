@@ -29,6 +29,7 @@ Contents:
    :maxdepth: 2
 
    basics.rst
+   examples.rst
    cfg.rst
    tree.rst
    gimple.rst
