@@ -68,5 +68,15 @@ def on_pass_execution(p, fn):
             #print(dir(stmt))
             #pprint(stmt)
 
+
+        print('fn.decl.arguments: %r' % fn.decl.arguments)
+        for i, arg in enumerate(fn.decl.arguments):
+            print('  arg[%i]:' % i)
+            print('    arg.name: %r' % arg.name)
+            print('    str(arg.type): %r' % str(arg.type))
+        print('type(fn.decl.result): %r' % type(fn.decl.result))
+        print('  str(fn.decl.result.type): %r' % str(fn.decl.result.type))
+
+
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       on_pass_execution)

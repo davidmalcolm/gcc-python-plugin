@@ -57,3 +57,12 @@ gimple[3]:
 gimple[4]:
   str(stmt): 'return;'
   repr(stmt): 'gcc.GimpleReturn()'
+fn.decl.arguments: [gcc.ParmDecl('a'), gcc.ParmDecl('b')]
+  arg[0]:
+    arg.name: 'a'
+    str(arg.type): 'int'
+  arg[1]:
+    arg.name: 'b'
+    str(arg.type): 'int'
+type(fn.decl.result): <type 'gcc.ResultDecl'>
+  str(fn.decl.result.type): 'void'

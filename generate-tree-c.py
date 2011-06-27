@@ -407,6 +407,12 @@ def generate_tree_code_classes():
             add_simple_getter('function',
                               'gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t))',
                               'The gcc.Function (or None) for this declaration')
+            add_simple_getter('arguments',
+                              'gcc_tree_list_from_chain(DECL_ARGUMENTS(self->t))',
+                              'List of gcc.ParmDecl')
+            add_simple_getter('result',
+                              'gcc_python_make_wrapper_tree(DECL_RESULT_FLD(self->t))',
+                              'The gcc.ResultDecl for the return value')
 
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":

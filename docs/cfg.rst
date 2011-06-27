@@ -42,10 +42,14 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
 
    .. py:attribute:: local_decls
 
-      List of :py:class:`gcc.VarDecl` for the function's local variables.  Note
-      that `initial` only seems to get set on these for static variables.  For
-      other locals, it appears that you have to go into the gimple
-      representation to locate assignments.
+      List of :py:class:`gcc.VarDecl` for the function's local variables.  It
+      does not contain arguments; for those see the `arguments` property of
+      the function's `decl`.
+
+      Note that for locals with initializers, `initial` only seems to get set
+      on those `local_decls` that are static variables.  For other locals, it
+      appears that you have to go into the gimple representation to locate
+      assignments.
 
    .. py:attribute:: start
 

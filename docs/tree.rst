@@ -166,7 +166,7 @@ Declarations
 
       The :py:class:`gcc.Location` for this declaration
 
-.. py:class:: gcc.FuncDecl
+.. py:class:: gcc.FunctionDecl
 
    A subclass of `gcc.Declaration` indicating the declaration of a function.
    Internally, this wraps a `(struct tree_function_decl *)`
@@ -174,6 +174,16 @@ Declarations
    .. py:attribute:: function
 
       The :py:class:`gcc.Function` for this declaration
+
+   .. py:attribute:: arguments
+
+      List of :py:class:`gcc.ParmDecl` representing the arguments of this
+      function
+
+   .. py:attribute:: result
+
+      The :py:class:`gcc.ResultDecl` representing the return value of this
+      function
 
   ..        Declaration
   ..            ClassMethodDecl
