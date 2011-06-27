@@ -38,7 +38,26 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
 
    .. py:attribute:: decl
 
-      The declaration of this function, as a :py:class:`gcc.Tree`
+      The declaration of this function, as a :py:class:`gcc.FunctionDecl`
+
+   .. py:attribute:: local_decls
+
+      List of :py:class:`gcc.VarDecl` for the function's local variables.  Note
+      that `initial` only seems to get set on these for static variables.  For
+      other locals, it appears that you have to go into the gimple
+      representation to locate assignments.
+
+   .. py:attribute:: start
+
+      The :py:class:`gcc.Location` of the beginning of the function
+
+   .. py:attribute:: end
+
+      The :py:class:`gcc.Location` of the end of the function
+
+   .. py:attribute:: funcdef_no
+
+      Integer: a sequence number for profiling, debugging, etc.
 
 .. py:class:: gcc.Cfg
 

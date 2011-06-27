@@ -48,7 +48,23 @@ def generate_function():
     getsettable.add_simple_getter(cu,
                                   'decl', 
                                   'gcc_python_make_wrapper_tree(self->fun->decl)',
-                                  'The declaration of this function, as a gcc.Tree instance')
+                                  'The declaration of this function, as a gcc.FunctionDecl instance')
+    getsettable.add_simple_getter(cu,
+                                  'local_decls',
+                                  'VEC_tree_as_PyList(self->fun->local_decls)',
+                                  "List of gcc.VarDecl for the function's local variables")
+    getsettable.add_simple_getter(cu,
+                                  'funcdef_no',
+                                  'gcc_python_int_from_long(self->fun->funcdef_no)',
+                                  'Function sequence number for profiling, debugging, etc.')
+    getsettable.add_simple_getter(cu,
+                                  'start',
+                                  'gcc_python_make_wrapper_location(self->fun->function_start_locus)',
+                                  'Location of the start of the function')
+    getsettable.add_simple_getter(cu,
+                                  'end',
+                                  'gcc_python_make_wrapper_location(self->fun->function_end_locus)',
+                                  'Location of the end of the function')
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_FunctionType',

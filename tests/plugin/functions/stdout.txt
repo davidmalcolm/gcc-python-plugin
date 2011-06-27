@@ -1,0 +1,59 @@
+fn: gcc.Function('foo')
+fn.decl.name: 'foo'
+len(fn.local_decls): 6
+local_decls[0]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'f'
+  local.initial: None
+  str(local.type): 'float'
+local_decls[1]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'g'
+  local.initial: None
+  str(local.type): 'float'
+local_decls[2]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'h'
+  local.initial: None
+  str(local.type): 'float'
+local_decls[3]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'i'
+  local.initial.constant: 42L
+  str(local.type): 'int'
+local_decls[4]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'keywords'
+  local.initial: None
+  str(local.type): 'char *[2]'
+local_decls[5]
+  type(local): <type 'gcc.VarDecl'>
+  local.name: 'd'
+  local.initial: None
+  str(local.type): 'const double'
+fn.funcdef_no: 0
+fn.start: gcc.Location(file='tests/plugin/functions/input.c', line=23)
+fn.end: gcc.Location(file='tests/plugin/functions/input.c', line=31)
+gimple[0]:
+  str(stmt): 'h = 1.0e+0;'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): "gcc.VarDecl('h')"
+  [str(stmt.rhs)]: ['1.0e+0']
+gimple[1]:
+  str(stmt): 'keywords[0] = "bar";'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): 'keywords[0]'
+  [str(stmt.rhs)]: ['"bar"']
+gimple[2]:
+  str(stmt): 'keywords[1] = 0B;'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): 'keywords[1]'
+  [str(stmt.rhs)]: ['0B']
+gimple[3]:
+  str(stmt): 'd = 2.0e+0;'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): "gcc.VarDecl('d')"
+  [str(stmt.rhs)]: ['2.0e+0']
+gimple[4]:
+  str(stmt): 'return;'
+  repr(stmt): 'gcc.GimpleReturn()'
