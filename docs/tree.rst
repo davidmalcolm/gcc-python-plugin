@@ -503,6 +503,10 @@ Unary Expressions
    Corresponds to the `tcc_unary` value of `enum tree_code_class` within
    GCC's own C sources.
 
+   .. py:attribute:: operand
+
+      The operand of this operator, as a `gcc.Tree`.
+
       ======================================  ==================================================
       Subclass                                Meaning; C/C++ operators
       ======================================  ==================================================

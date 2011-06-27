@@ -542,6 +542,37 @@ def check_pyargs(fun):
             if isinstance(operand, gcc.StringCst):
                 return operand.constant
 
+    def check_keyword_array(stmt, idx):
+        keywords = stmt.args[idx]
+        if isinstance(keywords, gcc.AddrExpr):
+            operand = keywords.operand
+            if isinstance(operand, gcc.VarDecl):
+                # Caveat: "initial" will only be set up on the VarDecl of a
+                # global variable, or a "static" variable in function scope;
+                # for other local variables we appear to need to track the
+                # gimple statements to get the value at the callsite
+                initial = operand.initial
+                if isinstance(initial, gcc.Constructor):
+                    elements = [None] * len(initial.elements)
+                    for elt in initial.elements:
+                        (num, contents) = elt
+                        elt_idx = num.constant
+                        if isinstance(contents, gcc.NopExpr):
+                            contents = contents.operand
+                        if isinstance(contents, gcc.AddrExpr):
+                            contents = contents.operand
+                            if isinstance(contents, gcc.StringCst):
+                                elements[elt_idx] = contents.constant
+                        elif isinstance(contents, gcc.IntegerCst):
+                            elements[elt_idx] = contents.constant
+                    if elements[-1] != 0:
+                        gcc.permerror(stmt.loc, 'keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated')
+                    i = 0
+                    for elt in elements[0:-1]:
+                        if not elt:
+                            gcc.permerror(stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i)
+                        i = i + 1
+
     def check_callsite(stmt, funcname, format_idx, varargs_idx):
         log('got call at %s' % stmt.loc)
         log(get_src_for_loc(stmt.loc))
@@ -607,5 +638,6 @@ def check_pyargs(fun):
                             if stmt.fndecl.name == 'PyArg_ParseTuple':
                                 check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
                             elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
+                                check_keyword_array(stmt, 3)
                                 check_callsite(stmt, 'PyArg_ParseTupleAndKeywords', 2, 4)
 

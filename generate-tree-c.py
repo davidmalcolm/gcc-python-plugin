@@ -253,6 +253,11 @@ PyObject*
             pytype.tp_methods = methods.identifier
             cu.add_defn(methods.c_defn())
 
+        if localname == 'Unary':
+            add_simple_getter('operand',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
+                              'The operand of this expression, as a gcc.Tree')
+
         if localname == 'Expression':
             add_simple_getter('location',
                               'gcc_python_make_wrapper_location(EXPR_LOCATION(self->t))',
