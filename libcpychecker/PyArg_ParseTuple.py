@@ -19,6 +19,23 @@
 #  Detecting errors in usage of the PyArg_ParseTuple API
 #  
 #  See http://docs.python.org/c-api/arg.html
+#
+#  Note that all of the "#" codes are affected by the presence of the
+#  macro PY_SSIZE_T_CLEAN. If the macro was defined before including Python.h,
+#  the various lengths for these format codes are of C type "Py_ssize_t" rather
+#  than "int".
+#
+#  This behavior was clarified in the Python 3 version of the C API
+#  documentation[1], though the Python 2 version of the API docs leave which
+#  codes are affected somewhat ambiguoues.
+#
+#  Nevertheless, the API _does_ work this way in Python 2: all format codes
+#  with a "#" do work this way.
+#
+#  You can see the implementation of the API in CPython's Python/getargs.c
+#
+#  [1] The relevant commit to the CPython docs was:
+#    http://hg.python.org/cpython/rev/5d4a5655575f/
 
 import gcc
 
@@ -46,8 +63,9 @@ def get_const_char_ptr_ptr():
 def get_Py_ssize_t():
     return get_global_typedef('Py_ssize_t')
 
-def get_hash_size_type():
-    if True: # FIXME: is PY_SSIZE_T_CLEAN defined?
+def get_hash_size_type(with_size_t):
+    # Was PY_SSIZE_T_CLEAN defined?
+    if with_size_t:
         return get_Py_ssize_t()
     else:
         return gcc.Type.int()
@@ -261,7 +279,7 @@ class PyArgParseFmt:
                 yield (arg, exp_type)
 
     @classmethod
-    def from_string(cls, fmt_string):
+    def from_string(cls, fmt_string, with_size_t):
         """
         Parse fmt_string, generating a PyArgParseFmt instance
         Compare to Python/getargs.c:vgetargs1
@@ -303,7 +321,7 @@ class PyArgParseFmt:
                 if next == '#':
                     result.add_argument(c + '#',
                                         [get_const_char_ptr_ptr(),
-                                         get_hash_size_type().pointer])
+                                         get_hash_size_type(with_size_t).pointer])
                     i += 1
                 elif next == '*':
                     result.add_argument(c + '*', [get_Py_buffer().pointer])
@@ -320,14 +338,17 @@ class PyArgParseFmt:
                     if i < len(fmt_string):
                         if fmt_string[i] == '#':
                             arg.code += '#'
-                            arg.expected_types.append(gcc.Type.int().pointer)
+                            # es# and et# within getargs.c use FETCH_SIZE and
+                            # STORE_SIZE and are thus affected by the size
+                            # macro:
+                            arg.expected_types.append(get_hash_size_type(with_size_t).pointer)
                             i+=1
                     result.args.append(arg)
             elif c == 'u':
                 if next == '#':
                     result.add_argument('u#',
                                         [Py_UNICODE().pointer.pointer,
-                                         get_hash_size_type().pointer])
+                                         get_hash_size_type(with_size_t).pointer])
                     i += 1
                 else:
                     result.add_argument('u', [Py_UNICODE().pointer.pointer])
@@ -355,7 +376,9 @@ class PyArgParseFmt:
                 if next == '#':
                     result.add_argument('w#',
                                         [gcc.Type.char().pointer.pointer,
-                                         get_Py_ssize_t().pointer])
+                                         get_hash_size_type(with_size_t).pointer])
+                    # Note: reading CPython sources indicates it's a FETCH_SIZE
+                    # type, not an Py_ssize_t, as the docs current suggest
                     i += 1
                 elif next == '*':
                     result.add_argument('w*', [get_Py_buffer().pointer])
@@ -366,7 +389,7 @@ class PyArgParseFmt:
                 if next == '#':
                     result.add_argument('t#',
                                         [gcc.Type.char().pointer.pointer,
-                                         get_hash_size_type().pointer])
+                                         get_hash_size_type(with_size_t).pointer])
                     # Note: reading CPython sources indicates it's a FETCH_SIZE
                     # type, not an int, as the docs current suggest
                     i += 1
@@ -573,7 +596,7 @@ def check_pyargs(fun):
                             gcc.permerror(stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i)
                         i = i + 1
 
-    def check_callsite(stmt, funcname, format_idx, varargs_idx):
+    def check_callsite(stmt, funcname, format_idx, varargs_idx, with_size_t):
         log('got call at %s' % stmt.loc)
         log(get_src_for_loc(stmt.loc))
         # log('stmt: %r %s' % (stmt, stmt))
@@ -596,7 +619,7 @@ def check_pyargs(fun):
 
                 # Figure out expected types, based on the format string...
                 try:
-                    fmt = PyArgParseFmt.from_string(fmt_string)
+                    fmt = PyArgParseFmt.from_string(fmt_string, with_size_t)
                 except FormatStringError, exc:
                     gcc.permerror(stmt.loc, str(exc))
                     return
@@ -628,16 +651,38 @@ def check_pyargs(fun):
                         gcc.permerror(loc,
                                       str(err))
                         sys.stderr.write(err.extra_info())
+
+    def maybe_check_callsite(stmt):
+        if stmt.fndecl:
+            # If "PY_SSIZE_T_CLEAN" is defined before #include <Python.h>, then
+            # the preprocessor is actually turning these into "_SizeT"-suffixed
+            # variants, which handle some format codes differently
+
+            # FIXME: should we report the name as seen by the compiler?
+            # It doesn't appear in the CPython API docs
+
+            if stmt.fndecl.name == 'PyArg_ParseTuple':
+                check_callsite(stmt,
+                               'PyArg_ParseTuple',
+                               1, 2, False)
+            elif stmt.fndecl.name == '_PyArg_ParseTuple_SizeT':
+                check_callsite(stmt,
+                               'PyArg_ParseTuple',
+                               1, 2, True)
+            elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
+                check_keyword_array(stmt, 3)
+                check_callsite(stmt,
+                               'PyArg_ParseTupleAndKeywords',
+                               2, 4, False)
+            elif stmt.fndecl.name == '_PyArg_ParseTupleAndKeywords_SizeT':
+                check_keyword_array(stmt, 3)
+                check_callsite(stmt,
+                               'PyArg_ParseTupleAndKeywords',
+                               2, 4, True)
     
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
             if isinstance(bb.gimple, list):
                 for stmt in bb.gimple:
                     if isinstance(stmt, gcc.GimpleCall):
-                        if stmt.fndecl:
-                            if stmt.fndecl.name == 'PyArg_ParseTuple':
-                                check_callsite(stmt, 'PyArg_ParseTuple', 1, 2)
-                            elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
-                                check_keyword_array(stmt, 3)
-                                check_callsite(stmt, 'PyArg_ParseTupleAndKeywords', 2, 4)
-
+                        maybe_check_callsite(stmt)

@@ -286,8 +286,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_s(self):
         self._test_format_code('s', 'const char *')
 
-    def test_format_code_s_hash(self):
-        self._test_format_code('s#', ['const char *', 'Py_ssize_t'])
+    # "s#" is affected by the PY_SSIZE_T_CLEAN macro; we test it within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_s_star(self):
         self._test_format_code('s*', ['Py_buffer'])
@@ -295,8 +296,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_z(self):
         self._test_format_code('z', 'const char *')
 
-    def test_format_code_z_hash(self):
-        self._test_format_code('z#', ['const char *', 'Py_ssize_t'])
+    # "z#" is affected by the PY_SSIZE_T_CLEAN macro; we test it within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_z_star(self):
         self._test_format_code('z*', ['Py_buffer'])
@@ -304,8 +306,9 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_u(self):
         self._test_format_code('u', 'Py_UNICODE *')
 
-    def test_format_code_u_hash(self):
-        self._test_format_code('u#', ['Py_UNICODE *', 'Py_ssize_t']) # not an int
+    # "u#" is affected by the PY_SSIZE_T_CLEAN macro; we test it within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_es(self):
         self._test_format_code('es', ['const char', 'char *'])
@@ -313,11 +316,10 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_et(self):
         self._test_format_code('et', ['const char', 'char *'])
 
-    def test_format_code_es_hash(self):
-        self._test_format_code('es#', ['const char', 'char *', 'int'])
-
-    def test_format_code_et_hash(self):
-        self._test_format_code('et#', ['const char', 'char *', 'int'])
+    # "es#" and "et#" are affected by the PY_SSIZE_T_CLEAN macro; we test them
+    # within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_b(self):
         self._test_format_code('b', 'unsigned char')
@@ -379,14 +381,16 @@ correct_usage(PyObject *self, PyObject *args)
     #	tests/cpychecker/PyArg_ParseTuple/correct_codes_S_and_U/
     #	tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U/
 
-    def test_format_code_t_hash(self):
-        self._test_format_code('t#', ['char *', 'Py_ssize_t'])
+    # "t#" is affected by the PY_SSIZE_T_CLEAN macro; we test it within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_w(self):
         self._test_format_code('w', 'char *')
 
-    def test_format_code_w_hash(self):
-        self._test_format_code('w#', ['char *', 'Py_ssize_t'])
+    # "w#" is affected by the PY_SSIZE_T_CLEAN macro; we test it within:
+    #   tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN
+    #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_w_star(self):
         self._test_format_code('w*', ['Py_buffer'])

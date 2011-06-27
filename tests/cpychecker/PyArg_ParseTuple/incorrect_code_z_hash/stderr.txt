@@ -3,5 +3,5 @@ tests/cpychecker/PyArg_ParseTuple/incorrect_code_z_hash/input.c:34:26: error: Mi
   argument 4 ("&len") had type
     "float *" (pointing to 32 bits)
   but was expecting
-    "Py_ssize_t *"
+    "int *" (pointing to 32 bits)
   for format code "z#"
