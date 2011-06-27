@@ -127,9 +127,9 @@ also add it to the API documentation, and add a test case.
                 >
       >
 
-.. py:function:: gccutils.ppprint(tree)
+.. py:function:: gccutils.pprint(tree)
 
-   Similar to gccutils.ppprint, but prints the output to stdout.
+   Similar to `gccutils.pformat()`, but prints the output to stdout.
 
    (should this be stderr instead? probably should take a stream as an arg, but
    what should the default be?)
