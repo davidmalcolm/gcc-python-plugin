@@ -258,7 +258,11 @@ PyObject*
                               'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
                               'The operand of this expression, as a gcc.Tree')
 
-        if localname == 'Expression':
+        # Corresponds to this gcc/tree.h macro:
+        #   #define IS_EXPR_CODE_CLASS(CLASS)\
+        #       ((CLASS) >= tcc_reference && (CLASS) <= tcc_expression)
+        if localname in ('Reference', 'Comparison', 'Unary', 'Binary',
+                         'Statement' 'VlExp', 'Expression'):
             add_simple_getter('location',
                               'gcc_python_make_wrapper_location(EXPR_LOCATION(self->t))',
                               "The source location of this expression")

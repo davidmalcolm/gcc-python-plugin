@@ -371,6 +371,10 @@ Binary Expressions
    Corresponds to the `tcc_binary` value of `enum tree_code_class` within
    GCC's own C sources.
 
+   .. py:attribute:: location
+
+      The :py:class:`gcc.Location` for this binary expression
+
    Has subclasses for the various kinds of binary expression.  These
    include:
 
@@ -507,6 +511,12 @@ Unary Expressions
 
       The operand of this operator, as a `gcc.Tree`.
 
+   .. py:attribute:: location
+
+      The :py:class:`gcc.Location` for this unary expression
+
+   Subclasses include:
+
       ======================================  ==================================================
       Subclass                                Meaning; C/C++ operators
       ======================================  ==================================================
@@ -535,15 +545,93 @@ Unary Expressions
       ======================================  ==================================================
 
 
+Comparisons
+------------
+
+.. py:class:: gcc.Comparison
+
+   A subclass of `gcc.Tree` for comparison expressions
+
+   Corresponds to the `tcc_comparison` value of `enum tree_code_class` within
+   GCC's own C sources.
+
+   .. py:attribute:: location
+
+      The :py:class:`gcc.Location` for this comparison
+
+   Subclasses include:
+
+      =====================================  ======================
+      Subclass                               C/C++ operators
+      =====================================  ======================
+      .. py:class:: EqExpr
+      .. py:class:: GeExpr
+      .. py:class:: GtExpr
+      .. py:class:: LeExpr
+      .. py:class:: LtExpr
+      .. py:class:: LtgtExpr
+      .. py:class:: NeExpr
+      .. py:class:: OrderedExpr
+      .. py:class:: UneqExpr
+      .. py:class:: UngeExpr
+      .. py:class:: UngtExpr
+      .. py:class:: UnleExpr
+      .. py:class:: UnltExpr
+      .. py:class:: UnorderedExpr
+      =====================================  ======================
+
+
+References to storage
+---------------------
+
+.. py:class:: gcc.Reference
+
+   A subclass of `gcc.Tree` for expressions involving a reference to storage.
+
+   Corresponds to the `tcc_reference` value of `enum tree_code_class` within
+   GCC's own C sources.
+
+   .. py:attribute:: location
+
+      The :py:class:`gcc.Location` for this storage reference
+
+   Subclasses include:
+
+      =====================================  ======================
+      Subclass                               C/C++ operators
+      =====================================  ======================
+      .. py:class:: ArrayRangeRef
+      .. py:class:: ArrayRef
+      .. py:class:: AttrAddrExpr
+      .. py:class:: BitFieldRef
+      .. py:class:: ComponentRef
+      .. py:class:: ImagpartExpr
+      .. py:class:: IndirectRef
+      .. py:class:: MemRef
+      .. py:class:: MemberRef
+      .. py:class:: OffsetRef
+      .. py:class:: RealpartExpr
+      .. py:class:: ScopeRef
+      .. py:class:: TargetMemRef
+      .. py:class:: UnconstrainedArrayRef
+      .. py:class:: ViewConvertExpr
+      =====================================  ======================
+
+
 Other expression subclasses
 ---------------------------
 
 .. py:class:: gcc.Expression
 
-   A subclass of `gcc.Tree` indicating an expression.
+   A subclass of `gcc.Tree` indicating an expression that doesn't fix into the
+   other categories.
 
    Corresponds to the `tcc_expression` value of `enum tree_code_class` within
    GCC's own C sources.
+
+   .. py:attribute:: location
+
+      The :py:class:`gcc.Location` for this expression
 
    Subclasses include:
 
