@@ -43,7 +43,7 @@ def invoke_dot(dot):
               stdin=PIPE)
     p.communicate(dot.encode('ascii'))
 
-    p = Popen(['eog', 'test.png'])
+    p = Popen(['xdg-open', 'test.png'])
     p.communicate()
 
 def pprint(obj):
