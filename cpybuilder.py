@@ -28,10 +28,34 @@ def nullable_ptr(ptr):
     else:
         return 'NULL'
 
+def simple_unaryfunc(identifier, typename, c_expression):
+    """Define a simple unaryfunc, using a specifc PyObject subclass"""
+    self.add_defn("static PyObject *\n" +
+                  "%s(%s *self)\n" % (identifier, typename) +
+                  "{\n" +
+                  "    return %s;\n" % c_expression +
+                  "}\n\n")
+    return identifier
+
+
 class NamedEntity:
     """A thing within C code that has an identifier"""
     def __init__(self, identifier):
         self.identifier = identifier
+
+    def c_ptr_field(self, name, cast=None):
+        if hasattr(self, name):
+            val = getattr(self, name)
+        else:
+            val = None
+        if cast:
+            caststr = '(%s)' % cast
+        else:
+            caststr = ''
+        return '    %s%s, /* %s */\n' % (caststr, nullable_ptr(val), name)
+
+    def unaryfunc_field(self, name):
+        return self.c_ptr_field(name, 'unaryfunc')
 
 class PyGetSetDef:
     def __init__(self, name, get, set, doc, closure=None):
@@ -64,8 +88,8 @@ class PyGetSetDefTable(NamedEntity):
         result += '};\n'
         return result
 
-    def add_gsdef(self, name, get, set, doc, closure=None):
-        self.gsdefs.append(PyGetSetDef(name, get, set, doc, closure=None))
+    def add_gsdef(self, name, getter, setter, doc, closure=None):
+        self.gsdefs.append(PyGetSetDef(name, getter, setter, doc, closure=None))
 
     def add_simple_getter(self, cu, name, c_expression, doc):
         assert self.identifier_prefix
@@ -104,6 +128,58 @@ class PyMethodTable(NamedEntity):
     def add_method(self, name, fn_name, args, docstring):
         self.methods.append(PyMethodDef(name, fn_name, args, docstring))
 
+# See http://docs.python.org/c-api/typeobj.html#number-structs
+class PyNumberMethods(NamedEntity):
+    def __init__(self, identifier):
+        NamedEntity.__init__(self, identifier)
+
+    def c_defn(self):
+        result = 'static PyNumberMethods %s = {\n' % self.identifier
+        result += self.c_ptr_field('nb_add')
+        result += self.c_ptr_field('nb_subtract')
+        result += self.c_ptr_field('nb_multiply')
+        result += self.c_ptr_field('nb_divide')
+        result += self.c_ptr_field('nb_remainder')
+        result += self.c_ptr_field('nb_divmod')
+        result += self.c_ptr_field('nb_power')
+        result += self.unaryfunc_field('nb_negative')
+        result += self.unaryfunc_field('nb_positive')
+        result += self.unaryfunc_field('nb_absolute')
+        result += self.c_ptr_field('nb_nonzero')
+        result += self.unaryfunc_field('nb_invert')
+        result += self.c_ptr_field('nb_lshift')
+        result += self.c_ptr_field('nb_rshift')
+        result += self.c_ptr_field('nb_and')
+        result += self.c_ptr_field('nb_xor')
+        result += self.c_ptr_field('nb_or')
+        result += self.c_ptr_field('nb_coerce')
+        result += self.unaryfunc_field('nb_int')
+        result += self.unaryfunc_field('nb_long')
+        result += self.unaryfunc_field('nb_float')
+        result += self.unaryfunc_field('nb_oct')
+        result += self.unaryfunc_field('nb_hex')
+        result += self.c_ptr_field('nb_inplace_add')
+        result += self.c_ptr_field('nb_inplace_subtract')
+        result += self.c_ptr_field('nb_inplace_multiply')
+        result += self.c_ptr_field('nb_inplace_divide')
+        result += self.c_ptr_field('nb_inplace_remainder')
+        result += self.c_ptr_field('nb_inplace_power')
+        result += self.c_ptr_field('nb_inplace_lshift')
+        result += self.c_ptr_field('nb_inplace_rshift')
+        result += self.c_ptr_field('nb_inplace_and')
+        result += self.c_ptr_field('nb_inplace_xor')
+        result += self.c_ptr_field('nb_inplace_or')
+        result += self.c_ptr_field('nb_floor_divide')
+        result += self.c_ptr_field('nb_true_divide')
+        result += self.c_ptr_field('nb_inplace_floor_divide')
+        result += self.c_ptr_field('nb_inplace_true_divide')
+        result += self.unaryfunc_field('nb_index')
+        result += '};\n'
+        return result
+
+    def add_method(self, name, fn_name, args, docstring):
+        self.methods.append(PyMethodDef(name, fn_name, args, docstring))
+
 class PyTypeObject(NamedEntity):
     def __init__(self, identifier, localname, tp_name, struct_name, **kwargs):
         NamedEntity.__init__(self, identifier)
@@ -115,65 +191,58 @@ class PyTypeObject(NamedEntity):
             self.tp_new = 'PyType_GenericNew'
 
     def c_defn(self):
-        def c_ptr_field(name):
-            if hasattr(self, name):
-                val = getattr(self, name)
-            else:
-                val = None
-            return '    %s, /* %s */\n' % (nullable_ptr(val), name)
-
         result = '\n'
         result += 'PyTypeObject %(identifier)s = {\n' % self.__dict__
         result += '    PyVarObject_HEAD_INIT(0, 0)\n'
         result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
         result += '    0, /*tp_itemsize*/\n'
-        result += c_ptr_field('tp_dealloc')
-        result += c_ptr_field('tp_print')
-        result += c_ptr_field('tp_getattr')
-        result += c_ptr_field('tp_setattr')
+        result += self.c_ptr_field('tp_dealloc')
+        result += self.c_ptr_field('tp_print')
+        result += self.c_ptr_field('tp_getattr')
+        result += self.c_ptr_field('tp_setattr')
         result += '#if PY_MAJOR_VERSION < 3\n' % self.__dict__
         result += '    0, /*tp_compare*/\n' % self.__dict__
         result += '#else\n' % self.__dict__
         result += '    0, /*reserved*/\n' % self.__dict__
         result += '#endif\n' % self.__dict__
-        result += c_ptr_field('tp_repr')
-        result += c_ptr_field('tp_as_number')
-        result += c_ptr_field('tp_as_sequence')
-        result += c_ptr_field('tp_as_mapping')
-        result += c_ptr_field('tp_hash')
-        result += c_ptr_field('tp_call')
-        result += c_ptr_field('tp_str')
-        result += c_ptr_field('tp_getattro')
-        result += c_ptr_field('tp_setattro')
-        result += c_ptr_field('tp_as_buffer')
+        result += self.c_ptr_field('tp_repr')
+        result += self.c_ptr_field('tp_as_number')
+        result += self.c_ptr_field('tp_as_sequence')
+        result += self.c_ptr_field('tp_as_mapping')
+        result += self.c_ptr_field('tp_hash')
+        result += self.c_ptr_field('tp_call')
+        result += self.c_ptr_field('tp_str')
+        result += self.c_ptr_field('tp_getattro')
+        result += self.c_ptr_field('tp_setattro')
+        result += self.c_ptr_field('tp_as_buffer')
         result += '    Py_TPFLAGS_DEFAULT, /*tp_flags*/\n' % self.__dict__
         result += '    0, /*tp_doc*/\n'
-        result += c_ptr_field('tp_traverse')
-        result += c_ptr_field('tp_clear')
-        result += c_ptr_field('tp_richcompare')
+        result += self.c_ptr_field('tp_traverse')
+        result += self.c_ptr_field('tp_clear')
+        result += self.c_ptr_field('tp_richcompare')
         result += '    0, /* tp_weaklistoffset */\n'
-        result += c_ptr_field('tp_iter')
-        result += c_ptr_field('tp_iternext')
-        result += c_ptr_field('tp_methods')
-        result += c_ptr_field('tp_members')
-        result += c_ptr_field('tp_getset')
-        result += c_ptr_field('tp_base')
-        result += c_ptr_field('tp_dict')
-        result += c_ptr_field('tp_descr_get')
-        result += c_ptr_field('tp_descr_set')
+        result += self.c_ptr_field('tp_iter')
+        result += self.c_ptr_field('tp_iternext')
+        result += self.c_ptr_field('tp_methods')
+        result += self.c_ptr_field('tp_members')
+        result += self.c_ptr_field('tp_getset')
+        result += self.c_ptr_field('tp_base')
+        result += self.c_ptr_field('tp_dict')
+        result += self.c_ptr_field('tp_descr_get')
+        result += self.c_ptr_field('tp_descr_set')
         result += '    0, /* tp_dictoffset */\n'
-        result += c_ptr_field('tp_init')
-        result += c_ptr_field('tp_alloc')
-        result += c_ptr_field('tp_new')
-        result += c_ptr_field('tp_free')
-        result += c_ptr_field('tp_is_gc')
-        result += c_ptr_field('tp_bases')
-        result += c_ptr_field('tp_mro')
-        result += c_ptr_field('tp_cache')
-        result += c_ptr_field('tp_subclasses')
-        result += c_ptr_field('tp_weaklist')
-        result += c_ptr_field('tp_del')
+        result += self.c_ptr_field('tp_init')
+        result += self.c_ptr_field('tp_alloc')
+        result += self.c_ptr_field('tp_new')
+        result += self.c_ptr_field('tp_free')
+        result += self.c_ptr_field('tp_is_gc')
+        result += self.c_ptr_field('tp_bases')
+        result += self.c_ptr_field('tp_mro')
+        result += self.c_ptr_field('tp_cache')
+        result += self.c_ptr_field('tp_subclasses')
+        result += self.c_ptr_field('tp_weaklist')
+        result += self.c_ptr_field('tp_del')
         result += '#if PY_VERSION_HEX >= 0x02060000\n' % self.__dict__
         result += '    0, /*tp_version_tag*/\n' % self.__dict__
         result += '#endif\n' % self.__dict__

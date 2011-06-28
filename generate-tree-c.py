@@ -289,6 +289,8 @@ def generate_tree_code_classes():
 
         getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [])
 
+        tp_as_number = None
+
         def get_getter_identifier(name):
             return 'gcc_%s_get_%s' % (cc, name)
 
@@ -321,6 +323,10 @@ def generate_tree_code_classes():
                                   'gcc_IntegerConstant_get_constant',
                                   None,
                                   'The actual value of this constant, as an int/long')
+            number_methods = PyNumberMethods('gcc_IntegerConstant_number_methods')
+            tp_as_number = number_methods.identifier
+            number_methods.nb_int = 'gcc_IntegerConstant_get_constant'
+            cu.add_defn(number_methods.c_defn())
 
         # TYPE_QUALS for various foo_TYPE classes:
         if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
@@ -445,6 +451,8 @@ def generate_tree_code_classes():
                               tp_base = '&%s' % base_type,
                               tp_getset = getsettable.identifier,
                               )
+        if tp_as_number:
+            pytype.tp_as_number = '&%s' % tp_as_number
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
         modinit_postinit += pytype.c_invoke_add_to_module()
