@@ -298,7 +298,7 @@ gcc_python_permerror(PyObject *self, PyObject *args)
     }
 
     /* Invoke the GCC function: */
-    result_b = permerror(loc->loc, msgid);
+    result_b = permerror(loc->loc, "%s", msgid);
 
     result_obj = PyBool_FromLong(result_b);
 
