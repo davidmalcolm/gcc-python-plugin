@@ -245,19 +245,18 @@ correct_usage(PyObject *self, PyObject *args)
                 '  argument %(argindex)i ("&val") had type\n'
                 '    "void * *"\n'
                 '  but was expecting\n'
-                '    "%(exptypename)s *"')
+                '    %(exptypename)s')
         # we stop there, to avoid spelling out the various possible
         #    (pointing to N bits)
         # variants of the message
 
     def _test_format_code(self, code, typenames, exptypenames=None):
-        if not exptypenames:
-            exptypenames = typenames
-
         if isinstance(typenames, str):
             typenames = [typenames]
         if isinstance(exptypenames, str):
             exptypenames = [exptypenames]
+        if not exptypenames:
+            exptypenames = ['"%s *"'%t for t in typenames]
 
         def _test_correct_usage_of_format_code(self, code, typenames):
             src = self.make_src_for_correct_function(code, typenames)
@@ -311,10 +310,14 @@ correct_usage(PyObject *self, PyObject *args)
     #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_es(self):
-        self._test_format_code('es', ['const char', 'char *'])
+        self._test_format_code('es',
+          ['const char', 'char *'],
+          ['one of "const char *" (pointing to 8 bits) or NULL', '"char *"'])
 
     def test_format_code_et(self):
-        self._test_format_code('et', ['const char', 'char *'])
+        self._test_format_code('et',
+          ['const char', 'char *'],
+          ['one of "const char *" (pointing to 8 bits) or NULL', '"char * *"'])
 
     # "es#" and "et#" are affected by the PY_SSIZE_T_CLEAN macro; we test them
     # within:
@@ -328,10 +331,12 @@ correct_usage(PyObject *self, PyObject *args)
         self._test_format_code('B', 'unsigned char')
 
     def test_format_code_h(self):
-        self._test_format_code('h', 'short', 'short int')
+        self._test_format_code('h', 'short',
+                               '"short int *"')
 
     def test_format_code_H(self):
-        self._test_format_code('H', 'unsigned short', 'short unsigned int')
+        self._test_format_code('H', 'unsigned short',
+                               '"short unsigned int *"')
 
     def test_format_code_i(self):
         self._test_format_code('i', 'int')
@@ -340,16 +345,20 @@ correct_usage(PyObject *self, PyObject *args)
         self._test_format_code('I', 'unsigned int')
 
     def test_format_code_l(self):
-        self._test_format_code('l', 'long', 'long int')
+        self._test_format_code('l', 'long',
+                               '"long int *"')
 
     def test_format_code_k(self):
-        self._test_format_code('k', 'unsigned long', 'long unsigned int')
+        self._test_format_code('k', 'unsigned long',
+                               '"long unsigned int *"')
 
     def test_format_code_L(self):
-        self._test_format_code('L', 'PY_LONG_LONG', 'long long int')
+        self._test_format_code('L', 'PY_LONG_LONG',
+                               '"long long int *"')
 
     def test_format_code_K(self):
-        self._test_format_code('K', 'unsigned PY_LONG_LONG', 'long long unsigned int')
+        self._test_format_code('K', 'unsigned PY_LONG_LONG',
+                               '"long long unsigned int *"')
 
     def test_format_code_n(self):
         self._test_format_code('n', 'Py_ssize_t')

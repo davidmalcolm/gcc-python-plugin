@@ -70,8 +70,12 @@ def get_hash_size_type(with_size_t):
     else:
         return gcc.Type.int()
 
+class NullPointer:
+    # Dummy value, for pointer arguments that can legitimately be NULL
+    def describe(self):
+        return 'NULL'
+
 # Helper functions for looking up various CPython implementation types.
-# Unfortunately, these are all typedefs, and I'm not able to get at these yet.
 def get_Py_buffer():
     return get_global_typedef('Py_buffer')
 
@@ -173,6 +177,9 @@ class ConcreteUnit(FormatUnit):
 
     def get_expected_types(self):
         return self.expected_types
+
+    def __repr__(self):
+        return 'ConcreteUnit(%r,%r)' % (self.code, self.expected_types)
 
 
 # Handle the "O&" format code
@@ -332,7 +339,7 @@ class PyArgParseFmt:
             elif c == 'e':
                 if next in ['s', 't']:
                     arg = ConcreteUnit('e' + next,
-                                       [get_const_char_ptr(),
+                                       [(get_const_char_ptr(), NullPointer()),
                                         gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
@@ -416,8 +423,10 @@ def describe_precision(t):
 def describe_type(t):
     if isinstance(t, AwkwardType):
         return t.describe()
+    if isinstance(t, NullPointer):
+        return t.describe()
     if isinstance(t, tuple):
-        result = 'one of ' + ' or '.join(['"%s"' % tp for tp in t])
+        result = 'one of ' + ' or '.join([describe_type(tp) for tp in t])
     else:
         # Special-case handling of function types, to avoid embedding the ID:
         #   c.f. void (*<T792>) (void)
@@ -493,15 +502,16 @@ class MismatchingType(ParsedFormatStringError):
         return ('Mismatching type in call to %s with format code "%s"'
                 % (self.funcname, self.fmt.fmt_string))
 
-def compatible_type(exp_type, actual_type):
+def compatible_type(exp_type, actual_type, actualarg=None):
     log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
     log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
+    log('actualarg: %s (%r)' % (actualarg, actualarg))
 
     # Support exp_type being actually a tuple of expected types (we need this
     # for "S" and "U"):
     if isinstance(exp_type, tuple):
         for exp in exp_type:
-            if compatible_type(exp, actual_type):
+            if compatible_type(exp, actual_type, actualarg):
                 return True
         # Didn't match any of them:
         return False
@@ -509,6 +519,18 @@ def compatible_type(exp_type, actual_type):
     # Support the "O&" converter code:
     if isinstance(exp_type, AwkwardType):
         return exp_type.is_compatible(actual_type)
+
+    # Support the codes that can accept NULL:
+    if isinstance(exp_type, NullPointer):
+        if isinstance(actual_type, gcc.PointerType):
+            if isinstance(actual_type.dereference, gcc.VoidType):
+                # We have a (void*), double-check that it's actually NULL:
+                if actualarg:
+                    if isinstance(actualarg, gcc.IntegerCst):
+                        if actualarg.constant == 0:
+                            # We have NULL:
+                            return True
+        return False
 
     assert isinstance(exp_type, gcc.Type) or isinstance(exp_type, gcc.TypeDecl)
     assert isinstance(actual_type, gcc.Type) or isinstance(actual_type, gcc.TypeDecl)
@@ -640,7 +662,7 @@ def check_pyargs(fun):
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
-                    if not compatible_type(exp_type, vararg.type):
+                    if not compatible_type(exp_type, vararg.type, actualarg=vararg):
                         err = MismatchingType(funcname, fmt,
                                               index + varargs_idx + 1,
                                               exp_arg.code, exp_type, vararg)
