@@ -36,7 +36,7 @@ def my_pass_execution_callback(*args, **kwargs):
             print 'fun.cfg.entry.succs: %r' % fun.cfg.entry.succs
             print 'fun.cfg.exit.preds: %r' % fun.cfg.exit.preds
             
-            dot = cfg_to_dot(fun.cfg)
+            dot = cfg_to_dot(fun.cfg, fun.decl.name)
             print dot
             invoke_dot(dot)
 

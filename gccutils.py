@@ -258,8 +258,10 @@ except ImportError:
 
 class CfgPrettyPrinter(DotPrettyPrinter):
     # Generate graphviz source for this gcc.Cfg instance, as a string
-    def __init__(self, cfg):
+    def __init__(self, cfg, name=None):
         self.cfg = cfg
+        if name:
+            self.name = name
 
     def block_id(self, b):
         if b is self.cfg.entry:
@@ -313,7 +315,7 @@ class CfgPrettyPrinter(DotPrettyPrinter):
         # For now, paint assignments to (PyObject*) vars and to ob_refcnt
         # fields, to highlight the areas needing tracking:
         # print 'stmt: %s' % stmt
-        if hasattr(stmt, 'lhs'):
+        if 0: # hasattr(stmt, 'lhs'):
             # print 'stmt.lhs: %s' % stmt.lhs
             # print 'stmt.lhs: %r' % stmt.lhs
             if stmt.lhs:
@@ -352,9 +354,19 @@ class CfgPrettyPrinter(DotPrettyPrinter):
         return ('   %s -> %s %s;\n'
                 % (self.block_id(e.src), self.block_id(e.dest), attrliststr))
 
+    def extra_items(self):
+        # Hook for expansion
+        return ''
+
     def to_dot(self):
-        result = 'digraph G {\n'
-        result += '  node [shape=record];\n'
+        if hasattr(self, 'name'):
+            name = self.name
+        else:
+            name = 'G'
+        result = 'digraph %s {\n' % name
+        result += ' subgraph cluster_cfg {\n'
+        #result += '  label="CFG";\n'
+        result += '  node [shape=box];\n'
         for block in self.cfg.basic_blocks:
 
             result += ('  %s [label=<%s>];\n'
@@ -365,7 +377,10 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             # FIXME: this will have duplicates:
             #for edge in block.preds:
             #    result += edge_to_dot(edge)
+        result += ' }\n'
 
+        # Potentially add extra material:
+        result += self.extra_items()
         result += '}\n'
         return result
 
@@ -439,8 +454,8 @@ class TreePrettyPrinter(DotPrettyPrinter):
         result += '}\n'
         return result
 
-def cfg_to_dot(cfg):
-    pp = CfgPrettyPrinter(cfg)
+def cfg_to_dot(name, cfg):
+    pp = CfgPrettyPrinter(name, cfg)
     return pp.to_dot()
 
 
