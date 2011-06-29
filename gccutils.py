@@ -272,13 +272,13 @@ class CfgPrettyPrinter(DotPrettyPrinter):
         # FIXME: font setting appears to work on my machine, but I invented
         # the attribute value; it may be exercising a failure path
         result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
-        result += '<tr> <td>BLOCK %i</td> <td></td> </tr>' % bb.index
+        result += '<tr> <td>BLOCK %i</td> <td></td> </tr>\n' % bb.index
         curloc = None
         if isinstance(bb.phi_nodes, list):
-            for phi in bb.phi_nodes:
-                result += '<tr><td></td>' + self.stmt_to_html(phi) + '</tr>'
+            for stmtidx, phi in enumerate(bb.phi_nodes):
+                result += '<tr><td></td>' + self.stmt_to_html(phi, stmtidx) + '</tr>\n'
         if isinstance(bb.gimple, list) and bb.gimple != []:
-            for stmt in bb.gimple:
+            for stmtidx, stmt in enumerate(bb.gimple):
                 if curloc != stmt.loc:
                     curloc = stmt.loc
                     code = get_src_for_loc(stmt.loc).rstrip()
@@ -291,7 +291,7 @@ class CfgPrettyPrinter(DotPrettyPrinter):
                                + (' ' * (5 + stmt.loc.column-1)) + '^'
                                + '</td></tr>')
                     
-                result += '<tr><td></td>' + self.stmt_to_html(stmt) + '</tr>'
+                result += '<tr><td></td>' + self.stmt_to_html(stmt, stmtidx) + '</tr>\n'
         else:
             # (prevent graphviz syntax error for empty blocks):
             result += self._dot_tr(self.block_id(bb))
@@ -304,7 +304,7 @@ class CfgPrettyPrinter(DotPrettyPrinter):
         else:
             return self.to_html(code)
 
-    def stmt_to_html(self, stmt):
+    def stmt_to_html(self, stmt, stmtidx):
         text = str(stmt).strip()
         text = self.to_html(text)
         bgcolor = None
@@ -334,7 +334,7 @@ class CfgPrettyPrinter(DotPrettyPrinter):
                     if stmt.lhs.field.name == 'ob_refcnt':
                         bgcolor = 'blue'
 
-        return self._dot_td(text, escape=0, bgcolor=bgcolor)
+        return self._dot_td(text, escape=0, bgcolor=bgcolor, port='stmt%i' % stmtidx)
 
     def edge_to_dot(self, e):
         if e.true_value:
