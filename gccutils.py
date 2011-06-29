@@ -164,6 +164,8 @@ class DotPrettyPrinter(PrettyPrinter):
             # 'dot' doesn't seem to like these:
             '{': '\\{',
             '}': '\\}',
+
+            ']': '&#93;',
           }
         return "".join(html_escape_table.get(c,c) for c in str(text))
 
@@ -179,6 +181,63 @@ class DotPrettyPrinter(PrettyPrinter):
     def _dot_tr(self, td_text):
         return ('<tr>%s</tr>\n' % self._dot_td(td_text))
 
+try:
+    from pygments.formatter import Formatter
+    from pygments.token import Token
+    from pygments.styles import get_style_by_name
+
+    class GraphvizHtmlFormatter(Formatter, DotPrettyPrinter):
+        """
+        A pygments Formatter to turn source code fragments into graphviz's
+        pseudo-HTML format.
+        """
+        def __init__(self, style):
+            Formatter.__init__(self)
+            self.style = style
+
+        def color_for_token(self, token):
+            return self.style.styles[token]
+
+        def format_unencoded(self, tokensource, outfile):
+            from pprint import pprint
+            for t, piece in tokensource:
+                # graphviz seems to choke on font elements with no inner text:
+                if piece == '':
+                    continue
+
+                # pygments seems to add this:
+                if piece == '\n':
+                    continue
+
+                # avoid croaking on '\n':
+                if t == Token.Literal.String.Escape:
+                    continue
+
+                color = self.color_for_token(t)
+                if 0:
+                    print ('color: %r' % color)
+
+                # Avoid empty color="" values:
+                if color:
+                    outfile.write('<font color="%s">' % color
+                                  + self.to_html(piece)
+                                  + '</font>')
+                else:
+                    outfile.write(self.to_html(piece))
+
+    from pygments import highlight
+    from pygments.lexers import CLexer
+    from pygments.formatters import HtmlFormatter
+
+    def code_to_graphviz_html(code):
+        style = get_style_by_name('default')
+        return highlight(code,
+                         CLexer(), # FIXME
+                         GraphvizHtmlFormatter(style))
+
+    using_pygments = True
+except ImportError:
+    using_pygments = False
 
 class CfgPrettyPrinter(DotPrettyPrinter):
     # Generate graphviz source for this gcc.Cfg instance, as a string
@@ -205,9 +264,14 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             for stmt in bb.gimple:
                 if curloc != stmt.loc:
                     curloc = stmt.loc
-                    result += ('<tr><td>' + self.to_html(get_src_for_loc(stmt.loc))
+                    code = get_src_for_loc(stmt.loc).rstrip()
+                    pseudohtml = self.code_to_html(code)
+                    # print('pseudohtml: %r' % pseudohtml)
+                    result += ('<tr><td align="left">'
+                               + self.to_html('%4i ' % stmt.loc.line)
+                               + pseudohtml
                                + '<br/>'
-                               + (' ' * (stmt.loc.column-1)) + '^'
+                               + (' ' * (5 + stmt.loc.column-1)) + '^'
                                + '</td></tr>')
                     
                 result += '<tr><td></td>' + self.stmt_to_html(stmt) + '</tr>'
@@ -216,6 +280,12 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             result += self._dot_tr(self.block_id(bb))
         result += '</table></font>\n'
         return result
+
+    def code_to_html(self, code):
+        if using_pygments:
+            return code_to_graphviz_html(code)
+        else:
+            return self.to_html(code)
 
     def stmt_to_html(self, stmt):
         text = str(stmt).strip()
