@@ -232,7 +232,7 @@ class PyTypeObject(NamedEntity):
         result += self.c_ptr_field('tp_descr_get')
         result += self.c_ptr_field('tp_descr_set')
         result += '    0, /* tp_dictoffset */\n'
-        result += self.c_ptr_field('tp_init')
+        result += self.c_ptr_field('tp_init', 'initproc')
         result += self.c_ptr_field('tp_alloc')
         result += self.c_ptr_field('tp_new')
         result += self.c_ptr_field('tp_free')

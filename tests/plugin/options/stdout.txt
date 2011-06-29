@@ -1,0 +1,66 @@
+Help on class Option in module gcc:
+
+class Option(__builtin__.object)
+ |  Methods defined here:
+ |  
+ |  __init__(...)
+ |      x.__init__(...) initializes x; see help(type(x)) for signature
+ |  
+ |  __repr__(...)
+ |      x.__repr__() <==> repr(x)
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  help
+ |      (string) The help text shown for this option
+ |  
+ |  is_driver
+ |      (bool) Is this a driver option?
+ |  
+ |  is_optimization
+ |      (bool) Does this option control an optimization?
+ |  
+ |  is_target
+ |      (bool) Is this a target-specific option?
+ |  
+ |  is_warning
+ |      (bool) Does this option control a warning message?
+ |  
+ |  text
+ |      (string) The command-line text used to set this option
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  __new__ = <built-in method __new__ of type object>
+ |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+
+gcc.Option('-funroll-loops')
+    option.text: '-funroll-loops'
+    option.help: 'Perform loop unrolling when iteration count is known'
+    option.is_warning: False
+    option.is_optimization: True
+    option.is_driver: False
+    option.is_target: False
+gcc.Option('-fjump-tables')
+    option.text: '-fjump-tables'
+    option.help: 'Use jump tables for sufficiently large switch statements'
+    option.is_warning: False
+    option.is_optimization: True
+    option.is_driver: False
+    option.is_target: False
+gcc.Option('-Os')
+    option.text: '-Os'
+    option.help: 'Optimize for space rather than speed'
+    option.is_warning: False
+    option.is_optimization: True
+    option.is_driver: False
+    option.is_target: False
+gcc.Option('-Wuninitialized')
+    option.text: '-Wuninitialized'
+    option.help: 'Warn about uninitialized automatic variables'
+    option.is_warning: True
+    option.is_optimization: False
+    option.is_driver: False
+    option.is_target: False

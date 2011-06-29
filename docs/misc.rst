@@ -7,5 +7,6 @@ scripts.
 
 .. toctree::
 
+   options.rst
    parameters.rst
 
