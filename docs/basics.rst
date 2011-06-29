@@ -354,6 +354,41 @@ classes, but these don't do anything different yet at the Python level.
 Generating custom errors and warnings
 =====================================
 
+.. py:function:: gcc.warning(location, option, message)
+
+   Emits a compiler warning at the given :py:class:`gcc.Location`.
+
+   The warning is controlled by the given :py:class:`gcc.Option`.
+
+   For example, this Python code::
+
+      gcc.warning(func.start, gcc.Option('-Wformat'), 'Incorrect formatting')
+
+   could lead to this warning being printed:
+
+   .. code-block:: bash
+
+     input.c:25:1: warning: incorrect formatting [-Wformat]
+
+   depending on the state of the `-Wformat` command-line option.
+
+   Returns a boolean, indicating whether or not the warning was actually
+   printed.
+
+.. py:function:: gcc.error(location, message)
+
+   Emits a compiler error at the given :py:class:`gcc.Location`.
+
+   For example::
+
+      gcc.error(func.start, 'something bad was detected')
+
+   would lead to this error being printed:
+
+   .. code-block:: bash
+
+     input.c:25:1: error: something bad was detected
+
 .. py:function:: gcc.permerror(loc, str)
 
    This is a wrapper around GCC's `permerror` function.

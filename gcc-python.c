@@ -281,10 +281,25 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_RETURN_NONE;
 }
 
+/*
+  I initially attempted to directly wrap gcc's:
+    diagnostic_report_diagnostic()
+  given that that seems to be the abstraction within gcc/diagnostic.h: all
+  instances of (struct diagnostic_info) within the gcc source tree seem to
+  be allocated on the stack, within functions exposed in gcc/diagnostic.h
+
+  However, diagnostic_report_diagnostic() ultimately calls into the
+  pretty-printing routines, trying to format varargs, which doesn't make much
+  sense for us: we have first-class string objects and string formatting at
+  the python level.
+
+  Thus we instead just wrap "error_at" and its analogs
+*/
+
 static PyObject*
 gcc_python_permerror(PyObject *self, PyObject *args)
 {
-    PyGccLocation *loc = NULL;
+    PyGccLocation *loc_obj = NULL;
     char *msgid = NULL;
     PyObject *result_obj = NULL;
     bool result_b;
@@ -293,17 +308,63 @@ gcc_python_permerror(PyObject *self, PyObject *args)
 			  "O!"
 			  "s"
 			  ":permerror",
-			  &gcc_LocationType, &loc, 
+			  &gcc_LocationType, &loc_obj,
 			  &msgid)) {
         return NULL;
     }
 
     /* Invoke the GCC function: */
-    result_b = permerror(loc->loc, "%s", msgid);
+    result_b = permerror(loc_obj->loc, "%s", msgid);
 
     result_obj = PyBool_FromLong(result_b);
 
     return result_obj;
+}
+
+static PyObject *
+gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyGccLocation *loc_obj;
+    const char *msg;
+    char *keywords[] = {"location",
+                        "message",
+                        NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!s:error", keywords,
+                                     &gcc_LocationType, &loc_obj,
+                                     &msg)) {
+        return NULL;
+    }
+
+    error_at(loc_obj->loc, "%s", msg);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyGccLocation *loc_obj;
+    PyGccOption *opt_obj;
+    const char *msg;
+    char *keywords[] = {"location",
+                        "option",
+                        "message",
+                        NULL};
+    bool was_reported;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!O!s:warning", keywords,
+                                     &gcc_LocationType, &loc_obj,
+                                     &gcc_OptionType, &opt_obj,
+                                     &msg)) {
+        return NULL;
+    }
+
+    was_reported = warning_at(loc_obj->loc, opt_obj->opt_code, "%s", msg);
+
+    return PyBool_FromLong(was_reported);
 }
 
 static PyObject *
@@ -454,8 +515,19 @@ static PyMethodDef GccMethods[] = {
      (METH_VARARGS | METH_KEYWORDS),
      "Register a callback, to be called when various GCC events occur."},
 
+    /* Diagnostics: */
     {"permerror", gcc_python_permerror, METH_VARARGS,
      NULL},
+    {"error",
+     (PyCFunction)gcc_python_error,
+     (METH_VARARGS | METH_KEYWORDS),
+     ("Report an error\n"
+      "FIXME\n")},
+    {"warning",
+     (PyCFunction)gcc_python_warning,
+     (METH_VARARGS | METH_KEYWORDS),
+     ("Report a warning\n"
+      "FIXME\n")},
 
     /* Options: */
     {"get_option_list",

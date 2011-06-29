@@ -1,0 +1,6 @@
+tests/plugin/diagnostics/input.c: In function ‘main’:
+tests/plugin/diagnostics/input.c:23:1: error: this is an error (with positional args)
+tests/plugin/diagnostics/input.c:23:1: error: this is an error (with keyword args)
+tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with positional args) [-Wformat]
+tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with keyword args) [-Wdiv-by-zero]
+tests/plugin/diagnostics/input.c:23:1: error: a warning with some embedded format strings %s and %i
