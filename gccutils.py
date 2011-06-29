@@ -176,19 +176,22 @@ class DotPrettyPrinter(PrettyPrinter):
             "<": "&lt;",
             
             # 'dot' doesn't seem to like these:
-            '{': '\\{',
-            '}': '\\}',
+            '{': '&#123;',
+            '}': '&#125;',
 
             ']': '&#93;',
           }
         return "".join(html_escape_table.get(c,c) for c in str(text))
 
-    def _dot_td(self, text, align="left", colspan=1, escape=1, bgcolor=None):
+    def _dot_td(self, text, align="left", colspan=1, escape=1, bgcolor=None,
+                port=None):
         if escape:
             text = self.to_html(text)
         attribs = 'align="%s" colspan="%i"' % (align, colspan)
         if bgcolor:
             attribs += ' bgcolor="%s"' % bgcolor
+        if port:
+            attribs += ' port="%s"' % port
         return ('<td %s>%s</td>'
                 % (attribs, text))
 
