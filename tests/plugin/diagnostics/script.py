@@ -24,13 +24,18 @@ def on_pass_execution(p, fn):
         gcc.error(fn.start, 'this is an error (with positional args)')
         gcc.error(location=fn.start,
                   message='this is an error (with keyword args)')
-        gcc.warning(fn.end, gcc.Option('-Wformat'), 'this is a warning (with positional args)')
+        gcc.warning(fn.end, gcc.Option('-Wdiv-by-zero'), 'this is a warning (with positional args)')
         gcc.warning(location=fn.end,
                     message='this is a warning (with keyword args)',
                     option=gcc.Option('-Wdiv-by-zero'))
         gcc.error(fn.start,
                   # These should be passed through, without triggering errors:
                   'a warning with some embedded format strings %s and %i')
+
+        # Verify that -Wno-format was honored:
+        gcc.warning(fn.end,
+                    gcc.Option('-Wformat'),
+                    'this warning ought not to appear')
 
 # Wire up our callback:
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,

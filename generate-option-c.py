@@ -59,6 +59,12 @@ def generate_option():
                           'PyBool_FromLong(gcc_python_option_to_cl_option(self)->flags & %s)' % flag,
                           helptext)
 
+    getsettable.add_gsdef('is_enabled',
+                          'gcc_Option_is_enabled',
+                          None,
+                          'True/False for whether or not this option is enabled, raising a '
+                          'NotImplementedError for options for which the plugin cannot tell')
+
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyTypeObject(identifier = 'gcc_OptionType',

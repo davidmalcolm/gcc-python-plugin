@@ -26,6 +26,22 @@ GCC's command-line options are visible from Python scripts as instances of
       (string) The help text for this option (e.g. "Warn about uninitialized
       automatic variables")
 
+   .. py:attribute:: is_enabled
+
+      (bool) Is this option enabled?
+
+      .. note:: Unfortunately, for many options, the internal implementation
+         makes it difficult to extract this.  The plugin will raise a
+	 `NotImplementedError` exception when querying this attribute for such
+	 an option.
+
+	 Calling :py:meth:`gcc.warning` with such an option will lead to GCC's
+	 warning machinery treating the option as enabled and emitting a
+	 warning, regardless of whether or not the option was actually enabled.
+
+	 It appears that this must be fixed on an option-by-option basis within
+	 the plugin.
+
    .. py:attribute:: is_driver
 
       (bool) Is this a driver option?

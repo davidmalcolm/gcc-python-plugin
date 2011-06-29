@@ -18,6 +18,9 @@ class Option(__builtin__.object)
  |  is_driver
  |      (bool) Is this a driver option?
  |  
+ |  is_enabled
+ |      True/False for whether or not this option is enabled, raising a NotImplementedError for options for which the plugin cannot tell
+ |  
  |  is_optimization
  |      (bool) Does this option control an optimization?
  |  
@@ -39,6 +42,7 @@ class Option(__builtin__.object)
 gcc.Option('-funroll-loops')
     option.text: '-funroll-loops'
     option.help: 'Perform loop unrolling when iteration count is known'
+    option.is_enabled: False
     option.is_warning: False
     option.is_optimization: True
     option.is_driver: False
@@ -46,13 +50,7 @@ gcc.Option('-funroll-loops')
 gcc.Option('-fjump-tables')
     option.text: '-fjump-tables'
     option.help: 'Use jump tables for sufficiently large switch statements'
-    option.is_warning: False
-    option.is_optimization: True
-    option.is_driver: False
-    option.is_target: False
-gcc.Option('-Os')
-    option.text: '-Os'
-    option.help: 'Optimize for space rather than speed'
+    option.is_enabled: True
     option.is_warning: False
     option.is_optimization: True
     option.is_driver: False
@@ -60,6 +58,15 @@ gcc.Option('-Os')
 gcc.Option('-Wuninitialized')
     option.text: '-Wuninitialized'
     option.help: 'Warn about uninitialized automatic variables'
+    option.is_enabled: True
+    option.is_warning: True
+    option.is_optimization: False
+    option.is_driver: False
+    option.is_target: False
+gcc.Option('-Wformat')
+    option.text: '-Wformat'
+    option.help: 'Warn about printf/scanf/strftime/strfmon format string anomalies'
+    option.is_enabled: False
     option.is_warning: True
     option.is_optimization: False
     option.is_driver: False

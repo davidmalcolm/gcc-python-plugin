@@ -20,6 +20,9 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "c-common.h" /* for warn_format */
+#include "diagnostic.h"
+
 
 /*
   Wrapper for GCC's opts.h
@@ -68,6 +71,70 @@ gcc_Option_repr(PyGccOption * self)
 {
     return gcc_python_string_from_format("gcc.Option('%s')",
                                          gcc_python_option_to_cl_option(self)->opt_text);
+}
+
+int gcc_python_option_is_enabled(enum opt_code opt_code)
+{
+    /* Returns 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
+       or -1 if it isn't a simple on-off switch.  */
+    int i = option_enabled (opt_code, global_dc->option_state);
+    if (i == 1) {
+        return 1;
+    }
+    if (i == 0) {
+        return 0;
+    }
+
+    /* -1: we don't know */
+    /*
+      Ugly workaround to allow disabling warnings.
+
+      For many options, it doesn't seem to be possible to disable them
+      directly.
+
+      Specifically a cl_option with o.flag_var_offset == -1 will return NULL
+      from option_flag_var()
+
+      For these options, option_enabled() will return -1 signifying that "it
+      isn't a simple on-off switch".
+
+      diagnostic_report_diagnostic() uses
+         if (!option_enabled(...))
+            return false
+      to suppress disabled warnings.
+
+      However, -1 is true for the purpose of this test.
+
+      For GCC's own uses of the options, they are typically guarded by an
+      additional test.  For example, "-Wformat" sets "warn_format", and this
+      guards the formatting tests.
+     */
+    switch (opt_code) {
+    default:
+        /*  We don't know: */
+        return -1;
+
+    case OPT_Wformat:
+        return warn_format;
+    }
+}
+
+PyObject *
+gcc_Option_is_enabled(PyGccOption * self, void *closure)
+{
+    int i = gcc_python_option_is_enabled(self->opt_code);
+
+    if (i == 1) {
+        return PyBool_FromLong(1);
+    }
+    if (i == 0) {
+        return PyBool_FromLong(0);
+    }
+
+    PyErr_Format(PyExc_NotImplementedError,
+                 "The plugin does not know how to determine if gcc.Format('%s') is implemented",
+                 gcc_python_option_to_cl_option(self)->opt_text);
+    return NULL;
 }
 
 const struct cl_option*

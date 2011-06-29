@@ -362,6 +362,11 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
+    /* Ugly workaround; see this function: */
+    if (0 == gcc_python_option_is_enabled(opt_obj->opt_code)) {
+        return PyBool_FromLong(0);
+    }
+
     was_reported = warning_at(loc_obj->loc, opt_obj->opt_code, "%s", msg);
 
     return PyBool_FromLong(was_reported);

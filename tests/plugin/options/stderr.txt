@@ -1,4 +1,4 @@
 Traceback (most recent call last):
-  File "tests/plugin/options/script.py", line 56, in <module>
+  File "tests/plugin/options/script.py", line 59, in <module>
     option = gcc.Option('-foptimize-for-web-scale')
 ValueError: Could not find command line argument with text '-foptimize-for-web-scale'

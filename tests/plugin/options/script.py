@@ -25,6 +25,7 @@ def print_option(option):
     print(option)
     for attr in ('text',
                  'help',
+                 'is_enabled',
                  'is_warning',
                  'is_optimization',
                  'is_driver',
@@ -48,7 +49,9 @@ for i, option in enumerate(options):
 # Test gcc.get_option_dict():
 options = gcc.get_option_dict()
 assert isinstance(options, dict)
-for optname in ('-fjump-tables', '-Os', '-Wuninitialized'):
+
+# Verify various options, including one we disabled (-Wformat):
+for optname in ('-fjump-tables', '-Wuninitialized', '-Wformat'):
     option = options[optname]
     print_option(option)
 

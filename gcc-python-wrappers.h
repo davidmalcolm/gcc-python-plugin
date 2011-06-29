@@ -93,6 +93,8 @@ PyObject *
 gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure);
 
 /* gcc-python-option.c: */
+int gcc_python_option_is_enabled(enum opt_code opt_code);
+
 const struct cl_option*
 gcc_python_option_to_cl_option(PyGccOption * self);
 
@@ -101,6 +103,9 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs);
 
 PyObject *
 gcc_Option_repr(PyGccOption * self);
+
+PyObject *
+gcc_Option_is_enabled(PyGccOption * self, void *closure);
 
 PyObject *
 gcc_Pass_repr(struct PyGccPass * self);

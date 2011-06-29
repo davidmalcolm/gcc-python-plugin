@@ -360,20 +360,44 @@ Generating custom errors and warnings
 
    The warning is controlled by the given :py:class:`gcc.Option`.
 
-   For example, this Python code::
+   For example, given this Python code::
 
       gcc.warning(func.start, gcc.Option('-Wformat'), 'Incorrect formatting')
 
-   could lead to this warning being printed:
+   if the given warning is enabled, a warning will be printed:
 
    .. code-block:: bash
 
-     input.c:25:1: warning: incorrect formatting [-Wformat]
+      $ ./gcc-with-python script.py input.c
+      input.c:25:1: warning: incorrect formatting [-Wformat]
 
-   depending on the state of the `-Wformat` command-line option.
+   If the given warning is being treated as an error (through the usage
+   of `-Werror`), then an error will be printed:
 
-   Returns a boolean, indicating whether or not the warning was actually
-   printed.
+   .. code-block:: bash
+
+      $ ./gcc-with-python -Werror script.py input.c
+      input.c:25:1: error: incorrect formatting [-Werror=format]
+      cc1: all warnings being treated as errors
+
+   .. code-block:: bash
+
+      $ ./gcc-with-python -Werror=format script.py input.c
+      input.c:25:1: error: incorrect formatting [-Werror=format]
+      cc1: some warnings being treated as errors
+
+   If the given warning is disabled, the warning will not be printed:
+
+   .. code-block:: bash
+
+      $ ./gcc-with-python -Wno-format script.py input.c
+
+   .. note:: Due to the way GCC implements some options, it's not always
+      possible for the plugin to fully disable some warnings.  See
+      :py:attr:`gcc.Option.is_enabled` for more information.
+
+   The function returns a boolean, indicating whether or not anything was
+   actually printed.
 
 .. py:function:: gcc.error(location, message)
 
@@ -387,6 +411,7 @@ Generating custom errors and warnings
 
    .. code-block:: bash
 
+     $ ./gcc-with-python script.py input.c
      input.c:25:1: error: something bad was detected
 
 .. py:function:: gcc.permerror(loc, str)
