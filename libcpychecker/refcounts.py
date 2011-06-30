@@ -23,6 +23,7 @@
 import sys
 import gcc
 
+from collections import OrderedDict
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 
 from absinterp import *
@@ -154,11 +155,18 @@ class State:
         if self.loc.get_stmt():
             logger('%s' % self.loc.get_stmt().loc, indent + 1)
 
-    def make_assignment(self, key, value):
+    def get_key_for_lvalue(self, lvalue):
+        return str(lvalue) # FIXME
+
+    def make_assignment(self, lvalue, value, desc):
+        if desc:
+            assert isinstance(desc, str)
         new = self.copy()
         new.loc = self.loc.next_loc()
-        new.data[str(key)] = value
-        return new
+        assert isinstance(lvalue, gcc.VarDecl) # for now
+        key = self.get_key_for_lvalue(lvalue)
+        new.data[key] = value
+        return Transition(new, desc)
 
     def update_loc(self, newloc):
         new = self.copy()
@@ -168,6 +176,14 @@ class State:
     def use_next_loc(self):
         newloc = self.loc.next_loc()
         return self.update_loc(newloc)
+
+class Transition:
+    def __init__(self, nextstate, desc):
+        self.nextstate = nextstate
+        self.desc = desc
+
+    def __repr__(self):
+        return 'Transition(%r, %r)' % (self.nextstate, self.desc)
 
 class Trace:
     """A sequence of State"""
@@ -266,47 +282,54 @@ class MyState(State):
     def release(self, resource):
         self.resources.release(resource)
 
-    def make_assignment(self, key, value, additional_ptr=None):
-        newstate = State.make_assignment(self, key, value)
+    def make_assignment(self, key, value, desc, additional_ptr=None):
+        if desc:
+            assert isinstance(desc, str)
+        transition = State.make_assignment(self, key, value, desc)
         if additional_ptr:
-            newstate.owned_refs.append(additional_ptr)
-        return newstate
+            transition.nextstate.owned_refs.append(additional_ptr)
+        return transition
 
-    def next_states(self, oldstate):
-        # Return a list of State instances, based on input State
+    def get_transitions(self, oldstate):
+        # Return a list of Transition instances, based on input State
         stmt = self.loc.get_stmt()
         if stmt:
-            return self._next_states_for_stmt(stmt, oldstate)
+            return self._get_transitions_for_stmt(stmt, oldstate)
         else:
             result = []
             for loc in self.loc.next_locs():
                 newstate = self.copy()
                 newstate.loc = loc
-                result.append(newstate)
+                result.append(Transition(newstate, ''))
             log('result: %s' % result)
             return result
 
-    def _next_states_for_stmt(self, stmt, oldstate):
-        log('_next_states_for_stmt: %r %s' % (stmt, stmt), 2)
+    def _get_transitions_for_stmt(self, stmt, oldstate):
+        log('_get_transitions_for_stmt: %r %s' % (stmt, stmt), 2)
         log('dir(stmt): %s' % dir(stmt), 3)
         if isinstance(stmt, gcc.GimpleCall):
-            return self._next_states_for_GimpleCall(stmt)
+            return self._get_transitions_for_GimpleCall(stmt)
         elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
             return [self.use_next_loc()]
         elif isinstance(stmt, gcc.GimpleCond):
-            return self._next_states_for_GimpleCond(stmt)
+            return self._get_transitions_for_GimpleCond(stmt)
         elif isinstance(stmt, gcc.GimplePhi):
-            return self._next_states_for_GimplePhi(stmt, oldstate)
+            return self._get_transitions_for_GimplePhi(stmt, oldstate)
         elif isinstance(stmt, gcc.GimpleReturn):
             return []
         elif isinstance(stmt, gcc.GimpleAssign):
-            return self._next_states_for_GimpleAssign(stmt)
+            return self._get_transitions_for_GimpleAssign(stmt)
         else:
             raise "foo"
 
     def eval_expr(self, expr):
         if isinstance(expr, gcc.IntegerCst):
             return expr.constant
+        if isinstance(expr, gcc.VarDecl):
+            if expr.name in self.data:
+                return self.data[expr.name]
+            else:
+                return UnknownValue(expr.type, None)
         if isinstance(expr, gcc.SsaName):
             if str(expr) in self.data:
                 return self.data[str(expr)]
@@ -324,7 +347,7 @@ class MyState(State):
             return None
         return UnknownValue(expr.type, None) # FIXME
 
-    def _next_states_for_GimpleCall(self, stmt):
+    def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
         log('dir(stmt.fn): %s' % dir(stmt.fn), 4)
@@ -338,8 +361,8 @@ class MyState(State):
             # Function returning new references:
             if fnname in ('PyList_New', 'PyLong_FromLong'):
                 nonnull = NonNullPtrValue(1, stmt)
-                return [self.make_assignment(stmt.lhs, nonnull, nonnull),
-                        self.make_assignment(stmt.lhs, NullPtrValue())]
+                return [self.make_assignment(stmt.lhs, nonnull, '%s() succeeded' % fnname, nonnull),
+                        self.make_assignment(stmt.lhs, NullPtrValue(), '%s() failed' % fnname)]
             # Function returning borrowed references:
             elif fnname in ('Py_InitModule4_64',):
                 return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
@@ -355,26 +378,27 @@ class MyState(State):
                 # Unknown function:
                 log('Invocation of unknown function: %r' % fnname)
                 return [self.make_assignment(stmt.lhs,
-                                             UnknownValue(returntype, stmt))]
+                                             UnknownValue(returntype, stmt),
+                                             None)]
 
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
         for i, arg in enumerate(stmt.args):
             log('args[%i]: %s %r' % (i, arg, arg), 4)
 
-    def _next_states_for_GimpleCond(self, stmt):
-        def make_nextstate_for_true(stmt):
+    def _get_transitions_for_GimpleCond(self, stmt):
+        def make_transition_for_true(stmt):
             e = true_edge(self.loc.bb)
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = True
-            return nextstate
+            return Transition(nextstate, 'taking True path')
 
-        def make_nextstate_for_false(stmt):
+        def make_transition_for_false(stmt):
             e = false_edge(self.loc.bb)
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = False
-            return nextstate
+            return Transition(nextstate, 'taking False path')
 
         log('stmt.exprcode: %s' % stmt.exprcode, 4)
         log('stmt.exprtype: %s' % stmt.exprtype, 4)
@@ -385,19 +409,19 @@ class MyState(State):
         boolval = self.eval_condition(stmt)
         if boolval is True:
             log('taking True edge', 2)
-            nextstate = make_nextstate_for_true(stmt)
+            nextstate = make_transition_for_true(stmt)
             return [nextstate]
         elif boolval is False:
             log('taking False edge', 2)
-            nextstate = make_nextstate_for_false(stmt)
+            nextstate = make_transition_for_false(stmt)
             return [nextstate]
         else:
             assert isinstance(boolval, UnknownValue)
             # We don't have enough information; both branches are possible:
-            return [make_nextstate_for_true(stmt),
-                    make_nextstate_for_false(stmt)]
+            return [make_transition_for_true(stmt),
+                    make_transition_for_false(stmt)]
 
-    def _next_states_for_GimplePhi(self, stmt, oldstate):
+    def _get_transitions_for_GimplePhi(self, stmt, oldstate):
         log('stmt: %s' % stmt)
         log('stmt.lhs: %s' % stmt.lhs)
         log('stmt.args: %s' % stmt.args)
@@ -411,18 +435,21 @@ class MyState(State):
         raise AnalysisError('incoming edge not found')
 
     def eval_condition(self, stmt):
+        log('eval_condition: %s' % stmt)
         lhs = self.eval_expr(stmt.lhs)
         rhs = self.eval_expr(stmt.rhs)
         log('eval of lhs: %r' % lhs)
         log('eval of rhs: %r' % rhs)
+        log('stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.EqExpr:
             if isinstance(lhs, NonNullPtrValue) and rhs == 0:
                 return False
             if isinstance(lhs, NullPtrValue) and rhs == 0:
                 return True
+        log('got here')
         return UnknownValue(None, stmt)
 
-    def _next_states_for_GimpleAssign(self, stmt):
+    def _get_transitions_for_GimpleAssign(self, stmt):
         log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
         log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
 
@@ -435,7 +462,7 @@ class MyState(State):
             if value in nextstate.owned_refs:
                 log('removing ownership of %s' % value)
                 nextstate.owned_refs.remove(value)
-        return [nextstate] # for now
+        return [Transition(nextstate, None)] # for now
 
 def iter_traces(fun, prefix=None):
     # Traverse the tree of traces of program state
@@ -444,7 +471,7 @@ def iter_traces(fun, prefix=None):
     if prefix is None:
         prefix = Trace()
         curstate = MyState(Location.get_block_start(fun.cfg.entry),
-                           {},
+                           OrderedDict(),
                            [],
                            Resources())
     else:
@@ -459,8 +486,8 @@ def iter_traces(fun, prefix=None):
     prefix.log(log, 'PREFIX', 1)
     log('  %s:%s' % (fun.decl.name, curstate.loc))
     try:
-        nextstates = curstate.next_states(prevstate)
-        assert isinstance(nextstates, list)
+        transitions = curstate.get_transitions(prevstate)
+        assert isinstance(transitions, list)
     except PredictedError, err:
         # We're at a terminating state:
         err.loc = prefix.get_last_stmt().loc
@@ -469,19 +496,81 @@ def iter_traces(fun, prefix=None):
         trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
         return [trace_with_err]
 
-    log('states: %s' % nextstates, 2)
+    log('transitions: %s' % transitions, 2)
 
-    if len(nextstates) > 0:
+    if len(transitions) > 0:
         result = []
-        for nextstate in nextstates:
+        for transition in transitions:
             # Recurse:
-            for trace in iter_traces(fun, prefix.copy().add(nextstate)):
+            for trace in iter_traces(fun, prefix.copy().add(transition.nextstate)):
                 result.append(trace)
         return result
     else:
         # We're at a terminating state:
         prefix.log(log, 'FINISHED TRACE', 1)
         return [prefix]
+
+class StateEdge:
+    def __init__(self, src, dest, transition):
+        assert isinstance(src, State)
+        assert isinstance(dest, State)
+        assert isinstance(transition, Transition)
+        self.src = src
+        self.dest = dest
+        self.transition = transition
+
+class StateGraph:
+    """
+    A graph of states, representing the various routes through a function,
+    tracking state.
+
+    For now, we give up when we encounter a loop, as an easy way to ensure
+    termination of the analysis
+    """
+    def __init__(self, fun, logger):
+        assert isinstance(fun, gcc.Function)
+        self.fun = fun
+        self.states = []
+        self.edges = []
+
+        logger('StateGraph.__init__(%r)' % fun)
+
+        # Recursively gather states:
+        initial = MyState(Location.get_block_start(fun.cfg.entry),
+                          OrderedDict(),
+                          [],
+                          Resources())
+        self.states.append(initial)
+        self._gather_states(initial, None, logger)
+
+    def _gather_states(self, curstate, prevstate, logger):
+        logger('  %s:%s' % (self.fun.decl.name, curstate.loc))
+        try:
+            transitions = curstate.get_transitions(prevstate)
+            assert isinstance(transitions, list)
+        except PredictedError, err:
+            # We're at a terminating state:
+            raise "foo" # FIXME
+            err.loc = prefix.get_last_stmt().loc
+            trace_with_err = prefix.copy()
+            trace_with_err.add_error(err)
+            trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
+            return [trace_with_err]
+
+        logger('transitions: %s' % transitions, 2)
+
+        if len(transitions) > 0:
+            for transition in transitions:
+                # FIXME: what about loops???
+                assert isinstance(transition, Transition)
+                self.states.append(transition.nextstate)
+                self.edges.append(StateEdge(curstate, transition.nextstate, transition))
+
+                # Recurse:
+                self._gather_states(transition.nextstate, curstate, logger)
+        else:
+            # We're at a terminating state:
+            logger('FINISHED TRACE')
 
 def extra_text(msg, indent):
     sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
@@ -512,6 +601,15 @@ def check_refcounts(fun, show_traces):
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
+    if 1:
+        from libcpychecker.visualizations import StateGraphPrettyPrinter
+        sg = StateGraph(fun, log)
+        sgpp = StateGraphPrettyPrinter(sg)
+        dot = sgpp.to_dot()
+        #dot = sgpp.extra_items()
+        print(dot)
+        invoke_dot(dot)
+
     traces = iter_traces(fun)
     if show_traces:
         traces = list(traces)
@@ -519,6 +617,17 @@ def check_refcounts(fun, show_traces):
             def my_logger(item, indent=0):
                 sys.stdout.write('%s%s\n' % ('  ' * indent, item))
             trace.log(my_logger, 'TRACE %i' % i, 0)
+
+            # Show trace #0:
+            if i == 0:
+                from libcpychecker.visualizations import TracePrettyPrinter
+                tpp = TracePrettyPrinter(fun.cfg, trace)
+                dot = tpp.to_dot()
+                print dot
+                f = open('test.dot', 'w')
+                f.write(dot)
+                f.close()
+                invoke_dot(dot)
 
     for i, trace in enumerate(traces):
         trace.log(log, 'TRACE %i' % i, 0)

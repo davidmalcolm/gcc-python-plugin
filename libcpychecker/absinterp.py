@@ -75,7 +75,7 @@ def describe_stmt(stmt):
     if isinstance(stmt, gcc.GimpleCall):
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             fnname = stmt.fn.operand.name
-            return 'call to %s at %s' % (fnname, stmt.loc)
+            return 'call to %s at line %i' % (fnname, stmt.loc.line)
     else:
         return str(stmt.loc)
 

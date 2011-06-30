@@ -32,11 +32,14 @@ def on_pass_execution(optpass, fun,
             log(fun)
             check_pyargs(fun)
 
+            # non-SSA version of the checker:
+            check_refcounts(fun, show_traces)
+
     # The refcount code is too buggy for now to be on by default:
     if not verify_refcounting:
         return
 
-    if optpass.name == 'release_ssa':
+    if 0: # optpass.name == 'release_ssa':
         # SSA data needed:
         assert optpass.properties_required & (1<<5)
         # methods = get_all_PyMethodDef_methods()
