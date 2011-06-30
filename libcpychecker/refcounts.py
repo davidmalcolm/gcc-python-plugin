@@ -59,75 +59,45 @@ def stmt_is_return_of_objptr(stmt):
 
 class Location:
     """A location within a CFG: a gcc.BasicBlock together with an index into
-    either the gimple list, or the phi_nodes list"""
-    def __init__(self, bb, idx, within_phi=False):
+    the gimple list.  (We don't support SSA passes)"""
+    def __init__(self, bb, idx):
         self.bb = bb
         self.idx = idx
-        self.within_phi = within_phi
 
     def __str__(self):
         stmt = self.get_stmt()
-        if self.within_phi:
-            kind = '   phi'
-        else:
-            kind = 'gimple'
-        return ('block %i  %s[%i]: %20r : %s'
-                % (self.bb.index, kind, self.idx, stmt, stmt))
+        return ('block %i stmt:%i : %20r : %s'
+                % (self.bb.index, self.idx, stmt, stmt))
 
     def next_locs(self):
         """Get a list of Location instances, for what can happen next"""
-        if self.within_phi:
-            if self.bb.phi_nodes and len(self.bb.phi_nodes) > self.idx + 1:
-                # Next phi node:
-                return [Location(self.bb, self.idx + 1, self.within_phi)]
-            else:
-                # At end of phi nodes; start the gimple statements
-                return [Location(self.bb, 0, False)]
+        if self.bb.gimple and len(self.bb.gimple) > self.idx + 1:
+            # Next gimple statement:
+            return [Location(self.bb, self.idx + 1)]
         else:
-            if self.bb.gimple and len(self.bb.gimple) > self.idx + 1:
-                # Next gimple statement:
-                return [Location(self.bb, self.idx + 1, self.within_phi)]
-            else:
-                # At end of gimple statements: successor BBs:
-                return [Location.get_block_start(outedge.dest) for outedge in self.bb.succs]
+            # At end of gimple statements: successor BBs:
+            return [Location.get_block_start(outedge.dest) for outedge in self.bb.succs]
 
     def next_loc(self):
         """Get the next Location, for when it's unique"""
-        if self.within_phi:
-            if self.bb.phi_nodes and len(self.bb.phi_nodes) > self.idx + 1:
-                # Next phi node:
-                return Location(self.bb, self.idx + 1, self.within_phi)
+        if self.bb.gimple:
+            if len(self.bb.gimple) > self.idx + 1:
+                # Next gimple statement:
+                return Location(self.bb, self.idx + 1)
             else:
-                # At end of phi nodes; start the gimple statements
-                return Location(self.bb, 0, False)
-        else:
-            if self.bb.gimple:
-                if len(self.bb.gimple) > self.idx + 1:
-                    # Next gimple statement:
-                    return Location(self.bb, self.idx + 1, self.within_phi)
-                else:
-                    assert len(self.bb.succs) == 1
-                    return Location.get_block_start(self.bb.succs[0].dest)
+                assert len(self.bb.succs) == 1
+                return Location.get_block_start(self.bb.succs[0].dest)
 
     @classmethod
     def get_block_start(cls, bb):
         # Don't bother iterating through phi_nodes if there aren't any:
-        if bb.phi_nodes:
-            return Location(bb, 0, True)
-        else:
-            return Location(bb, 0, False)
+        return Location(bb, 0)
 
     def get_stmt(self):
-        if self.within_phi:
-            if self.bb.phi_nodes:
-                return self.bb.phi_nodes[self.idx]
-            else:
-                return None
+        if self.bb.gimple:
+            return self.bb.gimple[self.idx]
         else:
-            if self.bb.gimple:
-                return self.bb.gimple[self.idx]
-            else:
-                return None
+            return None
 
 class State:
     """A Location with a dict of vars and values"""
@@ -329,11 +299,6 @@ class MyState(State):
         if isinstance(expr, gcc.VarDecl):
             if expr.name in self.data:
                 return self.data[expr.name]
-            else:
-                return UnknownValue(expr.type, None)
-        if isinstance(expr, gcc.SsaName):
-            if str(expr) in self.data:
-                return self.data[str(expr)]
             else:
                 return UnknownValue(expr.type, None)
         if isinstance(expr, gcc.AddrExpr):
