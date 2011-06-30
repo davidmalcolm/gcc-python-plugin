@@ -373,6 +373,27 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyGccLocation *loc_obj;
+    const char *msg;
+    char *keywords[] = {"location",
+                        "message",
+                        NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!s:inform", keywords,
+                                     &gcc_LocationType, &loc_obj,
+                                     &msg)) {
+        return NULL;
+    }
+
+    inform(loc_obj->loc, "%s", msg);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 gcc_python_get_option_list(PyObject *self, PyObject *args)
 {
     PyObject *result;
@@ -532,6 +553,11 @@ static PyMethodDef GccMethods[] = {
      (PyCFunction)gcc_python_warning,
      (METH_VARARGS | METH_KEYWORDS),
      ("Report a warning\n"
+      "FIXME\n")},
+    {"inform",
+     (PyCFunction)gcc_python_inform,
+     (METH_VARARGS | METH_KEYWORDS),
+     ("Report an information message\n"
       "FIXME\n")},
 
     /* Options: */

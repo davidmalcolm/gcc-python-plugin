@@ -429,6 +429,25 @@ Generating custom errors and warnings
 
    Returns True if the warning was actually printed, False otherwise
 
+.. py:function:: gcc.inform(loc, str)
+
+   This is a wrapper around GCC's `inform` function.
+
+   Expects an instance of :py:class:`gcc.Location` (not None) and a string
+
+   Emit an informational message at that location.
+
+   For example::
+
+     gcc.inform(stmt.loc, 'this is where X was defined')
+
+   would lead to this informational message being printed:
+
+   .. code-block:: bash
+
+     $ ./gcc-with-python script.py input.c
+     input.c:23:3: note: this is where X was defined
+
 Global data access
 ==================
 
