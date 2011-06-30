@@ -70,6 +70,7 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                           struct_name = 'struct PyGccTree',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = 'gcc_Tree_getset_table',
+                          tp_hash = '(hashfunc)gcc_Tree_hash',
                           tp_str = '(reprfunc)gcc_Tree_str',
                           tp_richcompare = 'gcc_Tree_richcompare')
     methods = PyMethodTable('gcc_Tree_methods', [])

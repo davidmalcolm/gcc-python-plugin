@@ -56,6 +56,9 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 PyObject *
 gcc_Tree_str(struct PyGccTree * self);
 
+long
+gcc_Tree_hash(struct PyGccTree * self);
+
 PyObject *
 gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op);
 

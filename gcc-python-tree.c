@@ -64,6 +64,14 @@ gcc_Tree_str(struct PyGccTree * self)
     return NULL;
 }
 
+long
+gcc_Tree_hash(struct PyGccTree * self)
+{
+    /* Use the ptr as the hash value: */
+    return (long)self->t;
+}
+
+
 PyObject *
 gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
 {
