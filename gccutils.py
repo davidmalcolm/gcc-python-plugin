@@ -212,8 +212,21 @@ try:
             Formatter.__init__(self)
             self.style = style
 
-        def color_for_token(self, token):
-            return self.style.styles[token]
+        def style_for_token(self, token):
+            # Return a (hexcolor, isbold) pair, where hexcolor could be None
+
+            # Lookup up pygments' color for this token type:
+            col = self.style.styles[token]
+
+            isbold = False
+
+            # Extract a pure hex color specifier of the form that graphviz can
+            # deal with
+            if col:
+                if col.startswith('bold '):
+                    isbold = True
+                    col = col[5:]
+            return (col, isbold)
 
         def format_unencoded(self, tokensource, outfile):
             from pprint import pprint
@@ -230,9 +243,12 @@ try:
                 if t == Token.Literal.String.Escape:
                     continue
 
-                color = self.color_for_token(t)
+                color, isbold = self.style_for_token(t)
                 if 0:
-                    print ('color: %r' % color)
+                    print ('(color, isbold): (%r, %r)' % (color, isbold))
+
+                if isbold:
+                    outfile.write('<b>')
 
                 # Avoid empty color="" values:
                 if color:
@@ -241,6 +257,9 @@ try:
                                   + '</font>')
                 else:
                     outfile.write(self.to_html(piece))
+
+                if isbold:
+                    outfile.write('</b>')
 
     from pygments import highlight
     from pygments.lexers import CLexer
