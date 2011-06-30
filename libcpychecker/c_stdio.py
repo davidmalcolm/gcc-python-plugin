@@ -53,7 +53,7 @@ def handle_c_stdio_function(state, fnname, stmt):
         success = state.make_assignment(stmt.lhs,
                                         file_ptr,
                                         '%s() succeeded' % fnname)
-        success.nextstate.acquire(file_ptr)
+        success.dest.acquire(file_ptr)
 
         # The "failure" case:
         failure = state.make_assignment(stmt.lhs,
@@ -75,7 +75,7 @@ def handle_c_stdio_function(state, fnname, stmt):
             result = state.make_assignment(stmt.lhs,
                                            AbstractValue(gcc.Type.int(), stmt),
                                            '%s() succeeded' % fnname) # FIXME errno handling!
-            result.nextstate.release(expr)
+            result.dest.release(expr)
             return [result]
     else:
         # We claimed to handle this function, but didn't:

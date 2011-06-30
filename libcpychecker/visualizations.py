@@ -111,14 +111,14 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
             #              self.block_id(state.loc.bb),
             #              state.loc.idx))
 
-        for edge in self.sg.edges:
-            if edge.transition.desc:
-                attrliststr = '[label = "%s"]' % self.to_html(edge.transition.desc)
+        for transition in self.sg.transitions:
+            if transition.desc:
+                attrliststr = '[label = "%s"]' % self.to_html(transition.desc)
             else:
                 attrliststr = ''
             result += ('  %s -> %s %s;\n'
-                       % (self.state_id(edge.src),
-                          self.state_id(edge.dest),
+                       % (self.state_id(transition.src),
+                          self.state_id(transition.dest),
                           attrliststr))
 
         result += ' }\n';

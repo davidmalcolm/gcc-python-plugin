@@ -187,7 +187,7 @@ class State:
             assert isinstance(lvalue, gcc.VarDecl) # for now
             key = self.get_key_for_lvalue(lvalue)
             new.data[key] = value
-        return Transition(new, desc)
+        return Transition(self, new, desc)
 
     def update_loc(self, newloc):
         new = self.copy()
@@ -199,12 +199,15 @@ class State:
         return self.update_loc(newloc)
 
 class Transition:
-    def __init__(self, nextstate, desc):
-        self.nextstate = nextstate
+    def __init__(self, src, dest, desc):
+        assert isinstance(src, State)
+        assert isinstance(dest, State)
+        self.src = src
+        self.dest = dest
         self.desc = desc
 
     def __repr__(self):
-        return 'Transition(%r, %r)' % (self.nextstate, self.desc)
+        return 'Transition(%r, %r)' % (self.dest, self.desc)
 
 class Trace:
     """A sequence of State"""
@@ -321,22 +324,13 @@ def iter_traces(fun, stateclass, prefix=None):
         result = []
         for transition in transitions:
             # Recurse:
-            for trace in iter_traces(fun, stateclass, prefix.copy().add(transition.nextstate)):
+            for trace in iter_traces(fun, stateclass, prefix.copy().add(transition.dest)):
                 result.append(trace)
         return result
     else:
         # We're at a terminating state:
         prefix.log(log, 'FINISHED TRACE', 1)
         return [prefix]
-
-class StateEdge:
-    def __init__(self, src, dest, transition):
-        assert isinstance(src, State)
-        assert isinstance(dest, State)
-        assert isinstance(transition, Transition)
-        self.src = src
-        self.dest = dest
-        self.transition = transition
 
 class StateGraph:
     """
@@ -350,7 +344,7 @@ class StateGraph:
         assert isinstance(fun, gcc.Function)
         self.fun = fun
         self.states = []
-        self.edges = []
+        self.transitions = []
         self.stateclass = stateclass
 
         logger('StateGraph.__init__(%r)' % fun)
@@ -384,11 +378,11 @@ class StateGraph:
             for transition in transitions:
                 # FIXME: what about loops???
                 assert isinstance(transition, Transition)
-                self.states.append(transition.nextstate)
-                self.edges.append(StateEdge(curstate, transition.nextstate, transition))
+                self.states.append(transition.dest)
+                self.transitions.append(transition)
 
                 # Recurse:
-                self._gather_states(transition.nextstate, curstate, logger)
+                self._gather_states(transition.dest, curstate, logger)
         else:
             # We're at a terminating state:
             logger('FINISHED TRACE')

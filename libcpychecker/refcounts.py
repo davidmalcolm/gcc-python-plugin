@@ -80,7 +80,7 @@ class MyState(State):
             assert isinstance(desc, str)
         transition = State.make_assignment(self, key, value, desc)
         if additional_ptr:
-            transition.nextstate.owned_refs.append(additional_ptr)
+            transition.dest.owned_refs.append(additional_ptr)
         return transition
 
     def get_transitions(self, oldstate):
@@ -93,7 +93,7 @@ class MyState(State):
             for loc in self.loc.next_locs():
                 newstate = self.copy()
                 newstate.loc = loc
-                result.append(Transition(newstate, ''))
+                result.append(Transition(self, newstate, ''))
             log('result: %s' % result)
             return result
 
@@ -179,14 +179,14 @@ class MyState(State):
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = True
-            return Transition(nextstate, 'taking True path')
+            return Transition(self, nextstate, 'taking True path')
 
         def make_transition_for_false(stmt):
             e = false_edge(self.loc.bb)
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = False
-            return Transition(nextstate, 'taking False path')
+            return Transition(self, nextstate, 'taking False path')
 
         log('stmt.exprcode: %s' % stmt.exprcode, 4)
         log('stmt.exprtype: %s' % stmt.exprtype, 4)
@@ -250,7 +250,7 @@ class MyState(State):
             if value in nextstate.owned_refs:
                 log('removing ownership of %s' % value)
                 nextstate.owned_refs.remove(value)
-        return [Transition(nextstate, None)] # for now
+        return [Transition(self, nextstate, None)] # for now
 
 def check_refcounts(fun, show_traces):
     # Abstract interpretation:
