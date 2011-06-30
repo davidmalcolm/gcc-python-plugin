@@ -364,7 +364,7 @@ Generating custom errors and warnings
 
       gcc.warning(func.start, gcc.Option('-Wformat'), 'Incorrect formatting')
 
-   if the given warning is enabled, a warning will be printed:
+   if the given warning is enabled, a warning will be printed to stderr:
 
    .. code-block:: bash
 
@@ -407,7 +407,7 @@ Generating custom errors and warnings
 
       gcc.error(func.start, 'something bad was detected')
 
-   would lead to this error being printed:
+   would lead to this error being printed to stderr:
 
    .. code-block:: bash
 
@@ -441,7 +441,7 @@ Generating custom errors and warnings
 
      gcc.inform(stmt.loc, 'this is where X was defined')
 
-   would lead to this informational message being printed:
+   would lead to this informational message being printed to stderr:
 
    .. code-block:: bash
 

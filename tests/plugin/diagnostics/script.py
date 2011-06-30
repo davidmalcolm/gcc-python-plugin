@@ -37,6 +37,10 @@ def on_pass_execution(p, fn):
                     gcc.Option('-Wformat'),
                     'this warning ought not to appear')
 
+        # Exercise gcc.inform:
+        gcc.inform(fn.start, 'This is the start of the function')
+        gcc.inform(fn.end, 'This is the end of the function')
+
 # Wire up our callback:
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       on_pass_execution)
