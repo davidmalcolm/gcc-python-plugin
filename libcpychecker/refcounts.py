@@ -163,9 +163,10 @@ class State:
             assert isinstance(desc, str)
         new = self.copy()
         new.loc = self.loc.next_loc()
-        assert isinstance(lvalue, gcc.VarDecl) # for now
-        key = self.get_key_for_lvalue(lvalue)
-        new.data[key] = value
+        if lvalue:
+            assert isinstance(lvalue, gcc.VarDecl) # for now
+            key = self.get_key_for_lvalue(lvalue)
+            new.data[key] = value
         return Transition(new, desc)
 
     def update_loc(self, newloc):
@@ -601,7 +602,7 @@ def check_refcounts(fun, show_traces):
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
-    if 1:
+    if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
         sg = StateGraph(fun, log)
         sgpp = StateGraphPrettyPrinter(sg)

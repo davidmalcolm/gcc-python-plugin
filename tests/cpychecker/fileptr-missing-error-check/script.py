@@ -16,4 +16,4 @@
 #   <http://www.gnu.org/licenses/>.
 
 from libcpychecker import main
-main(verify_refcounting=True)
+main(verify_refcounting=False)

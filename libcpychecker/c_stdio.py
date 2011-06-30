@@ -50,26 +50,32 @@ def handle_c_stdio_function(state, fnname, stmt):
     if fnname == 'fopen':
         # The "success" case:
         file_ptr = NonNullFilePtr(stmt)
-        success = state.make_assignment(stmt.lhs, file_ptr)
-        success.acquire(file_ptr)
+        success = state.make_assignment(stmt.lhs,
+                                        file_ptr,
+                                        '%s() succeeded' % fnname)
+        success.nextstate.acquire(file_ptr)
 
         # The "failure" case:
-        failure = state.make_assignment(stmt.lhs, NullPtrValue(stmt))
+        failure = state.make_assignment(stmt.lhs,
+                                        NullPtrValue(stmt),
+                                        '%s() failed' % fnname)
 
         return [success, failure]
     elif fnname == 'fclose':
         expr = state.eval_expr(stmt.args[0])
         if isinstance(expr, NonNullFilePtr):
             result = state.make_assignment(stmt.lhs,
-                                           AbstractValue(gcc.Type.int(), stmt)) # FIXME errno handling!
+                                           AbstractValue(gcc.Type.int(), stmt),
+                                           '%s() succeeded' % fnname) # FIXME errno handling!
             result.release(expr)
             return [result]
         elif isinstance(expr, NullPtrValue):
             raise InvalidlyNullParameter(fnname, 1, expr)
         else:
             result = state.make_assignment(stmt.lhs,
-                                           AbstractValue(gcc.Type.int(), stmt)) # FIXME errno handling!
-            result.release(expr)
+                                           AbstractValue(gcc.Type.int(), stmt),
+                                           '%s() succeeded' % fnname) # FIXME errno handling!
+            result.nextstate.release(expr)
             return [result]
     else:
         # We claimed to handle this function, but didn't:
