@@ -134,3 +134,6 @@ test-suite: plugin
 
 show-ssa: plugin
 	./gcc-with-python show-ssa.py test.c
+
+html:
+	cd docs && $(MAKE) html
