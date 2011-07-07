@@ -481,3 +481,51 @@ def cfg_to_dot(name, cfg):
 def tree_to_dot(tree):
     pp = TreePrettyPrinter(tree)
     return pp.to_dot()
+
+class Table(object):
+    '''A table of text/numbers that knows how to print itself'''
+    def __init__(self, columnheadings=None, rows=[]):
+        self.numcolumns = len(columnheadings)
+        self.columnheadings = columnheadings
+        self.rows = []
+        self._colsep = '  '
+
+    def add_row(self, row):
+        assert len(row) == self.numcolumns
+        self.rows.append(row)
+
+    def write(self, out):
+        colwidths = self._calc_col_widths()
+
+        self._write_row(out, colwidths, self.columnheadings)
+
+        self._write_separator(out, colwidths)
+
+        for row in self.rows:
+            self._write_row(out, colwidths, row)
+
+    def _calc_col_widths(self):
+        result = []
+        for colIndex in xrange(self.numcolumns):
+            result.append(self._calc_col_width(colIndex))
+        return result
+
+    def _calc_col_width(self, idx):
+        cells = [str(row[idx]) for row in self.rows]
+        heading = self.columnheadings[idx]
+        return max([len(c) for c in (cells + [heading])])
+
+    def _write_row(self, out, colwidths, values):
+        for i, (value, width) in enumerate(zip(values, colwidths)):
+            if i > 0:
+                out.write(self._colsep)
+            formatString = "%%%ds" % width # to generate e.g. "%20s"
+            out.write(formatString % value)
+        out.write('\n')
+
+    def _write_separator(self, out, colwidths):
+        for i, width in enumerate(colwidths):
+            if i > 0:
+                out.write(self._colsep)
+            out.write('-' * width)
+        out.write('\n')
