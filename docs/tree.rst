@@ -166,6 +166,17 @@ Declarations
 
       The :py:class:`gcc.Location` for this declaration
 
+
+.. py:class:: gcc.FieldDecl
+
+   A subclass of `gcc.Declaration` indicating the declaration of a field within
+   a structure.
+
+   .. py:attribute:: name
+
+      (string) The name of this field
+
+
 .. py:class:: gcc.FunctionDecl
 
    A subclass of `gcc.Declaration` indicating the declaration of a function.
@@ -595,7 +606,51 @@ References to storage
 
       The :py:class:`gcc.Location` for this storage reference
 
-   Subclasses include:
+.. py:class:: gcc.ComponentReference
+
+   A subclass of `gcc.Reference` for expressions involving a field lookup.
+
+   This can mean either a direct field lookup, as in:
+
+   .. code-block:: c
+
+      struct mystruct s;
+      ...
+      s.idx = 42;
+
+   or dereferenced field lookup:
+
+   .. code-block:: c
+
+      struct mystruct *p;
+      ...
+      p->idx = 42;
+
+   .. py:attribute:: target
+
+      The `gcc.Tree` for the container of the field (either `s` or `*p` in the
+      examples above)
+
+   .. py:attribute:: field
+
+      The `gcc.FieldDecl` for the field within the target.
+
+.. py:class:: gcc.MemRef
+
+   A subclass of `gcc.Reference` for expressions involving dereferencing a
+   pointer:
+
+   .. code-block:: c
+
+      int p, *q;
+      ...
+      p = *q;
+
+   .. py:attribute:: operand
+
+      The `gcc.Tree` for the expression describing the target of the pointer
+
+Other subclasses of `gcc.Reference` include:
 
       =====================================  ======================
       Subclass                               C/C++ operators
@@ -604,10 +659,8 @@ References to storage
       .. py:class:: ArrayRef
       .. py:class:: AttrAddrExpr
       .. py:class:: BitFieldRef
-      .. py:class:: ComponentRef
       .. py:class:: ImagpartExpr
       .. py:class:: IndirectRef
-      .. py:class:: MemRef
       .. py:class:: MemberRef
       .. py:class:: OffsetRef
       .. py:class:: RealpartExpr

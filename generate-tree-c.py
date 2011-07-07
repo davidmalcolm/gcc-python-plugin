@@ -371,10 +371,15 @@ def generate_tree_code_classes():
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
-                              "The gcc.Node that for the container of the field'")
+                              "The gcc.Tree that for the container of the field'")
             add_simple_getter('field',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
-                              "The gcc.Node for the field within the referenced thing'")
+                              "The gcc.FieldDecl for the field within the target'")
+
+        if tree_type.SYM == 'MEM_REF':
+            add_simple_getter('operand',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              "The gcc.Tree that for the pointer expression'")
 
         if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
             add_simple_getter('fields',
