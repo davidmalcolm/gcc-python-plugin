@@ -29,6 +29,7 @@ Contents:
    :maxdepth: 2
 
    basics.rst
+   gcc-overview.rst
    examples.rst
    cfg.rst
    tree.rst
