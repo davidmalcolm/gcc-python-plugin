@@ -484,11 +484,12 @@ def tree_to_dot(tree):
 
 class Table(object):
     '''A table of text/numbers that knows how to print itself'''
-    def __init__(self, columnheadings=None, rows=[]):
+    def __init__(self, columnheadings=None, rows=[], sepchar='-'):
         self.numcolumns = len(columnheadings)
         self.columnheadings = columnheadings
         self.rows = []
         self._colsep = '  '
+        self._sepchar = sepchar
 
     def add_row(self, row):
         assert len(row) == self.numcolumns
@@ -497,12 +498,16 @@ class Table(object):
     def write(self, out):
         colwidths = self._calc_col_widths()
 
+        self._write_separator(out, colwidths)
+
         self._write_row(out, colwidths, self.columnheadings)
 
         self._write_separator(out, colwidths)
 
         for row in self.rows:
             self._write_row(out, colwidths, row)
+
+        self._write_separator(out, colwidths)
 
     def _calc_col_widths(self):
         result = []
@@ -519,7 +524,7 @@ class Table(object):
         for i, (value, width) in enumerate(zip(values, colwidths)):
             if i > 0:
                 out.write(self._colsep)
-            formatString = "%%%ds" % width # to generate e.g. "%20s"
+            formatString = "%%-%ds" % width # to generate e.g. "%-20s"
             out.write(formatString % value)
         out.write('\n')
 
@@ -527,5 +532,5 @@ class Table(object):
         for i, width in enumerate(colwidths):
             if i > 0:
                 out.write(self._colsep)
-            out.write('-' * width)
+            out.write(self._sepchar * width)
         out.write('\n')
