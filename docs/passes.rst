@@ -84,22 +84,29 @@ There are actually five "roots" to this tree:
 
       Here are the bitfield flags:
 
-         =========================   ============================================   =========================
-         Mask                        Meaning                                        Which pass sets this up?
-         =========================   ============================================   =========================
-         gcc.PROP_gimple_any         Is the full GIMPLE grammar allowed?            (the frontend)
-         gcc.PROP_gimple_lcf         Has control flow been lowered?                 `"lower"`
-         gcc.PROP_gimple_leh         Has exception-handling been lowered?           `"eh"`
-         gcc.PROP_cfg                Does the gcc.Function have a non-None "cfg"?   `"cfg"`
-         gcc.PROP_referenced_vars                                                   `"\*referenced_vars"`
-         gcc.PROP_ssa                Is the GIMPLE in SSA form?                     `"ssa"`
-         gcc.PROP_no_crit_edges                                                     `"crited"`
-         gcc.PROP_rtl                Is the function now in RTL form? (rather       `"expand"`
+         =========================   ============================================   =========================   =======================
+         Mask                        Meaning                                        Which pass sets this up?    Which pass clears this?
+         =========================   ============================================   =========================   =======================
+         gcc.PROP_gimple_any         Is the full GIMPLE grammar allowed?            (the frontend)              `"expand"`
+         gcc.PROP_gimple_lcf         Has control flow been lowered?                 `"lower"`                   `"expand"`
+         gcc.PROP_gimple_leh         Has exception-handling been lowered?           `"eh"`                      `"expand"`
+         gcc.PROP_cfg                Does the gcc.Function have a non-None "cfg"?   `"cfg"`                     `"*free_cfg"`
+         gcc.PROP_referenced_vars    Do we have data on which functions reference   `"\*referenced_vars"`       (none)
+	                             which variables? (Dataflow analysis, aka
+				     DFA)
+         gcc.PROP_ssa                Is the GIMPLE in SSA form?                     `"ssa"`                     `"expand"`
+         gcc.PROP_no_crit_edges      Have all critical edges within the CFG been    `"crited"`                  (none)
+                                     split?
+         gcc.PROP_rtl                Is the function now in RTL form? (rather       `"expand"`                  `"*clean_state"`
 	                             than GIMPLE-SSA)
-         gcc.PROP_gimple_lomp                                                       `"omplower"`
-         gcc.PROP_cfglayout                                                         `"into_cfglayout"`
-         gcc.PROP_gimple_lcx                                                        `"cplxlower"`
-         =========================   ============================================   =========================
+         gcc.PROP_gimple_lomp        Have OpenMP directives been lowered into       `"omplower"`                `"expand"`
+	                             explicit calls to the runtime library
+				     (libgomp)
+         gcc.PROP_cfglayout          Are we reorganizing the CFG into a more        `"into_cfglayout"`          `"outof_cfglayout"`
+	                             efficient order?
+         gcc.PROP_gimple_lcx         Have operations on complex numbers been        `"cplxlower"`               `"cplxlower0"`
+	                             lowered to scalar operations?
+         =========================   ============================================   =========================   =======================
 
 
 There are four subclasses of gcc.Pass:
