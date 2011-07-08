@@ -125,12 +125,29 @@ http://gcc.gnu.org/onlinedocs/gccint/Tree-SSA-passes.html
 If you're looking to add new compiler warnings, it's probably best to hook
 your code into these early passes.
 
-The GIMPLE form is actually in two parts: an initial form, and an SSA form.  In
-SSA form ("Static Single Assignment"), every variable is assigned to at most
-once, with additional versions of variables added to help track the impact of
-assignments on the data flowing through a function.
+The GIMPLE representation actually has several forms:
 
-See http://gcc.gnu.org/onlinedocs/gccint/SSA.html
+  * an initial "high gimple" form, potentially containing certain high-level
+    operations (e.g. control flow, exception handling)
+
+  * the lower level gimple forms, as each of these operations are rewritten
+    in lower-level terms (turning control flow from jumps into a CFG etc)
+
+  * the SSA form of GIMPLE.  In Static Single Assignment form, every variable
+    is assigned to at most once, with additional versions of variables added
+    to help track the impact of assignments on the data flowing through
+    a function.  See http://gcc.gnu.org/onlinedocs/gccint/SSA.html
+
+You can tell what form a function is in by looking at the flags of the current
+pass.  For example::
+
+   if ps.properties_provided & gcc.PROP_cfg:
+      # ...then this gcc.Function ought to have a gcc.Cfg:
+      do_something_with_cfg(fn.cfg)
+
+   if ps.properties_provided & gcc.PROP_ssa:
+      # ...then we have SSA data
+      do_something_with_ssa(fn)
 
 Here's our example function, after conversion to GIMPLE SSA:
 
