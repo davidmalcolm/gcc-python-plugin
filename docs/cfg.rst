@@ -86,36 +86,22 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
   representation on the right-hand side.  Each block is labelled with its
   index, and edges are labelled with appropriate flags.
 
-    .. figure:: sample-cfg.png
-       :scale: 50 %
-       :alt: image of a control flow graph
+  For example, given this sample C code:
 
-       A sample CFG bitmap rendered by::
+    .. literalinclude:: ../test.c
+      :lines: 33-48
+      :language: c
 
-          dot = gccutils.cfg_to_dot(fun.cfg)
-	  gccutils.invoke_dot(dot)
+  then the following Python code::
 
-       on this C code:
+    dot = gccutils.cfg_to_dot(fun.cfg)
+    gccutils.invoke_dot(dot)
 
-       .. code-block:: c
+  will render a CFG bitmap like this:
 
-          int
-          main(int argc, char **argv)
-          {
-              int i;
-
-              printf("argc: %i\n", argc);
-
-              for (i = 0; i < argc; i++) {
-                  printf("argv[%i]: %s\n", argv[i]);
-              }
-
-              helper_function();
-
-              return 0;
-          }
-
-
+    .. figure:: sample-gimple-cfg.png
+      :scale: 50 %
+      :alt: image of a control flow graph
 
 .. py:class:: gcc.BasicBlock
 
