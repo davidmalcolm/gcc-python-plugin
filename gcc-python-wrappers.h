@@ -110,9 +110,14 @@ gcc_Option_repr(PyGccOption * self);
 PyObject *
 gcc_Option_is_enabled(PyGccOption * self, void *closure);
 
+/* gcc-python-pass.c: */
 PyObject *
 gcc_Pass_repr(struct PyGccPass * self);
 
+PyObject *
+gcc_Pass_get_roots(PyObject *cls, PyObject *noargs);
+
+/* gcc-python-pretty-printer.c: */
 #include "pretty-print.h"
 struct PyGccPrettyPrinter {
     PyObject_HEAD

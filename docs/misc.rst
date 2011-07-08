@@ -9,4 +9,4 @@ scripts.
 
    options.rst
    parameters.rst
-
+   tables-of-passes.rst

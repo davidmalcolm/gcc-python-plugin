@@ -32,22 +32,35 @@ def generate_pass():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Pass_getset_table',
-                                   [PyGetSetDef('name',
-                                                cu.add_simple_getter('gcc_Pass_get_name',
-                                                                     'PyGccPass',
-                                                                     'gcc_python_string_from_string(self->pass->name)'),
-                                                None,
-                                                'Name of the pass'),
-                                    ],
+    getsettable = PyGetSetDefTable('gcc_Pass_getset_table', [],
                                    identifier_prefix='gcc_Pass',
                                    typename='PyGccPass')
+    getsettable.add_simple_getter(cu,
+                                  'name',
+                                  'gcc_python_string_from_string(self->pass->name)',
+                                  'Name of the pass')
+    getsettable.add_simple_getter(cu,
+                                  'next',
+                                  'gcc_python_make_wrapper_pass(self->pass->next)',
+                                  'The next gcc.Pass after this one, or None')
+    getsettable.add_simple_getter(cu,
+                                  'sub',
+                                  'gcc_python_make_wrapper_pass(self->pass->sub)',
+                                  "The first sub-pass (gated by this pass' predicate, if any)")
+
     for field in ('properties_required', 'properties_provided', 'properties_destroyed'):
         getsettable.add_simple_getter(cu,
                                       field,
                                       'gcc_python_int_from_long(self->pass->%s)' % field,
                                       None)
     cu.add_defn(getsettable.c_defn())
+
+    methods = PyMethodTable('gcc_Pass_methods', [])
+    methods.add_method('get_roots',
+                       'gcc_Pass_get_roots',
+                       'METH_CLASS | METH_VARARGS',
+                       "Get a tuple of gcc.Pass instances, the roots of the compilation pass tree")
+    cu.add_defn(methods.c_defn())
     
     pytype = PyTypeObject(identifier = 'gcc_PassType',
                           localname = 'Pass',
@@ -57,6 +70,7 @@ def generate_pass():
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Pass_repr',
                           tp_str = '(reprfunc)gcc_Pass_repr',
+                          tp_methods = methods.identifier,
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

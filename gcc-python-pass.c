@@ -33,6 +33,40 @@ gcc_Pass_repr(struct PyGccPass *self)
                                           self->pass->name);
 }
 
+PyObject *
+gcc_Pass_get_roots(PyObject *cls, PyObject *noargs)
+{
+    /*
+      There are 5 "roots" for the pass tree; see gcc/passes.c
+    */
+    PyObject *result;
+    PyObject *passobj;
+
+    result = PyTuple_New(5);
+    if (!result) {
+        goto error;
+    }
+
+#define SET_PASS(IDX, P) \
+    passobj = gcc_python_make_wrapper_pass(P); \
+    if (!passobj) goto error;                  \
+    PyTuple_SET_ITEM(result, IDX, passobj);    \
+    (void)0;
+
+    SET_PASS(0, all_lowering_passes);
+    SET_PASS(1, all_small_ipa_passes);
+    SET_PASS(2, all_regular_ipa_passes);
+    SET_PASS(3, all_lto_gen_passes);
+    SET_PASS(4, all_passes);
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+
+}
+
 static PyTypeObject *
 get_type_for_pass_type(enum opt_pass_type pt)
 {

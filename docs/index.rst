@@ -34,6 +34,7 @@ Contents:
    cfg.rst
    tree.rst
    gimple.rst
+   passes.rst
    cpychecker.rst
    misc.rst
 

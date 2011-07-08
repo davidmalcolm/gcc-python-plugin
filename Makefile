@@ -135,5 +135,10 @@ test-suite: plugin
 show-ssa: plugin
 	./gcc-with-python show-ssa.py test.c
 
-html:
+html: docs/tables-of-passes.rst
 	cd docs && $(MAKE) html
+
+# We commit this generated file to SCM to allow the docs to be built without
+# needing to build the plugin:
+docs/tables-of-passes.rst: plugin generate-tables-of-passes-rst.py
+	./gcc-with-python generate-tables-of-passes-rst.py test.c > $@

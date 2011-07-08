@@ -318,39 +318,6 @@ scripts:
     Called from: init_pragma at ../../gcc/c-family/c-pragma.c:1321
     to  "Allow plugins to register their own pragmas."
 
-Optimization passes
-===================
-
-.. py:class:: gcc.Pass
-
-   This wraps one of GCC's `struct opt_pass *`, but the wrapper class is still
-   a work-in-progress.  Hopefully we'll eventually be able to subclass this and
-   allow creating custom passes written in Python.
-
-   Beware:  "pass" is a reserved word in Python, so use e.g. `ps` as a variable
-   name for an instance of gcc.Pass
-
-   .. py:attribute:: name
-
-      The name of the pass, as a string
-
-   .. py:attribute:: properties_required
-   .. py:attribute:: properties_provided
-   .. py:attribute:: properties_destroyed
-
-      Currently these are int bitfields.
-
-There are four subclasses of gcc.Pass:
-
-.. py:class:: gcc.GimplePass
-.. py:class:: gcc.RtlPass
-.. py:class:: gcc.SimpleIpaPass
-.. py:class:: gcc.IpaPass
-
-reflecting the internal data layouts within GCC's implementation of the
-classes, but these don't do anything different yet at the Python level.
-
-
 Generating custom errors and warnings
 =====================================
 

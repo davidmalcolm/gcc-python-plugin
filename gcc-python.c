@@ -672,6 +672,19 @@ gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddObject(gcc_python_globals.module, "argument_dict", gcc_python_globals.argument_dict);
     PyModule_AddObject(gcc_python_globals.module, "argument_tuple", gcc_python_globals.argument_tuple);
 
+    /* Pass properties: */
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_gimple_any);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_gimple_lcf);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_gimple_leh);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_cfg);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_referenced_vars);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_ssa);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_no_crit_edges);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_rtl);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_gimple_lomp);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_cfglayout);
+    PyModule_AddIntMacro(gcc_python_globals.module, PROP_gimple_lcx);
+
     /* Success: */
     return 1;
 }
