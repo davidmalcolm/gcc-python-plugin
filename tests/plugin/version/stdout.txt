@@ -1,0 +1,2 @@
+gcc.get_gcc_version()
+gcc.get_plugin_gcc_version()

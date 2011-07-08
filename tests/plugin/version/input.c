@@ -1,4 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
+/*
+   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
    Copyright 2011 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
@@ -14,17 +15,4 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
-
-Miscellanea
-===========
-
-The following odds and ends cover the more esoteric aspects of GCC, and are
-documented here for completeness.  They may or may not be useful when writing
-scripts.
-
-.. toctree::
-
-   options.rst
-   parameters.rst
-   versions.rst
-   tables-of-passes.rst
+*/
