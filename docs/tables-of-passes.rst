@@ -14,6 +14,8 @@ the pass that initially creates the data (if any), the pass that destroys it
 PROP_* flags).
 
 .. image:: passes.svg
+   :width: 550px
+   :height: 3302px
    :scale: 50%
 
 
