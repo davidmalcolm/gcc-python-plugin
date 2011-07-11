@@ -1,0 +1,5 @@
+Trace 0:
+  returned: Region('heap_region_0')
+  r->ob_refcnt: RefcountValue(1)
+Trace 1:
+  returned: NullPtrValue()

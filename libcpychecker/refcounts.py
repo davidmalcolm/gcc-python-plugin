@@ -56,6 +56,16 @@ def stmt_is_return_of_objptr(stmt):
             if type_is_pyobjptr(stmt.retval.type):
                 return True
 
+class RefcountValue(AbstractValue):
+    def __init__(self, relvalue):
+        self.relvalue = relvalue
+
+    def __str__(self):
+        return 'refs: %i' % self.relvalue
+
+    def __repr__(self):
+        return 'RefcountValue(%i)' % self.relvalue
+
 class MyState(State):
     def __init__(self, loc, data, owned_refs, resources):
         State.__init__(self, loc, data)
@@ -83,11 +93,11 @@ class MyState(State):
             transition.dest.owned_refs.append(additional_ptr)
         return transition
 
-    def get_transitions(self, oldstate):
+    def get_transitions(self):
         # Return a list of Transition instances, based on input State
         stmt = self.loc.get_stmt()
         if stmt:
-            return self._get_transitions_for_stmt(stmt, oldstate)
+            return self._get_transitions_for_stmt(stmt)
         else:
             result = []
             for loc in self.loc.next_locs():
@@ -97,7 +107,7 @@ class MyState(State):
             log('result: %s' % result)
             return result
 
-    def _get_transitions_for_stmt(self, stmt, oldstate):
+    def _get_transitions_for_stmt(self, stmt):
         log('_get_transitions_for_stmt: %r %s' % (stmt, stmt), 2)
         log('dir(stmt): %s' % dir(stmt), 3)
         if isinstance(stmt, gcc.GimpleCall):
@@ -106,34 +116,12 @@ class MyState(State):
             return [self.use_next_loc()]
         elif isinstance(stmt, gcc.GimpleCond):
             return self._get_transitions_for_GimpleCond(stmt)
-        elif isinstance(stmt, gcc.GimplePhi):
-            return self._get_transitions_for_GimplePhi(stmt, oldstate)
         elif isinstance(stmt, gcc.GimpleReturn):
-            return []
+            return self._get_transitions_for_GimpleReturn(stmt)
         elif isinstance(stmt, gcc.GimpleAssign):
             return self._get_transitions_for_GimpleAssign(stmt)
         else:
             raise "foo"
-
-    def eval_expr(self, expr):
-        if isinstance(expr, gcc.IntegerCst):
-            return expr.constant
-        if isinstance(expr, gcc.VarDecl):
-            if expr.name in self.data:
-                return self.data[expr.name]
-            else:
-                return UnknownValue(expr.type, None)
-        if isinstance(expr, gcc.AddrExpr):
-            #log(dir(expr))
-            #log(expr.operand)
-            # Handle Py_None, which is a #define of (&_Py_NoneStruct)
-            if isinstance(expr.operand, gcc.VarDecl):
-                if expr.operand.name == '_Py_NoneStruct':
-                    # FIXME: do we need a stmt?
-                    return PtrToGlobal(1, None, expr.operand.name)
-        if expr is None:
-            return None
-        return UnknownValue(expr.type, None) # FIXME
 
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
@@ -148,9 +136,22 @@ class MyState(State):
             fnname = stmt.fn.operand.name
             # Function returning new references:
             if fnname in ('PyList_New', 'PyLong_FromLong'):
-                nonnull = NonNullPtrValue(1, stmt)
-                return [self.make_assignment(stmt.lhs, nonnull, '%s() succeeded' % fnname, nonnull),
-                        self.make_assignment(stmt.lhs, NullPtrValue(), '%s() failed' % fnname)]
+                #nonnull = NonNullPtrValue(1, stmt)
+
+                # Allocation and assignment:
+                success = self.copy()
+                success.loc = self.loc.next_loc()
+                nonnull = success.data.make_heap_region()
+                ob_refcnt = success.data.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+                success.data.value_for_region[ob_refcnt] = RefcountValue(1)
+                success.data.assign(stmt.lhs, nonnull)
+                success = Transition(self,
+                                     success,
+                                     '%s() succeeded' % fnname)
+                failure = self.make_assignment(stmt.lhs,
+                                               NullPtrValue(),
+                                               '%s() failed' % fnname)
+                return [success, failure]
             # Function returning borrowed references:
             elif fnname in ('Py_InitModule4_64',):
                 return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
@@ -209,23 +210,10 @@ class MyState(State):
             return [make_transition_for_true(stmt),
                     make_transition_for_false(stmt)]
 
-    def _get_transitions_for_GimplePhi(self, stmt, oldstate):
-        log('stmt: %s' % stmt)
-        log('stmt.lhs: %s' % stmt.lhs)
-        log('stmt.args: %s' % stmt.args)
-        # Choose the correct new value, based on the edge we came in on
-        for expr, edge in stmt.args:
-            if edge.src == oldstate.loc.bb:
-                # Update the LHS appropriately:
-                next = self.use_next_loc()
-                next.data[str(stmt.lhs)] = self.eval_expr(expr)
-                return [next]
-        raise AnalysisError('incoming edge not found')
-
     def eval_condition(self, stmt):
         log('eval_condition: %s' % stmt)
-        lhs = self.eval_expr(stmt.lhs)
-        rhs = self.eval_expr(stmt.rhs)
+        lhs = self.data.eval_expr(stmt.lhs)
+        rhs = self.data.eval_expr(stmt.rhs)
         log('eval of lhs: %r' % lhs)
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
@@ -237,28 +225,77 @@ class MyState(State):
         log('got here')
         return UnknownValue(None, stmt)
 
+    def eval_rhs(self, stmt):
+        rhs = stmt.rhs
+        if stmt.exprcode == gcc.PlusExpr:
+            a = self.data.eval_expr(rhs[0])
+            b = self.data.eval_expr(rhs[1])
+            log('a: %r' % a)
+            log('b: %r' % b)
+            if isinstance(a, RefcountValue) and isinstance(b, long):
+                return RefcountValue(a.relvalue + b)
+            raise 'bar'
+        elif stmt.exprcode == gcc.ComponentRef:
+            return self.data.eval_expr(rhs[0])
+        elif stmt.exprcode == gcc.VarDecl:
+            return self.data.eval_expr(rhs[0])
+        elif stmt.exprcode == gcc.IntegerCst:
+            return self.data.eval_expr(rhs[0])
+        elif stmt.exprcode == gcc.AddrExpr:
+            return self.data.eval_expr(rhs[0])
+        else:
+            raise 'foo'
+
     def _get_transitions_for_GimpleAssign(self, stmt):
         log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
         log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
+        log('stmt: %r %s' % (stmt, stmt))
+        log('stmt.exprcode: %r' % stmt.exprcode)
+
+        value = self.eval_rhs(stmt)
+        log('value from eval_rhs: %r' % value)
 
         nextstate = self.use_next_loc()
+        """
         if isinstance(stmt.lhs, gcc.MemRef):
-            value = self.eval_expr(stmt.rhs[0])
             log('value: %s %r' % (value, value))
             # We're writing a value to memory; if it's a PyObject*
             # then we're surrending a reference on it:
             if value in nextstate.owned_refs:
                 log('removing ownership of %s' % value)
                 nextstate.owned_refs.remove(value)
-        return [Transition(self, nextstate, None)] # for now
+        """
+        return [self.make_assignment(stmt.lhs,
+                                     value,
+                                     None)]
+
+    def _get_transitions_for_GimpleReturn(self, stmt):
+        #log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
+        #log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
+        log('stmt: %r %s' % (stmt, stmt))
+        log('stmt.retval: %r' % stmt.retval)
+
+        rvalue = self.data.eval_expr(stmt.retval)
+        log('rvalue from eval_expr: %r' % rvalue)
+
+        nextstate = self.copy()
+        nextstate.data.return_rvalue = rvalue
+        assert nextstate.data.return_rvalue is not None # ensure termination
+        return [Transition(self, nextstate, 'returning')]
+
+def get_traces(fun):
+    return list(iter_traces(fun, MyState))
 
 def check_refcounts(fun, show_traces):
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
+    log('check_refcounts(%r, %r)' % (fun, show_traces))
+
+    sg = StateGraph(fun, log, MyState)
+
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
-        sg = StateGraph(fun, log, MyState)
         sgpp = StateGraphPrettyPrinter(sg)
         dot = sgpp.to_dot()
         #dot = sgpp.extra_items()
@@ -274,7 +311,7 @@ def check_refcounts(fun, show_traces):
             trace.log(my_logger, 'TRACE %i' % i, 0)
 
             # Show trace #0:
-            if i == 0:
+            if 0: # i == 0:
                 from libcpychecker.visualizations import TracePrettyPrinter
                 tpp = TracePrettyPrinter(fun.cfg, trace)
                 dot = tpp.to_dot()

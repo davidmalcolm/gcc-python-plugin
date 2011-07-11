@@ -491,23 +491,6 @@ class RefcountErrorTests(AnalyzerTests):
         self.add_module(sm, methods)
         return sm
 
-    def test_correct_py_none(self):
-        sm = self.make_mod_method('correct_none',
-            '    Py_RETURN_NONE;\n')
-        self.assertNoErrors(sm)
-
-    def test_correct_object_ctor(self):
-        sm = self.make_mod_method('correct_object_ctor',
-            '    /* This code is correct: the API call returns a \n'
-            '       new reference.  Use some temporaries to make things more\n'
-            '       difficult for the checker.: */\n'
-            '    PyObject *tmpA;\n'
-            '    PyObject *tmpB;\n'
-            '    tmpA = PyLong_FromLong(0x1000);\n'
-            '    tmpB = tmpA;\n'
-            '    return tmpB;\n')
-        self.assertNoErrors(sm)
-
     def test_too_many_increfs(self):
         sm = self.make_mod_method('too_many_increfs',
             '    PyObject *tmp;\n'

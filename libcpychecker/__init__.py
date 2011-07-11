@@ -18,7 +18,7 @@
 import gcc
 
 from PyArg_ParseTuple import check_pyargs, log
-from refcounts import check_refcounts
+from refcounts import check_refcounts, get_traces
 
 def on_pass_execution(optpass, fun,
                       show_traces=False,

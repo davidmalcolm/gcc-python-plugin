@@ -70,15 +70,29 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
     def state_id(self, state):
         return 'state%i' % id(state)
 
+    def data_state_to_dot_label(self, ds):
+        result = ('<tr> %s %s %s</tr>\n'
+                  % (self._dot_td('Expression'),
+                     self._dot_td('lvalue'),
+                     self._dot_td('rvalue')))
+        for key in ds.region_for_var:
+            region = ds.region_for_var[key]
+            value = ds.value_for_region.get(region, None)
+            result += ('<tr> %s %s %s</tr>\n'
+                       % (self._dot_td(key),
+                          self._dot_td(region),
+                          self._dot_td(value)))
+        return result
+
     def state_to_dot_label(self, state):
         result = '<table cellborder="0" border="0" cellspacing="0">\n'
 
         # Show data:
-        for key in state.data:
-            value = state.data[key]
-            result += ('<tr> %s %s </tr>\n'
-                       % (self._dot_td(key + ' : '),
-                          self._dot_td(value)))
+        print 'state.data: %r' % state.data
+        result += '<tr><td colspan="2"><table border="0" cellborder="1">'
+        result += self.data_state_to_dot_label(state.data)
+        result += '</table></td></tr>'
+
         # Show location:
         stmt = state.loc.get_stmt()
         if stmt:
