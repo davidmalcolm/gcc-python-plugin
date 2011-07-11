@@ -327,7 +327,7 @@ class CfgPrettyPrinter(DotPrettyPrinter):
 
     def stmt_to_html(self, stmt, stmtidx):
         text = str(stmt).strip()
-        text = self.to_html(text)
+        text = self.code_to_html(text)
         bgcolor = None
 
         # Work towards visualization of CPython refcounting rules.
