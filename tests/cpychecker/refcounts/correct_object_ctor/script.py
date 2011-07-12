@@ -33,14 +33,14 @@ def verify_traces(optpass, fun):
             # Verify the "success" trace:
             state = traces[0].states[-1]
             print('Trace 0:')
-            r = state.data.return_rvalue
+            r = state.return_rvalue
             print('  returned: %r' %r)
-            print('  r->ob_refcnt: %r' % state.data.get_value_of_field_by_region(r, 'ob_refcnt'))
+            print('  r->ob_refcnt: %r' % state.get_value_of_field_by_region(r, 'ob_refcnt'))
 
             # Verify the "fail" trace:
             state = traces[1].states[-1]
             print('Trace 1:')
-            print('  returned: %r' % state.data.return_rvalue)
+            print('  returned: %r' % state.return_rvalue)
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       verify_traces)

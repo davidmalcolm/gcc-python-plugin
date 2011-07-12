@@ -156,35 +156,48 @@ class Region:
 # Used for making unique IDs:
 num_heap_regions = 0
 
-class DataState:
-    """The parts of a State that aren't the location"""
+class State:
+    """A Location with memory state"""
+    def __init__(self, loc, region_for_var=None, value_for_region=None, return_rvalue=None):
+        assert isinstance(loc, Location)
+        self.loc = loc
 
-    def __init__(self, region_for_var=None, value_for_region=None):
         # Mapping from VarDecl.name to Region:
         if region_for_var:
+            assert isinstance(region_for_var, OrderedDict)
             self.region_for_var = region_for_var
         else:
             self.region_for_var = OrderedDict()
 
         # Mapping from Region to AbstractValue:
         if value_for_region:
+            assert isinstance(value_for_region, OrderedDict)
             self.value_for_region = value_for_region
         else:
             self.value_for_region = OrderedDict()
 
-        self.return_rvalue = None
+        self.return_rvalue = return_rvalue
+
+    def __str__(self):
+        return ('loc: %s region_for_var:%s value_for_region:%s%s'
+                % (self.loc,
+                   self.region_for_var,
+                   self.value_for_region,
+                   self._extra()))
 
     def __repr__(self):
-        return ('region_for_var:%r value_for_region:%r'
-                % (self.region_for_var, self.value_for_region))
+        return ('loc: %r region_for_var:%r value_for_region:%r%r'
+                % (self.loc,
+                   self.region_for_var,
+                   self.value_for_region,
+                   self._extra()))
 
     def log(self, logger, indent):
         logger(str(self.region_for_var), indent + 1)
         logger(str(self.value_for_region), indent + 1)
+        # Display data in tabular form:
         from gccutils import Table
         t = Table(['Expression', 'Region', 'Value'])
-        #logger(' Expression | Region | Value ', indent + 1)
-        #logger('------------+--------+-------', indent + 1)
         for k in self.region_for_var:
             region = self.region_for_var[k]
             value = self.value_for_region.get(region, None)
@@ -195,9 +208,19 @@ class DataState:
         for line in s.getvalue().splitlines():
             logger(line, indent + 1)
 
+        logger('extra: %s' % (self._extra(), ), indent)
+
+        # FIXME: derived class/extra:
+        self.resources.log(logger, indent)
+
+        logger('loc: %s' % self.loc, indent)
+        if self.loc.get_stmt():
+            logger('%s' % self.loc.get_stmt().loc, indent + 1)
+
     def copy(self):
-        c = DataState(self.region_for_var.copy(),
-                      self.value_for_region.copy())
+        c = self.__class__(loc,
+                           self.region_for_var.copy(),
+                           self.value_for_region.copy())
         c.return_rvalue = self.return_rvalue
         return c
 
@@ -339,42 +362,14 @@ class DataState:
                     value = self.value_for_region.get(region, None)
                     return value
 
-class State:
-    """A Location with a DataState"""
-    def __init__(self, loc, data):
-        assert isinstance(data, DataState)
-        self.loc = loc
-        self.data = data
-
     def init_for_function(self, fun):
         log('init_for_function(%r)' % fun)
         root_region = Region('root', None)
         stack = Region('stack for %s' % fun.decl.name, root_region)
         for local in fun.local_decls:
             region = Region('region for %r' % local, stack)
-            self.data.region_for_var[local] = region
-            self.data.value_for_region[region] = None # uninitialized
-
-    def copy(self):
-        return self.__class__(loc, self.data.copy())
-
-    def __str__(self):
-        return '%s: %s%s' % (self.data, self.loc, self._extra())
-
-    def __repr__(self):
-        return '%s: %s%s' % (self.data, self.loc, self._extra())
-
-    def log(self, logger, indent):
-        self.data.log(logger, indent + 1)
-        #logger('data: %s' % (self.data, ), indent)
-        logger('extra: %s' % (self._extra(), ), indent)
-
-        # FIXME: derived class/extra:
-        self.resources.log(logger, indent)
-
-        logger('loc: %s' % self.loc, indent)
-        if self.loc.get_stmt():
-            logger('%s' % self.loc.get_stmt().loc, indent + 1)
+            self.region_for_var[local] = region
+            self.value_for_region[region] = None # uninitialized
 
     def make_assignment(self, lhs, rhs, desc):
         log('make_assignment(%r, %r, %r)' % (lhs, rhs, desc))
@@ -382,7 +377,7 @@ class State:
             assert isinstance(desc, str)
         new = self.copy()
         new.loc = self.loc.next_loc()
-        new.data.assign(lhs, rhs)
+        new.assign(lhs, rhs)
         return Transition(self, new, desc)
 
     def update_loc(self, newloc):
@@ -395,7 +390,7 @@ class State:
         return self.update_loc(newloc)
 
     def has_returned(self):
-        return self.data.return_rvalue is not None
+        return self.return_rvalue is not None
 
 class Transition:
     def __init__(self, src, dest, desc):
@@ -441,11 +436,11 @@ class Trace:
         if self.err:
             logger('  Trace ended with error: %s' % self.err, indent + 1)
 
-    #def get_last_stmt(self):
-    #    return self.states[-1].loc.get_stmt()
+    def get_last_stmt(self):
+        return self.states[-1].loc.get_stmt()
 
     def return_value(self):
-        return self.states[-1].data.return_rvalue
+        return self.states[-1].return_rvalue
 
     def final_references(self):
         return self.states[-1].owned_refs
@@ -493,7 +488,7 @@ def iter_traces(fun, stateclass, prefix=None):
     if prefix is None:
         prefix = Trace()
         curstate = stateclass(Location.get_block_start(fun.cfg.entry),
-                              DataState(),
+                              None, None, None,
                               [],
                               Resources())
     else:
@@ -554,7 +549,7 @@ class StateGraph:
 
         # Recursively gather states:
         initial = stateclass(Location.get_block_start(fun.cfg.entry),
-                             DataState(),
+                             None, None, None,
                              [],
                              Resources())
         initial.init_for_function(fun)

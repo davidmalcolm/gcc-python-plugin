@@ -67,13 +67,17 @@ class RefcountValue(AbstractValue):
         return 'RefcountValue(%i)' % self.relvalue
 
 class MyState(State):
-    def __init__(self, loc, data, owned_refs, resources):
-        State.__init__(self, loc, data)
+    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, owned_refs, resources):
+        State.__init__(self, loc, region_for_var, value_for_region, return_rvalue)
         self.owned_refs = owned_refs
         self.resources = resources
 
     def copy(self):
-        return self.__class__(self.loc, self.data.copy(), self.owned_refs[:],
+        return self.__class__(self.loc,
+                              self.region_for_var.copy(),
+                              self.value_for_region.copy(),
+                              self.return_rvalue,
+                              self.owned_refs[:],
                               self.resources.copy())
 
     def _extra(self):
@@ -141,10 +145,10 @@ class MyState(State):
                 # Allocation and assignment:
                 success = self.copy()
                 success.loc = self.loc.next_loc()
-                nonnull = success.data.make_heap_region()
-                ob_refcnt = success.data.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                success.data.value_for_region[ob_refcnt] = RefcountValue(1)
-                success.data.assign(stmt.lhs, nonnull)
+                nonnull = success.make_heap_region()
+                ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+                success.value_for_region[ob_refcnt] = RefcountValue(1)
+                success.assign(stmt.lhs, nonnull)
                 success = Transition(self,
                                      success,
                                      '%s() succeeded' % fnname)
@@ -212,8 +216,8 @@ class MyState(State):
 
     def eval_condition(self, stmt):
         log('eval_condition: %s' % stmt)
-        lhs = self.data.eval_expr(stmt.lhs)
-        rhs = self.data.eval_expr(stmt.rhs)
+        lhs = self.eval_expr(stmt.lhs)
+        rhs = self.eval_expr(stmt.rhs)
         log('eval of lhs: %r' % lhs)
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
@@ -228,21 +232,21 @@ class MyState(State):
     def eval_rhs(self, stmt):
         rhs = stmt.rhs
         if stmt.exprcode == gcc.PlusExpr:
-            a = self.data.eval_expr(rhs[0])
-            b = self.data.eval_expr(rhs[1])
+            a = self.eval_expr(rhs[0])
+            b = self.eval_expr(rhs[1])
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, long):
                 return RefcountValue(a.relvalue + b)
             raise 'bar'
         elif stmt.exprcode == gcc.ComponentRef:
-            return self.data.eval_expr(rhs[0])
+            return self.eval_expr(rhs[0])
         elif stmt.exprcode == gcc.VarDecl:
-            return self.data.eval_expr(rhs[0])
+            return self.eval_expr(rhs[0])
         elif stmt.exprcode == gcc.IntegerCst:
-            return self.data.eval_expr(rhs[0])
+            return self.eval_expr(rhs[0])
         elif stmt.exprcode == gcc.AddrExpr:
-            return self.data.eval_expr(rhs[0])
+            return self.eval_expr(rhs[0])
         else:
             raise 'foo'
 
@@ -275,12 +279,12 @@ class MyState(State):
         log('stmt: %r %s' % (stmt, stmt))
         log('stmt.retval: %r' % stmt.retval)
 
-        rvalue = self.data.eval_expr(stmt.retval)
+        rvalue = self.eval_expr(stmt.retval)
         log('rvalue from eval_expr: %r' % rvalue)
 
         nextstate = self.copy()
-        nextstate.data.return_rvalue = rvalue
-        assert nextstate.data.return_rvalue is not None # ensure termination
+        nextstate.return_rvalue = rvalue
+        assert nextstate.return_rvalue is not None # ensure termination
         return [Transition(self, nextstate, 'returning')]
 
 def get_traces(fun):

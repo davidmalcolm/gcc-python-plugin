@@ -31,7 +31,7 @@ def verify_traces(optpass, fun):
             assert len(traces) == 1
             state = traces[0].states[-1]
             print('_Py_NoneStruct.ob_refcnt: %r'
-                  % state.data.get_value_of_field_by_varname('_Py_NoneStruct', 'ob_refcnt'))
+                  % state.get_value_of_field_by_varname('_Py_NoneStruct', 'ob_refcnt'))
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       verify_traces)
