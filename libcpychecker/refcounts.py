@@ -153,7 +153,7 @@ class MyState(State):
                                      success,
                                      '%s() succeeds' % fnname)
                 failure = self.make_assignment(stmt.lhs,
-                                               NullPtrValue(),
+                                               ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                                '%s() fails' % fnname)
                 return [success, failure]
             # Function returning borrowed references:
@@ -224,8 +224,8 @@ class MyState(State):
         if stmt.exprcode == gcc.EqExpr:
             if isinstance(lhs, NonNullPtrValue) and rhs == 0:
                 return False
-            if isinstance(lhs, NullPtrValue) and rhs == 0:
-                return True
+            if isinstance(lhs, ConcreteValue):
+                return lhs.value == rhs
         log('got here')
         return UnknownValue(None, stmt)
 
@@ -236,8 +236,8 @@ class MyState(State):
             b = self.eval_expr(rhs[1])
             log('a: %r' % a)
             log('b: %r' % b)
-            if isinstance(a, RefcountValue) and isinstance(b, long):
-                return RefcountValue(a.relvalue + b)
+            if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
+                return RefcountValue(a.relvalue + b.value)
             raise 'bar'
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_expr(rhs[0])
@@ -349,28 +349,48 @@ def check_refcounts(fun, show_traces):
         log('return_value: %r' % return_value, 0)
         log('endstate.region_for_var: %r' % endstate.region_for_var, 0)
         log('endstate.value_for_region: %r' % endstate.value_for_region, 0)
-        if 1: # return_value is not NULL
-            ob_refcnt = endstate.get_value_of_field_by_region(return_value,
+
+        # Consider all regions of memory we know about:
+        for k in endstate.region_for_var:
+            if not isinstance(endstate.region_for_var[k], Region):
+                continue
+            region = endstate.region_for_var[k]
+
+            log('considering ob_refcnt of %r' % region)
+
+            # Consider those for which we know something about an "ob_refcnt"
+            # field:
+            if 'ob_refcnt' not in region.fields:
+                continue
+
+            ob_refcnt = endstate.get_value_of_field_by_region(region,
                                                               'ob_refcnt')
             log('ob_refcnt: %r' % ob_refcnt, 0)
+
+            # If it's the return value, it should have a net refcnt delta of
+            # 1; all other PyObject should have a net delta of 0:
+            if region == return_value:
+                desc = 'return value'
+                exp_refcnt = 1
+            else:
+                desc = 'PyObject'
+                exp_refcnt = 0
+            log('exp_refcnt: %r' % exp_refcnt, 0)
             if isinstance(ob_refcnt, RefcountValue):
-                if ob_refcnt.relvalue > 1:
+                if ob_refcnt.relvalue > exp_refcnt:
                     # too high
                     gcc.error(endstate.get_gcc_loc(),
-                              'ob_refcnt of return value is %i too high' % (ob_refcnt.relvalue - 1))
+                              'ob_refcnt of %s is %i too high' % (desc, ob_refcnt.relvalue - exp_refcnt))
                     describe_trace(trace)
-                elif ob_refcnt.relvalue < 1:
+                elif ob_refcnt.relvalue < exp_refcnt:
                     # too low
                     gcc.error(endstate.get_gcc_loc(),
-                              'ob_refcnt of return value is %i too low' % (1 - ob_refcnt.relvalue))
+                              'ob_refcnt of %s is %i too low' % (desc, exp_refcnt - ob_refcnt.relvalue))
                     describe_trace(trace)
                     if isinstance(return_value, RegionForGlobal):
                         if return_value.vardecl.name == '_Py_NoneStruct':
                             gcc.inform(endstate.get_gcc_loc(),
                                        'consider using "Py_RETURN_NONE;"')
-
-        #for k in endstate.region_for_var:
-        #    log(k)
 
         final_refs = trace.final_references()
         if return_value in final_refs:

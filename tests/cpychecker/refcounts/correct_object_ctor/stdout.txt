@@ -2,4 +2,4 @@ Trace 0:
   returned: Region('heap_region_0')
   r->ob_refcnt: RefcountValue(1)
 Trace 1:
-  returned: NullPtrValue()
+  returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/correct_object_ctor/input.c', line=30), value=0)

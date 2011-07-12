@@ -1,0 +1,4 @@
+Trace 0:
+  returned: ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+Trace 1:
+  returned: ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)

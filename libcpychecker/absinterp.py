@@ -23,15 +23,42 @@ from collections import OrderedDict
 from PyArg_ParseTuple import log
 
 class AbstractValue:
-    def __init__(self, gcctype, stmt):
+    def __init__(self, gcctype, loc):
+        assert isinstance(gcctype, gcc.Type)
+        if loc:
+            assert isinstance(loc, gcc.Location)
         self.gcctype = gcctype
-        self.stmt = stmt
+        self.loc = loc
 
     def __str__(self):
-        return '%s from %s' % (self.gcctype, self.stmt)
+        if self.loc:
+            return '%s from %s' % (self.gcctype, self.loc)
+        else:
+            return '%' % self.gcctype
 
     def __repr__(self):
-        return 'AbstractValue(%r, %r)' % (self.gcctype, self.stmt)
+        return 'AbstractValue(gcctype=%r, loc=%r)' % (str(self.gcctype), self.loc)
+
+class ConcreteValue(AbstractValue):
+    """
+    A known, specific value (e.g. 0)
+    """
+    def __init__(self, gcctype, loc, value):
+        assert isinstance(gcctype, gcc.Type)
+        if loc:
+            assert isinstance(loc, gcc.Location)
+        self.gcctype = gcctype
+        self.loc = loc
+        self.value = value
+
+    def __str__(self):
+        if self.loc:
+            return '(%s)%r from %s' % (self.gcctype, self.value, self.loc)
+        else:
+            return '(%s)%r' % (self.gcctype, self.value)
+
+    def __repr__(self):
+        return 'ConcreteValue(gcctype=%r, loc=%r, value=%r)' % (str(self.gcctype), self.loc, self.value)
 
 class PredictedError(Exception):
     pass
@@ -71,20 +98,6 @@ class PtrValue(AbstractValue):
     """An abstract (PyObject*) value"""
     def __init__(self, nonnull):
         self.nonnull = nonnull
-
-class NullPtrValue(PtrValue):
-    def __init__(self, stmt=None):
-        PtrValue.__init__(self, False)
-        self.stmt = stmt
-
-    def __str__(self):
-        if self.stmt:
-            return 'NULL value from %s' % get_src_for_loc(self.stmt.loc)
-        else:
-            return 'NULL'
-
-    def __repr__(self):
-        return 'NullPtrValue()'
 
 def describe_stmt(stmt):
     if isinstance(stmt, gcc.GimpleCall):
@@ -252,7 +265,7 @@ class State:
         if isinstance(expr, Region):
             return expr
         if isinstance(expr, gcc.IntegerCst):
-            return expr.constant
+            return ConcreteValue(expr.type, None, expr.constant)
         if isinstance(expr, gcc.VarDecl):
             region = self.var_region(expr)
             value = self.get_store(region)
@@ -316,7 +329,7 @@ class State:
                 log('foo')
                 if isinstance(cr.target, gcc.MemRef):
                     ptr = self.eval_expr(cr.target.operand)
-                    if isinstance(ptr, NullPtrValue):
+                    if isinstance(ptr, ConcreteValue) and ptr.value == 0:
                         raise NullPtrDereference(self, cr)
                     return self.make_field_region(ptr, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
