@@ -279,7 +279,7 @@ class State:
         assert isinstance(var, gcc.VarDecl)
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
-            log('adding region for global var %r' % var.name)
+            log('adding region for global var: %r' % var)
             region = Region(var.name, None)
             # it is its own region:
             self.region_for_var[var] = region
@@ -345,6 +345,7 @@ class State:
     def get_value_of_field_by_varname(self, varname, field):
         # Lookup varname.field
         # For use in writing selftests
+        log('get_value_of_field_by_varname(%r, %r)' % (varname, field), 0)
         assert isinstance(varname, str)
         assert isinstance(field, str)
         for k in self.region_for_var:
@@ -358,14 +359,13 @@ class State:
     def get_value_of_field_by_region(self, rvalue, field):
         # Lookup rvalue->field
         # For use in writing selftests
+        log('get_value_of_field_by_region(%r, %r)' % (rvalue, field), 0)
         assert isinstance(rvalue, Region)
         assert isinstance(field, str)
-        for k in self.region_for_var:
-            if isinstance(k, Region):
-                if k == rvalue:
-                    region = self.make_field_region(rvalue, field)
-                    value = self.value_for_region.get(region, None)
-                    return value
+        if field in rvalue.fields:
+            field_region = rvalue.fields[field]
+            return self.value_for_region.get(field_region, None)
+        return None
 
     def init_for_function(self, fun):
         log('init_for_function(%r)' % fun)

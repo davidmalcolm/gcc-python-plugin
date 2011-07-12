@@ -1,0 +1,3 @@
+tests/cpychecker/refcounts/incorrect_py_none/input.c: In function ‘losing_refcnt_of_none’:
+tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: error: ob_refcnt of return value is 1 too low
+tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: when returning

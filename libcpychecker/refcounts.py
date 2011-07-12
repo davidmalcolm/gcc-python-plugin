@@ -296,14 +296,13 @@ def check_refcounts(fun, show_traces):
 
     log('check_refcounts(%r, %r)' % (fun, show_traces))
 
-    sg = StateGraph(fun, log, MyState)
-
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
+        sg = StateGraph(fun, log, MyState)
         sgpp = StateGraphPrettyPrinter(sg)
         dot = sgpp.to_dot()
         #dot = sgpp.extra_items()
-        print(dot)
+        # print(dot)
         invoke_dot(dot)
 
     traces = iter_traces(fun, MyState)
@@ -347,13 +346,13 @@ def check_refcounts(fun, show_traces):
         # Locate all PyObject that we touched
         endstate = trace.states[-1]
         endstate.log(log, 0)
-        # print('return_value: %r' % return_value)
-        # print('endstate.region_for_var: %r' % endstate.region_for_var)
-        # print('endstate.value_for_region: %r' % endstate.value_for_region)
+        log('return_value: %r' % return_value, 0)
+        log('endstate.region_for_var: %r' % endstate.region_for_var, 0)
+        log('endstate.value_for_region: %r' % endstate.value_for_region, 0)
         if 1: # return_value is not NULL
             ob_refcnt = endstate.get_value_of_field_by_region(return_value,
                                                               'ob_refcnt')
-            # print('ob_refcnt: %r' % ob_refcnt)
+            log('ob_refcnt: %r' % ob_refcnt, 0)
             if isinstance(ob_refcnt, RefcountValue):
                 if ob_refcnt.relvalue > 1:
                     # too high

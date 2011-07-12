@@ -1,5 +1,5 @@
 Trace 0:
-  returned: Region('heap_region_2')
+  returned: Region('heap_region_1')
   r->ob_refcnt: RefcountValue(2)
 Trace 1:
   error: NullPtrDereference()

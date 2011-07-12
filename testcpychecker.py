@@ -512,15 +512,6 @@ class RefcountErrorTests(AnalyzerTests):
                   '  $(SRCFILE):21: returning 0\n')
         self.assertFindsError(sm, experr)
 
-    def test_incorrect_py_none(self):
-        sm = self.make_mod_method('losing_refcnt_of_none',
-            '    /* Bug: this code is missing a Py_INCREF on Py_None */\n'
-            '    return Py_None;\n')
-        experr = ('$(SRCFILE): In function ‘losing_refcnt_of_none’:\n'
-                  '$(SRCFILE):20:5: error: return of PyObject* (&_Py_NoneStruct) without Py_INCREF() [-fpermissive]\n'
-                  '  $(SRCFILE):20: suggest use of "Py_RETURN_NONE;"\n')
-        self.assertFindsError(sm, experr)
-
 # Test disabled for now: we can't easily import this under gcc anymore:
 class TestArgParsing: # (unittest.TestCase):
     def assert_args(self, arg_str, exp_result):
