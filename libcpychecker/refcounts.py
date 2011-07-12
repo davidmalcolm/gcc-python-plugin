@@ -364,6 +364,10 @@ def check_refcounts(fun, show_traces):
                     gcc.error(endstate.get_gcc_loc(),
                               'ob_refcnt of return value is %i too low' % (1 - ob_refcnt.relvalue))
                     describe_trace(trace)
+                    if isinstance(return_value, RegionForGlobal):
+                        if return_value.vardecl.name == '_Py_NoneStruct':
+                            gcc.inform(endstate.get_gcc_loc(),
+                                       'consider using "Py_RETURN_NONE;"')
 
         #for k in endstate.region_for_var:
         #    log(k)
@@ -377,9 +381,6 @@ def check_refcounts(fun, show_traces):
                               ('return of PyObject* (%s)'
                                ' without Py_INCREF()'
                                % return_value))
-                if str(return_value) == '&_Py_NoneStruct':
-                    extra_text('%s: suggest use of "Py_RETURN_NONE;"'
-                               % trace.get_last_stmt().loc, 1)
 
         # Anything remaining is a leak:
         if len(final_refs) > 0:

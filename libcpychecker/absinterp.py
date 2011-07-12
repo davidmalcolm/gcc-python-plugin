@@ -161,6 +161,19 @@ class Region:
     def __repr__(self):
         return 'Region(%r)' % self.name
 
+class RegionForGlobal(Region):
+    """
+    Represents the area of memory (e.g. in .data or .bss section)
+    used to store a particular globa
+    """
+    def __init__(self, vardecl):
+        assert isinstance(vardecl, gcc.VarDecl)
+        Region.__init__(self, vardecl.name, None)
+        self.vardecl = vardecl
+
+    def __repr__(self):
+        return 'RegionForGlobal(%r)' % self.vardecl
+
 # Used for making unique IDs:
 num_heap_regions = 0
 
@@ -280,7 +293,7 @@ class State:
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
             log('adding region for global var: %r' % var)
-            region = Region(var.name, None)
+            region = RegionForGlobal(var)
             # it is its own region:
             self.region_for_var[var] = region
 
