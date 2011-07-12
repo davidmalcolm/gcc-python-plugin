@@ -151,10 +151,10 @@ class MyState(State):
                 success.assign(stmt.lhs, nonnull)
                 success = Transition(self,
                                      success,
-                                     '%s() succeeded' % fnname)
+                                     '%s() succeeds' % fnname)
                 failure = self.make_assignment(stmt.lhs,
                                                NullPtrValue(),
-                                               '%s() failed' % fnname)
+                                               '%s() fails' % fnname)
                 return [success, failure]
             # Function returning borrowed references:
             elif fnname in ('Py_InitModule4_64',):
@@ -331,17 +331,44 @@ def check_refcounts(fun, show_traces):
             # This trace bails early with a fatal error; it probably doesn't
             # have a return value
             log('trace.err: %s %r' % (trace.err, trace.err))
-            gcc.permerror(trace.err.loc,
-                          str(trace.err))
+            gcc.error(trace.err.loc,
+                      str(trace.err))
             describe_trace(trace)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
         return_value = trace.return_value()
         log('trace.return_value(): %s' % trace.return_value())
+
         # Ideally, we should "own" exactly one reference, and it should be
         # the return value.  Anything else is an error (and there are other
         # kinds of error...)
+
+        # Locate all PyObject that we touched
+        endstate = trace.states[-1]
+        endstate.log(log, 0)
+        # print('return_value: %r' % return_value)
+        # print('endstate.region_for_var: %r' % endstate.region_for_var)
+        # print('endstate.value_for_region: %r' % endstate.value_for_region)
+        if 1: # return_value is not NULL
+            ob_refcnt = endstate.get_value_of_field_by_region(return_value,
+                                                              'ob_refcnt')
+            # print('ob_refcnt: %r' % ob_refcnt)
+            if isinstance(ob_refcnt, RefcountValue):
+                if ob_refcnt.relvalue > 1:
+                    # too high
+                    gcc.error(endstate.get_gcc_loc(),
+                              'ob_refcnt of return value is %i too high' % (ob_refcnt.relvalue - 1))
+                    describe_trace(trace)
+                elif ob_refcnt.relvalue < 1:
+                    # too low
+                    gcc.error(endstate.get_gcc_loc(),
+                              'ob_refcnt of return value is %i too low' % (1 - ob_refcnt.relvalue))
+                    describe_trace(trace)
+
+        #for k in endstate.region_for_var:
+        #    log(k)
+
         final_refs = trace.final_references()
         if return_value in final_refs:
             final_refs.remove(return_value)

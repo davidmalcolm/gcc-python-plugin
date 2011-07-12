@@ -491,18 +491,6 @@ class RefcountErrorTests(AnalyzerTests):
         self.add_module(sm, methods)
         return sm
 
-    def test_too_many_increfs(self):
-        sm = self.make_mod_method('too_many_increfs',
-            '    PyObject *tmp;\n'
-            '    tmp = PyLong_FromLong(0x1000);\n'
-            '    /* This INCREF is redundant, and introduces a leak: */\n'
-            '    Py_INCREF(tmp);\n'
-            '    return tmp;\n')
-        experr = ('$(SRCFILE): In function ‘too_many_increfs’:\n'
-                  '$(SRCFILE):19:5: error: additional Py_INCREF() [-fpermissive]\n'
-                  )
-        self.assertFindsError(sm, experr)
-
     def test_missing_decref(self):
         sm = self.make_mod_method('missing_decref',
             '    PyObject *list;\n'

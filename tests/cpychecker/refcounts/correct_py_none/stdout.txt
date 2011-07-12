@@ -1,1 +1,2 @@
 _Py_NoneStruct.ob_refcnt: RefcountValue(1)
+state.return_rvalue: Region('_Py_NoneStruct')

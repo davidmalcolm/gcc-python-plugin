@@ -26,15 +26,26 @@ def verify_traces(optpass, fun):
         if fun:
             traces = get_traces(fun)
 
-            # We should have a single trace
-            #print('traces: %r' % traces)
-            assert len(traces) == 1
+            # We should have two traces
+            # print('traces: %r' % traces)
+            assert len(traces) == 2
+
+            # Verify the "success" trace:
             state = traces[0].states[-1]
-            print('_Py_NoneStruct.ob_refcnt: %r'
-                  % state.get_value_of_field_by_varname('_Py_NoneStruct', 'ob_refcnt'))
-            print('state.return_rvalue: %r' % state.return_rvalue)
+            print('Trace 0:')
+            r = state.return_rvalue
+            print('  returned: %r' %r)
+            print('  r->ob_refcnt: %r' % state.get_value_of_field_by_region(r, 'ob_refcnt'))
+
+            # Verify the "fail" trace:
+            state = traces[1].states[-1]
+            print('Trace 1:')
+            print('  error: %r' % traces[1].err)
+            print('  error: %s' % traces[1].err)
+            print('  returned: %r' % state.return_rvalue)
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       verify_traces)
 
+from libcpychecker import main
 main(verify_refcounting=True)

@@ -50,7 +50,15 @@ class InvalidlyNullParameter(PredictedError):
 
 
 class NullPtrDereference(PredictedError):
-    pass
+    def __init__(self, state, cr):
+        assert isinstance(state, State)
+        assert isinstance(cr, gcc.ComponentRef)
+        self.state = state
+        self.cr = cr
+
+    def __str__(self):
+        return ('dereferencing NULL (%s) at %s'
+                % (self.cr, self.state.loc.get_stmt().loc))
 
 class UnknownValue(AbstractValue):
     def __str__(self):
@@ -242,14 +250,11 @@ class State:
             region = self.get_field_region(expr)#.target, expr.field.name)
             value = self.get_store(region)
             return value
-        if 0: # isinstance(expr, gcc.AddrExpr):
-            #log(dir(expr))
-            #log(expr.operand)
-            # Handle Py_None, which is a #define of (&_Py_NoneStruct)
+        if isinstance(expr, gcc.AddrExpr):
+            log(expr.operand)
             if isinstance(expr.operand, gcc.VarDecl):
-                if expr.operand.name == '_Py_NoneStruct':
-                    # FIXME: do we need a stmt?
-                    return PtrToGlobal(1, None, expr.operand.name)
+                region = self.var_region(expr.operand)
+                return region
         if expr is None:
             return None
         return UnknownValue(expr.type, None) # FIXME
@@ -274,7 +279,7 @@ class State:
         assert isinstance(var, gcc.VarDecl)
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
-            log('adding region for global var')
+            log('adding region for global var %r' % var.name)
             region = Region(var.name, None)
             # it is its own region:
             self.region_for_var[var] = region
@@ -299,7 +304,7 @@ class State:
                 if isinstance(cr.target, gcc.MemRef):
                     ptr = self.eval_expr(cr.target.operand)
                     if isinstance(ptr, NullPtrValue):
-                        raise NullPtrDereference()
+                        raise NullPtrDereference(self, cr)
                     return self.make_field_region(ptr, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
                     log('bar')
@@ -392,6 +397,9 @@ class State:
     def has_returned(self):
         return self.return_rvalue is not None
 
+    def get_gcc_loc(self):
+        return self.loc.get_stmt().loc
+
 class Transition:
     def __init__(self, src, dest, desc):
         assert isinstance(src, State)
@@ -409,14 +417,16 @@ class Transition:
         self.dest.log(logger, indent + 1)
 
 class Trace:
-    """A sequence of State"""
+    """A sequence of States and Transitions"""
     def __init__(self):
         self.states = []
+        self.transitions = []
         self.err = None
 
-    def add(self, state):
-        assert isinstance(state, State)
-        self.states.append(state)
+    def add(self, transition):
+        assert isinstance(transition, Transition)
+        self.states.append(transition.dest)
+        self.transitions.append(transition)
         return self
 
     def add_error(self, err):
@@ -425,6 +435,7 @@ class Trace:
     def copy(self):
         t = Trace()
         t.states = self.states[:]
+        t.transitions = self.transitions[:]
         t.err = self.err # FIXME: should this be a copy?
         return t
 
@@ -522,7 +533,7 @@ def iter_traces(fun, stateclass, prefix=None):
         result = []
         for transition in transitions:
             # Recurse:
-            for trace in iter_traces(fun, stateclass, prefix.copy().add(transition.dest)):
+            for trace in iter_traces(fun, stateclass, prefix.copy().add(transition)):
                 result.append(trace)
         return result
     else:
@@ -598,6 +609,10 @@ def describe_trace(trace):
     # Print more details about the path through the function that
     # leads to the error:
     awaiting_target = None
+    for t in trace.transitions:
+        log('transition: %s' % t)
+        if t.desc:
+            gcc.inform(t.src.loc.get_stmt().loc, 'when %s' % t.desc)
     for j in range(len(trace.states)-1):
         state = trace.states[j]
         nextstate = trace.states[j+1]
