@@ -70,7 +70,7 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
     def state_id(self, state):
         return 'state%i' % id(state)
 
-    def state_to_dot_label(self, state):
+    def state_to_dot_label(self, state, prevstate):
         result = '<table cellborder="0" border="0" cellspacing="0">\n'
 
         # Show data:
@@ -82,16 +82,39 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
         for key in state.region_for_var:
             region = state.region_for_var[key]
             value = state.value_for_region.get(region, None)
+
+            # Highlight new and changing values:
+            is_new_key = True
+            is_different_value = False
+            if prevstate:
+                if key in prevstate.region_for_var:
+                    is_new_key = False
+                    prevregion = prevstate.region_for_var[key]
+                    prevvalue = prevstate.value_for_region.get(prevregion, None)
+                    if value != prevvalue:
+                        is_different_value = True
+
+            if is_new_key:
+                bgcolor = 'green'
+                value_bgcolor = 'green'
+            else:
+                bgcolor = None
+                if is_different_value:
+                    value_bgcolor = 'green'
+                else:
+                    value_bgcolor = None
+
             result += ('<tr> %s %s %s</tr>\n'
-                       % (self._dot_td(key),
-                          self._dot_td(region),
-                          self._dot_td(value)))
+                       % (self._dot_td(key, bgcolor=bgcolor),
+                          self._dot_td(region, bgcolor=bgcolor),
+                          self._dot_td(value, bgcolor=value_bgcolor)))
+
         # Show any return value:
         if state.return_rvalue:
             result += ('<tr> %s %s %s</tr>\n'
                        % (self._dot_td(''),
-                          self._dot_td('Return Value'),
-                          self._dot_td(state.return_rvalue)))
+                          self._dot_td('Return Value', bgcolor='green'),
+                          self._dot_td(state.return_rvalue, bgcolor='green')))
         result += '</table></td></tr>'
 
         # Show location:
@@ -116,10 +139,10 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
         result += '  label="State Transitions";\n'
         result += '  node [shape=box];\n'
         for state in self.sg.states:
-
+            prevstate = self.sg.get_prev_state(state)
             result += ('  %s [label=<%s>];\n'
                        % (self.state_id(state),
-                          self.state_to_dot_label(state)))
+                          self.state_to_dot_label(state, prevstate)))
 
             #result += ('  %s -> %s:stmt%i;\n'
             #           % (self.state_id(state),

@@ -602,6 +602,14 @@ class StateGraph:
             # We're at a terminating state:
             logger('FINISHED TRACE')
 
+    def get_prev_state(self, state):
+        assert state in self.states
+        for t in self.transitions:
+            if t.dest == state:
+                return t.src
+        # Not found:
+        return None
+
 def extra_text(msg, indent):
     sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
 
