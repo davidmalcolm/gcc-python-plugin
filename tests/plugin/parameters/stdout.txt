@@ -27,17 +27,17 @@ class Parameter(__builtin__.object)
  |  __new__ = <built-in method __new__ of type object>
  |      T.__new__(S, ...) -> a new object with type S, a subtype of T
 
-ggc-min-expand
-  param.option: 'ggc-min-expand'
-  param.current_value: 62
-  param.default_value: 62
-  param.max_value: 0
+struct-reorg-cold-struct-ratio
+  param.option: 'struct-reorg-cold-struct-ratio'
+  param.current_value: 10
+  param.default_value: 10
+  param.max_value: 100
   param.min_value: 0
-  param.help: 'Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap'
-ggc-min-heapsize
-  param.option: 'ggc-min-heapsize'
-  param.current_value: 60567
-  param.default_value: 60567
-  param.max_value: 0
+  param.help: 'The threshold ratio between current and hottest structure counts'
+predictable-branch-outcome
+  param.option: 'predictable-branch-outcome'
+  param.current_value: 2
+  param.default_value: 2
+  param.max_value: 50
   param.min_value: 0
-  param.help: 'Minimum heap size before we start collecting garbage, in kilobytes'
+  param.help: 'Maximal estimated outcome of branch considered predictable'

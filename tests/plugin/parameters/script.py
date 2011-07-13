@@ -31,11 +31,11 @@ def print_param_named(name):
                  'help'):
         print('  param.%s: %r' % (attr, getattr(param, attr)))
 
-print_param_named('ggc-min-expand')
-print_param_named('ggc-min-heapsize')
+print_param_named('struct-reorg-cold-struct-ratio')
+print_param_named('predictable-branch-outcome')
 
 # Verify that paramters can be set via "current_value":
-p = params['ggc-min-expand']
+p = params['predictable-branch-outcome']
 assert p.current_value > 0
 p.current_value = 0
 assert p.current_value == 0
