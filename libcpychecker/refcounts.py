@@ -451,47 +451,6 @@ def check_refcounts(fun, show_traces):
                             gcc.inform(endstate.get_gcc_loc(),
                                        'consider using "Py_RETURN_NONE;"')
 
-        final_refs = trace.final_references()
-        if return_value in final_refs:
-            final_refs.remove(return_value)
-        else:
-            if isinstance(return_value, NonNullPtrValue):
-                gcc.permerror(trace.get_last_stmt().loc,
-                              ('return of PyObject* (%s)'
-                               ' without Py_INCREF()'
-                               % return_value))
-
-        # Anything remaining is a leak:
-        if len(final_refs) > 0:
-            for ref in final_refs:
-                gcc.permerror(ref.stmt.loc,
-                              'leak of PyObject* reference acquired at %s'
-                              % describe_stmt(ref.stmt))
-                log('ref: %s' % ref, 1)
-                # Print more details about the path through the function that
-                # leads to the error:
-                for j in range(len(trace.states)):
-                    state = trace.states[j]
-                    stmt = state.loc.get_stmt()
-                    if isinstance(stmt, gcc.GimpleCond):
-                        nextstate = trace.states[j+1]
-                        next_stmt = nextstate.loc.get_stmt()
-                        extra_text('%s: taking %s path at %s'
-                                   % (stmt.loc,
-                                      nextstate.prior_bool,
-                                      get_src_for_loc(stmt.loc)), 1)
-                        #log(next_stmt, 3)
-                        # FIXME: phi nodes don't have locations:
-                        if hasattr(next_stmt, 'loc'):
-                            if next_stmt.loc:
-                                extra_text('%s: reaching here %s'
-                                           % (next_stmt.loc,
-                                              get_src_for_loc(next_stmt.loc)),
-                                           2)
-                extra_text('%s: returning %s'
-                           % (ref.stmt.loc, return_value),
-                           1) # FIXME: loc is wrong
-
     if 0:
         dot = cfg_to_dot(fun.cfg)
         invoke_dot(dot)
