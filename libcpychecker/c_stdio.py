@@ -19,7 +19,7 @@
 # Only partial coverage so var
 import gcc
 
-from absinterp import AbstractValue, NullPtrValue, InvalidlyNullParameter
+from absinterp import AbstractValue, ConcreteValue, InvalidlyNullParameter
 
 class InternalCheckerError(Exception):
     pass

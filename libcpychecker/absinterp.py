@@ -110,19 +110,6 @@ def describe_stmt(stmt):
     else:
         return str(stmt.loc)
 
-class NonNullPtrValue(PtrValue):
-    def __init__(self, refdelta, stmt):
-        PtrValue.__init__(self, True)
-        self.refdelta = refdelta
-        self.stmt = stmt
-
-    def __str__(self):
-        return ('non-NULL(%s refs) acquired at %s'
-                % (self.refdelta, describe_stmt(self.stmt)))
-
-    def __repr__(self):
-        return 'NonNullPtrValue(%i)' % self.refdelta
-
 class Location:
     """A location within a CFG: a gcc.BasicBlock together with an index into
     the gimple list.  (We don't support SSA passes)"""

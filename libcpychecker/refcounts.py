@@ -127,6 +127,80 @@ class MyState(State):
         else:
             raise "foo"
 
+    def impl_object_ctor(self, stmt, typename):
+        """
+        Given a gcc.GimpleCall to a Python API function that returns a
+        PyObject*, generate a [success, failure] pair of Transitions
+        """
+        assert isinstance(stmt, gcc.GimpleCall)
+        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
+        assert isinstance(typename, str)
+        # the C identifier of the global PyTypeObject for the type
+        # FIXME: not yet used
+
+        fnname = stmt.fn.operand.name
+
+        # Allocation and assignment:
+        success = self.copy()
+        success.loc = self.loc.next_loc()
+        nonnull = success.make_heap_region()
+        ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+        success.value_for_region[ob_refcnt] = RefcountValue(1)
+        success.assign(stmt.lhs, nonnull)
+        success = Transition(self,
+                             success,
+                             '%s() succeeds' % fnname)
+        failure = self.make_assignment(stmt.lhs,
+                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       '%s() fails' % fnname)
+        return [success, failure]
+
+    def make_concrete_return_of(self, stmt, value):
+        """
+        Clone this state (at a function call), updating the location, and
+        setting the result of the call to the given concrete value
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        if stmt.lhs:
+            newstate.assign(stmt.lhs,
+                            ConcreteValue(stmt.lhs.type, stmt.loc, value))
+        return newstate
+
+    # Specific Python API function implementations:
+    def impl_PyList_New(self, stmt):
+        success, failure = self.impl_object_ctor(stmt, 'PyList_Type')
+        return [success, failure]
+
+    def impl_PyLong_FromLong(self, stmt):
+        success, failure = self.impl_object_ctor(stmt, 'PyLong_Type')
+        return [success, failure]
+
+    def impl_PyList_SetItem(self, stmt):
+        # int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
+        fnname = stmt.fn.operand.name
+
+        # Is it really a list?
+        not_a_list = self.make_concrete_return_of(stmt, -1)
+        # FIXME: can we check that it's a list?
+
+        # Index out of range?
+        out_of_range = self.make_concrete_return_of(stmt, -1)
+
+        success  = self.make_concrete_return_of(stmt, 0)
+        # FIXME: update refcounts
+        # Note This function "steals" a reference to item and discards a
+        # reference to an item already in the list at the affected position.
+        return [Transition(self,
+                           not_a_list,
+                           '%s() fails (not a list)' % fnname),
+                Transition(self,
+                           out_of_range,
+                           '%s() fails (index out of range)' % fnname),
+                Transition(self,
+                           success,
+                           '%s() succeeds' % fnname)]
+
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
@@ -138,30 +212,14 @@ class MyState(State):
             log('dir(stmt.fn.operand): %s' % dir(stmt.fn.operand), 4)
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
             fnname = stmt.fn.operand.name
-            # Function returning new references:
-            if fnname in ('PyList_New', 'PyLong_FromLong'):
-                #nonnull = NonNullPtrValue(1, stmt)
 
-                # Allocation and assignment:
-                success = self.copy()
-                success.loc = self.loc.next_loc()
-                nonnull = success.make_heap_region()
-                ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                success.value_for_region[ob_refcnt] = RefcountValue(1)
-                success.assign(stmt.lhs, nonnull)
-                success = Transition(self,
-                                     success,
-                                     '%s() succeeds' % fnname)
-                failure = self.make_assignment(stmt.lhs,
-                                               ConcreteValue(stmt.lhs.type, stmt.loc, 0),
-                                               '%s() fails' % fnname)
-                return [success, failure]
+            if fnname in ('PyList_New', 'PyLong_FromLong', 'PyList_SetItem'):
+                meth = getattr(self, 'impl_%s' % fnname)
+                return meth(stmt)
             # Function returning borrowed references:
             elif fnname in ('Py_InitModule4_64',):
                 return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
                         self.make_assignment(stmt.lhs, NullPtrValue())]
-            #elif fnname in ('PyList_SetItem'):
-            #    pass
             else:
                 #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
 
@@ -222,10 +280,11 @@ class MyState(State):
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.EqExpr:
-            if isinstance(lhs, NonNullPtrValue) and rhs == 0:
-                return False
-            if isinstance(lhs, ConcreteValue):
-                return lhs.value == rhs
+            if isinstance(rhs, ConcreteValue):
+                if isinstance(lhs, Region) and rhs.value == 0:
+                    return False
+                if isinstance(lhs, ConcreteValue):
+                    return lhs.value == rhs.value
         log('got here')
         return UnknownValue(stmt.lhs.type, stmt.loc)
 

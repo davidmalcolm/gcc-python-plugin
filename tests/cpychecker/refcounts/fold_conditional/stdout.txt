@@ -1,0 +1,5 @@
+Trace 0:
+  returned: Region('heap_region_1')
+  r->ob_refcnt: RefcountValue(1)
+Trace 1:
+  returned: (struct PyObject *)0L
