@@ -472,7 +472,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             log('trace.err: %s %r' % (trace.err, trace.err))
             gcc.error(trace.err.loc,
                       str(trace.err))
-            describe_trace(trace)
+            describe_trace(trace, fun)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
@@ -519,17 +519,19 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             if isinstance(ob_refcnt, RefcountValue):
                 if ob_refcnt.relvalue > exp_refcnt:
                     # too high
-                    gcc.error(endstate.get_gcc_loc(),
+                    # FIXME: Better to give the loc where it was allocated? (for dynalloc; for others, then the return location?)
+                    gcc.error(endstate.get_gcc_loc(fun),
                               'ob_refcnt of %s is %i too high' % (desc, ob_refcnt.relvalue - exp_refcnt))
-                    describe_trace(trace)
+                    describe_trace(trace, fun)
                 elif ob_refcnt.relvalue < exp_refcnt:
                     # too low
-                    gcc.error(endstate.get_gcc_loc(),
+                    # FIXME: Better to give the loc where it was allocated?
+                    gcc.error(endstate.get_gcc_loc(fun),
                               'ob_refcnt of %s is %i too low' % (desc, exp_refcnt - ob_refcnt.relvalue))
-                    describe_trace(trace)
+                    describe_trace(trace, fun)
                     if isinstance(return_value, RegionForGlobal):
                         if return_value.vardecl.name == '_Py_NoneStruct':
-                            gcc.inform(endstate.get_gcc_loc(),
+                            gcc.inform(endstate.get_gcc_loc(fun),
                                        'consider using "Py_RETURN_NONE;"')
 
     if 0:

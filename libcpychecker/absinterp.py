@@ -413,8 +413,22 @@ class State:
     def has_returned(self):
         return self.return_rvalue is not None
 
-    def get_gcc_loc(self):
+    def get_gcc_loc_or_none(self):
+        # Return the gcc.Location for this state, which could be None
         return self.loc.get_stmt().loc
+
+    def get_gcc_loc(self, fun):
+        # Return a non-None gcc.Location for this state
+        # Some statements have None for their location, but gcc.error() etc
+        # don't allow this.  Use the end of the function for this case.
+        log('%s %r' % (self.loc.get_stmt(), self.loc.get_stmt()))
+        log(self.loc.get_stmt().loc)
+        # grrr... not all statements have a non-NULL location
+        gccloc = self.loc.get_stmt().loc
+        if gccloc is None:
+            gccloc = fun.end
+        return gccloc
+
 
 class Transition:
     def __init__(self, src, dest, desc):
@@ -629,14 +643,29 @@ class StateGraph:
 def extra_text(msg, indent):
     sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
 
-def describe_trace(trace):
+def describe_trace(trace, fun):
     # Print more details about the path through the function that
     # leads to the error:
     awaiting_target = None
     for t in trace.transitions:
         log('transition: %s' % t)
         if t.desc:
-            gcc.inform(t.src.loc.get_stmt().loc, 'when %s' % t.desc)
+            srcloc = t.src.get_gcc_loc_or_none()
+            if srcloc:
+                gcc.inform(t.src.get_gcc_loc(fun),
+                           ('when %s at: %s'
+                            % (t.desc, get_src_for_loc(srcloc))))
+            else:
+                gcc.inform(t.src.get_gcc_loc(fun),
+                           'when %s' % t.desc)
+
+            if t.src.loc.bb != t.dest.loc.bb:
+                # Tell the user where conditionals reach:
+                destloc = t.dest.get_gcc_loc_or_none()
+                if destloc:
+                    gcc.inform(destloc,
+                               'reaching: %s' % get_src_for_loc(destloc))
+    return
     for j in range(len(trace.states)-1):
         state = trace.states[j]
         nextstate = trace.states[j+1]
