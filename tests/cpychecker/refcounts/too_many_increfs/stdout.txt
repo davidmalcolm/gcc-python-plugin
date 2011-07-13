@@ -1,5 +1,5 @@
 Trace 0:
-  returned: Region('heap_region_1')
+  returned: RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/too_many_increfs/input.c', line=26))
   r->ob_refcnt: RefcountValue(2)
 Trace 1:
   error: NullPtrDereference()

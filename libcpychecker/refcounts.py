@@ -127,7 +127,7 @@ class MyState(State):
         else:
             raise "foo"
 
-    def impl_object_ctor(self, stmt, typename):
+    def impl_object_ctor(self, stmt, typename, typeobjname):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
         PyObject*, generate a
@@ -137,10 +137,13 @@ class MyState(State):
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
         assert isinstance(typename, str)
+        # the C struct for the type
+
+        assert isinstance(typeobjname, str)
         # the C identifier of the global PyTypeObject for the type
 
         # Get the gcc.VarDecl for the global PyTypeObject
-        typeobjdecl = gccutils.get_global_vardecl_by_name(typename)
+        typeobjdecl = gccutils.get_global_vardecl_by_name(typeobjname)
         assert isinstance(typeobjdecl, gcc.VarDecl)
 
         fnname = stmt.fn.operand.name
@@ -149,7 +152,7 @@ class MyState(State):
         success = self.copy()
         success.loc = self.loc.next_loc()
         typeobjregion = success.var_region(typeobjdecl)
-        nonnull = success.make_heap_region()
+        nonnull = success.make_heap_region(typename, stmt)
         ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
         success.value_for_region[ob_refcnt] = RefcountValue(1)
         ob_type = success.make_field_region(nonnull, 'ob_type')
@@ -193,14 +196,16 @@ class MyState(State):
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
         lenarg = self.eval_expr(stmt.args[0])
-        newobj, success, failure = self.impl_object_ctor(stmt, 'PyList_Type')
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyListObject', 'PyList_Type')
         # Set ob_size:
         ob_size = success.dest.make_field_region(newobj, 'ob_size')
         success.dest.value_for_region[ob_size] = lenarg
         return [success, failure]
 
     def impl_PyLong_FromLong(self, stmt):
-        newobj, success, failure = self.impl_object_ctor(stmt, 'PyLong_Type')
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
     def impl_PyList_SetItem(self, stmt):
@@ -538,21 +543,39 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                 exp_refcnt = 1
             else:
                 desc = 'PyObject'
+                # We may have a more descriptive name within the region:
+                if isinstance(region, RegionOnHeap):
+                    desc = region.name
                 exp_refcnt = 0
             log('exp_refcnt: %r' % exp_refcnt, 0)
+
+            # Helper function for when ob_refcnt is wrong:
+            def emit_refcount_error(msg):
+                gcc.error(endstate.get_gcc_loc(fun), msg)
+
+                # For dynamically-allocated objects, indicate where they
+                # were allocated:
+                if isinstance(region, RegionOnHeap):
+                    alloc_loc = region.alloc_stmt.loc
+                    if alloc_loc:
+                        gcc.inform(region.alloc_stmt.loc,
+                                   ('%s allocated at: %s'
+                                    % (region.name, get_src_for_loc(alloc_loc))))
+
+                # Summarize the control flow we followed through the function:
+                describe_trace(trace, fun)
+
+            # Here's where we verify the refcount:
             if isinstance(ob_refcnt, RefcountValue):
                 if ob_refcnt.relvalue > exp_refcnt:
-                    # too high
-                    # FIXME: Better to give the loc where it was allocated? (for dynalloc; for others, then the return location?)
-                    gcc.error(endstate.get_gcc_loc(fun),
-                              'ob_refcnt of %s is %i too high' % (desc, ob_refcnt.relvalue - exp_refcnt))
-                    describe_trace(trace, fun)
+                    # Refcount is too high:
+                    emit_refcount_error('ob_refcnt of %s is %i too high'
+                                        % (desc, ob_refcnt.relvalue - exp_refcnt))
                 elif ob_refcnt.relvalue < exp_refcnt:
-                    # too low
-                    # FIXME: Better to give the loc where it was allocated?
-                    gcc.error(endstate.get_gcc_loc(fun),
-                              'ob_refcnt of %s is %i too low' % (desc, exp_refcnt - ob_refcnt.relvalue))
-                    describe_trace(trace, fun)
+                    # Refcount is too low:
+                    emit_refcount_error('ob_refcnt of %s is %i too low'
+                                        % (desc, exp_refcnt - ob_refcnt.relvalue))
+                    # Special-case hint for when None has too low a refcount:
                     if isinstance(return_value, RegionForGlobal):
                         if return_value.vardecl.name == '_Py_NoneStruct':
                             gcc.inform(endstate.get_gcc_loc(fun),

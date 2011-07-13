@@ -1,5 +1,6 @@
 tests/cpychecker/refcounts/too_many_increfs/input.c: In function ‘too_many_increfs’:
 tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: error: ob_refcnt of return value is 1 too high
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: PyLongObject allocated at:     tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() succeeds at:     tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: when returning at:     return tmp;
 tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: error: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30

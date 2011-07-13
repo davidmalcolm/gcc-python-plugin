@@ -7,13 +7,13 @@ Trace 0:
     'PyList_SetItem() succeeds'
     'returning'
   Return value:
-    repr(): Region('heap_region_0')
-    str(): Region('heap_region_0')
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=27))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/missing_decref/input.c:27
     r->ob_refcnt: RefcountValue(1)
     r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
-  Region('heap_region_1'):
-    repr(): Region('heap_region_1')
-    str(): Region('heap_region_1')
+  PyLongObject allocated at tests/cpychecker/refcounts/missing_decref/input.c:30:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=30))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/missing_decref/input.c:30
     r->ob_refcnt: RefcountValue(0)
     r->ob_type: RegionForGlobal(gcc.VarDecl('PyLong_Type'))
 
@@ -27,9 +27,9 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
     str(): (struct PyObject *)0L
-  Region('heap_region_0'):
-    repr(): Region('heap_region_0')
-    str(): Region('heap_region_0')
+  PyListObject allocated at tests/cpychecker/refcounts/missing_decref/input.c:27:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=27))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/missing_decref/input.c:27
     r->ob_refcnt: RefcountValue(1)
     r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
 

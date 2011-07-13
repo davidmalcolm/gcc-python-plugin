@@ -177,8 +177,20 @@ class RegionForGlobal(Region):
     def __repr__(self):
         return 'RegionForGlobal(%r)' % self.vardecl
 
-# Used for making unique IDs:
-num_heap_regions = 0
+class RegionOnHeap(Region):
+    """
+    Represents an area of memory allocated on the heap
+    """
+    def __init__(self, name, alloc_stmt):
+        assert isinstance(alloc_stmt, gcc.Gimple)
+        Region.__init__(self, name, None)
+        self.alloc_stmt = alloc_stmt
+
+    def __repr__(self):
+        return 'RegionOnHeap(%r, %r)' % (self.name, self.alloc_stmt.loc)
+
+    def __str__(self):
+        return '%s allocated at %s' % (self.name, self.alloc_stmt.loc)
 
 class State:
     """A Location with memory state"""
@@ -335,10 +347,8 @@ class State:
         # self.log(log, 0)
         return self.value_for_region[region]
 
-    def make_heap_region(self):
-        global num_heap_regions
-        region = Region('heap_region_%i' % num_heap_regions, None)
-        num_heap_regions += 1
+    def make_heap_region(self, name, stmt):
+        region = RegionOnHeap(name, stmt)
         # it is its own region:
         self.region_for_var[region] = region
         return region
