@@ -39,6 +39,16 @@ class AbstractValue:
     def __repr__(self):
         return 'AbstractValue(gcctype=%r, loc=%r)' % (str(self.gcctype), self.loc)
 
+class UnknownValue(AbstractValue):
+    """
+    A value that we know nothing about
+    """
+    def __str__(self):
+        return 'unknown %s from %s' % (self.gcctype, self.loc)
+
+    def __repr__(self):
+        return 'UnknownValue(gcctype=%r, loc=%r)' % (self.gcctype, self.loc)
+
 class ConcreteValue(AbstractValue):
     """
     A known, specific value (e.g. 0)
@@ -86,13 +96,6 @@ class NullPtrDereference(PredictedError):
     def __str__(self):
         return ('dereferencing NULL (%s) at %s'
                 % (self.cr, self.state.loc.get_stmt().loc))
-
-class UnknownValue(AbstractValue):
-    def __str__(self):
-        return 'unknown %s from %s' % (self.gcctype, self.stmt)
-
-    def __repr__(self):
-        return 'UnknownValue(%r, %r)' % (self.gcctype, self.stmt)
 
 class PtrValue(AbstractValue):
     """An abstract (PyObject*) value"""

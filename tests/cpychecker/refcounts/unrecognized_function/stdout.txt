@@ -1,0 +1,2 @@
+Trace 0:
+  returned: unknown struct PyObject * from tests/cpychecker/refcounts/unrecognized_function/input.c:31

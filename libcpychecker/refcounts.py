@@ -163,15 +163,15 @@ class MyState(State):
             #elif fnname in ('PyList_SetItem'):
             #    pass
             else:
-                from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
+                #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
 
-                if fnname in c_stdio_functions:
-                    return handle_c_stdio_function(self, fnname, stmt)
+                #if fnname in c_stdio_functions:
+                #    return handle_c_stdio_function(self, fnname, stmt)
 
                 # Unknown function:
                 log('Invocation of unknown function: %r' % fnname)
                 return [self.make_assignment(stmt.lhs,
-                                             UnknownValue(returntype, stmt),
+                                             UnknownValue(returntype, stmt.loc),
                                              None)]
 
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
@@ -227,7 +227,7 @@ class MyState(State):
             if isinstance(lhs, ConcreteValue):
                 return lhs.value == rhs
         log('got here')
-        return UnknownValue(None, stmt)
+        return UnknownValue(stmt.lhs.type, stmt.loc)
 
     def eval_rhs(self, stmt):
         rhs = stmt.rhs
