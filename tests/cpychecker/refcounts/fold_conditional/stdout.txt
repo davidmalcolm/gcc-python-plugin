@@ -2,5 +2,6 @@ Trace 0:
   returned: Region('heap_region_1')
   r->ob_refcnt: RefcountValue(1)
   r->ob_size: ConcreteValue(gcctype='Py_ssize_t', loc=None, value=5L)
+  r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
 Trace 1:
   returned: (struct PyObject *)0L

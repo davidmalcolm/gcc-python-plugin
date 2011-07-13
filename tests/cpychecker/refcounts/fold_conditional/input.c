@@ -30,14 +30,26 @@ fold_conditional(PyObject *self, PyObject *args)
 
     /*
        Try a useless conditional to verify that the analyser knows it's
-       true:
+       false:
     */
-    if (PyList_GET_SIZE(list) == 5) {
+    if (PyList_GET_SIZE(list) != 5) {
+        /* The analyser should figure out that we can never get here: */
         return list;
     }
 
-    /* The analyser should figure out that we can never get here: */
-    return (PyObject*)-1;
+    /*
+      Try another useless conditional, to verify that the analyser knows
+      it's false:
+    */
+    if (Py_TYPE(list) != &PyList_Type) {
+        /*
+	  Likewise, the analyser should figure out that we can never get
+	  here:
+	*/
+        return list;
+    }
+
+    return list;
 }
 static PyMethodDef test_methods[] = {
     {"test_method",  fold_conditional, METH_VARARGS, NULL},

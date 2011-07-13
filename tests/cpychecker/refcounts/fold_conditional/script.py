@@ -42,6 +42,8 @@ def verify_traces(optpass, fun):
             print('  r->ob_refcnt: %r' % state.get_value_of_field_by_region(r, 'ob_refcnt'))
             # Verify that we know "ob_size" of the returned value:
             print('  r->ob_size: %r' % state.get_value_of_field_by_region(r, 'ob_size'))
+            # Verify that we know "ob_type" of the returned value:
+            print('  r->ob_type: %r' % state.get_value_of_field_by_region(r, 'ob_type'))
 
             # Verify the "fail" trace:
             state = traces[1].states[-1]

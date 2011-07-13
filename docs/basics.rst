@@ -462,6 +462,12 @@ Global data access
       that name, returning it as a :py:class:`gcc.TypeDecl`, or None if it
       wasn't found
 
+.. py:function:: gccutils.get_global_vardecl_by_name(name)
+
+      Given a string `name`, look for a C/C++ variable in global scope with
+      that name, returning it as a :py:class:`gcc.VarDecl`, or None if it
+      wasn't found
+
 
 Working with source code
 ========================

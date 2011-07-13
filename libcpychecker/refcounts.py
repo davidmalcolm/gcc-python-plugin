@@ -138,16 +138,22 @@ class MyState(State):
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
         assert isinstance(typename, str)
         # the C identifier of the global PyTypeObject for the type
-        # FIXME: not yet used
+
+        # Get the gcc.VarDecl for the global PyTypeObject
+        typeobjdecl = gccutils.get_global_vardecl_by_name(typename)
+        assert isinstance(typeobjdecl, gcc.VarDecl)
 
         fnname = stmt.fn.operand.name
 
         # Allocation and assignment:
         success = self.copy()
         success.loc = self.loc.next_loc()
+        typeobjregion = success.var_region(typeobjdecl)
         nonnull = success.make_heap_region()
         ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
         success.value_for_region[ob_refcnt] = RefcountValue(1)
+        ob_type = success.make_field_region(nonnull, 'ob_type')
+        success.value_for_region[ob_type] = typeobjregion
         success.assign(stmt.lhs, nonnull)
         success = Transition(self,
                              success,
@@ -186,7 +192,8 @@ class MyState(State):
         return [success, failure]
 
     def impl_PyList_SetItem(self, stmt):
-        # int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
+        # Decl:
+        #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
         fnname = stmt.fn.operand.name
 
         # Is it really a list?
@@ -294,7 +301,19 @@ class MyState(State):
                     return False
                 if isinstance(lhs, ConcreteValue):
                     return lhs.value == rhs.value
-        log('got here')
+            if isinstance(rhs, Region):
+                if isinstance(lhs, Region):
+                    return lhs == rhs
+        elif stmt.exprcode == gcc.NeExpr:
+            if isinstance(rhs, ConcreteValue):
+                if isinstance(lhs, Region) and rhs.value == 0:
+                    return True
+                if isinstance(lhs, ConcreteValue):
+                    return lhs.value != rhs.value
+            if isinstance(rhs, Region):
+                if isinstance(lhs, Region):
+                    return lhs != rhs
+        log('unable to compare %r with %r' % (lhs, rhs))
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
     def eval_rhs(self, stmt):

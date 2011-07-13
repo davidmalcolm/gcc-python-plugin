@@ -37,6 +37,16 @@ def get_variables_as_dict():
         result[var.decl.name] = var
     return result
 
+def get_global_vardecl_by_name(name):
+    # Look up a variable in global scope by name, returning a gcc.VarDecl,
+    # or None if not found
+    result = {}
+    for u in gcc.get_translation_units():
+        for v in u.block.vars:
+            if isinstance(v, gcc.VarDecl):
+                if v.name == name:
+                    return v
+
 def invoke_dot(dot):
     from subprocess import Popen, PIPE
 
