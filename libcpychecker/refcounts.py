@@ -377,11 +377,78 @@ class MyState(State):
 def get_traces(fun):
     return list(iter_traces(fun, MyState))
 
-def check_refcounts(fun, show_traces):
+def dump_traces_to_stdout(traces):
+    """
+    For use in selftests: dump the traces to stdout, in a form that (hopefully)
+    will allow usable comparisons against "gold" output ( not embedding
+    anything that changes e.g. names of temporaries, address of wrapper
+    objects, etc)
+    """
+    def dump_object(region, title):
+        print('  %s:' % title)
+        print('    repr(): %r' % region)
+        print('    str(): %s' % region)
+        if isinstance(region, Region):
+            print('    r->ob_refcnt: %r'
+                  % endstate.get_value_of_field_by_region(region, 'ob_refcnt'))
+            print('    r->ob_type: %r'
+                  % endstate.get_value_of_field_by_region(region, 'ob_type'))
+
+    for i, trace in enumerate(traces):
+        print('Trace %i:' % i)
+
+        # Emit the "interesting transitions" i.e. those with descriptions:
+        print('  Transitions:')
+        for trans in trace.transitions:
+            if trans.desc:
+                print('    %r' % trans.desc)
+
+        # Emit information about the end state:
+        endstate = trace.states[-1]
+
+        if trace.err:
+            print('  error: %r' % trace.err)
+            print('  error: %s' % trace.err)
+
+        if endstate.return_rvalue:
+            dump_object(endstate.return_rvalue, 'Return value')
+
+        # Other affected PyObject instances:
+        for k in endstate.region_for_var:
+            if not isinstance(endstate.region_for_var[k], Region):
+                continue
+            region = endstate.region_for_var[k]
+
+            # Consider those for which we know something about an "ob_refcnt"
+            # field:
+            if 'ob_refcnt' not in region.fields:
+                continue
+
+            if region == endstate.return_rvalue:
+                # (We did the return value above)
+                continue
+
+            dump_object(region, str(region))
+
+        if i + 1 < len(traces):
+            print
+
+def check_refcounts(fun, dump_traces=False, show_traces=False):
+    """
+    The top-level function of the refcount checker, checking the refcounting
+    behavior of a function
+
+    fun: the gcc.Function to be checked
+
+    dump_traces: bool: if True, dump information about the traces through
+    the function to stdout (for self tests)
+
+    show_traces: bool: if True, display a diagram of the state transition graph
+    """
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
-    log('check_refcounts(%r, %r)' % (fun, show_traces))
+    log('check_refcounts(%r, %r, %r)' % (fun, dump_traces, show_traces))
 
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
@@ -393,23 +460,9 @@ def check_refcounts(fun, show_traces):
         invoke_dot(dot)
 
     traces = iter_traces(fun, MyState)
-    if show_traces:
+    if dump_traces:
         traces = list(traces)
-        for i, trace in enumerate(traces):
-            def my_logger(item, indent=0):
-                sys.stdout.write('%s%s\n' % ('  ' * indent, item))
-            trace.log(my_logger, 'TRACE %i' % i, 0)
-
-            # Show trace #0:
-            if 0: # i == 0:
-                from libcpychecker.visualizations import TracePrettyPrinter
-                tpp = TracePrettyPrinter(fun.cfg, trace)
-                dot = tpp.to_dot()
-                print dot
-                f = open('test.dot', 'w')
-                f.write(dot)
-                f.close()
-                invoke_dot(dot)
+        dump_traces_to_stdout(traces)
 
     for i, trace in enumerate(traces):
         trace.log(log, 'TRACE %i' % i, 0)

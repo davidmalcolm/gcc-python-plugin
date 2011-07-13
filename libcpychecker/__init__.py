@@ -21,12 +21,12 @@ from PyArg_ParseTuple import check_pyargs, log
 from refcounts import check_refcounts, get_traces
 
 def on_pass_execution(optpass, fun,
+                      dump_traces=False,
                       show_traces=False,
                       verify_refcounting=False,
                       *args, **kwargs):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
-    #log(optpass)
     if optpass.name == '*warn_function_return':
         if fun:
             log(fun)
@@ -34,7 +34,7 @@ def on_pass_execution(optpass, fun,
 
             # The refcount code is too buggy for now to be on by default:
             if verify_refcounting:
-                check_refcounts(fun, show_traces)
+                check_refcounts(fun, dump_traces, show_traces)
 
 def is_a_method_callback(decl):
     methods = get_all_PyMethodDef_methods()
