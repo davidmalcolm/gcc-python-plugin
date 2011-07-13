@@ -1,0 +1,43 @@
+Trace 0:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() succeeds'
+    'taking False path'
+    'PyList_SetItem() succeeds'
+    'returning'
+  Return value:
+    repr(): Region('heap_region_0')
+    str(): Region('heap_region_0')
+    r->ob_refcnt: RefcountValue(1)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
+  Region('heap_region_1'):
+    repr(): Region('heap_region_1')
+    str(): Region('heap_region_1')
+    r->ob_refcnt: RefcountValue(0)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyLong_Type'))
+
+Trace 1:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L
+  Region('heap_region_0'):
+    repr(): Region('heap_region_0')
+    str(): Region('heap_region_0')
+    r->ob_refcnt: RefcountValue(1)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
+
+Trace 2:
+  Transitions:
+    'PyList_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L

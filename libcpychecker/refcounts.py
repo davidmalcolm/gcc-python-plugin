@@ -175,6 +175,18 @@ class MyState(State):
                             ConcreteValue(stmt.lhs.type, stmt.loc, value))
         return newstate
 
+    def steal_reference(self, region):
+        log('steal_reference(%r)' % region)
+        assert isinstance(region, Region)
+        ob_refcnt = self.make_field_region(region, 'ob_refcnt')
+        value = self.value_for_region[ob_refcnt]
+        if isinstance(value, RefcountValue):
+            # We have a value known relative to all of the refs owned by the
+            # rest of the program.  Given that the rest of the program is
+            # stealing a ref, that is increasing by one, hence our value must
+            # go down by one:
+            self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1)
+
     # Specific Python API function implementations:
     def impl_PyList_New(self, stmt):
         # Decl:
@@ -196,26 +208,38 @@ class MyState(State):
         #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
         fnname = stmt.fn.operand.name
 
+        result = []
+
+        arg_list, arg_index, arg_item = [self.eval_expr(arg) for arg in stmt.args]
+
         # Is it really a list?
-        not_a_list = self.make_concrete_return_of(stmt, -1)
-        # FIXME: can we check that it's a list?
+        if 0: # FIXME: check
+            not_a_list = self.make_concrete_return_of(stmt, -1)
+            result.append(Transition(self,
+                           not_a_list,
+                           '%s() fails (not a list)' % fnname))
 
         # Index out of range?
-        out_of_range = self.make_concrete_return_of(stmt, -1)
-
-        success  = self.make_concrete_return_of(stmt, 0)
-        # FIXME: update refcounts
-        # Note This function "steals" a reference to item and discards a
-        # reference to an item already in the list at the affected position.
-        return [Transition(self,
-                           not_a_list,
-                           '%s() fails (not a list)' % fnname),
-                Transition(self,
+        if 0: # FIXME: check
+            out_of_range = self.make_concrete_return_of(stmt, -1)
+            result.append(Transition(self,
                            out_of_range,
-                           '%s() fails (index out of range)' % fnname),
-                Transition(self,
-                           success,
-                           '%s() succeeds' % fnname)]
+                           '%s() fails (index out of range)' % fnname))
+
+        if 1:
+            success  = self.make_concrete_return_of(stmt, 0)
+            # FIXME: update refcounts
+            # "Steal" a reference to item:
+            if isinstance(arg_item, Region):
+                success.steal_reference(arg_item)
+
+            # and discards a
+            # reference to an item already in the list at the affected position.
+            result.append(Transition(self,
+                                     success,
+                                     '%s() succeeds' % fnname))
+
+        return result
 
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
