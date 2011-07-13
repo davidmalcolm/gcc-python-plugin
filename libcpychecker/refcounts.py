@@ -130,7 +130,9 @@ class MyState(State):
     def impl_object_ctor(self, stmt, typename):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
-        PyObject*, generate a [success, failure] pair of Transitions
+        PyObject*, generate a
+           (newobj, success, failure)
+        triple, where newobj is a region, and success/failure are Transitions
         """
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
@@ -153,7 +155,7 @@ class MyState(State):
         failure = self.make_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '%s() fails' % fnname)
-        return [success, failure]
+        return (nonnull, success, failure)
 
     def make_concrete_return_of(self, stmt, value):
         """
@@ -169,11 +171,18 @@ class MyState(State):
 
     # Specific Python API function implementations:
     def impl_PyList_New(self, stmt):
-        success, failure = self.impl_object_ctor(stmt, 'PyList_Type')
+        # Decl:
+        #   PyObject* PyList_New(Py_ssize_t len)
+        # Returns a new reference, or raises MemoryError
+        lenarg = self.eval_expr(stmt.args[0])
+        newobj, success, failure = self.impl_object_ctor(stmt, 'PyList_Type')
+        # Set ob_size:
+        ob_size = success.dest.make_field_region(newobj, 'ob_size')
+        success.dest.value_for_region[ob_size] = lenarg
         return [success, failure]
 
     def impl_PyLong_FromLong(self, stmt):
-        success, failure = self.impl_object_ctor(stmt, 'PyLong_Type')
+        newobj, success, failure = self.impl_object_ctor(stmt, 'PyLong_Type')
         return [success, failure]
 
     def impl_PyList_SetItem(self, stmt):

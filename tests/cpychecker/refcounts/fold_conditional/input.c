@@ -27,7 +27,17 @@ fold_conditional(PyObject *self, PyObject *args)
     if (!list) {
         return NULL;
     }
-    return list;
+
+    /*
+       Try a useless conditional to verify that the analyser knows it's
+       true:
+    */
+    if (PyList_GET_SIZE(list) == 5) {
+        return list;
+    }
+
+    /* The analyser should figure out that we can never get here: */
+    return (PyObject*)-1;
 }
 static PyMethodDef test_methods[] = {
     {"test_method",  fold_conditional, METH_VARARGS, NULL},
