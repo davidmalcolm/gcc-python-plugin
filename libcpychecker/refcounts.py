@@ -26,6 +26,7 @@ import gcc
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 
 from absinterp import *
+from diagnostics import Reporter
 from PyArg_ParseTuple import log
 
 def stmt_is_assignment_to_count(stmt):
@@ -479,6 +480,8 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
     log('check_refcounts(%r, %r, %r)' % (fun, dump_traces, show_traces))
 
+    assert isinstance(fun, gcc.Function)
+
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
         sg = StateGraph(fun, log, MyState)
@@ -493,15 +496,16 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
         traces = list(traces)
         dump_traces_to_stdout(traces)
 
+    rep = Reporter()
+
     for i, trace in enumerate(traces):
         trace.log(log, 'TRACE %i' % i, 0)
         if trace.err:
             # This trace bails early with a fatal error; it probably doesn't
             # have a return value
             log('trace.err: %s %r' % (trace.err, trace.err))
-            gcc.error(trace.err.loc,
-                      str(trace.err))
-            describe_trace(trace, fun)
+            err = rep.make_error(fun, trace.err.loc, str(trace.err))
+            err.add_trace(trace)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
@@ -551,35 +555,41 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
             # Helper function for when ob_refcnt is wrong:
             def emit_refcount_error(msg):
-                gcc.error(endstate.get_gcc_loc(fun), msg)
+                err = rep.make_error(fun, endstate.get_gcc_loc(fun), msg)
 
                 # For dynamically-allocated objects, indicate where they
                 # were allocated:
                 if isinstance(region, RegionOnHeap):
                     alloc_loc = region.alloc_stmt.loc
                     if alloc_loc:
-                        gcc.inform(region.alloc_stmt.loc,
-                                   ('%s allocated at: %s'
-                                    % (region.name, get_src_for_loc(alloc_loc))))
+                        err.add_note(region.alloc_stmt.loc,
+                                     ('%s allocated at: %s'
+                                      % (region.name,
+                                         get_src_for_loc(alloc_loc))))
 
                 # Summarize the control flow we followed through the function:
-                describe_trace(trace, fun)
+                err.add_trace(trace)
+
+                return err
 
             # Here's where we verify the refcount:
             if isinstance(ob_refcnt, RefcountValue):
                 if ob_refcnt.relvalue > exp_refcnt:
                     # Refcount is too high:
-                    emit_refcount_error('ob_refcnt of %s is %i too high'
-                                        % (desc, ob_refcnt.relvalue - exp_refcnt))
+                    err = emit_refcount_error('ob_refcnt of %s is %i too high'
+                                              % (desc, ob_refcnt.relvalue - exp_refcnt))
                 elif ob_refcnt.relvalue < exp_refcnt:
                     # Refcount is too low:
-                    emit_refcount_error('ob_refcnt of %s is %i too low'
-                                        % (desc, exp_refcnt - ob_refcnt.relvalue))
+                    err = emit_refcount_error('ob_refcnt of %s is %i too low'
+                                              % (desc, exp_refcnt - ob_refcnt.relvalue))
                     # Special-case hint for when None has too low a refcount:
                     if isinstance(return_value, RegionForGlobal):
                         if return_value.vardecl.name == '_Py_NoneStruct':
-                            gcc.inform(endstate.get_gcc_loc(fun),
-                                       'consider using "Py_RETURN_NONE;"')
+                            err.add_note(endstate.get_gcc_loc(fun),
+                                         'consider using "Py_RETURN_NONE;"')
+
+    if rep.got_errors():
+        rep.dump_html(fun, '%s-refcount-errors.html' % fun.decl.name)
 
     if 0:
         dot = cfg_to_dot(fun.cfg)

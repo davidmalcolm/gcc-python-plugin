@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import gcc
 from gccutils import CfgPrettyPrinter, get_src_for_loc
 
 class StatePrettyPrinter(CfgPrettyPrinter):
@@ -167,3 +168,228 @@ class StateGraphPrettyPrinter(StatePrettyPrinter):
     #    result += self.extra_items()
     #    result += '}\n';
     #    return result
+
+class HtmlRenderer:
+    """
+    Render a function as HTML, possibly with annotations
+
+    Uses pygments to syntax-highlight the code.
+
+    The resulting HTML uses jsplumb to add lines indicating control flow:
+      http://code.google.com/p/jsplumb/
+    which requires JavaScript and the HTML <canvas> element
+    """
+    def __init__(self, fun):
+        assert isinstance(fun, gcc.Function)
+        self.fun = fun
+
+        from pygments.styles import get_style_by_name
+        from pygments.formatters import HtmlFormatter
+
+        # Get ready to use Pygments:
+        style = get_style_by_name('default')
+        self.formatter = HtmlFormatter(classprefix='source_')
+
+        self.trace_idx = 0
+
+    def make_header(self):
+        result = '<html>\n'
+        result += '  <head>\n'
+        result += '    <title>%s</title>\n' % self.fun.decl.name
+
+        # CSS defs, as part of the file:
+        result += '''    <style type="text/css">
+.unreached-line {
+    #margin:1em;
+    #border:0.1em dotted #00aa00;
+
+    opacity:1.0;
+    filter:alpha(opacity=0);
+    #color:black;
+}
+
+.reached-line {
+    #margin:1em;
+    #border:0.1em dotted #00aa00;
+    border: 0.1em solid blue;
+    font-weight: bold;
+
+    opacity:1.0;
+    filter:alpha(opacity=0);
+    #color:black;
+}
+
+.reached-lineno {
+    border: 0.1em solid blue;
+    font-weight: bold;
+}
+
+pre {
+    #line-height:200%
+}
+
+._jsPlumb_connector { z-index: -2; }
+._jsPlumb_endpoint { z-index: -1; }
+
+.transition {
+    #border: 0.1em dotted #ddffdd;
+    #padding: 1em;
+    margin-left: 5em;
+    font-family: proportional;
+    font-style: italic;
+    font-size: 90%;
+}
+
+.error {
+    #border: 0.1em dotted #ddffdd;
+    #padding: 1em;
+    margin-left: 5em;
+    color: red;
+    font-family: proportional;
+    font-weight: bold;
+    font-style: italic;
+    font-size: 90%;
+}
+
+.note {
+    #border: 0.1em dotted #ddffdd;
+    #padding: 1em;
+    margin-left: 5em;
+    font-family: proportional;
+    font-weight: bold;
+    font-style: italic;
+    font-size: 90%;
+}
+
+'''
+        result += self.formatter.get_style_defs()
+        result += '    </style>\n'
+
+        result += '  </head>\n'
+
+        result += '  <body>\n'
+
+        # Add scripts for jsplumb:
+        result += '<script type="text/javascript" src="http://explorercanvas.googlecode.com/svn/trunk/excanvas.js"></script>\n'
+        result += '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>\n'
+        result += '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>\n'
+        result += '<script type="text/javascript" src="http://jsplumb.googlecode.com/files/jquery.jsPlumb-1.2.6-all-min.js"></script>\n'
+
+        return result
+
+    def make_report(self, report):
+
+        # Heading:
+        result = '<table>\n'
+        result += '  <tr><td>File:</td> <td><b>%s</b></td></tr>\n' % self.fun.start.file
+        result += '  <tr><td>Function:</td> <td><b>%s</b></td></tr>\n' % self.fun.decl.name
+        result += '  <tr><td>Error:</td> <td><b>%s</b></td></tr>\n' % report.msg
+        result += '</table>\n'
+
+        # Render any trace that we have:
+        if report.trace:
+            result += self.make_html_for_trace(report, report.trace)
+            result += '<hr/>'
+        return result
+
+    def make_html_for_trace(self, report, trace):
+        start_line = self.fun.decl.location.line - 1
+        end_line = self.fun.end.line + 1
+
+        # Figure out which lines get executed.
+        # (Is this the finest granularity we can measure?)
+        reached_lines = set()
+        for state in trace.states:
+            loc = state.get_gcc_loc_or_none()
+            if loc:
+                reached_lines.add(loc.line)
+
+        # Render source code:
+        srcfile = self.fun.start.file
+
+        # Extract the source code for the function:
+        import linecache
+        code = ''
+        for linenum in range(start_line, end_line):
+            code += linecache.getline(srcfile, linenum)
+
+        # Use pygments to convert it all to HTML:
+        from pygments import highlight
+        from pygments.lexers import CLexer
+        html = highlight(code,
+                         CLexer(), # FIXME
+                         self.formatter)
+
+        # Carve it up by line, adding our own line numbering:
+        # It contains some initial content, leading up to a <pre> element
+        # Break on it, starting "result" with the initial material:
+        html = html.replace('<pre>', '<pre>\n')
+        lines = html.splitlines()
+        result = lines[0]
+
+        # The rest contains the actual source lines:
+        lines = lines[1:]
+        for linenum, line in zip(range(start_line, end_line), lines):
+            # Line number:
+            if linenum in reached_lines:
+                cls = 'reached-lineno'
+            else:
+                cls = 'lineno'
+            result += '<span class="%s">%i</span> ' % (cls, linenum)
+
+            # The body of the line:
+            if linenum in reached_lines:
+                cls = 'reached-line'
+            else:
+                cls = 'unreached-line'
+            result += '<span id="trace%i-line%i" class="%s">' % (self.trace_idx, linenum, cls)
+            result += line
+            result += '</span>\n'
+
+            # Add any comments for this line:
+            for trans in trace.transitions:
+                if trans.desc:
+                    src_loc = trans.src.get_gcc_loc_or_none()
+                    if src_loc and src_loc.line == linenum:
+                        result += '<span class="transition">%s</span>\n' % trans.desc
+            if report.loc.line == linenum:
+                result += '<span class="error">%s</span>\n' % report.msg
+            for note in report.notes:
+                if note.loc.line == linenum:
+                    result += '<span class="note">%s</span>\n' % note.msg
+
+        result += '\n'
+        result += '<script type="text/javascript">\n'
+        result += '  jsPlumb.bind("ready", function() {\n'
+        result += '    /* Set up defaults: */\n'
+        result += '    jsPlumb.Defaults.Connector = [ "Bezier", 1 ];\n'
+        result += '    jsPlumb.Defaults.Connector = [ "Straight" ];\n'
+        result += '    jsPlumb.Defaults.PaintStyle = { strokeStyle:"blue", lineWidth:1 };\n'
+        result += '    jsPlumb.Defaults.EndpointStyle = { radius:2, fillStyle:"red" };\n'
+        result += '    jsPlumb.Defaults.Anchors =  [ "BottomCenter", "TopCenter" ];\n'
+        #result += '    jsPlumb.Defaults.Anchors =  [ "Center", "Center" ];\n'
+        result += '\n'
+        result += '    /* Add lines: */\n'
+        for i, trans in enumerate(trace.transitions):
+            if trans.desc:
+                src_loc = trans.src.get_gcc_loc_or_none()
+                dest_loc = trans.dest.get_gcc_loc_or_none()
+                if src_loc and dest_loc and src_loc != dest_loc:
+                    result += ("    jsPlumb.connect({source:'trace%i-line%i',\n"
+                               "                     target:'trace%i-line%i',\n"
+                               "                     label:%r,\n"
+                               "                     overlays:[['PlainArrow', { width:10, length:10, location:1.0 }]]\n"
+                               "                   });\n"
+                               % (self.trace_idx, src_loc.line,
+                                  self.trace_idx, dest_loc.line,
+                                  ''))#trans.desc))
+        result += '  })\n'
+        result += '</script>\n'
+
+        self.trace_idx += 1
+
+        return result
+
+    def make_footer(self):
+        result = '  </body>\n'
+        return result
