@@ -43,11 +43,10 @@ import sys
 
 const_correctness = True
 
-def log(msg, indent=0):
-    if 0:
-        sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
-
 from gccutils import get_src_for_loc, get_global_typedef
+
+from libcpychecker.utils import log
+from libcpychecker.types import *
 
 def get_const_char_ptr():
     return gcc.Type.char().const_equivalent.pointer
@@ -60,9 +59,6 @@ def get_const_char_ptr_ptr():
         return (gcc.Type.char().const_equivalent.pointer.pointer,
                 gcc.Type.char().pointer.pointer)
 
-def get_Py_ssize_t():
-    return get_global_typedef('Py_ssize_t')
-
 def get_hash_size_type(with_size_t):
     # Was PY_SSIZE_T_CLEAN defined?
     if with_size_t:
@@ -74,35 +70,6 @@ class NullPointer:
     # Dummy value, for pointer arguments that can legitimately be NULL
     def describe(self):
         return 'NULL'
-
-# Helper functions for looking up various CPython implementation types.
-def get_Py_buffer():
-    return get_global_typedef('Py_buffer')
-
-def Py_UNICODE():
-    return get_global_typedef('Py_UNICODE')
-
-def get_PY_LONG_LONG():
-    # pyport.h can supply PY_LONG_LONG as a #define, as a typedef, or not at all
-    # FIXME
-    # If we have "long long", pyport.h uses that.
-    # Assume so for now:
-    return gcc.Type.long_long()
-
-def get_PyObject():
-    return get_global_typedef('PyObject')
-
-def get_PyTypeObject():
-    return get_global_typedef('PyTypeObject')
-
-def get_PyStringObject():
-    return get_global_typedef('PyStringObject')
-
-def get_PyUnicodeObject():
-    return get_global_typedef('PyUnicodeObject')
-
-def get_Py_complex():
-    return get_global_typedef('Py_complex')
 
 class CExtensionError(Exception):
     # Base class for errors discovered by static analysis in C extension code

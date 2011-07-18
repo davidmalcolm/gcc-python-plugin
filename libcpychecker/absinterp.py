@@ -20,7 +20,8 @@ import gccutils
 import sys
 from gccutils import get_src_for_loc
 from collections import OrderedDict
-from PyArg_ParseTuple import log
+from libcpychecker.utils import log
+from libcpychecker.types import *
 
 class AbstractValue:
     def __init__(self, gcctype, loc):
