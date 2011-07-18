@@ -542,7 +542,8 @@ def iter_traces(fun, stateclass, prefix=None):
         curstate = stateclass(Location.get_block_start(fun.cfg.entry),
                               None, None, None,
                               [],
-                              Resources())
+                              Resources(),
+                              ConcreteValue(get_PyObjectPtr(), fun.start, 0))
     else:
         curstate = prefix.states[-1]
         if curstate.has_returned():
@@ -603,7 +604,8 @@ class StateGraph:
         initial = stateclass(Location.get_block_start(fun.cfg.entry),
                              None, None, None,
                              [],
-                             Resources())
+                             Resources(),
+                             ConcreteValue(get_PyObjectPtr(), fun.start, 0))
         initial.init_for_function(fun)
         self.states.append(initial)
         self._gather_states(initial, logger)

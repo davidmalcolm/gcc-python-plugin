@@ -68,10 +68,11 @@ class RefcountValue(AbstractValue):
         return 'RefcountValue(%i)' % self.relvalue
 
 class MyState(State):
-    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, owned_refs, resources):
+    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, owned_refs, resources, exception_rvalue):
         State.__init__(self, loc, region_for_var, value_for_region, return_rvalue)
         self.owned_refs = owned_refs
         self.resources = resources
+        self.exception_rvalue = exception_rvalue
 
     def copy(self):
         return self.__class__(self.loc,
@@ -79,7 +80,8 @@ class MyState(State):
                               self.value_for_region.copy(),
                               self.return_rvalue,
                               self.owned_refs[:],
-                              self.resources.copy())
+                              self.resources.copy(),
+                              self.exception_rvalue)
 
     def _extra(self):
         return ' %s' % self.owned_refs
@@ -128,6 +130,21 @@ class MyState(State):
         else:
             raise "foo"
 
+    def set_exception(self, exc_name):
+        """
+        Given the name of a (PyObject*) global for an exception class, such as
+        the string "PyExc_MemoryError", set the exception state to the
+        (PyObject*) for said exception class.
+
+        The list of standard exception classes can be seen at:
+          http://docs.python.org/c-api/exceptions.html#standard-exceptions
+        """
+        assert isinstance(exc_name, str)
+        exc_decl = gccutils.get_global_vardecl_by_name(exc_name)
+        assert isinstance(exc_decl, gcc.VarDecl)
+        exc_region = self.var_region(exc_decl)
+        self.exception_rvalue = exc_region
+
     def impl_object_ctor(self, stmt, typename, typeobjname):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
@@ -165,6 +182,7 @@ class MyState(State):
         failure = self.make_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '%s() fails' % fnname)
+        failure.dest.set_exception('PyExc_MemoryError')
         return (nonnull, success, failure)
 
     def make_concrete_return_of(self, stmt, value):
@@ -460,6 +478,10 @@ def dump_traces_to_stdout(traces):
 
             dump_object(region, str(region))
 
+        # Exception state:
+        print('  Exception:')
+        print('    %s' % endstate.exception_rvalue)
+
         if i + 1 < len(traces):
             print
 
@@ -587,6 +609,22 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                         if return_value.vardecl.name == '_Py_NoneStruct':
                             err.add_note(endstate.get_gcc_loc(fun),
                                          'consider using "Py_RETURN_NONE;"')
+
+        # Detect failure to set exceptions when returning NULL:
+        if not trace.err:
+            if (isinstance(return_value, ConcreteValue)
+                and return_value.value == 0
+                and str(return_value.gcctype)=='struct PyObject *'):
+
+                if (isinstance(endstate.exception_rvalue,
+                              ConcreteValue)
+                    and endstate.exception_rvalue.value == 0):
+                    err = rep.make_error(fun,
+                                         endstate.get_gcc_loc(fun),
+                                         'returning (PyObject*)NULL without setting an exception')
+                    err.add_trace(trace)
+
+    # (all traces analysed)
 
     if rep.got_errors():
         rep.dump_html(fun, '%s-refcount-errors.html' % fun.decl.name)
