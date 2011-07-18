@@ -442,6 +442,11 @@ Global data access
       units within this invocation of GCC (that's "source code files" for the
       layperson).
 
+      .. note::
+
+         This function is only available when the plugin is built against
+	 gcc 4.6 and later, not in 4.5
+
       .. py:class:: gcc.TranslationUnitDecl
 
          Subclass of :py:class:`gcc.Tree` representing a compilation unit
@@ -462,11 +467,21 @@ Global data access
       that name, returning it as a :py:class:`gcc.TypeDecl`, or None if it
       wasn't found
 
+      .. note::
+
+         This function is only available when the plugin is built against
+	 gcc 4.6 and later, not in 4.5
+
 .. py:function:: gccutils.get_global_vardecl_by_name(name)
 
       Given a string `name`, look for a C/C++ variable in global scope with
       that name, returning it as a :py:class:`gcc.VarDecl`, or None if it
       wasn't found
+
+      .. note::
+
+         This function is only available when the plugin is built against
+	 gcc 4.6 and later, not in 4.5
 
 
 Working with source code
