@@ -58,6 +58,13 @@ def stmt_is_return_of_objptr(stmt):
                 return True
 
 class RefcountValue(AbstractValue):
+    """
+    Value for an ob_refcnt field.
+
+    'relvalue' is all of the references owned within this function.
+
+    The actual value of ob_refcnt >= relvalue
+    """
     def __init__(self, relvalue):
         self.relvalue = relvalue
 
@@ -337,6 +344,27 @@ class MyState(State):
                     make_transition_for_false(stmt)]
 
     def eval_condition(self, stmt):
+        def is_equal(lhs, rhs):
+            if isinstance(rhs, ConcreteValue):
+                if isinstance(lhs, Region) and rhs.value == 0:
+                    log('ptr to region vs 0: %s is definitely not equal to %s' % (lhs, rhs))
+                    return False
+                if isinstance(lhs, ConcreteValue):
+                    log('comparing concrete values: %s %s' % (lhs, rhs))
+                    return lhs.value == rhs.value
+                if isinstance(lhs, RefcountValue):
+                    log('comparing refcount value %s with concrete value: %s' % (lhs, rhs))
+                    # The actual value of ob_refcnt >= lhs.relvalue
+                    if lhs.relvalue > rhs.value:
+                        # (Equality is thus not possible for this case)
+                        return False
+            if isinstance(rhs, Region):
+                if isinstance(lhs, Region):
+                    log('comparing regions: %s %s' % (lhs, rhs))
+                    return lhs == rhs
+            # We don't know:
+            return None
+
         log('eval_condition: %s' % stmt)
         lhs = self.eval_expr(stmt.lhs)
         rhs = self.eval_expr(stmt.rhs)
@@ -344,23 +372,14 @@ class MyState(State):
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.EqExpr:
-            if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, Region) and rhs.value == 0:
-                    return False
-                if isinstance(lhs, ConcreteValue):
-                    return lhs.value == rhs.value
-            if isinstance(rhs, Region):
-                if isinstance(lhs, Region):
-                    return lhs == rhs
+            result = is_equal(lhs, rhs)
+            if result is not None:
+                return result
         elif stmt.exprcode == gcc.NeExpr:
-            if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, Region) and rhs.value == 0:
-                    return True
-                if isinstance(lhs, ConcreteValue):
-                    return lhs.value != rhs.value
-            if isinstance(rhs, Region):
-                if isinstance(lhs, Region):
-                    return lhs != rhs
+            result = is_equal(lhs, rhs)
+            if result is not None:
+                return not result
+
         log('unable to compare %r with %r' % (lhs, rhs))
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
@@ -373,6 +392,14 @@ class MyState(State):
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue + b.value)
+            raise 'bar'
+        elif stmt.exprcode == gcc.MinusExpr:
+            a = self.eval_expr(rhs[0])
+            b = self.eval_expr(rhs[1])
+            log('a: %r' % a)
+            log('b: %r' % b)
+            if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
+                return RefcountValue(a.relvalue - b.value)
             raise 'bar'
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_expr(rhs[0])
