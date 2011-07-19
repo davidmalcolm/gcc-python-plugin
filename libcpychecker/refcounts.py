@@ -694,6 +694,18 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                             err.add_note(endstate.get_gcc_loc(fun),
                                          'consider using "Py_RETURN_NONE;"')
 
+        # Detect returning a deallocated object:
+        if return_value:
+            if isinstance(return_value, Region):
+                rvalue = endstate.value_for_region.get(return_value, None)
+                if isinstance(rvalue, DeallocatedMemory):
+                    err = rep.make_error(fun,
+                                         endstate.get_gcc_loc(fun),
+                                         'returning pointer to deallocated memory')
+                    err.add_trace(trace)
+                    err.add_note(rvalue.loc,
+                                 'memory deallocated here')
+
         # Detect failure to set exceptions when returning NULL:
         if not trace.err:
             if (isinstance(return_value, ConcreteValue)

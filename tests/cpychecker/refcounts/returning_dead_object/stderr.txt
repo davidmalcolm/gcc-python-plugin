@@ -1,0 +1,19 @@
+tests/cpychecker/refcounts/returning_dead_object/input.c: In function ‘returning_dead_object’:
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: error: ob_refcnt of return value is 1 too low
+tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: PyLongObject allocated at:     PyObject *tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/returning_dead_object/input.c:31:8: note: when taking False path at:     if (!tmp) {
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: reaching:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: when taking True path at:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:42:5: note: reaching:     return tmp;
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: when returning
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: error: returning pointer to deallocated memory
+tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/returning_dead_object/input.c:31:8: note: when taking False path at:     if (!tmp) {
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: reaching:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: when taking False path at:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: reaching:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: when calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/returning_dead_object/input.c:29 at:     Py_DECREF(tmp);
+tests/cpychecker/refcounts/returning_dead_object/input.c:42:5: note: reaching:     return tmp;
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: when returning
+tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: memory deallocated here
