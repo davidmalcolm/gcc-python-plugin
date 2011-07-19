@@ -342,7 +342,8 @@ class State:
             assert isinstance(lhs.field, gcc.FieldDecl)
             dest_region = self.get_field_region(lhs)
         else:
-            assert False # FIXME!
+            raise NotImplementedError("Don't know how to cope with assignment to %r (%s)"
+                                      % (lhs, lhs))
         value = self.eval_expr(rhs)
         log('value: %s %r' % (value, value))
         self.value_for_region[dest_region] = value

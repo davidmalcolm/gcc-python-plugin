@@ -172,7 +172,8 @@ class MyState(State):
         elif isinstance(stmt, gcc.GimpleAssign):
             return self._get_transitions_for_GimpleAssign(stmt)
         else:
-            raise "foo"
+            raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
+                                      % (stmt, stmt, stmt.loc))
 
     def set_exception(self, exc_name):
         """
@@ -476,7 +477,9 @@ class MyState(State):
                 return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue + b.value)
-            raise 'bar'
+
+            raise NotImplementedError("Don't know how to cope with addition of %r (%s) and %r (%s) at %s"
+                                      % (a, a, b, b, stmt.loc))
         elif stmt.exprcode == gcc.MinusExpr:
             a = self.eval_expr(rhs[0])
             b = self.eval_expr(rhs[1])
@@ -484,7 +487,8 @@ class MyState(State):
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue - b.value)
-            raise 'bar'
+            raise NotImplementedError("Don't know how to cope with subtraction of %r (%s) and %r (%s) at %s"
+                                      % (a, a, b, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_expr(rhs[0])
         elif stmt.exprcode == gcc.VarDecl:
@@ -496,8 +500,8 @@ class MyState(State):
         elif stmt.exprcode == gcc.NopExpr:
             return self.eval_expr(rhs[0])
         else:
-            print stmt.exprcode
-            raise 'foo'
+            raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
+                                      % (stmt.exprcode, stmt.exprcode, stmt.loc))
 
     def _get_transitions_for_GimpleAssign(self, stmt):
         log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
