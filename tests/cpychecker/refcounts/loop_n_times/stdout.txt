@@ -1,0 +1,115 @@
+Trace 0:
+  Transitions:
+    'PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() succeeds'
+    'taking False path'
+    'taking False path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
+    r->ob_refcnt: RefcountValue(1)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
+  PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42
+    r->ob_refcnt: RefcountValue(0)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyLong_Type'))
+  Exception:
+    (PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
+
+Trace 1:
+  Transitions:
+    'PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() succeeds'
+    'taking False path'
+    'taking False path'
+    'taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42'
+    'returning'
+  Return value:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
+    r->ob_refcnt: RefcountValue(1)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
+  PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
+
+Trace 2:
+  Transitions:
+    'PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() fails'
+    'taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L
+  PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
+    r->ob_refcnt: RefcountValue(0)
+    r->ob_type: RegionForGlobal(gcc.VarDecl('PyList_Type'))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+
+Trace 3:
+  Transitions:
+    'PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() fails'
+    'taking True path'
+    'taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L
+  PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+
+Trace 4:
+  Transitions:
+    'PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'PyList_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+
+Trace 5:
+  Transitions:
+    'PyArg_ParseTuple() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
+    str(): (struct PyObject *)0L
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))

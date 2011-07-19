@@ -261,6 +261,16 @@ class MyState(State):
             # go down by one:
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1)
 
+    def make_transitions_for_fncall(self, stmt, success, failure):
+        assert isinstance(stmt, gcc.GimpleCall)
+        assert isinstance(success, State)
+        assert isinstance(failure, State)
+
+        fnname = stmt.fn.operand.name
+
+        return [Transition(self, success, '%s() succeeds' % fnname),
+                Transition(self, failure, '%s() fails' % fnname)]
+
     # Specific Python API function implementations:
     def impl_PyList_New(self, stmt):
         # Decl:
@@ -317,6 +327,21 @@ class MyState(State):
 
         return result
 
+    def impl_PyArg_ParseTuple(self, stmt):
+        # Decl:
+        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
+        # Also:
+        #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
+
+        success = self.make_concrete_return_of(stmt, 1)
+
+        failure = self.make_concrete_return_of(stmt, 0)
+        # Various errors are possible, but a TypeError is always possible
+        # e.g. for the case of the wrong number of arguments:
+        failure.set_exception('PyExc_TypeError')
+
+        return self.make_transitions_for_fncall(stmt, success, failure)
+
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
@@ -338,9 +363,12 @@ class MyState(State):
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
             fnname = stmt.fn.operand.name
 
-            if fnname in ('PyList_New', 'PyLong_FromLong', 'PyList_SetItem'):
+            # Hand off to impl_* methods, where these exist:
+            methname = 'impl_%s' % fnname
+            if hasattr(self, methname):
                 meth = getattr(self, 'impl_%s' % fnname)
                 return meth(stmt)
+
             # Function returning borrowed references:
             elif fnname in ('Py_InitModule4_64',):
                 return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
@@ -444,6 +472,8 @@ class MyState(State):
             b = self.eval_expr(rhs[1])
             log('a: %r' % a)
             log('b: %r' % b)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+                return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue + b.value)
             raise 'bar'
@@ -463,7 +493,10 @@ class MyState(State):
             return self.eval_expr(rhs[0])
         elif stmt.exprcode == gcc.AddrExpr:
             return self.eval_expr(rhs[0])
+        elif stmt.exprcode == gcc.NopExpr:
+            return self.eval_expr(rhs[0])
         else:
+            print stmt.exprcode
             raise 'foo'
 
     def _get_transitions_for_GimpleAssign(self, stmt):

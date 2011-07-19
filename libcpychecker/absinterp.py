@@ -184,6 +184,9 @@ class Location:
                 assert len(self.bb.succs) == 1
                 return Location.get_block_start(self.bb.succs[0].dest)
 
+    def __eq__(self, other):
+        return self.bb == other.bb and self.idx == other.idx
+
     @classmethod
     def get_block_start(cls, bb):
         # Don't bother iterating through phi_nodes if there aren't any:
@@ -545,6 +548,15 @@ class Trace:
     def final_references(self):
         return self.states[-1].owned_refs
 
+    def has_looped(self):
+        """
+        Is the tail state of the Trace at a location where it's been before?
+        """
+        endstateloc = self.states[-1].loc
+        for state in self.states[0:-1]:
+            if state.loc == endstateloc:
+                return True
+
 def true_edge(bb):
     for e in bb.succs:
         if e.true_value:
@@ -582,8 +594,13 @@ class Resources:
         logger('releases: %s' % self._releases, indent + 1)
 
 def iter_traces(fun, stateclass, prefix=None):
-    # Traverse the tree of traces of program state
-    # FIXME: this code can't cope with loops yet
+    """
+    Traverse the tree of traces of program state, returning a list
+    of Trace instances.
+
+    For now, don't include any traces that contain loops, as a primitive
+    way of ensuring termination of the analysis
+    """
     log('iter_traces(%r, %r, %r)' % (fun, stateclass, prefix))
     if prefix is None:
         prefix = Trace()
@@ -593,10 +610,17 @@ def iter_traces(fun, stateclass, prefix=None):
                               Resources(),
                               ConcreteValue(get_PyObjectPtr(), fun.start, 0))
     else:
+        assert isinstance(prefix, Trace)
         curstate = prefix.states[-1]
         if curstate.has_returned():
             # This state has returned a value (and hence terminated):
             return [prefix]
+
+        # Stop interpreting when you see a loop, to ensure termination:
+        if prefix.has_looped():
+            log('loop detected; stopping iteration')
+            # Don't return the prefix so far: it is not a complete trace
+            return []
 
     # We need the prevstate to handle Phi nodes
     if len(prefix.states) > 1:
