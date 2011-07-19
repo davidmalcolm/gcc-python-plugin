@@ -74,6 +74,43 @@ class RefcountValue(AbstractValue):
     def __repr__(self):
         return 'RefcountValue(%i)' % self.relvalue
 
+class GenericTpDealloc(AbstractValue):
+    """
+    A function pointer that points to a "typical" tp_dealloc callback
+    i.e. one that frees up the underlying memory
+    """
+    def get_transitions_for_function_call(self, state, stmt):
+        assert isinstance(state, State)
+        assert isinstance(stmt, gcc.GimpleCall)
+        returntype = stmt.fn.type.dereference.type
+
+        # Mark the arg as being deallocated:
+        region = state.eval_expr(stmt.args[0])
+        assert isinstance(region, Region)
+        log('generic tp_dealloc called for %s' % region)
+
+        # Get the description of the region before trashing it:
+        desc = 'calling tp_dealloc on %s' % region
+        result = state.make_assignment(stmt.lhs,
+                                       UnknownValue(returntype, stmt.loc),
+                                       'calling tp_dealloc on %s' % region)
+        new = state.copy()
+        new.loc = state.loc.next_loc()
+
+        # Mark the region as deallocated
+        # Since regions are shared with other states, we have to set this up
+        # for this state by assigning it with a special "DeallocatedMemory"
+        # value
+        # Clear the value for any fields within the region:
+        for k, v in region.fields.iteritems():
+            if v in new.value_for_region:
+                del new.value_for_region[v]
+        # Set the default value for the whole region to be "DeallocatedMemory"
+        new.region_for_var[region] = region
+        new.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
+
+        return [Transition(state, new, desc)]
+
 class MyState(State):
     def __init__(self, loc, region_for_var, value_for_region, return_rvalue, owned_refs, resources, exception_rvalue):
         State.__init__(self, loc, region_for_var, value_for_region, return_rvalue)
@@ -176,7 +213,15 @@ class MyState(State):
         # Allocation and assignment:
         success = self.copy()
         success.loc = self.loc.next_loc()
+
+        # Set up type object:
         typeobjregion = success.var_region(typeobjdecl)
+        tp_dealloc = success.make_field_region(typeobjregion, 'tp_dealloc')
+        type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
+                                                        'tp_dealloc').type
+        success.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
+                                                                stmt.loc)
+
         nonnull = success.make_heap_region(typename, stmt)
         ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
         success.value_for_region[ob_refcnt] = RefcountValue(1)
@@ -276,9 +321,18 @@ class MyState(State):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
         log('dir(stmt.fn): %s' % dir(stmt.fn), 4)
-        log('stmt.fn.operand: %s' % stmt.fn.operand, 4)
+        if hasattr(stmt.fn, 'operand'):
+            log('stmt.fn.operand: %s' % stmt.fn.operand, 4)
         returntype = stmt.fn.type.dereference.type
         log('returntype: %s' % returntype)
+
+        if isinstance(stmt.fn, gcc.VarDecl):
+            # Calling through a function pointer:
+            val = self.eval_expr(stmt.fn)
+            log('val: %s' %  val)
+            assert isinstance(val, AbstractValue)
+            return val.get_transitions_for_function_call(self, stmt)
+
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             log('dir(stmt.fn.operand): %s' % dir(stmt.fn.operand), 4)
             log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
@@ -420,6 +474,9 @@ class MyState(State):
 
         value = self.eval_rhs(stmt)
         log('value from eval_rhs: %r' % value)
+
+        if isinstance(value, DeallocatedMemory):
+            raise ReadFromDeallocatedMemory(stmt, value)
 
         nextstate = self.use_next_loc()
         """

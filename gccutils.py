@@ -22,6 +22,13 @@ def get_src_for_loc(loc):
     import linecache
     return linecache.getline(loc.file, loc.line).rstrip()
 
+def get_field_by_name(typeobj, name):
+    assert isinstance(typeobj,
+                      (gcc.RecordType, gcc.UnionType, gcc.QualUnionType))
+    for field in typeobj.fields:
+        if field.name == name:
+            return field
+
 if hasattr(gcc, 'get_translation_units'):
     # GCC 4.6 and later:
     def get_global_typedef(name):

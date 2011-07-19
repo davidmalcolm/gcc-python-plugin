@@ -25,27 +25,47 @@ from libcpychecker.types import *
 
 class AbstractValue:
     def __init__(self, gcctype, loc):
-        assert isinstance(gcctype, gcc.Type)
+        if gcctype:
+            assert isinstance(gcctype, gcc.Type)
         if loc:
             assert isinstance(loc, gcc.Location)
         self.gcctype = gcctype
         self.loc = loc
 
     def __str__(self):
-        if self.loc:
-            return '%s from %s' % (self.gcctype, self.loc)
+        if self.gcctype:
+            result = '%s' % self.gcctype
         else:
-            return '%' % self.gcctype
+            result = 'unknown type'
+        if self.loc:
+            result += ' from %s' % self.loc
+        return result
 
     def __repr__(self):
-        return 'AbstractValue(gcctype=%r, loc=%r)' % (str(self.gcctype), self.loc)
+        return ('%s(gcctype=%r, loc=%r)'
+                % (self.__class__.__name__, str(self.gcctype), self.loc))
+
+    def get_transitions_for_function_call(self, state, stmt):
+        """
+        For use for handling function pointers.  Return a list of Transition
+        instances giving the outcome of calling this function ptr value
+        """
+        assert isinstance(state, State)
+        assert isinstance(stmt, gcc.GimpleCall)
+        returntype = stmt.fn.type.dereference.type
+        return [state.make_assignment(stmt.lhs,
+                                      UnknownValue(returntype, stmt.loc),
+                                      'calling %s' % self)]
 
 class UnknownValue(AbstractValue):
     """
     A value that we know nothing about
     """
     def __str__(self):
-        return 'unknown %s from %s' % (self.gcctype, self.loc)
+        if self.gcctype:
+            return 'unknown %s from %s' % (self.gcctype, self.loc)
+        else:
+            return 'unknown value from %s' % (self.gcctype, self.loc)
 
     def __repr__(self):
         return 'UnknownValue(gcctype=%r, loc=%r)' % (self.gcctype, self.loc)
@@ -70,6 +90,17 @@ class ConcreteValue(AbstractValue):
 
     def __repr__(self):
         return 'ConcreteValue(gcctype=%r, loc=%r, value=%r)' % (str(self.gcctype), self.loc, self.value)
+
+    def is_null_ptr(self):
+        if isinstance(self.gcctype, gcc.PointerType):
+            return self.value == 0
+
+class DeallocatedMemory(AbstractValue):
+    def __str__(self):
+        if self.loc:
+            return 'memory deallocated at %s' % self.loc
+        else:
+            return 'deallocated memory'
 
 class PredictedError(Exception):
     pass
@@ -97,6 +128,17 @@ class NullPtrDereference(PredictedError):
     def __str__(self):
         return ('dereferencing NULL (%s) at %s'
                 % (self.cr, self.state.loc.get_stmt().loc))
+
+class ReadFromDeallocatedMemory(PredictedError):
+    def __init__(self, stmt, value):
+        assert isinstance(stmt, gcc.Gimple)
+        assert isinstance(value, DeallocatedMemory)
+        self.stmt = stmt
+        self.value = value
+
+    def __str__(self):
+        return ('reading from deallocated memory at %s: %s'
+                % (self.stmt.loc, self.value))
 
 class PtrValue(AbstractValue):
     """An abstract (PyObject*) value"""
@@ -346,7 +388,12 @@ class State:
     def get_store(self, region):
         assert isinstance(region, Region)
         # self.log(log, 0)
-        return self.value_for_region[region]
+        if region in self.value_for_region:
+            return self.value_for_region[region]
+
+        # Not found; try default value from parent region:
+        if region.parent:
+            return self.get_store(region.parent)
 
     def make_heap_region(self, name, stmt):
         region = RegionOnHeap(name, stmt)
@@ -409,7 +456,8 @@ class State:
             assert isinstance(desc, str)
         new = self.copy()
         new.loc = self.loc.next_loc()
-        new.assign(lhs, rhs)
+        if lhs:
+            new.assign(lhs, rhs)
         return Transition(self, new, desc)
 
     def update_loc(self, newloc):

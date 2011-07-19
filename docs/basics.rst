@@ -483,6 +483,13 @@ Global data access
          This function is only available when the plugin is built against
 	 gcc 4.6 and later, not in 4.5
 
+.. py:function:: gccutils.get_field_by_name(decl, name)
+
+      Given one of a :py:class:`gcc.RecordType`, :py:class:`gcc.UnionType`, or
+      :py:class:`gcc.QualUnionType`, along with a string `name`, look for a
+      field with that name within the given struct or union, returning it as a
+      :py:class:`gcc.FieldDecl`, or None if it wasn't found
+
 
 Working with source code
 ========================
