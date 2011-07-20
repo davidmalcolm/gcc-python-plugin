@@ -606,6 +606,27 @@ References to storage
 
       The :py:class:`gcc.Location` for this storage reference
 
+.. py:class:: ArrayRef
+
+   A subclass of `gcc.Reference` for expressions involving an array reference:
+
+   .. code-block:: c
+
+      unsigned char buffer[4096];
+      ...
+      /* The left-hand side of this gcc.GimpleAssign is a gcc.ArrayRef: */
+      buffer[42] = 0xff;
+
+   .. py:attribute:: array
+
+      The `gcc.Tree` for the array within the reference (`buffer` in the
+      example above)
+
+   .. py:attribute:: index
+
+      The `gcc.Tree` for the index within the reference (`gcc.IntegerCst(42)`
+      in the example above)
+
 .. py:class:: gcc.ComponentReference
 
    A subclass of `gcc.Reference` for expressions involving a field lookup.
@@ -656,7 +677,6 @@ Other subclasses of `gcc.Reference` include:
       Subclass                               C/C++ operators
       =====================================  ======================
       .. py:class:: ArrayRangeRef
-      .. py:class:: ArrayRef
       .. py:class:: AttrAddrExpr
       .. py:class:: BitFieldRef
       .. py:class:: ImagpartExpr

@@ -368,6 +368,14 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(TREE_TYPE(self->t))',
                               "The gcc.Type that this type points to'")
 
+        if tree_type.SYM == 'ARRAY_REF':
+            add_simple_getter('array',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              "The gcc.Tree for the array being referenced'")
+            add_simple_getter('index',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              "The gcc.Tree for index being referenced'")
+
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',

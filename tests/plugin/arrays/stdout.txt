@@ -1,0 +1,28 @@
+fn: gcc.Function('test_arrays')
+gimple[0]:
+  str(stmt): 'ptr = &arr[5];'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): "gcc.VarDecl('ptr')"
+  [str(stmt.rhs)]: ['&arr[5]']
+  [type(stmt.rhs)]: [<type 'gcc.AddrExpr'>]
+    operand: arr[5]
+    type(operand): <type 'gcc.ArrayRef'>
+    operand.array: gcc.VarDecl('arr')
+    operand.index: 5
+gimple[1]:
+  str(stmt): '*ptr = 42;'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): '*ptr'
+  [str(stmt.rhs)]: ['42']
+  [type(stmt.rhs)]: [<type 'gcc.IntegerCst'>]
+gimple[2]:
+  str(stmt): 'D.2685 = arr[5];'
+  repr(stmt): 'gcc.GimpleAssign()'
+  str(stmt.lhs): 'gcc.VarDecl(2685)'
+  [str(stmt.rhs)]: ['arr[5]']
+  [type(stmt.rhs)]: [<type 'gcc.ArrayRef'>]
+    stmt.rhs[0].array: gcc.VarDecl('arr')
+    stmt.rhs[0].index: 5
+gimple[3]:
+  str(stmt): 'return D.2685;'
+  repr(stmt): 'gcc.GimpleReturn()'
