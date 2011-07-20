@@ -95,12 +95,36 @@ class ConcreteValue(AbstractValue):
         if isinstance(self.gcctype, gcc.PointerType):
             return self.value == 0
 
+
+class PointerToRegion(AbstractValue):
+    """A non-NULL pointer value, pointing at a specific Region"""
+    def __init__(self, gcctype, loc, region):
+        AbstractValue.__init__(self, gcctype, loc)
+        assert isinstance(region, Region)
+        self.region = region
+
+    def __str__(self):
+        if self.loc:
+            return '(%s)&%r from %s' % (self.gcctype, self.region, self.loc)
+        else:
+            return '(%s)&%r' % (self.gcctype, self.region)
+
+    def __repr__(self):
+        return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
+
 class DeallocatedMemory(AbstractValue):
     def __str__(self):
         if self.loc:
             return 'memory deallocated at %s' % self.loc
         else:
             return 'deallocated memory'
+
+class UninitializedData(AbstractValue):
+    def __str__(self):
+        if self.loc:
+            return 'uninitialized data at %s' % self.loc
+        else:
+            return 'uninitialized data'
 
 class PredictedError(Exception):
     pass
@@ -139,11 +163,6 @@ class ReadFromDeallocatedMemory(PredictedError):
     def __str__(self):
         return ('reading from deallocated memory at %s: %s'
                 % (self.stmt.loc, self.value))
-
-class PtrValue(AbstractValue):
-    """An abstract (PyObject*) value"""
-    def __init__(self, nonnull):
-        self.nonnull = nonnull
 
 def describe_stmt(stmt):
     if isinstance(stmt, gcc.GimpleCall):
@@ -238,6 +257,18 @@ class RegionOnHeap(Region):
     def __str__(self):
         return '%s allocated at %s' % (self.name, self.alloc_stmt.loc)
 
+
+class MissingValue(Exception):
+    """
+    The value tracking system couldn't figure out any information about the
+    given region
+    """
+    def __init__(self, region):
+        self.region = region
+
+    def __str__(self):
+        return 'Missing value for %s' % self.region
+
 class State:
     """A Location with memory state"""
     def __init__(self, loc, region_for_var=None, value_for_region=None, return_rvalue=None):
@@ -306,8 +337,33 @@ class State:
         c.return_rvalue = self.return_rvalue
         return c
 
-    def eval_expr(self, expr):
-        log('eval_expr: %r' % expr)
+    def verify(self):
+        """
+        Perform self-tests to ensure sanity of this State
+        """
+        for k in self.value_for_region:
+            assert isinstance(k, Region)
+            if not isinstance(self.value_for_region[k], AbstractValue):
+                raise TypeError('value for region %r is not an AbstractValue: %r'
+                                % (k, self.value_for_region[k]))
+
+    def eval_lvalue(self, expr):
+        """
+        Return the Region for the given expression
+        """
+        log('eval_lvalue: %r %s' % (expr, expr))
+        if isinstance(expr, gcc.VarDecl):
+            region = self.var_region(expr)
+            assert isinstance(region, Region)
+            return region
+        raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
+
+    def eval_rvalue(self, expr):
+        """
+        Return the value for the given expression, as an AbstractValue
+        FIXME: also as a Region?
+        """
+        log('eval_rvalue: %r %s' % (expr, expr))
         if isinstance(expr, AbstractValue):
             return expr
         if isinstance(expr, Region):
@@ -316,19 +372,26 @@ class State:
             return ConcreteValue(expr.type, None, expr.constant)
         if isinstance(expr, gcc.VarDecl):
             region = self.var_region(expr)
+            assert isinstance(region, Region)
             value = self.get_store(region)
+            assert isinstance(value, AbstractValue)
             return value
             #return UnknownValue(expr.type, str(expr))
         if isinstance(expr, gcc.ComponentRef):
             #assert isinstance(expr.field, gcc.FieldDecl)
             region = self.get_field_region(expr)#.target, expr.field.name)
+            assert isinstance(region, Region)
+            log('got field region for %s: %r' % (expr, region))
             value = self.get_store(region)
+            log('got value: %r' % value)
+            assert isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
             log(expr.operand)
             if isinstance(expr.operand, gcc.VarDecl):
                 region = self.var_region(expr.operand)
-                return region
+                assert isinstance(region, Region)
+                return PointerToRegion(expr.type, None, region)
         if expr is None:
             return None
         return UnknownValue(expr.type, None) # FIXME
@@ -341,14 +404,19 @@ class State:
         elif isinstance(lhs, gcc.ComponentRef):
             assert isinstance(lhs.field, gcc.FieldDecl)
             dest_region = self.get_field_region(lhs)
+        #elif isinstance(lhs, gcc.ArrayRef):
+        #    assert isinstance(lhs.field, gcc.FieldDecl)
+        #    dest_region = self.get_array_region(lhs)
+        elif isinstance(lhs, gcc.MemRef):
+            # Write through a pointer:
+            dest_region = self.get_mem_region(lhs.operand)
         else:
             raise NotImplementedError("Don't know how to cope with assignment to %r (%s)"
                                       % (lhs, lhs))
-        value = self.eval_expr(rhs)
+        value = self.eval_rvalue(rhs)
         log('value: %s %r' % (value, value))
+        assert isinstance(value, AbstractValue)
         self.value_for_region[dest_region] = value
-        #assert isinstance(rhs, gcc.VarDecl) # for now
-        #self.value_for_region(
 
     def var_region(self, var):
         assert isinstance(var, gcc.VarDecl)
@@ -377,10 +445,11 @@ class State:
             if 1: # cr.target not in self.region_for_var:
                 log('foo')
                 if isinstance(cr.target, gcc.MemRef):
-                    ptr = self.eval_expr(cr.target.operand)
+                    ptr = self.eval_rvalue(cr.target.operand) # FIXME
                     if isinstance(ptr, ConcreteValue) and ptr.value == 0:
                         raise NullPtrDereference(self, cr)
-                    return self.make_field_region(ptr, cr.field.name)
+                    assert isinstance(ptr, PointerToRegion)
+                    return self.make_field_region(ptr.region, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
                     log('bar')
                     vr = self.var_region(cr.target)
@@ -397,7 +466,12 @@ class State:
 
         # Not found; try default value from parent region:
         if region.parent:
-            return self.get_store(region.parent)
+            try:
+                return self.get_store(region.parent)
+            except MissingValue:
+                raise MissingValue(region)
+
+        raise MissingValue(region)
 
     def make_heap_region(self, name, stmt):
         region = RegionOnHeap(name, stmt)
@@ -434,14 +508,14 @@ class State:
                     value = self.value_for_region.get(region, None)
                     return value
 
-    def get_value_of_field_by_region(self, rvalue, field):
-        # Lookup rvalue->field
+    def get_value_of_field_by_region(self, region, field):
+        # Lookup region->field
         # For use in writing selftests
-        log('get_value_of_field_by_region(%r, %r)' % (rvalue, field), 0)
-        assert isinstance(rvalue, Region)
+        log('get_value_of_field_by_region(%r, %r)' % (region, field), 0)
+        assert isinstance(region, Region)
         assert isinstance(field, str)
-        if field in rvalue.fields:
-            field_region = rvalue.fields[field]
+        if field in region.fields:
+            field_region = region.fields[field]
             return self.value_for_region.get(field_region, None)
         return None
 
@@ -452,7 +526,8 @@ class State:
         for local in fun.local_decls:
             region = Region('region for %r' % local, stack)
             self.region_for_var[local] = region
-            self.value_for_region[region] = None # uninitialized
+            self.value_for_region[region] = UninitializedData(local.type, fun.start)
+        self.verify()
 
     def make_assignment(self, lhs, rhs, desc):
         log('make_assignment(%r, %r, %r)' % (lhs, rhs, desc))
@@ -610,6 +685,7 @@ def iter_traces(fun, stateclass, prefix=None):
                               [],
                               Resources(),
                               ConcreteValue(get_PyObjectPtr(), fun.start, 0))
+        curstate.init_for_function(fun)
     else:
         assert isinstance(prefix, Trace)
         curstate = prefix.states[-1]
@@ -647,6 +723,8 @@ def iter_traces(fun, stateclass, prefix=None):
     if len(transitions) > 0:
         result = []
         for transition in transitions:
+            transition.dest.verify()
+
             # Recurse:
             for trace in iter_traces(fun, stateclass, prefix.copy().add(transition)):
                 result.append(trace)

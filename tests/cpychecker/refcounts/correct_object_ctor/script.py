@@ -35,7 +35,7 @@ def verify_traces(optpass, fun):
             print('Trace 0:')
             r = state.return_rvalue
             print('  returned: %r' %r)
-            print('  r->ob_refcnt: %r' % state.get_value_of_field_by_region(r, 'ob_refcnt'))
+            print('  r->ob_refcnt: %r' % state.get_value_of_field_by_region(r.region, 'ob_refcnt'))
 
             # Verify the "fail" trace:
             state = traces[1].states[-1]

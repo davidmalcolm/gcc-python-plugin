@@ -1,2 +1,2 @@
 _Py_NoneStruct.ob_refcnt: RefcountValue(0)
-state.return_rvalue: RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+state.return_rvalue: PointerToRegion(gcctype='struct PyObject *', loc=None, region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))

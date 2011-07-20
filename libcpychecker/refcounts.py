@@ -85,7 +85,9 @@ class GenericTpDealloc(AbstractValue):
         returntype = stmt.fn.type.dereference.type
 
         # Mark the arg as being deallocated:
-        region = state.eval_expr(stmt.args[0])
+        value = state.eval_rvalue(stmt.args[0])
+        assert isinstance(value, PointerToRegion)
+        region = value.region
         assert isinstance(region, Region)
         log('generic tp_dealloc called for %s' % region)
 
@@ -227,8 +229,13 @@ class MyState(State):
         ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
         success.value_for_region[ob_refcnt] = RefcountValue(1)
         ob_type = success.make_field_region(nonnull, 'ob_type')
-        success.value_for_region[ob_type] = typeobjregion
-        success.assign(stmt.lhs, nonnull)
+        success.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+                                                            stmt.loc,
+                                                            typeobjregion)
+        success.assign(stmt.lhs,
+                       PointerToRegion(stmt.lhs.type,
+                                       stmt.loc,
+                                       nonnull))
         success = Transition(self,
                              success,
                              '%s() succeeds' % fnname)
@@ -277,7 +284,8 @@ class MyState(State):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
-        lenarg = self.eval_expr(stmt.args[0])
+        lenarg = self.eval_rvalue(stmt.args[0])
+        assert isinstance(lenarg, AbstractValue)
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
         # Set ob_size:
@@ -297,7 +305,7 @@ class MyState(State):
 
         result = []
 
-        arg_list, arg_index, arg_item = [self.eval_expr(arg) for arg in stmt.args]
+        arg_list, arg_index, arg_item = [self.eval_rvalue(arg) for arg in stmt.args]
 
         # Is it really a list?
         if 0: # FIXME: check
@@ -317,8 +325,9 @@ class MyState(State):
             success  = self.make_concrete_return_of(stmt, 0)
             # FIXME: update refcounts
             # "Steal" a reference to item:
-            if isinstance(arg_item, Region):
-                success.steal_reference(arg_item)
+            if isinstance(arg_item, PointerToRegion):
+                assert isinstance(arg_item.region, Region)
+                success.steal_reference(arg_item.region)
 
             # and discards a
             # reference to an item already in the list at the affected position.
@@ -354,7 +363,7 @@ class MyState(State):
 
         if isinstance(stmt.fn, gcc.VarDecl):
             # Calling through a function pointer:
-            val = self.eval_expr(stmt.fn)
+            val = self.eval_rvalue(stmt.fn)
             log('val: %s' %  val)
             assert isinstance(val, AbstractValue)
             return val.get_transitions_for_function_call(self, stmt)
@@ -428,8 +437,10 @@ class MyState(State):
 
     def eval_condition(self, stmt):
         def is_equal(lhs, rhs):
+            assert isinstance(lhs, AbstractValue)
+            assert isinstance(rhs, AbstractValue)
             if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, Region) and rhs.value == 0:
+                if isinstance(lhs, PointerToRegion) and rhs.value == 0:
                     log('ptr to region vs 0: %s is definitely not equal to %s' % (lhs, rhs))
                     return False
                 if isinstance(lhs, ConcreteValue):
@@ -441,16 +452,16 @@ class MyState(State):
                     if lhs.relvalue > rhs.value:
                         # (Equality is thus not possible for this case)
                         return False
-            if isinstance(rhs, Region):
-                if isinstance(lhs, Region):
+            if isinstance(rhs, PointerToRegion):
+                if isinstance(lhs, PointerToRegion):
                     log('comparing regions: %s %s' % (lhs, rhs))
-                    return lhs == rhs
+                    return lhs.region == rhs.region
             # We don't know:
             return None
 
         log('eval_condition: %s' % stmt)
-        lhs = self.eval_expr(stmt.lhs)
-        rhs = self.eval_expr(stmt.rhs)
+        lhs = self.eval_rvalue(stmt.lhs)
+        rhs = self.eval_rvalue(stmt.rhs)
         log('eval of lhs: %r' % lhs)
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
@@ -467,10 +478,11 @@ class MyState(State):
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
     def eval_rhs(self, stmt):
+        log('eval_rhs(%s): %s' % (stmt, stmt.rhs))
         rhs = stmt.rhs
         if stmt.exprcode == gcc.PlusExpr:
-            a = self.eval_expr(rhs[0])
-            b = self.eval_expr(rhs[1])
+            a = self.eval_rvalue(rhs[0])
+            b = self.eval_rvalue(rhs[1])
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
@@ -478,27 +490,27 @@ class MyState(State):
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue + b.value)
 
-            raise NotImplementedError("Don't know how to cope with addition of %r (%s) and %r (%s) at %s"
-                                      % (a, a, b, b, stmt.loc))
+            raise NotImplementedError("Don't know how to cope with addition of\n  %r\nand\n  %r\nat %s"
+                                      % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.MinusExpr:
-            a = self.eval_expr(rhs[0])
-            b = self.eval_expr(rhs[1])
+            a = self.eval_rvalue(rhs[0])
+            b = self.eval_rvalue(rhs[1])
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue - b.value)
-            raise NotImplementedError("Don't know how to cope with subtraction of %r (%s) and %r (%s) at %s"
-                                      % (a, a, b, b, stmt.loc))
+            raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
-            return self.eval_expr(rhs[0])
+            return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.VarDecl:
-            return self.eval_expr(rhs[0])
+            return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.IntegerCst:
-            return self.eval_expr(rhs[0])
+            return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.AddrExpr:
-            return self.eval_expr(rhs[0])
+            return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.NopExpr:
-            return self.eval_expr(rhs[0])
+            return self.eval_rvalue(rhs[0])
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
@@ -511,6 +523,7 @@ class MyState(State):
 
         value = self.eval_rhs(stmt)
         log('value from eval_rhs: %r' % value)
+        assert isinstance(value, AbstractValue)
 
         if isinstance(value, DeallocatedMemory):
             raise ReadFromDeallocatedMemory(stmt, value)
@@ -535,8 +548,8 @@ class MyState(State):
         log('stmt: %r %s' % (stmt, stmt))
         log('stmt.retval: %r' % stmt.retval)
 
-        rvalue = self.eval_expr(stmt.retval)
-        log('rvalue from eval_expr: %r' % rvalue)
+        rvalue = self.eval_rvalue(stmt.retval)
+        log('rvalue from eval_rvalue: %r' % rvalue)
 
         nextstate = self.copy()
         nextstate.return_rvalue = rvalue
@@ -553,15 +566,26 @@ def dump_traces_to_stdout(traces):
     anything that changes e.g. names of temporaries, address of wrapper
     objects, etc)
     """
-    def dump_object(region, title):
+    def dump_object(rvalue, title):
+        assert isinstance(rvalue, AbstractValue)
+        print('  %s:' % title)
+        print('    repr(): %r' % rvalue)
+        print('    str(): %s' % rvalue)
+        if isinstance(rvalue, PointerToRegion):
+            print('    r->ob_refcnt: %r'
+                  % endstate.get_value_of_field_by_region(rvalue.region, 'ob_refcnt'))
+            print('    r->ob_type: %r'
+                  % endstate.get_value_of_field_by_region(rvalue.region, 'ob_type'))
+
+    def dump_region(region, title):
+        assert isinstance(region, Region)
         print('  %s:' % title)
         print('    repr(): %r' % region)
         print('    str(): %s' % region)
-        if isinstance(region, Region):
-            print('    r->ob_refcnt: %r'
-                  % endstate.get_value_of_field_by_region(region, 'ob_refcnt'))
-            print('    r->ob_type: %r'
-                  % endstate.get_value_of_field_by_region(region, 'ob_type'))
+        print('    r->ob_refcnt: %r'
+              % endstate.get_value_of_field_by_region(region, 'ob_refcnt'))
+        print('    r->ob_type: %r'
+              % endstate.get_value_of_field_by_region(region, 'ob_type'))
 
     for i, trace in enumerate(traces):
         print('Trace %i:' % i)
@@ -593,11 +617,12 @@ def dump_traces_to_stdout(traces):
             if 'ob_refcnt' not in region.fields:
                 continue
 
-            if region == endstate.return_rvalue:
+            if (isinstance(endstate.return_rvalue, PointerToRegion)
+                and region == endstate.return_rvalue.region):
                 # (We did the return value above)
                 continue
 
-            dump_object(region, str(region))
+            dump_region(region, str(region))
 
         # Exception state:
         print('  Exception:')
@@ -673,6 +698,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             region = endstate.region_for_var[k]
 
             log('considering ob_refcnt of %r' % region)
+            assert isinstance(region, Region)
 
             # Consider those for which we know something about an "ob_refcnt"
             # field:
@@ -685,7 +711,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
             # If it's the return value, it should have a net refcnt delta of
             # 1; all other PyObject should have a net delta of 0:
-            if region == return_value:
+            if isinstance(return_value, PointerToRegion) and region == return_value.region:
                 desc = 'return value'
                 exp_refcnt = 1
             else:
@@ -726,15 +752,15 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                     err = emit_refcount_error('ob_refcnt of %s is %i too low'
                                               % (desc, exp_refcnt - ob_refcnt.relvalue))
                     # Special-case hint for when None has too low a refcount:
-                    if isinstance(return_value, RegionForGlobal):
-                        if return_value.vardecl.name == '_Py_NoneStruct':
+                    if isinstance(return_value.region, RegionForGlobal):
+                        if return_value.region.vardecl.name == '_Py_NoneStruct':
                             err.add_note(endstate.get_gcc_loc(fun),
                                          'consider using "Py_RETURN_NONE;"')
 
         # Detect returning a deallocated object:
         if return_value:
-            if isinstance(return_value, Region):
-                rvalue = endstate.value_for_region.get(return_value, None)
+            if isinstance(return_value, PointerToRegion):
+                rvalue = endstate.value_for_region.get(return_value.region, None)
                 if isinstance(rvalue, DeallocatedMemory):
                     err = rep.make_error(fun,
                                          endstate.get_gcc_loc(fun),

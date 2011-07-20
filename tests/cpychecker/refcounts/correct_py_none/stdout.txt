@@ -1,2 +1,10 @@
-_Py_NoneStruct.ob_refcnt: RefcountValue(1)
-state.return_rvalue: RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=None, region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
+    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+    r->ob_refcnt: RefcountValue(1)
+    r->ob_type: None
+  Exception:
+    (PyObject *)0 from tests/cpychecker/refcounts/correct_py_none/input.c:24
