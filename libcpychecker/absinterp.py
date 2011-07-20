@@ -356,6 +356,10 @@ class State:
             region = self.var_region(expr)
             assert isinstance(region, Region)
             return region
+        elif isinstance(expr, gcc.ArrayRef):
+            region = self.element_region(expr)
+            assert isinstance(region, Region)
+            return region
         raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
 
     def eval_rvalue(self, expr):
@@ -387,13 +391,19 @@ class State:
             assert isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
-            log(expr.operand)
-            if isinstance(expr.operand, gcc.VarDecl):
-                region = self.var_region(expr.operand)
-                assert isinstance(region, Region)
-                return PointerToRegion(expr.type, None, region)
-        if expr is None:
-            return None
+            log('expr.operand: %r' % expr.operand)
+            lvalue = self.eval_lvalue(expr.operand)
+            assert isinstance(lvalue, Region)
+            return PointerToRegion(expr.type, None, lvalue)
+        if isinstance(expr, gcc.ArrayRef):
+            log('expr.array: %r' % expr.array)
+            log('expr.index: %r' % expr.index)
+            lvalue = self.eval_lvalue(expr)
+            assert isinstance(lvalue, Region)
+            rvalue = self.get_store(lvalue)
+            assert isinstance(rvalue, AbstractValue)
+            return rvalue
+        raise NotImplementedError('eval_rvalue: %r %s' % (expr, expr))
         return UnknownValue(expr.type, None) # FIXME
 
     def assign(self, lhs, rhs):
@@ -409,7 +419,11 @@ class State:
         #    dest_region = self.get_array_region(lhs)
         elif isinstance(lhs, gcc.MemRef):
             # Write through a pointer:
-            dest_region = self.get_mem_region(lhs.operand)
+            dest_ptr = self.eval_rvalue(lhs.operand)
+            log('dest_ptr: %r' % dest_ptr)
+            assert isinstance(dest_ptr, PointerToRegion)
+            dest_region = dest_ptr.region
+            log('dest_region: %r' % dest_region)
         else:
             raise NotImplementedError("Don't know how to cope with assignment to %r (%s)"
                                       % (lhs, lhs))
@@ -434,6 +448,29 @@ class State:
                 ob_refcnt = self.make_field_region(region, 'ob_refcnt') # FIXME: this should be a memref and fieldref
                 self.value_for_region[ob_refcnt] = RefcountValue(0)
         return self.region_for_var[var]
+
+    def element_region(self, ar):
+        log('element_region: %s' % ar)
+        assert isinstance(ar, gcc.ArrayRef)
+        log('  ar.array: %r' % ar.array)
+        log('  ar.index: %r' % ar.index)
+        parent = self.eval_lvalue(ar.array)
+        assert isinstance(parent, Region)
+        log('  parent: %r' % parent)
+        index = self.eval_rvalue(ar.index)
+        assert isinstance(index, AbstractValue)
+        log('  index: %r' % index)
+        if isinstance(index, ConcreteValue):
+            index = index.value
+        if index in parent.fields:
+            log('reusing')
+            return parent.fields[index]
+        log('not reusing')
+        region = Region('%s[%s]' % (parent.name, index), parent)
+        parent.fields[index] = region
+        # it is its own region:
+        self.region_for_var[region] = region
+        return region
 
     def get_field_region(self, cr): #target, field):
         assert isinstance(cr, gcc.ComponentRef)

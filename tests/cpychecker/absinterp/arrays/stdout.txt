@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=None, value=42L)
+    str(): (int)42L
+  Exception:
+    (PyObject *)0 from tests/cpychecker/absinterp/arrays/input.c:26

@@ -511,6 +511,8 @@ class MyState(State):
             return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.NopExpr:
             return self.eval_rvalue(rhs[0])
+        elif stmt.exprcode == gcc.ArrayRef:
+            return self.eval_rvalue(rhs[0])
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
