@@ -619,8 +619,8 @@ References to storage
 
    .. py:attribute:: array
 
-      The `gcc.Tree` for the array within the reference (`buffer` in the
-      example above)
+      The `gcc.Tree` for the array within the reference
+      (`gcc.VarDecl('buffer')` in the example above)
 
    .. py:attribute:: index
 
