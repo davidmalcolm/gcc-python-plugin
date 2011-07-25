@@ -11,6 +11,13 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  gcc-plugin-devel
 
+# gcc 4.6.1's plugin/include/double-int.h includes "gmp.h", but on Fedora,
+# gmp-devel isn't yet listed in the requirements of gcc-plugin-devel
+# For now, explicitly require it:
+BuildRequires:  gmp-devel
+# Filed as https://bugzilla.redhat.com/show_bug.cgi?id=725569
+
+
 # Various python runtimes to build the plugin against:
 BuildRequires:  python-devel
 BuildRequires:  python-debug
@@ -289,6 +296,7 @@ into build-specific directories below the gcc plugin dir
 - add helper gcc-with-python scripts, with man pages
 - package the license
 - add example scripts
+- add explicit BR on gmp-devel (rhbz#725569)
 
 * Tue May 24 2011 David Malcolm <dmalcolm@redhat.com> - 0.1-1
 - initial packaging
