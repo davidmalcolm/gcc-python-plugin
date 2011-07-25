@@ -25,7 +25,7 @@ def on_finish_unit():
     for name in sorted(vars):
         var = vars[name]
         assert isinstance(var.decl.initial, gcc.IntegerCst)
-        print '%s: %s' % (name, hex(var.decl.initial.constant))
+        print('%s: %s' % (name, hex(var.decl.initial.constant)))
         assert int(var.decl.initial) == var.decl.initial.constant
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,

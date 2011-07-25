@@ -59,9 +59,9 @@ def on_pass_execution(p, fn):
         assert fn.cfg.basic_blocks[1] == fn.cfg.exit
         bb = fn.cfg.basic_blocks[2]
         for i,stmt in enumerate(bb.gimple):
-            print 'gimple[%i]:' % i
-            print '  str(stmt): %r' % str(stmt)
-            print '  repr(stmt): %r' % repr(stmt)
+            print('gimple[%i]:' % i)
+            print('  str(stmt): %r' % str(stmt))
+            print('  repr(stmt): %r' % repr(stmt))
             if isinstance(stmt, gcc.GimpleAssign):
                 print('  str(stmt.lhs): %r' % str(stmt.lhs))
                 print('  [str(stmt.rhs)]: %r' % [str(item) for item in stmt.rhs])

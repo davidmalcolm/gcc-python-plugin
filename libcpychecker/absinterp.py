@@ -18,6 +18,7 @@
 import gcc
 import gccutils
 import sys
+from six import StringIO
 from gccutils import get_src_for_loc
 from collections import OrderedDict
 from libcpychecker.utils import log
@@ -315,7 +316,6 @@ class State:
             region = self.region_for_var[k]
             value = self.value_for_region.get(region, None)
             t.add_row((k, region, value),)
-        from StringIO import StringIO
         s = StringIO()
         t.write(s)
         for line in s.getvalue().splitlines():
@@ -444,7 +444,7 @@ class State:
             # Initialize the refcount of global PyObject instances
             # e.g. _Py_NoneStruct to 0 i.e. we don't own any references to them
             if str(var.type) == 'struct PyObject':
-                from refcounts import RefcountValue
+                from libcpychecker.refcounts import RefcountValue
                 ob_refcnt = self.make_field_region(region, 'ob_refcnt') # FIXME: this should be a memref and fieldref
                 self.value_for_region[ob_refcnt] = RefcountValue(0)
         return self.region_for_var[var]
@@ -747,8 +747,9 @@ def iter_traces(fun, stateclass, prefix=None):
     try:
         transitions = curstate.get_transitions()
         assert isinstance(transitions, list)
-    except PredictedError, err:
+    except PredictedError:
         # We're at a terminating state:
+        err = sys.exc_info()[1]
         err.loc = prefix.get_last_stmt().loc
         trace_with_err = prefix.copy()
         trace_with_err.add_error(err)
@@ -804,8 +805,9 @@ class StateGraph:
             transitions = curstate.get_transitions()
             #print transitions
             assert isinstance(transitions, list)
-        except PredictedError, err:
+        except PredictedError:
             # We're at a terminating state:
+            err = sys.exc_info()[1]
             errstate = curstate.copy()
             transition = Transition(curstate, errstate, str(err))
             self.states.append(transition.dest)

@@ -166,7 +166,7 @@ struct PyExampleType {
 
             # Verify that it built:
             out = bm.run_command('import example; print(repr(example.ExampleType()))')
-            self.assertEquals(out, "example.ExampleType('')\n")
+            self.assertEqual(out, "example.ExampleType('')\n")
 
             # Cleanup successful test runs:
             bm.cleanup()

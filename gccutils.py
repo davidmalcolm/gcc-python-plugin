@@ -17,6 +17,8 @@
 
 import gcc
 
+from six.moves import xrange
+
 def get_src_for_loc(loc):
     # Given a gcc.Location, get the source line as a string
     import linecache
@@ -426,7 +428,7 @@ class TreePrettyPrinter(DotPrettyPrinter):
     # Generate a graphviz visualization of this gcc.Tree and the graphs of
     # nodes it references, as a string
     def __init__(self, root):
-        print 'root: %s' % root
+        print('root: %s' % root)
         assert isinstance(root, gcc.Tree)
         self.root = root
         self.show_addr = False

@@ -25,9 +25,9 @@ import gcc
 
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 
-from absinterp import *
-from diagnostics import Reporter
-from PyArg_ParseTuple import log
+from libcpychecker.absinterp import *
+from libcpychecker.diagnostics import Reporter
+from libcpychecker.PyArg_ParseTuple import log
 
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):

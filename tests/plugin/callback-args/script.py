@@ -19,9 +19,9 @@ import gcc
 
 # Callback without any args:
 def my_callback(*args, **kwargs):
-    print 'my_callback:'
-    print '  args: %r' % (args,)
-    print '  kwargs: %r' % (kwargs,)
+    print('my_callback:')
+    print('  args: %r' % (args,))
+    print('  kwargs: %r' % (kwargs,))
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       my_callback)

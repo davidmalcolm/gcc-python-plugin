@@ -17,6 +17,11 @@
 
 from subprocess import Popen, PIPE
 import re
+import six
+
+# For the purpose of the GCC plugin, it's OK to assume that we're compiling
+# with GCC itself, and thus we can use GCC extensions
+with_gcc_extensions = True
 
 def camel_case(txt):
     return ''.join([word.title()
@@ -52,7 +57,11 @@ class NamedEntity:
             caststr = '(%s)' % cast
         else:
             caststr = ''
-        return '    %s%s, /* %s */\n' % (caststr, nullable_ptr(val), name)
+        if with_gcc_extensions:
+            # Designate the initializer fields:
+            return '    .%s = %s%s,\n' % (name, caststr, nullable_ptr(val))
+        else:
+            return '    %s%s, /* %s */\n' % (caststr, nullable_ptr(val), name)
 
     def unaryfunc_field(self, name):
         return self.c_ptr_field(name, 'unaryfunc')
@@ -138,30 +147,46 @@ class PyNumberMethods(NamedEntity):
         result += self.c_ptr_field('nb_add')
         result += self.c_ptr_field('nb_subtract')
         result += self.c_ptr_field('nb_multiply')
+        result += '#if PY_MAJOR_VERSION < 3\n'
         result += self.c_ptr_field('nb_divide')
+        result += '#endif\n'
         result += self.c_ptr_field('nb_remainder')
         result += self.c_ptr_field('nb_divmod')
         result += self.c_ptr_field('nb_power')
         result += self.unaryfunc_field('nb_negative')
         result += self.unaryfunc_field('nb_positive')
         result += self.unaryfunc_field('nb_absolute')
+        result += '#if PY_MAJOR_VERSION >= 3\n'
+        result += self.c_ptr_field('nb_bool')
+        result += '#else\n'
         result += self.c_ptr_field('nb_nonzero')
+        result += '#endif\n'
         result += self.unaryfunc_field('nb_invert')
         result += self.c_ptr_field('nb_lshift')
         result += self.c_ptr_field('nb_rshift')
         result += self.c_ptr_field('nb_and')
         result += self.c_ptr_field('nb_xor')
         result += self.c_ptr_field('nb_or')
+        result += '#if PY_MAJOR_VERSION < 3\n'
         result += self.c_ptr_field('nb_coerce')
+        result += '#endif\n'
         result += self.unaryfunc_field('nb_int')
+        result += '#if PY_MAJOR_VERSION >= 3\n'
+        result += self.c_ptr_field('nb_reserved')
+        result += '#else\n'
         result += self.unaryfunc_field('nb_long')
+        result += '#endif\n'
         result += self.unaryfunc_field('nb_float')
+        result += '#if PY_MAJOR_VERSION < 3\n'
         result += self.unaryfunc_field('nb_oct')
         result += self.unaryfunc_field('nb_hex')
+        result += '#endif\n'
         result += self.c_ptr_field('nb_inplace_add')
         result += self.c_ptr_field('nb_inplace_subtract')
         result += self.c_ptr_field('nb_inplace_multiply')
+        result += '#if PY_MAJOR_VERSION < 3\n'
         result += self.c_ptr_field('nb_inplace_divide')
+        result += '#endif\n'
         result += self.c_ptr_field('nb_inplace_remainder')
         result += self.c_ptr_field('nb_inplace_power')
         result += self.c_ptr_field('nb_inplace_lshift')
@@ -403,7 +428,7 @@ class CompilationUnit:
         by a PyGetSetDef
         """
         return self.add_simple_setter(identifier, typename, attrname,
-                                      'PyInt_Check',
+                                      'gcc_python_int_check',
                                       c_assignment)
 
 class SimpleModule:
@@ -514,12 +539,18 @@ class PyRuntime:
         args = [self.config] + flags
         p = Popen(args, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
+        if six.PY3:
+            out = out.decode()
+            err = err.decode()
         return ' '.join(out.splitlines()).strip()
 
     def run_command(self, cmd, checkoutput=True):
         p = Popen([self.executable, '-c', cmd],
                   stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
+        if six.PY3:
+            out = out.decode()
+            err = err.decode()
         if p.returncode != 0:
             raise PyRuntimeError(self, cmd, out, err, p)
         return out

@@ -609,7 +609,8 @@ def check_pyargs(fun):
                 # Figure out expected types, based on the format string...
                 try:
                     fmt = PyArgParseFmt.from_string(fmt_string, with_size_t)
-                except FormatStringError, exc:
+                except FormatStringError:
+                    exc = sys.exc_info()[1]
                     gcc.permerror(stmt.loc, str(exc))
                     return
                 log('fmt: %r' % fmt.args)

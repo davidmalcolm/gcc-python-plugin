@@ -23,7 +23,7 @@ HTML visualizations
 import gcc
 from gccutils import get_src_for_loc
 from libcpychecker.visualizations import HtmlRenderer
-from PyArg_ParseTuple import log
+from libcpychecker.PyArg_ParseTuple import log
 
 def describe_trace(trace, fun):
     """

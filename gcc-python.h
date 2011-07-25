@@ -190,6 +190,8 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
 #define gcc_python_string_from_string_and_size PyUnicode_FromStringAndSize
 #define gcc_python_string_as_string _PyUnicode_AsString
 #define gcc_python_int_from_long PyLong_FromLong
+#define gcc_python_int_check PyLong_Check
+#define gcc_python_int_as_long PyLong_AsLong
 #else
 /* Python 2: use PyString for "str" and PyInt for "int": */
 #define gcc_python_string_from_format PyString_FromFormat
@@ -197,6 +199,8 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
 #define gcc_python_string_from_string_and_size PyString_FromStringAndSize
 #define gcc_python_string_as_string PyString_AsString
 #define gcc_python_int_from_long PyInt_FromLong
+#define gcc_python_int_check PyInt_Check
+#define gcc_python_int_as_long PyInt_AsLong
 #endif
 
 /*

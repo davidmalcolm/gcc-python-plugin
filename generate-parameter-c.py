@@ -69,7 +69,7 @@ def generate_param():
     setter = cu.add_simple_int_setter('gcc_Parameter_set_current_value',
                                       'PyGccParameter',
                                       'current_value',
-                                      'global_options.x_param_values[self->param_num] = PyInt_AsLong(value)') #FIXME
+                                      'global_options.x_param_values[self->param_num] = gcc_python_int_as_long(value)') #FIXME
     getsettable.add_gsdef('current_value',
                           getter, setter,
                           "(int/long)")

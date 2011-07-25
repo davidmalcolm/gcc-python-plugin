@@ -32,10 +32,13 @@
 
 import glob
 import os
+import re
 import sys
 from distutils.sysconfig import get_python_inc
-
 from subprocess import Popen, PIPE
+
+import six
+
 from cpybuilder import CommandError
 
 class CompilationError(CommandError):
@@ -50,7 +53,16 @@ class TestStream:
     def __init__(self, exppath):
         self.exppath = exppath
         if os.path.exists(exppath):
-            self.expdata = open(exppath).read()
+            expdata = open(exppath).read()
+            # The expected data is for Python 2
+            # Apply python3 fixups as necessary:
+            if six.PY3:
+                expdata = expdata.replace('<type ', '<class ')
+                expdata = expdata.replace('__builtin__', 'builtins')
+                # replace long literals with int literals:
+                expdata = re.sub('([0-9]+)L', '\g<1>', expdata)
+                expdata = re.sub('(0x[0-9a-f]+)L', '\g<1>', expdata)
+            self.expdata = expdata
         else:
             self.expdata = ''
 
@@ -118,6 +130,9 @@ def run_test(testdir):
     if os.path.exists(getopts_py):
         p = Popen([sys.executable, getopts_py], stdout=PIPE, stderr=PIPE)
         opts_out, opts_err = p.communicate()
+        if six.PY3:
+            opts_out = opts_out.decode()
+            opts_err = opts_err.decode()
         c = p.wait()
         if c != 0:
             raise CommandError()
@@ -133,6 +148,9 @@ def run_test(testdir):
     # Invoke the compiler:
     p = Popen(args, env=env, stdout=PIPE, stderr=PIPE)
     out.actual, err.actual = p.communicate()
+    if six.PY3:
+        out.actual = out.actual.decode()
+        err.actual = err.actual.decode()
     #print 'out: %r' % out.actual
     #print 'err: %r' % err.actual
     c = p.wait()
@@ -185,9 +203,10 @@ for testdir in testdirs:
         run_test(testdir)
         print('OK')
         num_passes += 1
-    except RuntimeError, err:
+    except RuntimeError:
+        err = sys.exc_info()[1]
         print('FAIL')
-        print err
+        print(err)
         failed_tests.append(testdir)
 
 def num(count, singular, plural):
