@@ -183,6 +183,11 @@ def run_test(testdir):
 
 from optparse import OptionParser
 parser = OptionParser()
+parser.add_option("-x", "--exclude",
+                  action="append",
+                  type="string",
+                  dest="excluded_dirs",
+                  help="exclude tests in DIR and below", metavar="DIR")
 (options, args) = parser.parse_args()
 
 # print (options, args)
@@ -203,6 +208,13 @@ if len(args) > 0:
 else:
     # Run all the tests
     testdirs = find_tests_below('tests')
+
+# Handle exclusions:
+if options.excluded_dirs:
+    for path in options.excluded_dirs:
+        for test in find_tests_below(path):
+            if test in testdirs:
+                testdirs.remove(test)
 
 num_passes = 0
 failed_tests = []
