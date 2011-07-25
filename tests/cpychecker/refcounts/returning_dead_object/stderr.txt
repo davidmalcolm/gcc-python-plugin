@@ -1,4 +1,4 @@
-tests/cpychecker/refcounts/returning_dead_object/input.c: In function ‘returning_dead_object’:
+tests/cpychecker/refcounts/returning_dead_object/input.c: In function 'returning_dead_object':
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: error: ob_refcnt of return value is 1 too low
 tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: PyLongObject allocated at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);

@@ -1,4 +1,4 @@
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c: In function ‘incorrect_usages_of_converter’:
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c: In function 'incorrect_usages_of_converter':
 tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:36:26: error: Not enough arguments in call to PyArg_ParseTuple with format string "O&"
   expected 2 extra arguments:
     "int (converter)(PyObject *, T*)" for some type T

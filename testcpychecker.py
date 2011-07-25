@@ -99,7 +99,7 @@ class PyArg_ParseTupleTests(AnalyzerTests):
                '    }\n'
                '    Py_RETURN_NONE;\n'
                '}\n')
-        experr = ('$(SRCFILE): In function ‘bogus_format_string’:\n'
+        experr = ("$(SRCFILE): In function 'bogus_format_string':\n"
                   '$(SRCFILE):12:26: error: unknown format char in "This is not a valid format string": \'T\' [-fpermissive]\n')
         self.assertFindsError(src, experr)
                    
@@ -124,7 +124,7 @@ socket_htons(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              '$(SRCFILE): In function ‘socket_htons’:\n'
+                              "$(SRCFILE): In function 'socket_htons':\n"
                               '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format code "i:htons" [-fpermissive]\n'
                               '  argument 3 ("&x1") had type\n'
                               '    "long unsigned int *" (pointing to 64 bits)\n'
@@ -144,7 +144,7 @@ not_enough_varargs(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              '$(SRCFILE): In function ‘not_enough_varargs’:\n'
+                              "$(SRCFILE): In function 'not_enough_varargs':\n"
                               '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i"\n'
                               '  expected 1 extra arguments:\n'
                               '    "int *" (pointing to 32 bits)\n'
@@ -164,7 +164,7 @@ too_many_varargs(PyObject *self, PyObject *args)
 }
 """
         self.assertFindsError(src,
-                              '$(SRCFILE): In function ‘too_many_varargs’:\n'
+                              "$(SRCFILE): In function 'too_many_varargs':\n"
                               '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i"\n'
                               '  expected 1 extra arguments:\n'
                               '    "int *" (pointing to 32 bits)\n'
@@ -240,7 +240,7 @@ correct_usage(PyObject *self, PyObject *args)
         return 26
 
     def get_expected_error(self):
-        return ('$(SRCFILE): In function ‘%(function_name)s’:\n'
+        return ("$(SRCFILE): In function '%(function_name)s':\n"
                 '$(SRCFILE):%(linenum)i:%(colnum)i: error: Mismatching type in call to %(funcname)s with format code "%(code)s" [-fpermissive]\n'
                 '  argument %(argindex)i ("&val") had type\n'
                 '    "void * *"\n'
@@ -415,7 +415,7 @@ correct_usage(PyObject *self, PyObject *args)
                     '    }\n'
                     '    Py_RETURN_NONE;\n'
                     '}\n') % locals()
-            experr = ('$(SRCFILE): In function ‘%(function_name)s’:\n'
+            experr = ("$(SRCFILE): In function '%(function_name)s':\n"
                       '$(SRCFILE):12:26: error: mismatched parentheses in format string "%(code)s"' % locals())
             bm = self.assertFindsError(src, experr)
 

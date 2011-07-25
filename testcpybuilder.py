@@ -69,8 +69,11 @@ class BuiltModule:
         self.args += [self.srcfile]
         #print self.args
 
+        env = dict(os.environ)
+        env['LANG'] = 'C'
+
         # Invoke the compiler:
-        self.p = Popen(self.args, stdout=PIPE, stderr=PIPE)
+        self.p = Popen(self.args, env=env, stdout=PIPE, stderr=PIPE)
         self.out, self.err = self.p.communicate()
         c = self.p.wait()
         if c != 0:

@@ -1,4 +1,4 @@
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/input.c: In function ‘hash_format_codes’:
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/input.c: In function 'hash_format_codes':
 tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:49:26: error: Mismatching type in call to PyArg_ParseTuple with format code "s#" [-fpermissive]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
