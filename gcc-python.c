@@ -897,6 +897,18 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     //printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
+#if PY_MAJOR_VERSION >= 3
+    /*
+      Python 3 added internal buffering to sys.stdout and sys.stderr, but this
+      leads to unpredictable interleavings of messages from gcc, such as from calling
+      gcc.warning() vs those from python scripts, such as from print() and
+      sys.stdout.write()
+
+      Suppress the buffering, to better support mixed gcc/python output:
+    */
+    Py_UnbufferedStdioFlag = 1;
+#endif
+
     PyImport_AppendInittab("gcc", PyInit_gcc);
 
     Py_Initialize();
