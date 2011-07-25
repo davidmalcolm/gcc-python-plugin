@@ -229,13 +229,16 @@ Currently useful callback events
 
       (`*extraargs`, `**kwargs`)
 
-Other callback events
----------------------
+.. Other callback events
+   ---------------------
 
-The following may need work before they're meaningfully usable from Python
-scripts:
+.. (Commented out for now; probably should finish this and move it to a
+   reference section)
 
-.. py:data:: gcc.PLUGIN_ATTRIBUTES
+.. The following may need work before they're meaningfully usable from Python
+   scripts:
+
+   .. py:data:: gcc.PLUGIN_ATTRIBUTES
 
    Called from: init_attributes () at ../../gcc/attribs.c:187
     However, it seems at this point to have initialized these::
@@ -243,22 +246,22 @@ scripts:
       static const struct attribute_spec *attribute_tables[4];
       static htab_t attribute_hash;
 
-.. py:data:: gcc.PLUGIN_PRAGMAS
+   .. py:data:: gcc.PLUGIN_PRAGMAS
 
     gcc_data=0x0
     Called from: c_common_init () at ../../gcc/c-family/c-opts.c:1052
 
-.. py:data:: gcc.PLUGIN_START_UNIT
+   .. py:data:: gcc.PLUGIN_START_UNIT
 
     gcc_data=0x0
     Called from: compile_file () at ../../gcc/toplev.c:573
 
-.. py:data:: gcc.PLUGIN_PRE_GENERICIZE
+   .. py:data:: gcc.PLUGIN_PRE_GENERICIZE
 
     gcc_data is:  tree fndecl;
     Called from: finish_function () at ../../gcc/c-decl.c:8323
 
-.. py:data:: gcc.PLUGIN_OVERRIDE_GATE
+   .. py:data:: gcc.PLUGIN_OVERRIDE_GATE
 
     gcc_data::
 
@@ -267,47 +270,47 @@ scripts:
 
     Called from : execute_one_pass (pass=0x1011340) at ../../gcc/passes.c:1520
 
-.. py:data:: gcc.PLUGIN_ALL_IPA_PASSES_START
+   .. py:data:: gcc.PLUGIN_ALL_IPA_PASSES_START
 
     gcc_data=0x0
     Called from: ipa_passes () at ../../gcc/cgraphunit.c:1779
 
-.. py:data:: gcc.PLUGIN_EARLY_GIMPLE_PASSES_START
+   .. py:data:: gcc.PLUGIN_EARLY_GIMPLE_PASSES_START
 
     gcc_data=0x0
     Called from: execute_ipa_pass_list (pass=0x1011fa0) at ../../gcc/passes.c:1927
 
-.. py:data:: gcc.PLUGIN_EARLY_GIMPLE_PASSES_END
+   .. py:data:: gcc.PLUGIN_EARLY_GIMPLE_PASSES_END
 
     gcc_data=0x0
     Called from: execute_ipa_pass_list (pass=0x1011fa0) at ../../gcc/passes.c:1930
 
-.. py:data:: gcc.PLUGIN_ALL_IPA_PASSES_END
+   .. py:data:: gcc.PLUGIN_ALL_IPA_PASSES_END
 
     gcc_data=0x0
     Called from: ipa_passes () at ../../gcc/cgraphunit.c:1821
 
-.. py:data:: gcc.PLUGIN_ALL_PASSES_START
+   .. py:data:: gcc.PLUGIN_ALL_PASSES_START
 
     gcc_data=0x0
     Called from: tree_rest_of_compilation (fndecl=0x7ffff16b1f00) at ../../gcc/tree-optimize.c:420
 
-.. py:data:: gcc.PLUGIN_ALL_PASSES_END
+   .. py:data:: gcc.PLUGIN_ALL_PASSES_END
 
     gcc_data=0x0
     Called from: tree_rest_of_compilation (fndecl=0x7ffff16b1f00) at ../../gcc/tree-optimize.c:425
 
-.. py:data:: gcc.PLUGIN_FINISH
+   .. py:data:: gcc.PLUGIN_FINISH
 
     gcc_data=0x0
     Called from: toplev_main (argc=17, argv=0x7fffffffdfc8) at ../../gcc/toplev.c:1970
 
-.. py:data:: gcc.PLUGIN_FINISH_TYPE
+   .. py:data:: gcc.PLUGIN_FINISH_TYPE
 
     gcc_data=tree
     Called from c_parser_declspecs (parser=0x7fffef559730, specs=0x15296d0, scspec_ok=1 '\001', typespec_ok=1 '\001', start_attr_ok=<optimized out>, la=cla_nonabstract_decl) at ../../gcc/c-parser.c:2111
 
-.. py:data:: gcc.PLUGIN_PRAGMA
+   .. py:data:: gcc.PLUGIN_PRAGMA
 
     gcc_data=0x0
     Called from: init_pragma at ../../gcc/c-family/c-pragma.c:1321
