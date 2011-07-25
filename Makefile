@@ -77,7 +77,7 @@ PYTHON_CONFIG=python-config
 #PYTHON_CONFIG=python-debug-config
 
 #PYTHON=python3-debug
-#PYTHON_CONFIG=python3-debug-config
+#PYTHON_CONFIG=python3.2dmu-config
 
 PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
 PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
