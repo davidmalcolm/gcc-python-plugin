@@ -229,5 +229,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'gcc-python-plugin', u'gcc-python-plugin Documentation',
+     [u'David Malcolm'], 1),
+    ('gcc-with-python', 'gcc-with-python', u'Run GCC whilst invoking a Python script',
      [u'David Malcolm'], 1)
 ]
