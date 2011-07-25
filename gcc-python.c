@@ -530,19 +530,16 @@ gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
     return gcc_python_make_wrapper_tree(t);
 }
 
-
 /*
   get_translation_units was made globally visible in gcc revision 164331:
     http://gcc.gnu.org/ml/gcc-cvs/2010-09/msg00625.html
     http://gcc.gnu.org/viewcvs?view=revision&revision=164331
 */
-#if BUILDING_GCC_VERSION >= 4006
 static PyObject *
 gcc_python_get_translation_units(PyObject *self, PyObject *args)
 {
     return VEC_tree_as_PyList(all_translation_units);
 }
-#endif /* BUILDING_GCC_VERSION >= 4006 */
 
 /* Version handling: */
 
@@ -655,10 +652,8 @@ static PyMethodDef GccMethods[] = {
     {"maybe_get_identifier", gcc_python_maybe_get_identifier, METH_VARARGS,
      "Get the gcc.IdentifierNode with this name, if it exists, otherwise None"},
 
-#if BUILDING_GCC_VERSION >= 4006
     {"get_translation_units", gcc_python_get_translation_units, METH_VARARGS,
      "Get a list of all gcc.TranslationUnitDecl"},
-#endif
 
     /* Version handling: */
     {"get_plugin_gcc_version", gcc_python_get_plugin_gcc_version, METH_VARARGS,
