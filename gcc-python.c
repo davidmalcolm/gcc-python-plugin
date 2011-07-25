@@ -808,6 +808,8 @@ setup_sys(struct plugin_name_args *plugin_info)
      find modules relative to itself without needing PYTHONPATH to be set up.
      (sys.path has already been initialized by the call to Py_Initialize)
 
+     * If PLUGIN_PYTHONPATH is defined, add it to "sys.path"
+
     */
     int result = 0; /* failure */
     PyObject *full_name = NULL;
@@ -839,6 +841,27 @@ setup_sys(struct plugin_name_args *plugin_info)
     if (-1 == PyRun_SimpleString(program)) {
         goto error;
     }
+
+#ifdef PLUGIN_PYTHONPATH
+    {
+        /*
+           Support having multiple builds of the plugin installed independently
+           of each other, by supporting each having a directory for support
+           files e.g. gccutils, libcpychecker, etc
+
+           We do this by seeing if PLUGIN_PYTHONPATH was defined in the
+           compile, and if so, adding it to sys.path:
+        */
+        const char *program2 =
+            "import sys;\n"
+            "import os;\n"
+            "sys.path.append('" PLUGIN_PYTHONPATH "')\n";
+
+        if (-1 == PyRun_SimpleString(program2)) {
+            goto error;
+        }
+    }
+#endif
 
     /* Success: */
     result = 1;
