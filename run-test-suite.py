@@ -53,7 +53,8 @@ class TestStream:
     def __init__(self, exppath):
         self.exppath = exppath
         if os.path.exists(exppath):
-            expdata = open(exppath).read()
+            with open(exppath) as f:
+                expdata = f.read()
             # The expected data is for Python 2
             # Apply python3 fixups as necessary:
             if six.PY3:
@@ -68,6 +69,12 @@ class TestStream:
 
     def _cleanup(self, text):
         result = ''
+
+        # Debug builds of Python add reference-count logging lines of
+        # this form:
+        #   "[84507 refs]"
+        # Strip such lines out:
+        text = re.sub(r'(\[[0-9]+ refs\]\n)', '', text)
         for line in text.splitlines():
             if line.startswith("Preprocessed source stored into"):
                 # Handle stuff like this that changes every time:
@@ -122,7 +129,8 @@ def run_test(testdir):
 
     # Special-case: add the python include dir (for this runtime) if the C code
     # uses Python.h:
-    code = open(c_input, 'r').read()
+    with open(c_input, 'r') as f:
+        code = f.read()
     if '#include <Python.h>' in code:
         args += ['-I' + get_python_inc()]
 
