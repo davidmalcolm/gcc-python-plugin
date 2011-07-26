@@ -63,6 +63,12 @@ class TestStream:
                 # replace long literals with int literals:
                 expdata = re.sub('([0-9]+)L', '\g<1>', expdata)
                 expdata = re.sub('(0x[0-9a-f]+)L', '\g<1>', expdata)
+
+            # The expected data is for 64-bit builds of Python
+            # Fix it up for 32-bit builds as necessary:
+            if sys.maxint == 0x7fffffff:
+                expdata = expdata.replace('"Py_ssize_t *" (pointing to 64 bits)',
+                                          '"Py_ssize_t *" (pointing to 32 bits)')
             self.expdata = expdata
         else:
             self.expdata = ''
@@ -209,12 +215,26 @@ else:
     # Run all the tests
     testdirs = find_tests_below('tests')
 
+def exclude_test(test):
+    if test in testdirs:
+        testdirs.remove(test)
+
 # Handle exclusions:
 if options.excluded_dirs:
     for path in options.excluded_dirs:
         for test in find_tests_below(path):
-            if test in testdirs:
-                testdirs.remove(test)
+            exclude_test(test)
+
+# Certain tests don't work on 32-bit
+if sys.maxint == 0x7fffffff:
+    # These two tests verify that we can detect int vs Py_ssize_t mismatches,
+    # but on 32-bit these are the same type, so don't find anything:
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN')
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN')
+
+    # One part of the expected output for this test assumes int vs Py_ssize_t
+    # mismatch:
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/incorrect_converters')
 
 num_passes = 0
 failed_tests = []
