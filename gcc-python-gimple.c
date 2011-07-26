@@ -25,14 +25,8 @@
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
 
-PyObject *
-gcc_Gimple_repr(struct PyGccGimple * self)
-{
-    return gcc_python_string_from_format("%s()", Py_TYPE(self)->tp_name);
-}
-
-PyObject *
-gcc_Gimple_str(struct PyGccGimple * self)
+static PyObject *
+do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 {
     PyObject *ppobj = gcc_python_pretty_printer_new();
     PyObject *result = NULL;
@@ -42,7 +36,7 @@ gcc_Gimple_str(struct PyGccGimple * self)
 
     dump_gimple_stmt(gcc_python_pretty_printer_as_pp(ppobj),
 		     self->stmt,
-		     0, 0);
+		     spc, flags);
     result = gcc_python_pretty_printer_as_string(ppobj);
     if (!result) {
 	goto error;
@@ -54,6 +48,18 @@ gcc_Gimple_str(struct PyGccGimple * self)
  error:
     Py_XDECREF(ppobj);
     return NULL;
+}
+
+PyObject *
+gcc_Gimple_repr(struct PyGccGimple * self)
+{
+    return gcc_python_string_from_format("%s()", Py_TYPE(self)->tp_name);
+}
+
+PyObject *
+gcc_Gimple_str(struct PyGccGimple * self)
+{
+    return do_pretty_print(self, 0, 0);
 }
 
 PyObject *
@@ -84,6 +90,12 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
  error:
     Py_XDECREF(result);
     return NULL;
+}
+
+PyObject *
+gcc_Gimple_get_str_no_uid(struct PyGccGimple *self, void *closure)
+{
+    return do_pretty_print(self, 0, TDF_NOUID);
 }
 
 PyObject *

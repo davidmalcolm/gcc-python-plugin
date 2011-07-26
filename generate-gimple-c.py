@@ -209,6 +209,10 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                                                                      'gcc_python_make_wrapper_tree(gimple_expr_type(self->stmt))'),
                                                 None,
                                                 'The type of the main expression computed by this statement, as a gcc.Tree (which might be gcc.VoidType)'),
+                                    PyGetSetDef('str_no_uid',
+                                                'gcc_Gimple_get_str_no_uid',
+                                                None,
+                                                'A string representation of this statement, like str(), but without including any internal UID'),
                                     ])
     cu.add_defn(getsettable.c_defn())
 

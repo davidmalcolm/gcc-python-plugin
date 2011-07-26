@@ -47,6 +47,27 @@ TODO
 
       The type of the main expression computed by this statement, as a gcc.Tree (which might be gcc.VoidType)
 
+   .. py:attribute:: str_no_uid
+
+      A string representation of this statement, like str(), but without
+      including any internal UIDs.
+
+      This is intended for use in selftests that compare output against some
+      expected value, to avoid embedding values that change into the expected
+      output.
+
+      For example, given an assignment to a
+      temporary, the `str(stmt)` for the gcc.GimpleAssign might be::
+
+         'D.3259 = (long unsigned int) i;'
+
+      where the UID "3259" is liable to change from compile to compile, whereas
+      the `stmt.str_no_uid` has value::
+
+         'D.xxxx = (long unsigned int) i;'
+
+      which won't arbitrarily change each time.
+
 .. py:class:: gcc.GimpleAssign
 
    Subclass of :py:class:`gcc.Gimple`: an assignment of an expression to an l-value

@@ -63,6 +63,9 @@ PyObject *
 gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op);
 
 PyObject *
+gcc_Tree_get_str_no_uid(struct PyGccTree *self, void *closure);
+
+PyObject *
 gcc_Function_repr(struct PyGccFunction * self);
 
 PyObject *
@@ -88,6 +91,9 @@ gcc_Gimple_str(struct PyGccGimple * self);
 
 PyObject *
 gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure);
+
+PyObject *
+gcc_Gimple_get_str_no_uid(struct PyGccGimple *self, void *closure);
 
 PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure);

@@ -39,9 +39,8 @@
 /*
     Code for various tree types
  */
-
-PyObject *
-gcc_Tree_str(struct PyGccTree * self)
+static PyObject *
+do_pretty_print(struct PyGccTree * self, int spc, int flags)
 {
     PyObject *ppobj = gcc_python_pretty_printer_new();
     PyObject *result = NULL;
@@ -50,7 +49,7 @@ gcc_Tree_str(struct PyGccTree * self)
     }
 
     dump_generic_node (gcc_python_pretty_printer_as_pp(ppobj),
-		       self->t, 0, 0, 0);
+		       self->t, spc, flags, 0);
     result = gcc_python_pretty_printer_as_string(ppobj);
     if (!result) {
 	goto error;
@@ -62,6 +61,13 @@ gcc_Tree_str(struct PyGccTree * self)
  error:
     Py_XDECREF(ppobj);
     return NULL;
+}
+
+
+PyObject *
+gcc_Tree_str(struct PyGccTree * self)
+{
+    return do_pretty_print(self, 0, 0);
 }
 
 long
@@ -110,6 +116,12 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
  out:
     Py_INCREF(result_obj);
     return result_obj;
+}
+
+PyObject *
+gcc_Tree_get_str_no_uid(struct PyGccTree *self, void *closure)
+{
+    return do_pretty_print(self, 0, TDF_NOUID);
 }
 
 PyObject *

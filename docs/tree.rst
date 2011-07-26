@@ -51,6 +51,27 @@ the code passing through GCC.
 
    for a `gcc.FunctionDecl`
 
+   .. py:attribute:: str_no_uid
+
+      A string representation of this object, like str(), but without
+      including any internal UIDs.
+
+      This is intended for use in selftests that compare output against some
+      expected value, to avoid embedding values that change into the expected
+      output.
+
+      For example, given the type declaration above, where `str(t)` might
+      return::
+
+         'int <T531> (int, char * *)'
+
+      where the UID "531" is liable to change from compile to compile, whereas
+      `t.str_no_uid` has value::
+
+         'int <Txxx> (int, char * *)'
+
+      which won't arbitrarily change each time.
+
 There are numerous subclasses of gcc.Tree, each typically named after either
 one of the `enum tree_code_class` or `enum tree_code` values, with the names
 converted to Camel Case.
