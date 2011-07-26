@@ -21,6 +21,8 @@ from subprocess import Popen, PIPE
 import sys
 import unittest
 
+import six
+
 from testcpybuilder import BuiltModule, PyRuntime, SimpleModule, CompilationError
 from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
 
@@ -110,7 +112,7 @@ class PyArg_ParseTupleTests(AnalyzerTests):
         #  machines from CPython's Modules/socket.c; was fixed in svn r34931
         #  FIXME: the original had tab indentation, but what does this mean
         # for "column" offsets in the output?
-        if sys.maxint == 0x7fffffff:
+        if six.MAXSIZE == 0x7fffffff:
             raise unittest.SkipTest('Test assumes a 64-bit machine')
 
         src = """

@@ -66,7 +66,7 @@ class TestStream:
 
             # The expected data is for 64-bit builds of Python
             # Fix it up for 32-bit builds as necessary:
-            if sys.maxint == 0x7fffffff:
+            if six.MAXSIZE == 0x7fffffff:
                 expdata = expdata.replace('"Py_ssize_t *" (pointing to 64 bits)',
                                           '"Py_ssize_t *" (pointing to 32 bits)')
             self.expdata = expdata
@@ -226,7 +226,7 @@ if options.excluded_dirs:
             exclude_test(test)
 
 # Certain tests don't work on 32-bit
-if sys.maxint == 0x7fffffff:
+if six.MAXSIZE == 0x7fffffff:
     # These two tests verify that we can detect int vs Py_ssize_t mismatches,
     # but on 32-bit these are the same type, so don't find anything:
     exclude_test('tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN')
