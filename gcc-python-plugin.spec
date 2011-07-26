@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.3
+Version:        0.4
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
@@ -40,6 +40,7 @@ Plugins for embedding various versions of Python within GCC
 Summary: GCC plugin embedding Python 2
 Group:   Development/Languages
 Requires: python-six
+Requires: python-pygments
 
 %description  -n gcc-python2-plugin
 GCC plugin embedding Python 2
@@ -48,6 +49,7 @@ GCC plugin embedding Python 2
 Summary: GCC plugin embedding Python 3
 Group:   Development/Languages
 Requires: python3-six
+Requires: python3-pygments
 
 %description  -n gcc-python3-plugin
 GCC plugin embedding Python 3
@@ -56,6 +58,7 @@ GCC plugin embedding Python 3
 Summary: GCC plugin embedding Python 2 debug build
 Group:   Development/Languages
 Requires: python-six
+Requires: python-pygments
 
 %description  -n gcc-python2-debug-plugin
 GCC plugin embedding debug build of Python 2
@@ -64,6 +67,7 @@ GCC plugin embedding debug build of Python 2
 Summary: GCC plugin embedding Python 3 debug build
 Group:   Development/Languages
 Requires: python3-six
+Requires: python3-pygments
 
 %description  -n gcc-python3-debug-plugin
 GCC plugin embedding debug build of Python 3
@@ -219,34 +223,71 @@ CheckPlugin() {
     PythonExe=$1
     PythonConfig=$2
     PluginDso=$3
+    SelftestArgs=$4
 
-    # Disabled for now; not all tests pass:
-    #make \
-    #   PYTHON=$PythonExe \
-    #   PYTHON_CONFIG=$PythonConfig \
-    #   test-suite testcpychecker
+    # Copy the specific build of the plugin back into the location where
+    # the selftests expect it:
+    cp $PluginDso python.so
+
+    # Run the selftests:
+    $PythonExe run-test-suite.py $SelftestArgs
+
+    $PythonExe testcpychecker.py -v
 }
 
+# Selftest for python2 (optimized) build
+# All tests ought to pass:
 CheckPlugin \
   python \
   python-config \
-  python2.so
+  python2.so \
+  %{nil}
 
+# Selftest for python2-debug build:
+# Disable the cpychecker tests for now: somewhat ironically, the extra
+# instrumentation in the debug build breaks the selftests for the refcount
+# tracker.  (specifically, handling of _Py_RefTotal):
+#
+#   Failed tests:
+#     tests/cpychecker/refcounts/correct_py_none
+#     tests/cpychecker/refcounts/correct_decref
+#     tests/cpychecker/refcounts/use_after_dealloc
+#     tests/cpychecker/refcounts/returning_dead_object
+#     tests/cpychecker/refcounts/too_many_increfs
+#     tests/cpychecker/refcounts/loop_n_times
+#
 CheckPlugin \
   python-debug \
   python-debug-config \
-  python2-debug.so
+  python2-debug.so \
+  "-x tests/cpychecker"
 
+# Selftest for python3 (optimized) build:
+# Disable the cpychecker tests for now:
+#   Failed tests:
+#     tests/cpychecker/PyArg_ParseTuple/incorrect_codes_S_and_U
+#     tests/cpychecker/PyArg_ParseTuple/correct_codes_S_and_U
+#     tests/cpychecker/refcounts/correct_decref
+#     tests/cpychecker/refcounts/fold_conditional
+#     tests/cpychecker/refcounts/use_after_dealloc
+#     tests/cpychecker/refcounts/missing_decref
+#     tests/cpychecker/refcounts/returning_dead_object
+#     tests/cpychecker/refcounts/too_many_increfs
+#     tests/cpychecker/refcounts/loop_n_times
+#
 CheckPlugin \
   python3 \
   python3-config \
-  python3.so
+  python3.so \
+  "-x tests/cpychecker"
 
+# Selftest for python3-debug build:
+#   (shares the issues of the above)
 CheckPlugin \
   python3-debug \
   python3.2dmu-config \
-  python3-debug-debug.so
-
+  python3-debug.so \
+  "-x tests/cpychecker"
 
 %files -n gcc-python2-plugin
 %defattr(-,root,root,-)
@@ -288,6 +329,11 @@ CheckPlugin \
 %doc show-ssa.py show-docs.py
 
 %changelog
+* Tue Jul 26 2011 David Malcolm <dmalcolm@redhat.com> - 0.4-1
+- 0.4
+- add requirement on pygments
+- run the upstream test suites during %%check
+
 * Mon Jul 25 2011 David Malcolm <dmalcolm@redhat.com> - 0.3-1
 - add requirements on python-six and python3-six
 - add %%check section (empty for now)
