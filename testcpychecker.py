@@ -292,7 +292,7 @@ correct_usage(PyObject *self, PyObject *args)
     #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_s_star(self):
-        self._test_format_code('s*', ['Py_buffer'])
+        self._test_format_code('s*', ['Py_buffer'], '"struct Py_buffer *"')
 
     def test_format_code_z(self):
         self._test_format_code('z', 'const char *')
@@ -302,7 +302,7 @@ correct_usage(PyObject *self, PyObject *args)
     #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_z_star(self):
-        self._test_format_code('z*', ['Py_buffer'])
+        self._test_format_code('z*', ['Py_buffer'], '"struct Py_buffer *"')
 
     def test_format_code_u(self):
         self._test_format_code('u', 'Py_UNICODE *')
@@ -375,13 +375,15 @@ correct_usage(PyObject *self, PyObject *args)
         self._test_format_code('d', 'double')
 
     def test_format_code_D(self):
-        self._test_format_code('D', 'Py_complex')
+        self._test_format_code('D', 'Py_complex', '"struct Py_complex *"')
 
     def test_format_code_O(self):
-        self._test_format_code('O', ['PyObject *'])
+        self._test_format_code('O', ['PyObject *'], '"struct PyObject * *"')
 
     def test_format_code_O_bang(self):
-        self._test_format_code('O!', ['PyTypeObject', 'PyObject *'])
+        self._test_format_code('O!',
+                               ['PyTypeObject', 'PyObject *'],
+                               ['"struct PyTypeObject *"', '"struct PyObject *"'])
 
     # Code "O&" is tested by:
     #   tests/cpychecker/PyArg_ParseTuple/correct_converter/
@@ -404,7 +406,7 @@ correct_usage(PyObject *self, PyObject *args)
     #   tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN
 
     def test_format_code_w_star(self):
-        self._test_format_code('w*', ['Py_buffer'])
+        self._test_format_code('w*', ['Py_buffer'], '"struct Py_buffer *"')
 
     def test_mismatched_parentheses(self):
         for code in ['(', ')', '(()']:

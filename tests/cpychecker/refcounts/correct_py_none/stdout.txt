@@ -7,4 +7,4 @@ Trace 0:
     r->ob_refcnt: RefcountValue(1)
     r->ob_type: None
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/correct_py_none/input.c:24
+    (struct PyObject *)0 from tests/cpychecker/refcounts/correct_py_none/input.c:24

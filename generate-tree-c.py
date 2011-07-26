@@ -424,9 +424,10 @@ def generate_tree_code_classes():
                                "The list of gcc.Tree for the declarations and labels in this block")
 
         if tree_type.SYM == 'TYPE_DECL':
-            add_simple_getter('pointer',
-                              'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
-                              "The gcc.PointerType representing '(this_type *)'")
+            getsettable.add_gsdef('pointer',
+                                  'gcc_TypeDecl_get_pointer',
+                                  None,
+                                  "The gcc.PointerType representing '(this_type *)'")
 
         if tree_type.SYM == 'FUNCTION_TYPE':
             getsettable.add_gsdef('argument_types',

@@ -154,7 +154,7 @@ error:
 }
 
 PyObject *
-gcc_FunctionType_get_argument_types(struct PyGccTree * self)
+gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;
     PyObject *item;
@@ -255,11 +255,22 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
 }
 
 PyObject *
-gcc_IntegerConstant_get_constant(struct PyGccTree * self)
+gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure)
 {
     tree type = TREE_TYPE(self->t);
     return gcc_python_int_from_double_int(TREE_INT_CST(self->t),
                                           TYPE_UNSIGNED(type));
+}
+
+PyObject *
+gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
+{
+    tree decl_type = TREE_TYPE(self->t);
+    if (!decl_type) {
+        PyErr_SetString(PyExc_ValueError, "gcc.TypeDecl has no associated type");
+        return NULL;
+    }
+    return gcc_python_make_wrapper_tree(build_pointer_type(decl_type));
 }
 
 /* 

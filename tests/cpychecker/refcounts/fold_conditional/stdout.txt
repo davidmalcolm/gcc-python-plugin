@@ -9,9 +9,9 @@ Trace 0:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=26), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=26)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=26)) from tests/cpychecker/refcounts/fold_conditional/input.c:26
     r->ob_refcnt: RefcountValue(1)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=26), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=26), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/fold_conditional/input.c:24
+    (struct PyObject *)0 from tests/cpychecker/refcounts/fold_conditional/input.c:24
 
 Trace 1:
   Transitions:

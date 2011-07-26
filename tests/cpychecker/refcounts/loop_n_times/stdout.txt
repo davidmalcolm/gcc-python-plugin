@@ -13,14 +13,14 @@ Trace 0:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)) from tests/cpychecker/refcounts/loop_n_times/input.c:38
     r->ob_refcnt: RefcountValue(1)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42
     r->ob_refcnt: RefcountValue(0)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
+    (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
 
 Trace 1:
   Transitions:
@@ -38,14 +38,14 @@ Trace 1:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)) from tests/cpychecker/refcounts/loop_n_times/input.c:38
     r->ob_refcnt: RefcountValue(1)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
+    (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
 
 Trace 2:
   Transitions:
@@ -64,7 +64,7 @@ Trace 2:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
     r->ob_refcnt: RefcountValue(0)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
 

@@ -8,9 +8,9 @@ Trace 0:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29)))
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29)) from tests/cpychecker/refcounts/returning_dead_object/input.c:29
     r->ob_refcnt: RefcountValue(0)
-    r->ob_type: PointerToRegion(gcctype='PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/returning_dead_object/input.c:27
+    (struct PyObject *)0 from tests/cpychecker/refcounts/returning_dead_object/input.c:27
 
 Trace 1:
   Transitions:
@@ -25,7 +25,7 @@ Trace 1:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/returning_dead_object/input.c:27
+    (struct PyObject *)0 from tests/cpychecker/refcounts/returning_dead_object/input.c:27
 
 Trace 2:
   Transitions:

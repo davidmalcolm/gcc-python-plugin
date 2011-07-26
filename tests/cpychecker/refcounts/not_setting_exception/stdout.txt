@@ -5,4 +5,4 @@ Trace 0:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
     str(): (struct PyObject *)0L
   Exception:
-    (PyObject *)0 from tests/cpychecker/refcounts/not_setting_exception/input.c:27
+    (struct PyObject *)0 from tests/cpychecker/refcounts/not_setting_exception/input.c:27

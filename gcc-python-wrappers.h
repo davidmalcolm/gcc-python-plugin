@@ -75,13 +75,16 @@ PyObject *
 gcc_Declaration_repr(struct PyGccTree * self);
 
 PyObject *
-gcc_FunctionType_get_argument_types(struct PyGccTree * self);
+gcc_FunctionType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
 gcc_Constructor_get_elements(PyObject *self, void *closure);
 
 PyObject *
-gcc_IntegerConstant_get_constant(struct PyGccTree * self);
+gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure);
+
+PyObject *
+gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self);
