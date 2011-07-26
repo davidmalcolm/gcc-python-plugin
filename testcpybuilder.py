@@ -17,10 +17,12 @@
 
 import os
 import shutil
+from subprocess import Popen, PIPE
+import sys
 import tempfile
 import unittest
 
-from subprocess import Popen, PIPE
+import six
 
 from cpybuilder import *
 
@@ -75,6 +77,9 @@ class BuiltModule:
         # Invoke the compiler:
         self.p = Popen(self.args, env=env, stdout=PIPE, stderr=PIPE)
         self.out, self.err = self.p.communicate()
+        if six.PY3:
+            self.out = self.out.decode()
+            self.err = self.err.decode()
         c = self.p.wait()
         if c != 0:
             raise CompilationError(self)

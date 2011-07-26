@@ -17,8 +17,9 @@
 #   <http://www.gnu.org/licenses/>.
 
 import os
-import unittest
 from subprocess import Popen, PIPE
+import sys
+import unittest
 
 from testcpybuilder import BuiltModule, PyRuntime, SimpleModule, CompilationError
 from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
@@ -81,7 +82,8 @@ class AnalyzerTests(unittest.TestCase):
             bm.write_src()
             experr = experr.replace('$(SRCFILE)', bm.srcfile)
             self.compile_src(bm)
-        except CompilationError, exc:
+        except CompilationError:
+            exc = sys.exc_info()[1]
             if experr not in exc.err:
                 raise ExpectedErrorNotFound(experr, exc.err, bm)
         else:
