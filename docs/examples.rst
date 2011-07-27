@@ -15,38 +15,6 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Working with C code
-===================
-
-"Hello world"
--------------
-
-Here's a simple "hello world" C program:
-
-  .. literalinclude:: ../tests/examples/hello-world/input.c
-    :lines: 19-26
-    :language: c
-
-Here's a Python script that locates the function at one pass within the
-compile  and prints various interesting things about it:
-
-  .. literalinclude:: ../tests/examples/hello-world/script.py
-    :lines: 19-
-    :language: python
-
-We can run the script during the compile like this:
-
-   .. code-block:: bash
-
-     ./gcc-with-python script.py test.c
-
-Here's the expected output:
-
-  .. literalinclude:: ../tests/examples/hello-world/stdout.txt
-
-Notice how the call to `printf` has already been optimized into a call
-to `__builtin_puts`.
-
 Example scripts
 ===============
 

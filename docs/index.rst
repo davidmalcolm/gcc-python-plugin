@@ -31,6 +31,7 @@ Contents:
    basics.rst
    gcc-overview.rst
    examples.rst
+   working-with-c.rst
    cfg.rst
    tree.rst
    gimple.rst
