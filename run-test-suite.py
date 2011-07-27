@@ -128,8 +128,9 @@ def run_test(testdir):
     env = dict(os.environ)
     env['LC_ALL'] = 'C'
 
+    # Generate the command-line for invoking gcc:
     args = ['gcc']
-    args += ['-c']
+    args += ['-c'] # (don't run the linker)
     args += ['-o', outfile]
     args += ['-fplugin=%s' % os.path.abspath('python.so'),
              '-fplugin-arg-python-script=%s' % script_py]
@@ -141,6 +142,8 @@ def run_test(testdir):
     if '#include <Python.h>' in code:
         args += ['-I' + get_python_inc()]
 
+    # If there's a getopts.py, run it to get additional test-specific
+    # command-line options:
     getopts_py = os.path.join(testdir, 'getopts.py')
     if os.path.exists(getopts_py):
         p = Popen([sys.executable, getopts_py], stdout=PIPE, stderr=PIPE)
@@ -151,14 +154,10 @@ def run_test(testdir):
         c = p.wait()
         if c != 0:
             raise CommandError()
-        args += [opts_out.strip()]
-    #args += cflags.split()
-    #args += ['-Wall',  '-Werror'] # during testing
-    #args += ['-shared'] # not sure why this is necessary
-    #if extra_cflags:
-    #    args += extra_cflags
+        args += opts_out.split()
+
+    # and the source file goes at the end:
     args += [c_input]
-    #print args
 
     # Invoke the compiler:
     p = Popen(args, env=env, stdout=PIPE, stderr=PIPE)
