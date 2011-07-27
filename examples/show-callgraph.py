@@ -22,6 +22,12 @@ from gccutils import callgraph_to_dot, invoke_dot
 
 def on_pass_execution(p, fn):
     if p.name == '*free_lang_data':
+        # The '*free_lang_data' pass is called once, rather than per-function,
+        # and occurs immediately after "*build_cgraph_edges", which is the
+        # pass that initially builds the callgraph
+        #
+        # So at this point we're likely to get a good view of the callgraph
+        # before further optimization passes manipulate it:
         dot = callgraph_to_dot()
         invoke_dot(dot)
 
