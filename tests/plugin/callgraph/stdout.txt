@@ -1,0 +1,94 @@
+Help on class CallgraphNode in module gcc:
+
+class CallgraphNode(__builtin__.object)
+ |  Methods defined here:
+ |  
+ |  __repr__(...)
+ |      x.__repr__() <==> repr(x)
+ |  
+ |  __str__(...)
+ |      x.__str__() <==> str(x)
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  callees
+ |      The function calls made by this function, as a list of gcc.CallgraphEdge
+ |  
+ |  callers
+ |      The places that call this function, as a list of gcc.CallgraphEdge
+ |  
+ |  decl
+ |      The gcc.FunctionDecl for this node
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  __new__ = <built-in method __new__ of type object>
+ |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+
+Help on class CallgraphEdge in module gcc:
+
+class CallgraphEdge(__builtin__.object)
+ |  Methods defined here:
+ |  
+ |  __repr__(...)
+ |      x.__repr__() <==> repr(x)
+ |  
+ |  __str__(...)
+ |      x.__str__() <==> str(x)
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  call_stmt
+ |      The gcc.GimpleCall statememt for the function call
+ |  
+ |  callee
+ |      The function that is called here, as a gcc.CallgraphNode
+ |  
+ |  caller
+ |      The function that makes this call, as a gcc.CallgraphNode
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  __new__ = <built-in method __new__ of type object>
+ |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+
+cgn:
+  cgn.decl: gcc.FunctionDecl('baz')
+  cgn.callers: []
+  cgn.callees: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
+cgn:
+  cgn.decl: gcc.FunctionDecl('bar')
+  cgn.callers: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
+  cgn.callees: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() bar ();
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() bar ();
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() bar ();
+cgn:
+  cgn.decl: gcc.FunctionDecl('foo')
+  cgn.callers: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
+  cgn.callees: []
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() foo ();
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() foo ();
+gcc.CallgraphEdge()
+e.caller: gcc.CallgraphNode()
+e.callee: gcc.CallgraphNode()
+e.call_stmt: gcc.GimpleCall() foo ();

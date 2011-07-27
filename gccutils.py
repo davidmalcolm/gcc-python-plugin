@@ -553,3 +553,34 @@ class Table(object):
                 out.write(self._colsep)
             out.write(self._sepchar * width)
         out.write('\n')
+
+class CallgraphPrettyPrinter(DotPrettyPrinter):
+    def node_id(self, cgn):
+        return 'cgn%i' % id(cgn)
+
+    def node_to_dot_label(self, cgn):
+        return str(cgn.decl.name)
+
+    def edge_to_dot(self, e):
+        attrliststr = ''
+        return ('   %s -> %s %s;\n'
+                % (self.node_id(e.caller),
+                   self.node_id(e.callee),
+                   attrliststr))
+
+    def to_dot(self):
+        result = 'digraph Callgraph {\n'
+        #result += ' subgraph cluster_callgraph {\n'
+        result += '  node [shape=box];\n'
+        for cgn in gcc.get_callgraph_nodes():
+            result += ('  %s [label=<%s>];\n'
+                       % (self.node_id(cgn), self.node_to_dot_label(cgn)))
+            for edge in cgn.callers:
+                result += self.edge_to_dot(edge)
+        #result += ' }\n'
+        result += '}\n'
+        return result
+
+def callgraph_to_dot():
+    pp = CallgraphPrettyPrinter()
+    return pp.to_dot()

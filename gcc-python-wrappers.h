@@ -23,12 +23,34 @@
 #include "gcc-python.h"
 #include "tree-pass.h"
 #include "opts.h"
+#include "cgraph.h"
 
 PyMODINIT_FUNC initoptpass(void);
 
+/* gcc-python-callgraph.c: */
+PyObject *
+gcc_CallgraphEdge_repr(struct PyGccCallgraphEdge * self);
+
+PyObject *
+gcc_CallgraphEdge_str(struct PyGccCallgraphEdge * self);
+
+PyObject *
+gcc_CallgraphNode_repr(struct PyGccCallgraphNode * self);
+
+PyObject *
+gcc_CallgraphNode_str(struct PyGccCallgraphNode * self);
+
+extern PyObject *
+gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self);
+
+extern PyObject *
+gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self);
+
+/* gcc-python-pass.c: */
 extern PyObject *
 gcc_python_make_wrapper_pass(struct opt_pass *pass);
 
+/* gcc-python-location.c: */
 PyObject *
 gcc_Location_repr(struct PyGccLocation * self);
 
@@ -38,6 +60,7 @@ gcc_Location_str(struct PyGccLocation * self);
 PyObject *
 gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op);
 
+/* gcc-python-cfg.c: */
 PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure);
 
@@ -53,6 +76,7 @@ gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure);
 PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
+/* gcc-python-tree.c: */
 PyObject *
 gcc_Tree_str(struct PyGccTree * self);
 
@@ -86,6 +110,7 @@ gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure);
 PyObject *
 gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 
+/* gcc-python-gimple.c: */
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self);
 

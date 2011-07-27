@@ -217,6 +217,11 @@ Declarations
       The :py:class:`gcc.ResultDecl` representing the return value of this
       function
 
+   .. py:attribute:: callgraph_node
+
+      The :py:class:`gcc.CallgraphNode` for this function declaration, or
+      `None`
+
   ..        Declaration
   ..            ClassMethodDecl
   ..            ConstDecl

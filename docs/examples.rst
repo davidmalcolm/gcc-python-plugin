@@ -139,3 +139,24 @@ The Python code for this is:
    .. literalinclude:: ../examples/show-ssa.py
     :lines: 17-
     :language: python
+
+`show-callgraph.py`
+-------------------
+
+This simple script sends GCC's interprocedural analysis data through GraphViz.
+
+   .. code-block:: bash
+
+     $ ./gcc-with-python examples/show-callgraph.py test.c
+
+It generates an image file showing which functions call which other functions,
+and opens it in a viewer.
+
+.. figure:: sample-callgraph.png
+   :alt: image of a call graph
+
+The Python code for this is:
+
+   .. literalinclude:: ../examples/show-callgraph.py
+    :lines: 18-
+    :language: python

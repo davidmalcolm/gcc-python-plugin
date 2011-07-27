@@ -445,6 +445,9 @@ def generate_tree_code_classes():
             add_simple_getter('result',
                               'gcc_python_make_wrapper_tree(DECL_RESULT_FLD(self->t))',
                               'The gcc.ResultDecl for the return value')
+            add_simple_getter('callgraph_node',
+                              'gcc_python_make_wrapper_cgraph_node(cgraph_get_node(self->t))',
+                              'The gcc.CallgraphNode for this function declaration, or None')
 
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":
