@@ -169,7 +169,7 @@ test-suite: plugin
 	$(PYTHON) run-test-suite.py
 
 show-ssa: plugin
-	./gcc-with-python show-ssa.py test.c
+	./gcc-with-python examples/show-ssa.py test.c
 
 html: docs/tables-of-passes.rst docs/passes.svg
 	cd docs && $(MAKE) html

@@ -86,7 +86,7 @@ internals of each function in `test.c` (within its SSA representation):
 
 .. code-block:: bash
 
-  ./gcc-with-python show-ssa.py test.c
+  ./gcc-with-python examples/show-ssa.py test.c
 
 
 Most of the rest of this document describes the Python API visible for
@@ -216,7 +216,7 @@ Currently useful callback events
 
 .. py:data:: gcc.PLUGIN_PASS_EXECUTION
 
-   Called when GCC runs one of its passes on a function
+   Called when GCC is about to run one of its passes.
 
    Arguments passed to the callback are:
 
@@ -226,6 +226,39 @@ Currently useful callback events
    Your callback will typically be called many times: there are many passes,
    and each can be invoked zero or more times per function (in the code being
    compiled)
+
+   More precisely, some passes have a "gate check": the pass first checks a
+   condition, and only executes if the condition is true.
+
+   Any callback registered with `gcc.PLUGIN_PASS_EXECUTION` will get called
+   if this condition succeeds.
+
+   The actual work of the pass is done after the callbacks return.
+
+   In pseudocode::
+
+     if pass.has_gate_condition:
+         if !pass.test_gate_condition():
+	    return
+     invoke_all_callbacks()
+     actually_do_the_pass()
+
+   For passes working on individual functions, all of the above is done
+   per-function.
+
+   To connect to a specific pass, you can simply add a conditional based on the
+   name of the pass::
+
+      def my_callback(ps, fun):
+          if ps.name != '*warn_function_return':
+	      # Not the pass we want
+	      return
+	  # Do something here
+	  print(fun.decl.name)
+
+      gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
+                            my_callback)
+
 
 .. py:data:: gcc.PLUGIN_PRE_GENERICIZE
 

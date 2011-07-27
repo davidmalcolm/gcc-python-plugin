@@ -15,27 +15,16 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-# Sample python script, to be run by our gcc plugin (see "make test")
+# Sample python script, to be run by our gcc plugin
 # Show the SSA form of each function, using GraphViz
 import gcc
 from gccutils import get_src_for_loc, cfg_to_dot, invoke_dot
 
 def my_pass_execution_callback(*args, **kwargs):
-    #print('my_pass_execution_callback was called: args=%r  kwargs=%r' % (args, kwargs))
-    #help(args[0])
     (optpass, fun) = args
-    if not optpass.properties_required & (1<<5):
-        return
-    if fun:
-        print('fun.cfg: %r' % fun.cfg)
-        if fun.cfg:
-            #print help(fun.cfg)
-            print('fun.cfg.basic_blocks: %r' % fun.cfg.basic_blocks)
-            print('fun.cfg.entry: %r' % fun.cfg.entry)
-            print('fun.cfg.exit: %r' % fun.cfg.exit)
-            print('fun.cfg.entry.succs: %r' % fun.cfg.entry.succs)
-            print('fun.cfg.exit.preds: %r' % fun.cfg.exit.preds)
-            
+    if optpass.name == 'veclower':
+        # (the SSA form of each function should have just been set up)
+        if fun and fun.cfg:
             dot = cfg_to_dot(fun.cfg, fun.decl.name)
             # print(dot)
             invoke_dot(dot)

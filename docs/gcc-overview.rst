@@ -99,7 +99,7 @@ It's far easier to see the GIMPLE using:
 
 .. code-block:: bash
 
-  ./gcc-with-python show-gimple.py test.c
+  ./gcc-with-python examples/show-gimple.py test.c
 
 which generates bitmaps showing the "control flow graph" of the functions in
 the file, with source on the left-hand side, and GIMPLE on the right-hand side:
@@ -153,7 +153,7 @@ Here's our example function, after conversion to GIMPLE SSA:
 
 .. code-block:: bash
 
-  ./gcc-with-python show-ssa.py test.c
+  ./gcc-with-python examples/show-ssa.py test.c
 
 .. figure:: sample-gimple-ssa-cfg.png
    :scale: 50 %
