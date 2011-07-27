@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.4
+Version:        0.5
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
@@ -326,9 +326,13 @@ CheckPlugin \
 %doc COPYING
 %doc docs/_build/html
 # Example scripts:
-%doc show-ssa.py show-docs.py
+%doc examples
 
 %changelog
+* Wed Jul 27 2011 David Malcolm <dmalcolm@redhat.com> - 0.5-1
+- 0.5
+- examples are now in an "examples" subdirectory
+
 * Tue Jul 26 2011 David Malcolm <dmalcolm@redhat.com> - 0.4-1
 - 0.4
 - add requirement on pygments
