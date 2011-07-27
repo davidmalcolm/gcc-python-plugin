@@ -126,7 +126,7 @@ def run_test(testdir):
     err = TestStream(os.path.join(testdir, 'stderr.txt'))
 
     env = dict(os.environ)
-    env['LANG'] = 'C'
+    env['LC_ALL'] = 'C'
 
     args = ['gcc']
     args += ['-c']

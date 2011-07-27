@@ -72,7 +72,7 @@ class BuiltModule:
         #print self.args
 
         env = dict(os.environ)
-        env['LANG'] = 'C'
+        env['LC_ALL'] = 'C'
 
         # Invoke the compiler:
         self.p = Popen(self.args, env=env, stdout=PIPE, stderr=PIPE)
