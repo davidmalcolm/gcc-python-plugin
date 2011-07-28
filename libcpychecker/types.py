@@ -21,6 +21,15 @@ Helper functions for looking up various CPython implementation types.
 import gcc
 from gccutils import get_global_typedef
 
+def is_py3k():
+    """
+    Is the Python.h we're compiling against python 3?
+    """
+    if get_global_typedef('PyStringObject'):
+        return False
+    else:
+        return True
+
 def get_Py_ssize_t():
     return get_global_typedef('Py_ssize_t')
 
@@ -54,3 +63,7 @@ def get_PyUnicodeObject():
 
 def get_Py_complex():
     return get_global_typedef('Py_complex')
+
+# Python 3:
+def get_PyBytesObject():
+    return get_global_typedef('PyBytesObject')

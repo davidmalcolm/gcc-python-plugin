@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+
+from distutils import sysconfig as sc
 import os
 import shutil
 from subprocess import Popen, PIPE
@@ -26,13 +28,13 @@ import six
 
 from cpybuilder import *
 
-
-# FIXME: this will need tweaking:
-pyruntimes = [PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config'),
-              #PyRuntime('/usr/bin/python2.7-debug', '/usr/bin/python2.7-debug-config'),
-              #PyRuntime('/usr/bin/python3.2mu', '/usr/bin/python3.2mu-config'),
-              #PyRuntime('/usr/bin/python3.2dmu', '/usr/bin/python3.2dmu-config')
-              ]
+def get_module_filename(name):
+    # FIXME: this is a Fedora-ism:
+    # FIXME: support for 3.2 onwards also?
+    if hasattr(sys, "getobjects"):
+        return '%s_d.so' % name
+    else:
+        return '%s.so' % name
 
 class CompilationError(CommandError):
     def __init__(self, bm):
@@ -43,16 +45,15 @@ class CompilationError(CommandError):
         return 'compiling: %s' % ' '.join(self.bm.args)
 
 class BuiltModule:
-    """A test build of a SimpleModule for a PyRuntime, done in a tempdir"""
-    def __init__(self, sm, runtime):
+    """A test build of a SimpleModule using sys.executable, done in a tempdir"""
+    def __init__(self, sm):
         self.sm = sm
-        self.runtime = runtime
 
-    def write_src(self, extra_cflags = None):
+    def write_src(self, modname, extra_cflags = None):
         self.tmpdir = tempfile.mkdtemp()
 
-        self.srcfile = os.path.join(self.tmpdir, 'example.c')
-        self.modfile = os.path.join(self.tmpdir, self.runtime.get_module_filename('example'))
+        self.srcfile = os.path.join(self.tmpdir, '%s.c' % modname)
+        self.modfile = os.path.join(self.tmpdir, get_module_filename(modname))
 
         f = open(self.srcfile, 'w')
         f.write(self.sm.cu.as_str())
@@ -60,16 +61,17 @@ class BuiltModule:
 
 
     def compile_src(self, extra_cflags = None):
-        cflags = self.runtime.get_build_flags()
         self.args = ['gcc']
         self.args += ['-o', self.modfile]
-        self.args += cflags.split()
+        self.args +=  ['-I' + sc.get_python_inc(),
+                       '-I' + sc.get_python_inc(plat_specific=True)]
+        self.args += sc.get_config_var('CFLAGS').split()
         self.args += ['-Wall',  '-Werror'] # during testing
         self.args += ['-shared'] # not sure why this is necessary
         if extra_cflags:
             self.args += extra_cflags
         self.args += [self.srcfile]
-        #print self.args
+        # print(self.args)
 
         env = dict(os.environ)
         env['LC_ALL'] = 'C'
@@ -85,24 +87,29 @@ class BuiltModule:
             raise CompilationError(self)
 
         assert os.path.exists(self.modfile)
+        # print(self.modfile)
 
-    def build(self, extra_cflags = None):
-        self.write_src()
+    def build(self, modname, extra_cflags = None):
+        self.write_src(modname)
         self.compile_src(extra_cflags)
-
-    def run_command(self, cmd):
-        """Run the command (using the appropriate PyRuntime), adjusting sys.path first"""
-        out = self.runtime.run_command('import sys; sys.path.append("%s"); %s' % (self.tmpdir, cmd))
-        return out
 
     def cleanup(self):
         shutil.rmtree(self.tmpdir)
 
 class SimpleTest(unittest.TestCase):
-    #def __init__(self, pyruntime):
-    #    self.pytun
+
+    # We'll be manipulating sys.path during the test
+    # Save a copy, and restore it after each test:
+    def setUp(self):
+        self.saved_sys_path = sys.path
+        sys.path = sys.path[:]
+
+    def tearDown(self):
+        sys.path = self.saved_sys_path
+
     def test_simple_compilation(self):
         # Verify building and running a trivial module (against multiple Python runtimes)
+        MODNAME = 'simple_compilation'
         sm = SimpleModule()
 
         sm.cu.add_decl("""
@@ -123,23 +130,24 @@ example_hello(PyObject *self, PyObject *args)
                                              METH_VARARGS, 'Return a greeting.')])
         sm.cu.add_defn(methods.c_defn())
 
-        sm.add_module_init('example', modmethods=methods, moddoc='This is a doc string')
+        sm.add_module_init(MODNAME, modmethods=methods, moddoc='This is a doc string')
         # print sm.cu.as_str()
 
-        for runtime in pyruntimes:
-            # Build the module:
-            bm = BuiltModule(sm, runtime)
-            bm.build()
+        # Build the module:
+        bm = BuiltModule(sm)
+        bm.build(MODNAME)
 
-            # Verify that it built:
-            out = bm.run_command('import example; print(example.hello())')
-            self.assertEqual(out, "Hello world!\n")
+        # Verify that it built:
+        sys.path.append(bm.tmpdir)
+        import simple_compilation
+        self.assertEqual(simple_compilation.hello(), 'Hello world!')
         
-            # Cleanup successful test runs:
-            bm.cleanup()
+        # Cleanup successful test runs:
+        bm.cleanup()
 
     def test_module_with_type(self):
         # Verify an extension with a type
+        MODNAME = 'module_with_type'
         sm = SimpleModule()
 
         sm.cu.add_decl("""
@@ -164,20 +172,21 @@ struct PyExampleType {
                            struct_name = 'struct PyExampleType',
                            tp_repr = 'example_Example_repr')
 
-        sm.add_module_init('example', modmethods=None, moddoc='This is a doc string')
+        sm.add_module_init(MODNAME, modmethods=None, moddoc='This is a doc string')
         # print sm.cu.as_str()
 
-        for runtime in pyruntimes:
-            # Build the module:
-            bm = BuiltModule(sm, runtime)
-            bm.build()
+        # Build the module:
+        bm = BuiltModule(sm)
+        bm.build(MODNAME)
 
-            # Verify that it built:
-            out = bm.run_command('import example; print(repr(example.ExampleType()))')
-            self.assertEqual(out, "example.ExampleType('')\n")
+        # Verify that it built:
+        sys.path.append(bm.tmpdir)
+        import module_with_type
+        self.assertEqual(repr(module_with_type.ExampleType()),
+                         "example.ExampleType('')")
 
-            # Cleanup successful test runs:
-            bm.cleanup()
+        # Cleanup successful test runs:
+        bm.cleanup()
 
     def test_version_parsing(self):
         vi  = PyVersionInfo.from_text("sys.version_info(major=2, minor=7, micro=1, releaselevel='final', serial=0)")

@@ -327,8 +327,14 @@ class PyArgParseFmt:
                 else:
                     result.add_argument('u', [Py_UNICODE().pointer.pointer])
             elif c == 'S':
-                result.add_argument('S', [(get_PyStringObject().pointer.pointer,
-                                           get_PyObject().pointer.pointer)])
+                if is_py3k():
+                    # S (bytes) [PyBytesObject *] (or PyObject *)
+                    result.add_argument('S', [(get_PyBytesObject().pointer.pointer,
+                                               get_PyObject().pointer.pointer)])
+                else:
+                    # S (string) [PyStringObject *] (or PyObject *)
+                    result.add_argument('S', [(get_PyStringObject().pointer.pointer,
+                                               get_PyObject().pointer.pointer)])
             elif c == 'U':
                 result.add_argument('U', [(get_PyUnicodeObject().pointer.pointer,
                                            get_PyObject().pointer.pointer)])

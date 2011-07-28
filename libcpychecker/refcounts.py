@@ -104,7 +104,7 @@ class GenericTpDealloc(AbstractValue):
         # for this state by assigning it with a special "DeallocatedMemory"
         # value
         # Clear the value for any fields within the region:
-        for k, v in region.fields.iteritems():
+        for k, v in region.fields.items():
             if v in new.value_for_region:
                 del new.value_for_region[v]
         # Set the default value for the whole region to be "DeallocatedMemory"
@@ -631,7 +631,7 @@ def dump_traces_to_stdout(traces):
         print('    %s' % endstate.exception_rvalue)
 
         if i + 1 < len(traces):
-            print
+            sys.stdout.write('\n')
 
 def check_refcounts(fun, dump_traces=False, show_traces=False):
     """

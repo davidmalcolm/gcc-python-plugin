@@ -38,11 +38,15 @@ less_rigid_code_S(PyObject *self, PyObject *args)
        Both of these ought to be acceptable for code "S":
     */
     PyObject *S_baseobj;
-    PyStringObject *S_stringobj;
+#if PY_MAJOR_VERSION >= 3
+    PyBytesObject *S_subobj;
+#else
+    PyStringObject *S_subobj;
+#endif
 
     if (!PyArg_ParseTuple(args, "SS",
-			  &S_baseobj,
-                          &S_stringobj)) {
+                          &S_baseobj,
+                          &S_subobj)) {
         return NULL;
     }
 
@@ -59,10 +63,18 @@ less_rigid_code_U(PyObject *self, PyObject *args)
     PyUnicodeObject *U_uniobj;
 
     if (!PyArg_ParseTuple(args, "UU",
-			  &U_baseobj,
+                          &U_baseobj,
                           &U_uniobj)) {
         return NULL;
     }
 
     Py_RETURN_NONE;
 }
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

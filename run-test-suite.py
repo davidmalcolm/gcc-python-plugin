@@ -63,7 +63,8 @@ class TestStream:
                 # replace long literals with int literals:
                 expdata = re.sub('([0-9]+)L', '\g<1>', expdata)
                 expdata = re.sub('(0x[0-9a-f]+)L', '\g<1>', expdata)
-
+                expdata = expdata.replace('struct PyStringObject',
+                                          'struct PyBytesObject')
             # The expected data is for 64-bit builds of Python
             # Fix it up for 32-bit builds as necessary:
             if six.MAXSIZE == 0x7fffffff:
@@ -239,7 +240,7 @@ num_passes = 0
 failed_tests = []
 for testdir in testdirs:
     try:
-        print('%s: ' % testdir),
+        sys.stdout.write('%s: ' % testdir)
         run_test(testdir)
         print('OK')
         num_passes += 1

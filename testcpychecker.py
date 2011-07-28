@@ -23,11 +23,8 @@ import unittest
 
 import six
 
-from testcpybuilder import BuiltModule, PyRuntime, SimpleModule, CompilationError
+from testcpybuilder import BuiltModule, SimpleModule, CompilationError
 from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
-
-#FIXME:
-pyruntime = PyRuntime('/usr/bin/python2.7', '/usr/bin/python2.7-config')
 
 class ExpectedErrorNotFound(CompilationError):
     def __init__(self, expected_err, actual_err, bm):
@@ -59,7 +56,7 @@ class AnalyzerTests(unittest.TestCase):
                                      '-fplugin-arg-python-script=cpychecker.py'])
 
     def build_module(self, bm):
-        bm.write_src()
+        bm.write_src('example')
         self.compile_src(bm)
 
     def assertNoErrors(self, src):
@@ -68,7 +65,7 @@ class AnalyzerTests(unittest.TestCase):
         else:
             sm = SimpleModule()
             sm.cu.add_defn(src)
-        bm = BuiltModule(sm, pyruntime)
+        bm = BuiltModule(sm)
         self.build_module(bm)
         bm.cleanup()
         return bm
@@ -79,9 +76,9 @@ class AnalyzerTests(unittest.TestCase):
         else:
             sm = SimpleModule()
             sm.cu.add_defn(src)
-        bm = BuiltModule(sm, pyruntime)
+        bm = BuiltModule(sm)
         try:
-            bm.write_src()
+            bm.write_src('example')
             experr = experr.replace('$(SRCFILE)', bm.srcfile)
             self.compile_src(bm)
         except CompilationError:
@@ -127,7 +124,11 @@ socket_htons(PyObject *self, PyObject *args)
         return NULL;
     }
     x2 = (int)htons((short)x1);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(x2);
+#else
     return PyInt_FromLong(x2);
+#endif
 }
 """
         self.assertFindsError(src,
