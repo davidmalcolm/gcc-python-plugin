@@ -1,0 +1,26 @@
+Help on class Rtl in module gcc:
+
+class Rtl(__builtin__.object)
+ |  Methods defined here:
+ |  
+ |  __repr__(...)
+ |      x.__repr__() <==> repr(x)
+ |  
+ |  __str__(...)
+ |      x.__str__() <==> str(x)
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  loc
+ |      Source code location of this expression, as a gcc.Location
+ |  
+ |  operands
+ |      Operands of this expression, as a tuple
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  __new__ = <built-in method __new__ of type object>
+ |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+

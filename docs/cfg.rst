@@ -131,6 +131,11 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
      The list of :py:class:`gcc.Gimple` instructions, if appropriate for this
      pass, or None
 
+  .. py:attribute:: rtl
+
+     The list of :py:class:`gcc.Rtl` expressions, if appropriate for this
+     pass, or None
+
 
 .. py:class:: gcc.Edge
 

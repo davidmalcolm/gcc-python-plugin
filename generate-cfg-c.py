@@ -100,6 +100,10 @@ def generate_basic_block():
                                                 'gcc_BasicBlock_get_phi_nodes',
                                                 None,
                                                 'The list of gcc.GimplePhi phoney functions, if appropriate for this pass, or None'),
+                                    PyGetSetDef('rtl',
+                                                'gcc_BasicBlock_get_rtl',
+                                                None,
+                                                'The list of gcc.Rtl instructions, if appropriate for this pass, or None'),
                                     ],
                                    identifier_prefix='gcc_BasicBlock',
                                    typename='PyGccBasicBlock')

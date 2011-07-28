@@ -74,6 +74,9 @@ PyObject *
 gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure);
 
 PyObject *
+gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure);
+
+PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
 /* gcc-python-tree.c: */
@@ -173,6 +176,19 @@ gcc_python_pretty_printer_as_string(PyObject *obj);
 
 void
 gcc_PrettyPrinter_dealloc(PyObject *obj);
+
+/* gcc-python-rtl.c: */
+PyObject *
+gcc_Rtl_get_location(struct PyGccRtl *self, void *closure);
+
+PyObject *
+gcc_Rtl_get_operands(struct PyGccRtl *self, void *closure);
+
+PyObject *
+gcc_Rtl_repr(struct PyGccRtl * self);
+
+PyObject *
+gcc_Rtl_str(struct PyGccRtl * self);
 
 PyObject *
 gcc_tree_list_from_chain(tree t);

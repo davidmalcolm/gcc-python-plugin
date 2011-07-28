@@ -22,6 +22,7 @@
 #include "gcc-python-wrappers.h"
 
 #include "basic-block.h"
+#include "rtl.h"
 
 /*
   "struct edge_def" is declared in basic-block.h, c.f:
@@ -184,6 +185,54 @@ gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 
     return gcc_python_gimple_seq_to_list(self->bb->il.gimple->phi_nodes);
 }
+
+PyObject *
+gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
+{
+    PyObject *result = NULL;
+
+    rtx insn;
+
+    if (!(self->bb->flags & BB_RTL)) {
+	Py_RETURN_NONE;
+    }
+
+#if 0
+    /* Debugging help: */
+    {
+        fprintf(stderr, "--BEGIN--\n");
+        FOR_BB_INSNS(self->bb, insn) {
+            print_rtl_single (stderr, insn);
+        }
+        fprintf(stderr, "-- END --\n");
+    }
+#endif
+
+    result = PyList_New(0);
+    if (!result) {
+	goto error;
+    }
+
+    FOR_BB_INSNS(self->bb, insn) {
+	PyObject *obj;
+
+	obj = gcc_python_make_wrapper_rtl(insn);
+	if (!obj) {
+	    goto error;
+	}
+
+	if (PyList_Append(result, obj)) {
+	    goto error;
+	}
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
 
 /*
   Force a 1-1 mapping between pointer values and wrapper objects

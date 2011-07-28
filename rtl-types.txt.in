@@ -1,0 +1,4 @@
+#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) \
+  rtl_expr: ENUM, NAME, FORMAT, CLASS
+#include "rtl.def"
+#undef DEF_RTL_EXPR
