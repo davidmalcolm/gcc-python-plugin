@@ -111,6 +111,12 @@ PyObject *
 gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure);
 
 PyObject *
+gcc_IntegerConstant_repr(struct PyGccTree * self);
+
+PyObject *
+gcc_StringConstant_repr(struct PyGccTree * self);
+
+PyObject *
 gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 
 /* gcc-python-gimple.c: */

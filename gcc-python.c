@@ -1032,28 +1032,36 @@ gcc_python_string_or_none(const char *str_or_null)
     }
 }
 
+/*
+  "double_int" is declared in gcc/double-int.h as a pair of HOST_WIDE_INT.
+  These in turn are defined in gcc/hwint.h as a #define to one of "long",
+  "long long", or "__int64".
+
+  It appears that they can be interpreted as either "unsigned" or "signed"
+
+  How to convert this to other types?
+  We "cheat", and take it through the decimal representation, then convert
+  from decimal.  This is probably slow, but is (I hope) at least correct.
+*/
+void
+gcc_python_double_int_as_text(double_int di, bool is_unsigned,
+                              char *out, int bufsize)
+{
+    FILE *f;
+    assert(out);
+    assert(bufsize > 256); /* FIXME */
+
+    out[0] = '\0';
+    f = fmemopen(out, bufsize, "w");
+    dump_double_int (f, di, is_unsigned);
+    fclose(f);
+}
+
 PyObject *
 gcc_python_int_from_double_int(double_int di, bool is_unsigned)
 {
-    /*
-      "double_int" is declared in gcc/double-int.h as a pair of HOST_WIDE_INT.
-      These in turn are defined in gcc/hwint.h as a #define to one of "long",
-      "long long", or "__int64".
-
-      It appears that they can be interpreted as either "unsigned" or "signed"
-     */
-
-    /* How to convert this to a PyLong object?
-       We "cheat", and take it through the decimal representation, then convert
-       from decimal.  This is probably slow, but is (I hope) at least correct.
-     */
     char buf[512]; /* FIXME */
-    FILE *f;
-
-    buf[0] = '\0';
-    f = fmemopen(buf, sizeof(buf), "w");
-    dump_double_int (f, di, is_unsigned);
-    fclose(f);
+    gcc_python_double_int_as_text(di, is_unsigned, buf, sizeof(buf));
     return PyLong_FromString(buf, NULL, 10);
 }
 

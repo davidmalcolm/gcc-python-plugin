@@ -293,6 +293,8 @@ def generate_tree_code_classes():
         getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [])
 
         tp_as_number = None
+        tp_repr = None
+        tp_str = None
 
         def get_getter_identifier(name):
             return 'gcc_%s_get_%s' % (cc, name)
@@ -320,6 +322,7 @@ def generate_tree_code_classes():
             add_simple_getter('constant',
                               'gcc_python_string_from_string(TREE_STRING_POINTER(self->t))',
                               'The actual value of this constant, as a str')
+            tp_repr = '(reprfunc)gcc_StringConstant_repr'
 
         if cc == 'IntegerCst':
             getsettable.add_gsdef('constant',
@@ -330,6 +333,7 @@ def generate_tree_code_classes():
             tp_as_number = number_methods.identifier
             number_methods.nb_int = 'gcc_IntegerConstant_get_constant'
             cu.add_defn(number_methods.c_defn())
+            tp_repr = '(reprfunc)gcc_IntegerConstant_repr'
 
         # TYPE_QUALS for various foo_TYPE classes:
         if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
@@ -470,6 +474,8 @@ def generate_tree_code_classes():
                               tp_new = 'PyType_GenericNew',
                               tp_base = '&%s' % base_type,
                               tp_getset = getsettable.identifier,
+                              tp_str = tp_str,
+                              tp_repr = tp_repr,
                               )
         if tp_as_number:
             pytype.tp_as_number = '&%s' % tp_as_number

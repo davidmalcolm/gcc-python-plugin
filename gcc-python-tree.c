@@ -263,6 +263,52 @@ gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure)
 }
 
 PyObject *
+gcc_IntegerConstant_repr(struct PyGccTree * self)
+{
+    tree type = TREE_TYPE(self->t);
+    char buf[512];
+
+    gcc_python_double_int_as_text(TREE_INT_CST(self->t),
+                                  TYPE_UNSIGNED(type),
+                                  buf, sizeof(buf));
+    return gcc_python_string_from_format("%s(%s)",
+                                         Py_TYPE(self)->tp_name,
+                                         buf);
+}
+
+PyObject *
+gcc_StringConstant_repr(struct PyGccTree * self)
+{
+    PyObject *str_obj;
+    PyObject *result = NULL;
+
+    str_obj = gcc_python_string_or_none(TREE_STRING_POINTER(self->t));
+    if (!str_obj) {
+        return NULL;
+    }
+#if PY_MAJOR_VERSION >= 3
+    result = gcc_python_string_from_format("%s(%R)",
+                                           Py_TYPE(self)->tp_name,
+                                           str_obj);
+#else
+    {
+        PyObject *str_repr;
+        str_repr = PyObject_Repr(str_obj);
+        if (!str_repr) {
+            Py_DECREF(str_obj);
+            return NULL;
+        }
+        result = gcc_python_string_from_format("%s(%s)",
+                                               Py_TYPE(self)->tp_name,
+                                               PyString_AsString(str_repr));
+        Py_DECREF(str_repr);
+    }
+#endif
+    Py_DECREF(str_obj);
+    return result;
+}
+
+PyObject *
 gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 {
     tree decl_type = TREE_TYPE(self->t);

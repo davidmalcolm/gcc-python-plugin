@@ -199,6 +199,10 @@ gcc_python_string_or_none(const char *str_or_null);
 PyObject *
 VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 
+void
+gcc_python_double_int_as_text(double_int di, bool is_unsigned,
+                              char *out, int bufsize);
+
 PyObject *
 gcc_python_int_from_double_int(double_int di, bool is_unsigned);
 
