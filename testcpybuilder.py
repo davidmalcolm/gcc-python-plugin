@@ -21,6 +21,7 @@ import os
 import shutil
 from subprocess import Popen, PIPE
 import sys
+import sysconfig
 import tempfile
 import unittest
 
@@ -29,11 +30,18 @@ import six
 from cpybuilder import *
 
 def get_module_filename(name):
-    # FIXME: this is a Fedora-ism:
-    # FIXME: support for 3.2 onwards also?
+    # Python 3.2 onwards embeds the SOABI variable in module filenames
+    # (see PEP 3149):
+    SOABI = sysconfig.get_config_var('SOABI')
+    if SOABI:
+        return '%s.%s.so' % (name, SOABI)
+
     if hasattr(sys, "getobjects"):
+        # debug build of Python:
+        # FIXME: this is a Fedora-ism:
         return '%s_d.so' % name
     else:
+        # regular (optimized) build of Python:
         return '%s.so' % name
 
 class CompilationError(CommandError):
@@ -131,7 +139,7 @@ example_hello(PyObject *self, PyObject *args)
         sm.cu.add_defn(methods.c_defn())
 
         sm.add_module_init(MODNAME, modmethods=methods, moddoc='This is a doc string')
-        # print sm.cu.as_str()
+        # print(sm.cu.as_str())
 
         # Build the module:
         bm = BuiltModule(sm)
