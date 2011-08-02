@@ -210,6 +210,14 @@ PyObject *
 gcc_python_lazily_create_wrapper(PyObject **cache,
 				 void *ptr,
 				 PyObject *(*ctor)(void *ptr));
+int
+gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
+                                         void *ptr,
+                                         PyObject *obj);
+
+
+/* gcc-python.c */
+char * gcc_python_strdup(const char *str);
 
 /* Python 2 vs Python 3 compat: */
 #if PY_MAJOR_VERSION == 3

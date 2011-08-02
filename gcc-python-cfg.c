@@ -302,6 +302,37 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
     return newobj;
 }
 
+int
+gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
+                                         void *ptr,
+                                         PyObject *obj)
+{
+    PyObject *key;
+    assert(cache);
+    assert(ptr);
+    assert(obj);
+
+    /* The cache is lazily created: */
+    if (!*cache) {
+	*cache = PyDict_New();
+	if (!*cache) {
+	    return -1;
+	}
+    }
+
+    key = PyLong_FromVoidPtr(ptr);
+    if (!key) {
+	return -1;
+    }
+
+    if (PyDict_SetItem(*cache, key, obj)) {
+	Py_DECREF(key);
+	return -1;
+    }
+
+    Py_DECREF(key);
+    return 0;
+}
 
 static PyObject *
 real_make_basic_block_wrapper(void *ptr)

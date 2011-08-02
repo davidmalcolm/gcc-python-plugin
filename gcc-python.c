@@ -1065,6 +1065,31 @@ gcc_python_int_from_double_int(double_int di, bool is_unsigned)
     return PyLong_FromString(buf, NULL, 10);
 }
 
+/*
+   GCC's headers "poison" strdup to make it unavailable, so we provide our own.
+
+   The buffer is allocated using PyMem_Malloc
+*/
+char *
+gcc_python_strdup(const char *str)
+{
+    char *result;
+    char *dst;
+
+    result = (char*)PyMem_Malloc(strlen(str) + 1);
+
+    if (!result) {
+        return NULL;
+    }
+
+    dst = result;
+    while (*str) {
+        *(dst++) = *(str++);
+    }
+    *dst = '\0';
+
+    return result;
+}
 
 /*
   PEP-7

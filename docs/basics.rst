@@ -159,11 +159,22 @@ Accessing parameters
   :py:data:`argument_dict` with an OrderedDict instead; what about
   duplicate args though?)
 
+Adding new passes to the compiler
+---------------------------------
+You can create new compiler passes by subclassing the appropriate
+:py:class:`gcc.Pass` subclasss.  For example, here's how to wire up a new pass
+that displays the control flow graph of each function:
+
+   .. literalinclude:: ../examples/show-gimple.py
+    :lines: 19-
+    :language: python
+
+For more information, see :ref:`creating-new-passes`
+
 Wiring up callbacks
 -------------------
 
-Hopefully we'll eventually have the ability to write new GCC passes in Python.
-In the meantime, the main way to write scripts is to register callback functions
+The other way to write scripts is to register callback functions
 to be called when various events happen during compilation, such as using
 :py:data:`gcc.PLUGIN_PASS_EXECUTION` to piggyback off of an existing GCC pass.
 

@@ -20,16 +20,17 @@
 import gcc
 from gccutils import get_src_for_loc, cfg_to_dot, invoke_dot
 
-def my_pass_execution_callback(*args, **kwargs):
-    (optpass, fun) = args
-    if optpass.name == 'veclower':
+# A custom GCC pass, to be called directly after the builtin "ssa" pass, which
+# generates the Static Single Assignment form of the GIMPLE within the CFG:
+class ShowSsa(gcc.GimplePass):
+    def execute(self, fun):
         # (the SSA form of each function should have just been set up)
         if fun and fun.cfg:
             dot = cfg_to_dot(fun.cfg, fun.decl.name)
             # print(dot)
             invoke_dot(dot)
 
-gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-                      my_pass_execution_callback)
+ps = ShowSsa(name='show-ssa')
+ps.register_after('ssa')
 
 

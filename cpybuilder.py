@@ -66,6 +66,15 @@ class NamedEntity:
     def unaryfunc_field(self, name):
         return self.c_ptr_field(name, 'unaryfunc')
 
+    def c_src_field(self, name):
+        assert hasattr(self, name)
+        val = getattr(self, name)
+        if with_gcc_extensions:
+            # Designate the initializer fields:
+            return '    .%s = %s,\n' % (name, val)
+        else:
+            return '    %s, /* %s */\n' % (val, name)
+
 class PyGetSetDef:
     def __init__(self, name, get, set, doc, closure=None):
         self.name = name
@@ -214,6 +223,8 @@ class PyTypeObject(NamedEntity):
         self.__dict__.update(kwargs)
         if not hasattr(self, 'tp_new'):
             self.tp_new = 'PyType_GenericNew'
+        if not hasattr(self, 'tp_flags'):
+            self.tp_flags = 'Py_TPFLAGS_DEFAULT'
 
     def c_defn(self):
         result = '\n'
@@ -241,7 +252,7 @@ class PyTypeObject(NamedEntity):
         result += self.c_ptr_field('tp_getattro')
         result += self.c_ptr_field('tp_setattro')
         result += self.c_ptr_field('tp_as_buffer')
-        result += '    Py_TPFLAGS_DEFAULT, /*tp_flags*/\n' % self.__dict__
+        result += self.c_src_field('tp_flags')
         result += '    0, /*tp_doc*/\n'
         result += self.c_ptr_field('tp_traverse')
         result += self.c_ptr_field('tp_clear')

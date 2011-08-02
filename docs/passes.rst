@@ -21,6 +21,8 @@
 Optimization passes
 ===================
 
+Working with existing passes
+----------------------------
 GCC organizes the optimization work it does as "passes", and these form trees:
 passes can have both successors and child passes.
 
@@ -48,6 +50,11 @@ There are actually five "roots" to this tree:
 
    Returns a tuple of `gcc.Pass` instances, giving the 5 top-level passes
    within GCC's tree of passes, in the order described above.
+
+.. classmethod:: gcc.Pass.get_by_name(name)
+
+   Get the gcc.Pass instance for the pass with the given name, raising
+   ValueError if it isn't found
 
 .. py:class:: gcc.Pass
 
@@ -112,10 +119,106 @@ There are actually five "roots" to this tree:
 There are four subclasses of gcc.Pass:
 
 .. py:class:: gcc.GimplePass
+
+   Subclass of gcc.Pass, signifying a pass called per-function on the GIMPLE
+   representation of that function.
+
 .. py:class:: gcc.RtlPass
+
+   Subclass of gcc.Pass, signifying a pass called per-function on the RTL
+   representation of that function.
+
 .. py:class:: gcc.SimpleIpaPass
+
+   Subclass of gcc.Pass, signifying a pass called once (not per-function)
+
 .. py:class:: gcc.IpaPass
 
-reflecting the internal data layouts within GCC's implementation of the
-classes, but these don't do anything different yet at the Python level.
+   Subclass of gcc.Pass, signifying a pass called once (not per-function)
 
+.. _creating-new-passes:
+
+Creating new optimization passes
+--------------------------------
+You can create new optimization passes.  This involves three steps:
+
+   * subclassing the appropriate gcc.Pass subclass (e.g. gcc.GimplePass)
+
+   * creating an instance of your subclass
+
+   * registering the instance within the pass tree, relative to another pass
+
+Here's an example::
+
+   # Here's the (trivial) implementation of our new pass:
+   class MyPass(gcc.GimplePass):
+      # This is optional.
+      # If present, it should return a bool, specifying whether or not
+      # to execute this pass (and any child passes)
+      def gate(self, fun):
+          print('gate() called for %r' % fun)
+          return True
+
+      def execute(self, fun):
+          print('execute() called for %r' % fun)
+
+   # We now create an instance of the class:
+   my_pass = MyPass(name='my-pass')
+
+   # ...and wire it up, after the "cfg" pass:
+   my_pass.register_after('cfg')
+
+For gcc.GimplePass and gcc.IpaPass, the signatures of `gate` and `execute` are:
+
+   .. method:: gate(self, fun)
+   .. method:: execute(self, fun)
+
+where fun is a :py:class:`gcc.Function`.
+
+For gcc.SimpleIpaPass and gcc.IpaPass, the signature of `gate` and `execute` are:
+
+   .. method:: gate(self)
+   .. method:: execute(self)
+
+If an unhandled exception is raised within `gate` or `execute`, it will lead
+to a GCC error:
+
+.. code-block:: pytb
+
+   /home/david/test.c:36:1: error: Unhandled Python exception raised calling 'execute' method
+   Traceback (most recent call last):
+     File "script.py", line 79, in execute
+      dot = gccutils.tree_to_dot(fun)
+   NameError: global name 'gccutils' is not defined
+
+.. method:: gcc.Pass.register_after(name [, instance_number=0 ])
+
+   Given the name of another pass, register this gcc.Pass to occur immediately
+   after that other pass.
+
+   If the other pass occurs multiple times, the pass will be inserted at the
+   specified instance number, or at every instance, if supplied 0.
+
+   .. note::
+
+      The other pass must be of the same kind as this pass.  For example,
+      if it is a subclass of gcc.GimplePass, then this pass must also be
+      a subclass of gcc.GimplePass.
+
+      If they don't match, GCC won't be able to find the other pass, giving
+      an error like this::
+
+         cc1: fatal error: pass 'ssa' not found but is referenced by new pass 'my-ipa-pass'
+
+      where we attempted to register a gcc.IpaPass subclass relative to 'ssa',
+      which is a gcc.GimplePass
+
+.. method:: gcc.Pass.register_before(name [, instance_number=0 ])
+
+   As above, but this pass is registered immediately before the referenced
+   pass.
+
+.. method:: gcc.Pass.replace(name [, instance_number=0 ])
+
+   As above, but replace the given pass.  This method is included for
+   completeness; the result is unlikely to work well.

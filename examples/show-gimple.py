@@ -20,9 +20,11 @@
 import gcc
 from gccutils import get_src_for_loc, cfg_to_dot, invoke_dot
 
-def my_pass_execution_callback(*args, **kwargs):
-    (optpass, fun) = args
-    if optpass.name == '*warn_function_return':
+# We'll implement this as a custom pass, to be called directly after the
+# builtin "cfg" pass, which generates the CFG:
+
+class ShowGimple(gcc.GimplePass):
+    def execute(self, fun):
         # (the CFG should be set up by this point, and the GIMPLE is not yet
         # in SSA form)
         if fun and fun.cfg:
@@ -30,7 +32,5 @@ def my_pass_execution_callback(*args, **kwargs):
             # print dot
             invoke_dot(dot)
 
-gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-                      my_pass_execution_callback)
-
-
+ps = ShowGimple(name='show-gimple')
+ps.register_after('cfg')

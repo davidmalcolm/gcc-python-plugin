@@ -20,6 +20,14 @@
 import gcc
 from gccutils import callgraph_to_dot, invoke_dot
 
+# In theory we could have done this with a custom gcc.Pass registered
+# directly after "*build_cgraph_edges".  However, we can only register
+# relative to passes of the same kind, and that pass is a
+# gcc.GimplePass, which is called per-function, and we want a one-time
+# pass instead.
+#
+# So we instead register a callback on the one-time pass that follows it
+
 def on_pass_execution(p, fn):
     if p.name == '*free_lang_data':
         # The '*free_lang_data' pass is called once, rather than per-function,
@@ -27,7 +35,7 @@ def on_pass_execution(p, fn):
         # pass that initially builds the callgraph
         #
         # So at this point we're likely to get a good view of the callgraph
-        # before further optimization passes manipulate it:
+        # before further optimization passes manipulate it
         dot = callgraph_to_dot()
         invoke_dot(dot)
 

@@ -154,11 +154,36 @@ PyObject *
 gcc_Option_is_enabled(PyGccOption * self, void *closure);
 
 /* gcc-python-pass.c: */
+int
+gcc_GimplePass_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+int
+gcc_RtlPass_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+int
+gcc_SimpleIpaPass_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+int
+gcc_IpaPass_init(PyObject *self, PyObject *args, PyObject *kwds);
+
 PyObject *
 gcc_Pass_repr(struct PyGccPass * self);
 
 PyObject *
 gcc_Pass_get_roots(PyObject *cls, PyObject *noargs);
+
+PyObject *
+gcc_Pass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_Pass_register_before(struct PyGccPass *self, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_Pass_register_after(struct PyGccPass *self, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_Pass_replace(struct PyGccPass *self, PyObject *args, PyObject *kwargs);
+
 
 /* gcc-python-pretty-printer.c: */
 #include "pretty-print.h"

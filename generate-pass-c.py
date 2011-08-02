@@ -60,6 +60,23 @@ def generate_pass():
                        'gcc_Pass_get_roots',
                        'METH_CLASS | METH_VARARGS',
                        "Get a tuple of gcc.Pass instances, the roots of the compilation pass tree")
+    methods.add_method('get_by_name',
+                       '(PyCFunction)gcc_Pass_get_by_name',
+                       'METH_CLASS | METH_VARARGS | METH_KEYWORDS',
+                       "Get the gcc.Pass instance for the pass with the given name, raising ValueError if it isn't found")
+    methods.add_method('register_after',
+                       '(PyCFunction)gcc_Pass_register_after',
+                       'METH_VARARGS | METH_KEYWORDS',
+                       "Given the name of another pass, register this gcc.Pass to occur immediately after that other pass")
+    methods.add_method('register_before',
+                       '(PyCFunction)gcc_Pass_register_before',
+                       'METH_VARARGS | METH_KEYWORDS',
+                       "Given the name of another pass, register this gcc.Pass to occur immediately before that other pass")
+    methods.add_method('replace',
+                       '(PyCFunction)gcc_Pass_replace',
+                       'METH_VARARGS | METH_KEYWORDS',
+                       "Given the name of another pass, replace that pass with this gcc.Pass")
+
     cu.add_defn(methods.c_defn())
     
     pytype = PyTypeObject(identifier = 'gcc_PassType',
@@ -90,7 +107,9 @@ def generate_pass_subclasses():
                               tp_name = 'gcc.%s' % cc,
                               struct_name = 'struct PyGccPass',
                               tp_new = 'PyType_GenericNew',
+                              tp_init = 'gcc_%s_init' % cc,
                               tp_base = '&gcc_PassType',
+                              tp_flags = '(Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE)'
                               )
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
