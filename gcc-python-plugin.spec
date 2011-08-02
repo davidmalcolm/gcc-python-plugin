@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.5
+Version:        0.6
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
@@ -329,6 +329,9 @@ CheckPlugin \
 %doc examples
 
 %changelog
+* Tue Aug  2 2011 David Malcolm <dmalcolm@redhat.com> - 0.6-1
+- 0.6
+
 * Wed Jul 27 2011 David Malcolm <dmalcolm@redhat.com> - 0.5-1
 - 0.5
 - examples are now in an "examples" subdirectory
