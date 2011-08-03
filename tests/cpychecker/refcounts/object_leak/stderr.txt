@@ -6,3 +6,4 @@ tests/cpychecker/refcounts/object_leak/input.c:29:5: note: when returning at:   
 tests/cpychecker/refcounts/object_leak/input.c:29:5: error: returning (PyObject*)NULL without setting an exception
 tests/cpychecker/refcounts/object_leak/input.c:26:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/object_leak/input.c:29:5: note: when returning at:     return NULL;
+tests/cpychecker/refcounts/object_leak/input.c:24:1: note: graphical error report for function 'object_leak' written out to 'tests/cpychecker/refcounts/object_leak/input.c.object_leak-refcount-errors.html'

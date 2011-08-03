@@ -17,3 +17,4 @@ tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: when callin
 tests/cpychecker/refcounts/returning_dead_object/input.c:42:5: note: reaching:     return tmp;
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: when returning
 tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: memory deallocated here
+tests/cpychecker/refcounts/returning_dead_object/input.c:27:1: note: graphical error report for function 'returning_dead_object' written out to 'tests/cpychecker/refcounts/returning_dead_object/input.c.returning_dead_object-refcount-errors.html'

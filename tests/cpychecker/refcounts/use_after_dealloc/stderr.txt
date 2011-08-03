@@ -7,3 +7,4 @@ tests/cpychecker/refcounts/use_after_dealloc/input.c:41:5: note: when taking Fal
 tests/cpychecker/refcounts/use_after_dealloc/input.c:41:5: note: reaching:     Py_DECREF(tmp);
 tests/cpychecker/refcounts/use_after_dealloc/input.c:41:5: note: when calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/use_after_dealloc/input.c:30 at:     Py_DECREF(tmp);
 tests/cpychecker/refcounts/use_after_dealloc/input.c:42:5: note: reaching:     Py_INCREF(tmp);
+tests/cpychecker/refcounts/use_after_dealloc/input.c:28:1: note: graphical error report for function 'use_after_dealloc' written out to 'tests/cpychecker/refcounts/use_after_dealloc/input.c.use_after_dealloc-refcount-errors.html'

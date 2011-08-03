@@ -1,3 +1,4 @@
 tests/cpychecker/refcounts/not_setting_exception/input.c: In function 'not_setting_exception':
 tests/cpychecker/refcounts/not_setting_exception/input.c:32:5: error: returning (PyObject*)NULL without setting an exception
 tests/cpychecker/refcounts/not_setting_exception/input.c:32:5: note: when returning at:     return NULL;
+tests/cpychecker/refcounts/not_setting_exception/input.c:27:1: note: graphical error report for function 'not_setting_exception' written out to 'tests/cpychecker/refcounts/not_setting_exception/input.c.not_setting_exception-refcount-errors.html'
