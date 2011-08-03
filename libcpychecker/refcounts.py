@@ -788,7 +788,9 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
     # (all traces analysed)
 
     if rep.got_errors():
-        rep.dump_html(fun, '%s-refcount-errors.html' % fun.decl.name)
+        rep.dump_html(fun,
+                      '%s.%s-refcount-errors.html'
+                      % (gcc.get_dump_base_name(), fun.decl.name))
 
     if 0:
         dot = cfg_to_dot(fun.cfg)

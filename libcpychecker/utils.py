@@ -16,13 +16,16 @@
 #   <http://www.gnu.org/licenses/>.
 
 # Logging
+
+import gcc
+
 logfile = None
 
 def log(msg, indent=0):
     if 0:
         global logfile
         if not logfile:
-            logfile = open('log.txt', 'w')
+            logfile = open(gcc.get_dump_base_name() + '.cpychecker-log.txt', 'w')
         logfile.write('%s%s\n' % ('  ' * indent, msg))
     if 0:
         sys.stderr.write('%s%s\n' % ('  ' * indent, msg))

@@ -678,12 +678,27 @@ gcc_python_dump(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-gcc_python_get_dump_file_name(PyObject *self, PyObject *args)
+gcc_python_get_dump_file_name(PyObject *self, PyObject *noargs)
 {
     /* gcc/tree-pass.h declares:
         extern const char *dump_file_name;
     */
     return gcc_python_string_or_none(dump_file_name);
+}
+
+static PyObject *
+gcc_python_get_dump_base_name(PyObject *self, PyObject *noargs)
+{
+    /*
+      The generated gcc/options.h has:
+          #ifdef GENERATOR_FILE
+          extern const char *dump_base_name;
+          #else
+            const char *x_dump_base_name;
+          #define dump_base_name global_options.x_dump_base_name
+          #endif
+    */
+    return gcc_python_string_or_none(dump_base_name);
 }
 
 static PyMethodDef GccMethods[] = {
@@ -750,8 +765,11 @@ static PyMethodDef GccMethods[] = {
     {"dump", gcc_python_dump, METH_O,
      "Dump str() of the argument to the current dump file (or silently discard it when no dump file is open)"},
 
-    {"get_dump_file_name", gcc_python_get_dump_file_name, METH_VARARGS,
+    {"get_dump_file_name", gcc_python_get_dump_file_name, METH_NOARGS,
      "Get the name of the current dump file (or None)"},
+
+    {"get_dump_base_name", gcc_python_get_dump_base_name, METH_NOARGS,
+     "Get the base name used when writing dump files"},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}

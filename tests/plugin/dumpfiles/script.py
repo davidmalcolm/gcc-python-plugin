@@ -20,6 +20,8 @@
 
 import gcc
 
+print('gcc.get_dump_base_name(): %r' % gcc.get_dump_base_name())
+
 pass_dumpfile = None
 class TestPass(gcc.GimplePass):
     def execute(self, fun):

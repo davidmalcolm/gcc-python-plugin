@@ -1,3 +1,4 @@
+gcc.get_dump_base_name(): 'tests/plugin/dumpfiles/input.c'
 registering: TestPass(name='test-pass')
 ps.dump_enabled: False
 Manually enabling dump for our pass:

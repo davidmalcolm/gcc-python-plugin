@@ -318,3 +318,25 @@ would have a dump file like this::
    ;; Function foo (foo)
 
    hello world42
+
+Alternatively, it can be simpler to create your own logging system, given that
+one can simply open a file and write to it.
+
+.. py:function:: gcc.get_dump_base_name()
+
+   Get the base file path and name prefix for GCC's dump files.
+
+   You can use this when creating non-standard logfiles and other output.
+
+   For example, the libcpychecker code can write HTML reports on
+   reference-counting errors within a function, writing the output to a file
+   named::
+
+      filename = '%s.%s-refcount-errors.html' % (gcc.get_dump_base_name(),
+                                                 fun.decl.name)
+
+   given `fun`, a `gcc.Function`.
+
+   By default, this is the name of the input file, but within the output
+   file's directory.  (It can be overridden using the `-dumpbase` command-line
+   option).
