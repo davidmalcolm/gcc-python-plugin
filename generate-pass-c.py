@@ -53,6 +53,14 @@ def generate_pass():
                                       field,
                                       'gcc_python_int_from_long(self->pass->%s)' % field,
                                       None)
+    getsettable.add_simple_getter(cu,
+                                  'static_pass_number',
+                                  'gcc_python_int_from_long(self->pass->static_pass_number)',
+                                  'Number of this pass, used as a fragment of the dump file name')
+    getsettable.add_gsdef('dump_enabled',
+                          'gcc_Pass_get_dump_enabled',
+                          'gcc_Pass_set_dump_enabled',
+                          '(boolean) Is dumping enabled for this pass?')
     cu.add_defn(getsettable.c_defn())
 
     methods = PyMethodTable('gcc_Pass_methods', [])

@@ -115,6 +115,15 @@ There are actually five "roots" to this tree:
 	                             lowered to scalar operations?
          =========================   ============================================   =========================   =======================
 
+   .. py:attribute:: static_pass_number
+
+      (int) The number of this pass, used as a fragment of the dump file name.
+      This is assigned automatically for custom passes.
+
+   .. py:attribute:: dump_enabled
+
+      (boolean) Is dumping enabled for this pass?  Set this attribute to `True`
+      to enable dumping.
 
 There are four subclasses of gcc.Pass:
 
@@ -222,3 +231,90 @@ to a GCC error:
 
    As above, but replace the given pass.  This method is included for
    completeness; the result is unlikely to work well.
+
+Dumping per-pass information
+----------------------------
+GCC has a logging framework which supports per-pass logging ("dump files").
+
+By default, no logging is done; dumping must be explicitly enabled.
+
+Dumping of passes can be enabled from the command-line in groups:
+
+   * `-fdump-tree-all` enables dumping for all `gcc.GimplePass` (both builtin,
+     and custom ones from plugins)
+
+   * `-fdump-rtl-all` is similar, but for all `gcc.RtlPass`
+
+   * `-fdump-ipa-all` as above, but for all `gcc.IpaPass` and
+     `gcc.SimpleIpaPass`
+
+For more information, see
+http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
+
+It's not possible to directly enable dumping for a custom pass from the
+command-line (it would require adding new GCC command-line options).  However,
+your script *can* directly enable dumping for a custom pass by writing to the
+`dump_enabled` attribute (perhaps in response to the arguments passed to
+plugin, or a driver script).
+
+If enabled for a pass, then a file is written to the same directory as the
+output file, with a name based on the input file and the pass number.
+
+For example, given a custom `gcc.Pass` with name `'test-pass'`, then when
+`input.c` is compiled to `build/output.o`::
+
+   $ gcc -fdump-tree-all -o build/output.o src/input.c
+
+then a dump file `input.c.225t.test-pass` will be written to the directory
+`build`.  In this case, `225` is the `static_pass_number` field, `"t"`
+signifies a tree pass, with the pass name appearing as the suffix.
+
+.. py:function:: gcc.dump(obj)
+
+   Write str() of the argument to the current dump file.  No newlines or other
+   whitespace are added.
+
+   Note that dumping is disabled by default; in this case, the call will do
+   nothing.
+
+.. py:function:: gcc.get_dump_file_name()
+
+   Get the name of the current dump file.
+
+   If called from within a pass for which dumping is enabled, it will return
+   the filename in string form.
+
+   If dumping is disabled for this pass, it will return `None`.
+
+The typical output of a dump file will contain::
+
+   ;; Function bar (bar)
+
+   (dumped information when handling function bar goes here)
+
+   ;; Function foo (foo)
+
+   (dumped information when handling function foo goes here)
+
+For example::
+
+   class TestPass(gcc.GimplePass):
+       def execute(self, fun):
+           # Dumping of strings:
+           gcc.dump('hello world')
+
+           # Dumping of other objects:
+           gcc.dump(42)
+
+   ps = TestPass(name='test-pass')
+   ps.register_after('cfg')
+   ps.dump_enabled = True
+
+would have a dump file like this::
+
+   ;; Function bar (bar)
+
+   hello world42
+   ;; Function foo (foo)
+
+   hello world42

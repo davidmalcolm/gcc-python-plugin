@@ -234,6 +234,60 @@ gcc_Pass_repr(struct PyGccPass *self)
 }
 
 PyObject *
+gcc_Pass_get_dump_enabled(struct PyGccPass *self, void *closure)
+{
+    return PyBool_FromLong(dump_enabled_p(self->pass->static_pass_number));
+}
+
+int
+gcc_Pass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure)
+{
+    struct dump_file_info *dfi = get_dump_file_info (self->pass->static_pass_number);
+    assert(dfi);
+
+    int newbool = PyObject_IsTrue(value);
+    if (newbool == -1) {
+        return -1;
+    }
+
+    if (dfi->state == 0) {
+        /* Dumping was disabled: */
+        if (newbool) {
+            /* Enabling: */
+            dfi->state = -1;
+            return 0;
+        } else {
+            /* No change: */
+            return 0;
+        }
+    } else {
+        if (dfi->state < 0) {
+            /* Dumping was enabled but has not yet started */
+            if (newbool) {
+                /* No change: */
+                return 0;
+            } else {
+                /* Disabling: */
+                dfi->state = 0;
+                return 0;
+            }
+        } else {
+            assert(dfi->state > 0);
+            /* Dumping was enabled and has already started */
+            if (newbool) {
+                /* No change: */
+                return 0;
+            } else {
+                /* Can't disable after it's started: */
+                PyErr_SetString(PyExc_RuntimeError,
+                                "Can't disable dumping: already started");
+                return -1;
+            }
+        }
+    }
+}
+
+PyObject *
 gcc_Pass_get_roots(PyObject *cls, PyObject *noargs)
 {
     /*

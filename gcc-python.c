@@ -641,6 +641,51 @@ gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
     return NULL;
 }
 
+/* Dump files */
+
+static PyObject *
+gcc_python_dump(PyObject *self, PyObject *arg)
+{
+    PyObject *str_obj;
+    /*
+       gcc/output.h: declares:
+           extern FILE *dump_file;
+       This is NULL when not defined.
+    */
+    if (!dump_file) {
+        /* The most common case; make it fast */
+        Py_RETURN_NONE;
+    }
+
+    str_obj = PyObject_Str(arg);
+    if (!str_obj) {
+        return NULL;
+    }
+
+    /* FIXME: encoding issues */
+    /* FIXME: GIL */
+    if (!fwrite(gcc_python_string_as_string(str_obj),
+                strlen(gcc_python_string_as_string(str_obj)),
+                1,
+                dump_file)) {
+        Py_DECREF(str_obj);
+        return PyErr_SetFromErrnoWithFilename(PyExc_IOError, dump_file_name);
+    }
+
+    Py_DECREF(str_obj);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+gcc_python_get_dump_file_name(PyObject *self, PyObject *args)
+{
+    /* gcc/tree-pass.h declares:
+        extern const char *dump_file_name;
+    */
+    return gcc_python_string_or_none(dump_file_name);
+}
+
 static PyMethodDef GccMethods[] = {
     {"register_callback",
      (PyCFunction)gcc_python_register_callback,
@@ -700,6 +745,13 @@ static PyMethodDef GccMethods[] = {
 
     {"get_callgraph_nodes", gcc_python_get_callgraph_nodes, METH_VARARGS,
      "Get a list of all gcc.CallgraphNode instances"},
+
+    /* Dump files */
+    {"dump", gcc_python_dump, METH_O,
+     "Dump str() of the argument to the current dump file (or silently discard it when no dump file is open)"},
+
+    {"get_dump_file_name", gcc_python_get_dump_file_name, METH_VARARGS,
+     "Get the name of the current dump file (or None)"},
 
     /* Sentinel: */
     {NULL, NULL, 0, NULL}

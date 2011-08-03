@@ -170,6 +170,12 @@ PyObject *
 gcc_Pass_repr(struct PyGccPass * self);
 
 PyObject *
+gcc_Pass_get_dump_enabled(struct PyGccPass *self, void *closure);
+
+int
+gcc_Pass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure);
+
+PyObject *
 gcc_Pass_get_roots(PyObject *cls, PyObject *noargs);
 
 PyObject *

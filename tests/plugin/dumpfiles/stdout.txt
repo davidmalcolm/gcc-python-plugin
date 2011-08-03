@@ -1,0 +1,24 @@
+registering: TestPass(name='test-pass')
+ps.dump_enabled: False
+Manually enabling dump for our pass:
+ps.dump_enabled: True
+registering: VerifyPass(name='verify-pass')
+within TestPass.execute, for gcc.Function('bar')
+within VerifyPass.execute, for gcc.Function('bar')
+--CONTENT OF DUMPFILE--
+
+;; Function bar (bar)
+
+hello world42
+--END OF DUMPFILE--
+within TestPass.execute, for gcc.Function('foo')
+within VerifyPass.execute, for gcc.Function('foo')
+--CONTENT OF DUMPFILE--
+
+;; Function bar (bar)
+
+hello world42
+;; Function foo (foo)
+
+hello world42
+--END OF DUMPFILE--
