@@ -20,21 +20,27 @@ from libcpychecker.PyArg_ParseTuple import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
 
-def on_pass_execution(optpass, fun,
-                      dump_traces=False,
-                      show_traces=False,
-                      verify_refcounting=False,
-                      *args, **kwargs):
-    # Only run in one pass
-    # FIXME: should we be adding our own pass for this?
-    if optpass.name == '*warn_function_return':
+class CpyChecker(gcc.GimplePass):
+    """
+    The custom pass that implements our extra compile-time checks
+    """
+    def __init__(self,
+                 dump_traces=False,
+                 show_traces=False,
+                 verify_refcounting=False):
+        gcc.GimplePass.__init__(self, 'cpychecker')
+        self.dump_traces = dump_traces
+        self.show_traces = show_traces
+        self.verify_refcounting = verify_refcounting
+
+    def execute(self, fun):
         if fun:
             log(fun)
             check_pyargs(fun)
 
             # The refcount code is too buggy for now to be on by default:
-            if verify_refcounting:
-                check_refcounts(fun, dump_traces, show_traces)
+            if self.verify_refcounting:
+                check_refcounts(fun, self.dump_traces, self.show_traces)
 
 def is_a_method_callback(decl):
     methods = get_all_PyMethodDef_methods()
@@ -72,6 +78,6 @@ def get_all_PyMethodDef_methods():
     return result
 
 def main(**kwargs):
-    gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-                          on_pass_execution,
-                          **kwargs)
+    # Register our GCC pass:
+    ps = CpyChecker(**kwargs)
+    ps.register_before('*warn_function_return')
