@@ -176,7 +176,7 @@ debug: plugin
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
-	gcc -fplugin=$(shell pwd)/python.so -fplugin-arg-python-script=cpychecker.py $(shell python-config --cflags) demo.c
+	./gcc-with-cpychecker $(shell python-config --cflags) demo.c
 
 test-suite: plugin
 	$(PYTHON) run-test-suite.py

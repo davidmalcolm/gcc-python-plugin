@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011 Red Hat, Inc.
+#
+#   This is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see
+#   <http://www.gnu.org/licenses/>.
+
+# Harness for invoking GCC with the cpychecker Python code within the python
+# plugin, whilst dealing with some options
+# (This code runs under the regular Python interpreter, not within gcc)
+
+import argparse
+import os
+import subprocess
+import sys
+
+abspath = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+# By default, look for the plugin relative to this harness.  This is intended
+# to make it easier during development, so that we can make other projects with
+#     CC=../../../gcc-python-plugin/gcc-with-cpychecker
+# and similar.
+#
+# When installed, this should be fixed up.
+PLUGIN = os.path.join(abspath, 'python.so')
+
+# Create arg parser:
+parser = argparse.ArgumentParser(usage='%(prog)s [options] gcc-options')
+parser.add_argument('--check-refcounts',
+                    action='store_true',
+                    default=False,
+                    help='foo')
+parser.add_argument('--dump-cpychecker',
+                    action='store_true',
+                    default=False,
+                    help='foo')
+
+# Only consume args we understand, leaving the rest for gcc:
+ns, other_args = parser.parse_known_args()
+if 0:
+    print(ns)
+    print(other_args)
+
+cmd = 'from libcpychecker import main; main()'
+
+args = ['gcc',
+        ('-fplugin=%s' % PLUGIN),
+	('-fplugin-arg-python-command=%s' % cmd)]
+args += other_args # (the args we didn't consume)
+
+# Beware of quoting: if the command is quoted within the Popen call, then
+# Python interprets it as a string literal, and does nothing.
+#
+# But if invoking from a shell, you need quotes aroung the command
+#
+# To add to the fun, "gcc -v" emits it in unquoted form,
+# which will need quotes added
+
+if 0:
+    print(' '.join(args))
+p = subprocess.Popen(args)
+
+r = p.wait()
+sys.exit(r)
