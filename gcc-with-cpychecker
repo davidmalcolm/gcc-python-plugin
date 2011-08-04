@@ -71,5 +71,8 @@ if 0:
     print(' '.join(args))
 p = subprocess.Popen(args)
 
-r = p.wait()
+try:
+    r = p.wait()
+except KeyboardInterrupt:
+    r = 1
 sys.exit(r)
