@@ -875,6 +875,31 @@ gcc_python_init_gcc_module(struct plugin_name_args *plugin_info)
     return 1;
 }
 
+static void gcc_python_run_any_command(void)
+{
+    PyObject* command_obj; /* borrowed ref */
+    int result;
+    const char *command_str;
+
+    command_obj = PyDict_GetItemString(gcc_python_globals.argument_dict, "command");
+    if (!command_obj) {
+        return;
+    }
+
+    command_str = gcc_python_string_as_string(command_obj);
+
+    if (0) {
+        fprintf(stderr, "Running: %s\n", command_str);
+    }
+
+    result = PyRun_SimpleString(command_str);
+    if (-1 == result) {
+        /* Error running the python command */
+        Py_Finalize();
+        exit(1);
+    }
+}
+
 static void gcc_python_run_any_script(void)
 {
     PyObject* script_name;
@@ -1072,6 +1097,7 @@ plugin_init (struct plugin_name_args *plugin_info,
     register_callback(plugin_info->base_name, PLUGIN_FINISH,
                       on_plugin_finish, NULL);
 
+    gcc_python_run_any_command();
     gcc_python_run_any_script();
 
     //printf("%s:%i:got here\n", __FILE__, __LINE__);

@@ -66,9 +66,21 @@ Once you've built the plugin, you can invoke a Python script like this:
 
 .. code-block:: bash
 
-  gcc -fplugin=python.so -fplugin-arg-python-script=PATH_TO_SCRIPT.py OTHER_ARGS
+  gcc -fplugin=./python.so -fplugin-arg-python-script=PATH_TO_SCRIPT.py OTHER_ARGS
 
 and have it run your script as the plugin starts up.
+
+Alternatively, you can run a one-shot Python command like this:
+
+.. code-block:: bash
+
+  gcc -fplugin=./python.so -fplugin-arg-python-command="python code" OTHER_ARGS
+
+such as:
+
+.. code-block:: bash
+
+  gcc -fplugin=./python.so -fplugin-arg-python-command="import sys; print(sys.path)" OTHER_ARGS
 
 The plugin automatically adds the absolute path to its own directory to the
 end of its `sys.path`, so that it can find support modules, such as gccutils.py
