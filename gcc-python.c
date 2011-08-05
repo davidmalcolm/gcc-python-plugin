@@ -34,6 +34,14 @@ int plugin_is_GPL_compatible;
 #include "cgraph.h"
 #include "opts.h"
 
+#if 0
+#define LOG(msg) \
+    (void)fprintf(stderr, "%s:%i:%s\n", __FILE__, __LINE__, (msg))
+#else
+#define LOG(msg) ((void)0);
+#endif
+
+
 #define GCC_PYTHON_TRACE_ALL_EVENTS 0
 #if GCC_PYTHON_TRACE_ALL_EVENTS
 static const char* event_name[] = {
@@ -1024,12 +1032,12 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
              struct plugin_gcc_version *version)
 {
+    LOG("plugin_init started");
+
     if (!plugin_default_version_check (version, &gcc_version)) {
         return 1;
     }
     actual_gcc_version = version;
-
-    //printf("%s:%i:plugin_init\n", __FILE__, __LINE__);
 
 #if PY_MAJOR_VERSION >= 3
     /*
@@ -1045,7 +1053,11 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     PyImport_AppendInittab("gcc", PyInit_gcc);
 
+    LOG("calling Py_Initialize...");
+
     Py_Initialize();
+
+    LOG("Py_Initialize finished");
 
     PyImport_ImportModule("gcc");
 
@@ -1114,6 +1126,8 @@ plugin_init (struct plugin_name_args *plugin_info,
 # include "plugin.def"
 # undef DEFEVENT
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
+
+    LOG("init_plugin finished");
 
     return 0;
 }
