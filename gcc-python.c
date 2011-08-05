@@ -1199,13 +1199,38 @@ gcc_python_strdup(const char *str)
     return result;
 }
 
+static location_t
+get_location_for_exception(void)
+{
+    /*
+       Try to come up with a good source location for the error, to help
+       debug the script.
+
+       Typically, GCC uses "input_location", but by the time our code is
+       running, that's generally just the end of the source file.
+
+       If we were processing a specific function, try to use its location:
+    */
+    if (cfun) {
+        return cfun->function_start_locus;
+    }
+
+    return input_location;
+}
+
 void gcc_python_print_exception(const char *msg)
 {
     /* Handler for Python exceptions */
+    location_t loc;
+
     assert(msg);
 
-    /* Emit a gcc error: */
-    error("%s", msg);
+    /*
+       Emit a gcc error, trying to use a good location for the error:
+    */
+    loc = get_location_for_exception();
+    error_at(loc, "%s", msg);
+
     /* Print the traceback: */
     PyErr_PrintEx(1);
 }

@@ -1,25 +1,25 @@
 tests/plugin/new-passes/input.c: In function 'bar':
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'execute' method
+tests/plugin/new-passes/input.c:30:1: error: Unhandled Python exception raised calling 'execute' method
 TypeError: execute returned a non-integer(type str)
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'execute' method
+tests/plugin/new-passes/input.c:30:1: error: Unhandled Python exception raised calling 'execute' method
 Traceback (most recent call last):
   File "tests/plugin/new-passes/script.py", line 79, in execute
     raise ValueError('example of an execute method raising an exception')
 ValueError: example of an execute method raising an exception
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'gate' method
+tests/plugin/new-passes/input.c:30:1: error: Unhandled Python exception raised calling 'gate' method
 Traceback (most recent call last):
   File "tests/plugin/new-passes/script.py", line 65, in gate
     raise ValueError('example of a gate method raising an exception')
 ValueError: example of a gate method raising an exception
 tests/plugin/new-passes/input.c: In function 'foo':
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'execute' method
+tests/plugin/new-passes/input.c:21:1: error: Unhandled Python exception raised calling 'execute' method
 TypeError: execute returned a non-integer(type str)
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'execute' method
+tests/plugin/new-passes/input.c:21:1: error: Unhandled Python exception raised calling 'execute' method
 Traceback (most recent call last):
   File "tests/plugin/new-passes/script.py", line 79, in execute
     raise ValueError('example of an execute method raising an exception')
 ValueError: example of an execute method raising an exception
-tests/plugin/new-passes/input.c:36:1: error: Unhandled Python exception raised calling 'gate' method
+tests/plugin/new-passes/input.c:21:1: error: Unhandled Python exception raised calling 'gate' method
 Traceback (most recent call last):
   File "tests/plugin/new-passes/script.py", line 65, in gate
     raise ValueError('example of a gate method raising an exception')
