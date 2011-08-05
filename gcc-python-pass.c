@@ -57,8 +57,7 @@ static bool impl_gate(void)
     if (cfun) {
         cfun_obj = gcc_python_make_wrapper_function(cfun);
         if (!cfun_obj) {
-            error("Unhandled Python exception raised calling 'gate' method");
-            PyErr_PrintEx(1);
+            gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
             Py_DECREF(pass_obj);
             return false;
         }
@@ -71,8 +70,7 @@ static bool impl_gate(void)
     Py_DECREF(pass_obj);
 
     if (!result_obj) {
-        error("Unhandled Python exception raised calling 'gate' method");
-        PyErr_PrintEx(1);
+        gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
         return false;
     }
 
@@ -95,8 +93,7 @@ static unsigned int impl_execute(void)
     if (cfun) {
         cfun_obj = gcc_python_make_wrapper_function(cfun);
         if (!cfun_obj) {
-            error("Unhandled Python exception raised calling 'gate' method");
-            PyErr_PrintEx(1);
+            gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
             Py_DECREF(pass_obj);
             return false;
         }
@@ -109,8 +106,7 @@ static unsigned int impl_execute(void)
     Py_DECREF(pass_obj);
 
     if (!result_obj) {
-        error("Unhandled Python exception raised calling 'execute' method");
-        PyErr_PrintEx(1);
+        gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
         return 0;
     }
 
@@ -138,8 +134,7 @@ static unsigned int impl_execute(void)
                  "(type %.200s)",
                  Py_TYPE(result_obj)->tp_name);
     Py_DECREF(result_obj);
-    error("Unhandled Python exception raised calling 'execute' method");
-    PyErr_PrintEx(1);
+    gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
     return 0;
 }
 

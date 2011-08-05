@@ -219,6 +219,8 @@ gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
 /* gcc-python.c */
 char * gcc_python_strdup(const char *str);
 
+void gcc_python_print_exception(const char *msg);
+
 /* Python 2 vs Python 3 compat: */
 #if PY_MAJOR_VERSION == 3
 /* Python 3: use PyUnicode for "str" and PyLong for "int": */

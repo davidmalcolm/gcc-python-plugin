@@ -173,10 +173,8 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     result = PyObject_Call(closure->callback, args, closure->kwargs);
 
     if (!result) {
-	/* Treat an unhandled Python error as a compilation error: */
-	error("Unhandled Python exception raised within callback");
-
-	PyErr_PrintEx(1);
+        /* Treat an unhandled Python error as a compilation error: */
+        gcc_python_print_exception("Unhandled Python exception raised within callback");
     }
 
     // FIXME: the result is ignored
@@ -1199,6 +1197,17 @@ gcc_python_strdup(const char *str)
     *dst = '\0';
 
     return result;
+}
+
+void gcc_python_print_exception(const char *msg)
+{
+    /* Handler for Python exceptions */
+    assert(msg);
+
+    /* Emit a gcc error: */
+    error("%s", msg);
+    /* Print the traceback: */
+    PyErr_PrintEx(1);
 }
 
 /*
