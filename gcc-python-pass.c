@@ -356,7 +356,7 @@ gcc_Pass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
     struct opt_pass *result;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s|get_by_name", keywords,
+                                     "s:get_by_name", keywords,
                                      &name)) {
         return NULL;
     }
