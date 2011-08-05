@@ -272,7 +272,7 @@ class MissingValue(Exception):
 
 class State:
     """A Location with memory state"""
-    def __init__(self, loc, region_for_var=None, value_for_region=None, return_rvalue=None):
+    def __init__(self, loc, region_for_var=None, value_for_region=None, return_rvalue=None, has_returned=False):
         assert isinstance(loc, Location)
         self.loc = loc
 
@@ -291,6 +291,7 @@ class State:
             self.value_for_region = OrderedDict()
 
         self.return_rvalue = return_rvalue
+        self.has_returned = has_returned
 
     def __str__(self):
         return ('loc: %s region_for_var:%s value_for_region:%s%s'
@@ -333,8 +334,9 @@ class State:
     def copy(self):
         c = self.__class__(loc,
                            self.region_for_var.copy(),
-                           self.value_for_region.copy())
-        c.return_rvalue = self.return_rvalue
+                           self.value_for_region.copy(),
+                           self.return_rvalue,
+                           self.has_returned)
         return c
 
     def verify(self):
@@ -585,9 +587,6 @@ class State:
         newloc = self.loc.next_loc()
         return self.update_loc(newloc)
 
-    def has_returned(self):
-        return self.return_rvalue is not None
-
     def get_gcc_loc_or_none(self):
         # Return the gcc.Location for this state, which could be None
         return self.loc.get_stmt().loc
@@ -726,7 +725,8 @@ def iter_traces(fun, stateclass, prefix=None):
     else:
         assert isinstance(prefix, Trace)
         curstate = prefix.states[-1]
-        if curstate.has_returned():
+
+        if curstate.has_returned:
             # This state has returned a value (and hence terminated):
             return [prefix]
 

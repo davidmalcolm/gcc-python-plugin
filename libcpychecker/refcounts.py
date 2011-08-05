@@ -550,12 +550,13 @@ class MyState(State):
         log('stmt: %r %s' % (stmt, stmt))
         log('stmt.retval: %r' % stmt.retval)
 
-        rvalue = self.eval_rvalue(stmt.retval)
-        log('rvalue from eval_rvalue: %r' % rvalue)
-
         nextstate = self.copy()
-        nextstate.return_rvalue = rvalue
-        assert nextstate.return_rvalue is not None # ensure termination
+
+        if stmt.retval:
+            rvalue = self.eval_rvalue(stmt.retval)
+            log('rvalue from eval_rvalue: %r' % rvalue)
+            nextstate.return_rvalue = rvalue
+        nextstate.has_returned = True
         return [Transition(self, nextstate, 'returning')]
 
 def get_traces(fun):
