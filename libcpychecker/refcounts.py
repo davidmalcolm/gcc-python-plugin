@@ -481,18 +481,8 @@ class MyState(State):
             # Split the ptr variable immediately into NULL and non-NULL
             # versions, so that we can evaluate the true and false branch with
             # explicitly data
-            # FIXME: we probably ought to extend the split so that it can
-            # (potentially) alias any pointer of the same type
             log('splitting %s into non-NULL/NULL pointers' % stmt.lhs)
-            ptr = stmt.lhs
-            region = Region('unknown', None)
-            self.region_for_var[region] = region
-            raise SplitValue(
-                lhs,
-                # Non-NULL pointer:
-                [PointerToRegion(ptr.type, stmt.loc, region),
-                 # NULL pointer:
-                 ConcreteValue(ptr.type, stmt.loc, 0)])
+            self.raise_split_value(lhs, stmt.loc)
 
         log('unable to compare %r with %r' % (lhs, rhs))
         return UnknownValue(stmt.lhs.type, stmt.loc)

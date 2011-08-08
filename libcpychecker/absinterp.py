@@ -546,14 +546,7 @@ class State:
                         # Split the analysis
                         # Non-NULL pointer:
                         log('splitting %s into non-NULL/NULL pointers' % cr)
-                        region = Region('unknown', None)
-                        self.region_for_var[region] = region
-                        raise SplitValue(
-                            ptr,
-                            # Non-NULL pointer:
-                            [PointerToRegion(ptr.gcctype, None, region),
-                             # NULL pointer:
-                             ConcreteValue(ptr.gcctype, None, 0)])
+                        self.raise_split_value(ptr)
                     assert isinstance(ptr, PointerToRegion)
                     return self.make_field_region(ptr.region, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
@@ -682,6 +675,23 @@ class State:
             gccloc = fun.end
         return gccloc
 
+    def raise_split_value(self, ptr_rvalue, loc=None):
+        """
+        Raise a SplitValue exception on the given rvalue, so that we can
+        backtrack and split the current state into a version with an explicit
+        NULL value and a version with a non-NULL value
+
+        FIXME: we should split into multiple non-NULL values, covering the
+        various aliasing possibilities
+        """
+        assert isinstance(ptr_rvalue, AbstractValue)
+        assert isinstance(ptr_rvalue, UnknownValue)
+        assert isinstance(ptr_rvalue.gcctype, gcc.PointerType)
+        region = Region('unknown', None)
+        self.region_for_var[region] = region
+        non_null_ptr = PointerToRegion(ptr_rvalue.gcctype, loc, region)
+        null_ptr = ConcreteValue(ptr_rvalue.gcctype, loc, 0)
+        raise SplitValue(ptr_rvalue, [non_null_ptr, null_ptr])
 
 class Transition:
     def __init__(self, src, dest, desc):
