@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as (struct coord *)&Region('unknown') from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:35"
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0x3481c90>, loc=None)
+    str(): unknown int from None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:34
+
+Trace 1:
+  Transitions:
+    'treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as (struct coord *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:35'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=None, value=42L)
+    str(): (int)42L
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:34

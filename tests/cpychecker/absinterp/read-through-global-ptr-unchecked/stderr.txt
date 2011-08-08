@@ -1,0 +1,4 @@
+tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c: In function 'test_read_through_global_without_check':
+tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35:5: error: possibly dereferencing NULL (coord_ptr.0->x) at tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35
+tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35:5: note: when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)0 at:     return coord_ptr->x;
+tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:34:1: note: graphical error report for function 'test_read_through_global_without_check' written out to 'tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c.test_read_through_global_without_check-refcount-errors.html'

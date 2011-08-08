@@ -144,15 +144,20 @@ class InvalidlyNullParameter(PredictedError):
 
 
 class NullPtrDereference(PredictedError):
-    def __init__(self, state, cr):
+    def __init__(self, state, cr, isdefinite):
         assert isinstance(state, State)
         assert isinstance(cr, gcc.ComponentRef)
         self.state = state
         self.cr = cr
+        self.isdefinite = isdefinite
 
     def __str__(self):
-        return ('dereferencing NULL (%s) at %s'
-                % (self.cr, self.state.loc.get_stmt().loc))
+        if self.isdefinite:
+            return ('dereferencing NULL (%s) at %s'
+                    % (self.cr, self.state.loc.get_stmt().loc))
+        else:
+            return ('possibly dereferencing NULL (%s) at %s'
+                    % (self.cr, self.state.loc.get_stmt().loc))
 
 class ReadFromDeallocatedMemory(PredictedError):
     def __init__(self, stmt, value):
@@ -177,6 +182,8 @@ class Location:
     """A location within a CFG: a gcc.BasicBlock together with an index into
     the gimple list.  (We don't support SSA passes)"""
     def __init__(self, bb, idx):
+        assert isinstance(bb, gcc.BasicBlock)
+        assert isinstance(idx, int)
         self.bb = bb
         self.idx = idx
 
@@ -269,6 +276,42 @@ class MissingValue(Exception):
 
     def __str__(self):
         return 'Missing value for %s' % self.region
+
+class SplitValue(Exception):
+    """
+    We encountered an value (e.g. UnknownValue), but we'd like to know more
+    about it.
+
+    Backtrack the analysis, splitting it into multiple possible worlds
+    with alternate abstract values for said value
+    """
+    def __init__(self, value, altvalues):
+        self.value = value
+        self.altvalues = altvalues
+
+    def __str__(self):
+        return ('Splitting:\n%r\ninto\n%s'
+                % (self.value,
+                   '\n'.join([repr(alt) for alt in self.altvalues])))
+
+    def split(self, state):
+        log('creating states for split of %s into %s' % (self.value, self.altvalues))
+        result = []
+        for altvalue in self.altvalues:
+            log(' creating state for split where %s is %s' % (self.value, altvalue))
+            altvalue.fromsplit = True
+
+            newstate = state.copy()
+            newstate.fromsplit = True
+            for r in newstate.value_for_region:
+                # Replace instances of the value itself:
+                if newstate.value_for_region[r] is self.value:
+                    log('  replacing value for region %s with %s' % (r, altvalue))
+                    newstate.value_for_region[r] = altvalue
+            result.append(Transition(state,
+                                     newstate,
+                                     "treating %s as %s" % (self.value, altvalue)))
+        return result
 
 class State:
     """A Location with memory state"""
@@ -376,7 +419,7 @@ class State:
             return expr
         if isinstance(expr, gcc.IntegerCst):
             return ConcreteValue(expr.type, None, expr.constant)
-        if isinstance(expr, gcc.VarDecl):
+        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
             region = self.var_region(expr)
             assert isinstance(region, Region)
             value = self.get_store(region)
@@ -388,8 +431,12 @@ class State:
             region = self.get_field_region(expr)#.target, expr.field.name)
             assert isinstance(region, Region)
             log('got field region for %s: %r' % (expr, region))
-            value = self.get_store(region)
-            log('got value: %r' % value)
+            try:
+                value = self.get_store(region)
+                log('got value: %r' % value)
+            except MissingValue:
+                value = UnknownValue(expr.type, None)
+                log('no value; using: %r' % value)
             assert isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
@@ -435,7 +482,7 @@ class State:
         self.value_for_region[dest_region] = value
 
     def var_region(self, var):
-        assert isinstance(var, gcc.VarDecl)
+        assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
             log('adding region for global var: %r' % var)
@@ -485,8 +532,28 @@ class State:
                 log('foo')
                 if isinstance(cr.target, gcc.MemRef):
                     ptr = self.eval_rvalue(cr.target.operand) # FIXME
+                    log('ptr: %r' % ptr)
                     if isinstance(ptr, ConcreteValue) and ptr.value == 0:
-                        raise NullPtrDereference(self, cr)
+                        # Read through NULL
+                        # If we earlier split the analysis into NULL/non-NULL
+                        # cases, then we're only considering the possibility
+                        # that this pointer was NULL; we don't know for sure
+                        # that it was.
+                        isdefinite = not hasattr(ptr, 'fromsplit')
+                        raise NullPtrDereference(self, cr, isdefinite)
+                    if isinstance(ptr, UnknownValue):
+                        # It could be NULL; it could be non-NULL
+                        # Split the analysis
+                        # Non-NULL pointer:
+                        log('splitting %s into non-NULL/NULL pointers' % cr)
+                        region = Region('unknown', None)
+                        self.region_for_var[region] = region
+                        raise SplitValue(
+                            ptr,
+                            # Non-NULL pointer:
+                            [PointerToRegion(ptr.gcctype, None, region),
+                             # NULL pointer:
+                             ConcreteValue(ptr.gcctype, None, 0)])
                     assert isinstance(ptr, PointerToRegion)
                     return self.make_field_region(ptr.region, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
@@ -509,6 +576,14 @@ class State:
                 return self.get_store(region.parent)
             except MissingValue:
                 raise MissingValue(region)
+
+        # The first time we look up the value of a global, assign it a new
+        # "unknown" value:
+        if isinstance(region, RegionForGlobal):
+            newval = UnknownValue(region.vardecl.type, region.vardecl.location)
+            log('setting up %s for %s' % (newval, region.vardecl))
+            self.value_for_region[region] = newval
+            return newval
 
         raise MissingValue(region)
 
@@ -562,6 +637,10 @@ class State:
         log('init_for_function(%r)' % fun)
         root_region = Region('root', None)
         stack = Region('stack for %s' % fun.decl.name, root_region)
+        for parm in fun.decl.arguments:
+            region = Region('region for %r' % parm, stack)
+            self.region_for_var[parm] = region
+            self.value_for_region[region] = UnknownValue(parm.type, parm.location)
         for local in fun.local_decls:
             region = Region('region for %r' % local, stack)
             self.region_for_var[local] = region
@@ -664,9 +743,14 @@ class Trace:
         """
         Is the tail state of the Trace at a location where it's been before?
         """
-        endstateloc = self.states[-1].loc
+        endstate = self.states[-1]
+        if hasattr(endstate, 'fromsplit'):
+            # We have a state that was created from a SplitValue.  It will have
+            # the same location as the state before it (before the split).
+            # Don't treat it as a loop:
+            return False
         for state in self.states[0:-1]:
-            if state.loc == endstateloc:
+            if state.loc == endstate.loc:
                 return True
 
 def true_edge(bb):
@@ -755,12 +839,19 @@ def iter_traces(fun, stateclass, prefix=None):
         trace_with_err.add_error(err)
         trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
         return [trace_with_err]
+    except SplitValue, err:
+        # Split the state up, splitting into parallel worlds with different
+        # values for the given value
+        # FIXME: this doesn't work; it thinks it's a loop :(
+        transitions = err.split(curstate)
+        assert isinstance(transitions, list)
 
     log('transitions: %s' % transitions, 2)
 
     if len(transitions) > 0:
         result = []
         for transition in transitions:
+            assert isinstance(transition, Transition)
             transition.dest.verify()
 
             # Recurse:
