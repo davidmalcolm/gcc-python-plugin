@@ -87,6 +87,10 @@ class TestStream:
                 # Handle stuff like this that changes every time:
                 # "Preprocessed source stored into /tmp/ccRm9Xgx.out file, please attach this to your bugreport."
                 continue
+            # Remove exact pointer addresses from repr():
+            line = re.sub(' object at (0x[0-9a-f]*)>',
+                          ' object at 0xdeadbeef>',
+                          line)
             result += line + '\n'
         return result
 
