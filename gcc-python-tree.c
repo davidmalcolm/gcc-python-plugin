@@ -172,8 +172,46 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
     /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
        "A TREE_LIST of IDENTIFIER nodes of the attributes that apply
        to this type"
+
+       Looking at:
+          typedef int (example3)(const char *, const char *, const char *)
+              __attribute__((nonnull(1)))
+              __attribute__((nonnull(3)));
+       (which is erroneous), we get this for TYPE_ATTRIBUTES:
+         gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                      value=gcc.TreeList(purpose=None,
+                                         value=gcc.IntegerCst(3),
+                                         chain=None),
+                      chain=gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                                         value=gcc.TreeList(purpose=None,
+                                                            value=gcc.IntegerCst(1),
+                                                            chain=None),
+                                         chain=None)
+                      )
     */
-    return gcc_python_make_wrapper_tree(TYPE_ATTRIBUTES(self->t));
+    tree attr;
+    PyObject *result = PyDict_New();
+    if (!result) {
+        return NULL;
+    }
+    for (attr = TYPE_ATTRIBUTES(self->t); attr; attr = TREE_CHAIN(attr)) {
+        const char *attrname = IDENTIFIER_POINTER(TREE_PURPOSE(attr));
+        PyObject *values;
+        values = gcc_python_tree_make_list_from_tree_list_chain(TREE_VALUE(attr));
+        if (!values) {
+            goto error;
+        }
+
+        if (-1 == PyDict_SetItemString(result, attrname, values)) {
+            goto error;
+        }
+    }
+
+    return result;
+
+ error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 PyObject *
@@ -470,6 +508,95 @@ gcc_tree_list_from_chain(tree t)
 	    goto error;
 	}
 	t = TREE_CHAIN(t);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+/*
+  As above, but expect nodes of the form:
+     tree_list  ---> value
+         +--chain--> tree_list ---> value
+                         +--chain--> tree_list ---> value
+                                         +---chain--> NULL
+  Extract a list of objects for the values
+ */
+PyObject *
+gcc_python_tree_make_list_from_tree_list_chain(tree t)
+{
+    PyObject *result = NULL;
+
+    result = PyList_New(0);
+    if (!result) {
+       goto error;
+    }
+
+    while (t) {
+       PyObject *item;
+       item = gcc_python_make_wrapper_tree(TREE_VALUE(t));
+       if (!item) {
+           goto error;
+       }
+       if (-1 == PyList_Append(result, item)) {
+           Py_DECREF(item);
+           goto error;
+       }
+       t = TREE_CHAIN(t);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+/*
+  As above, but expect nodes of the form:
+     tree_list  ---> (purpose, value)
+         +--chain--> tree_list ---> (purpose, value)
+                         +--chain--> tree_list ---> (purpose, value)
+                                         +---chain--> NULL
+  Extract a list of objects for the values
+ */
+PyObject *
+gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
+{
+    PyObject *result = NULL;
+
+    result = PyList_New(0);
+    if (!result) {
+       goto error;
+    }
+
+    while (t) {
+       PyObject *purpose;
+       PyObject *value;
+       PyObject *pair;
+       purpose = gcc_python_make_wrapper_tree(TREE_PURPOSE(t));
+       if (!purpose) {
+           goto error;
+       }
+       value = gcc_python_make_wrapper_tree(TREE_VALUE(t));
+       if (!value) {
+           Py_DECREF(purpose);
+           goto error;
+       }
+       pair = Py_BuildValue("OO", purpose, value);
+       if (!pair) {
+           Py_DECREF(purpose);
+           Py_DECREF(value);
+           goto error;
+       }
+       if (-1 == PyList_Append(result, pair)) {
+           Py_DECREF(pair);
+           goto error;
+       }
+       t = TREE_CHAIN(t);
     }
 
     return result;

@@ -239,6 +239,12 @@ gcc_Rtl_str(struct PyGccRtl * self);
 PyObject *
 gcc_tree_list_from_chain(tree t);
 
+PyObject *
+gcc_python_tree_make_list_from_tree_list_chain(tree t);
+
+PyObject *
+gcc_python_tree_make_list_of_pairs_from_tree_list_chain(tree t);
+
 /*
   PEP-7
 Local variables:

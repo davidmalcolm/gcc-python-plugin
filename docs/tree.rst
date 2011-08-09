@@ -264,8 +264,8 @@ Types
    .. py:attribute:: attributes
 
       The user-defined attributes on this type (using GCC's `__attribute`
-      syntax), as a :py:class:`gcc.TreeList`, or `None`.  Typically this will
-      be `None`.
+      syntax), as a dictionary (mapping from attribute names to list of
+      values).  Typically this will be the empty dictionary.
 
    The standard C types are accessible via class methods of gcc.Type.
    They are only created by GCC after plugins are loaded, and so they're
