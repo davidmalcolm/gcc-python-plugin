@@ -66,7 +66,10 @@ class UnknownValue(AbstractValue):
         if self.gcctype:
             return 'unknown %s from %s' % (self.gcctype, self.loc)
         else:
-            return 'unknown value from %s' % (self.gcctype, self.loc)
+            if self.loc:
+                return 'unknown value from %s' % self.loc
+            else:
+                return 'unknown value'
 
     def __repr__(self):
         return 'UnknownValue(gcctype=%r, loc=%r)' % (self.gcctype, self.loc)
