@@ -1,0 +1,15 @@
+Trace 0:
+  Transitions:
+    "treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:31 as (struct coord *)&Region('heap-region-0') from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:35"
+    'taking True path'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:34
+
+Trace 1:
+  Transitions:
+    'treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:31 as (struct coord *)0 from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:35'
+    'taking False path'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-global-ptr-checked/input.c:34

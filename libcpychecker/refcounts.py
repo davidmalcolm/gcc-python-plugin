@@ -515,6 +515,8 @@ class MyState(State):
             return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.VarDecl:
             return self.eval_rvalue(rhs[0])
+        elif stmt.exprcode == gcc.ParmDecl:
+            return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.IntegerCst:
             return self.eval_rvalue(rhs[0])
         elif stmt.exprcode == gcc.AddrExpr:

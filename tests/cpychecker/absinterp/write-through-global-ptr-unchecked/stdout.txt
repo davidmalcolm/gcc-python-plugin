@@ -1,0 +1,14 @@
+Trace 0:
+  Transitions:
+    "treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:31 as (struct coord *)&Region('heap-region-0')"
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:34
+
+Trace 1:
+  Transitions:
+    'treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:31 as (struct coord *)0'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (coord_ptr.0->x) at tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:36
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:34
