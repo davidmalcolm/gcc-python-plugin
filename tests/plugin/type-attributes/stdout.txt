@@ -1,0 +1,28 @@
+fn_type_decl.name: 'example0'
+str(fn_type): 'int example0 (const char *, const char *, const char *)'
+str(fn_type.type): 'int'
+argument_types: ['const char *', 'const char *', 'const char *']
+fn_type.attributes: None
+-----------------------------------------------------
+
+fn_type_decl.name: 'example1'
+str(fn_type): 'int example1 (const char *, const char *, const char *)'
+str(fn_type.type): 'int'
+argument_types: ['const char *', 'const char *', 'const char *']
+fn_type.attributes: gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'), value=None, chain=None)
+-----------------------------------------------------
+
+fn_type_decl.name: 'example2'
+str(fn_type): 'int example2 (const char *, const char *, const char *)'
+str(fn_type.type): 'int'
+argument_types: ['const char *', 'const char *', 'const char *']
+fn_type.attributes: gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'), value=gcc.TreeList(purpose=None, value=gcc.IntegerCst(1), chain=gcc.TreeList(purpose=None, value=gcc.IntegerCst(3), chain=None)), chain=None)
+-----------------------------------------------------
+
+fn_type_decl.name: 'example3'
+str(fn_type): 'int example3 (const char *, const char *, const char *)'
+str(fn_type.type): 'int'
+argument_types: ['const char *', 'const char *', 'const char *']
+fn_type.attributes: gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'), value=gcc.TreeList(purpose=None, value=gcc.IntegerCst(3), chain=None), chain=gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'), value=gcc.TreeList(purpose=None, value=gcc.IntegerCst(1), chain=None), chain=None))
+-----------------------------------------------------
+

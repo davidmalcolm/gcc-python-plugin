@@ -102,6 +102,12 @@ PyObject *
 gcc_Declaration_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_IdentifierNode_repr(struct PyGccTree * self);
+
+PyObject *
+gcc_Type_get_attributes(struct PyGccTree *self, void *closure);
+
+PyObject *
 gcc_FunctionType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
@@ -118,6 +124,9 @@ gcc_StringConstant_repr(struct PyGccTree * self);
 
 PyObject *
 gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
+
+PyObject *
+gcc_TreeList_repr(struct PyGccTree * self);
 
 /* gcc-python-gimple.c: */
 PyObject *

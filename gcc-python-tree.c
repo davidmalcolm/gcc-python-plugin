@@ -154,6 +154,29 @@ error:
 }
 
 PyObject *
+gcc_IdentifierNode_repr(struct PyGccTree * self)
+{
+    if (IDENTIFIER_POINTER(self->t)) {
+        return gcc_python_string_from_format("%s(name='%s')",
+                                             Py_TYPE(self)->tp_name,
+                                             IDENTIFIER_POINTER(self->t));
+    } else {
+        return gcc_python_string_from_format("%s(name=None)",
+                                             Py_TYPE(self)->tp_name);
+    }
+}
+
+PyObject *
+gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
+{
+    /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
+       "A TREE_LIST of IDENTIFIER nodes of the attributes that apply
+       to this type"
+    */
+    return gcc_python_make_wrapper_tree(TYPE_ATTRIBUTES(self->t));
+}
+
+PyObject *
 gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;
@@ -317,6 +340,59 @@ gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
         return NULL;
     }
     return gcc_python_make_wrapper_tree(build_pointer_type(decl_type));
+}
+
+PyObject *
+gcc_TreeList_repr(struct PyGccTree * self)
+{
+    PyObject *purpose = NULL;
+    PyObject *value = NULL;
+    PyObject *chain = NULL;
+    PyObject *repr_purpose = NULL;
+    PyObject *repr_value = NULL;
+    PyObject *repr_chain = NULL;
+    PyObject *result = NULL;
+
+    purpose = gcc_python_make_wrapper_tree(TREE_PURPOSE(self->t));
+    if (!purpose) {
+        goto error;
+    }
+    value = gcc_python_make_wrapper_tree(TREE_VALUE(self->t));
+    if (!value) {
+        goto error;
+    }
+    chain = gcc_python_make_wrapper_tree(TREE_CHAIN(self->t));
+    if (!chain) {
+        goto error;
+    }
+
+    repr_purpose = PyObject_Repr(purpose);
+    if (!repr_purpose) {
+        goto error;
+    }
+    repr_value = PyObject_Repr(value);
+    if (!repr_value) {
+        goto error;
+    }
+    repr_chain = PyObject_Repr(chain);
+    if (!repr_chain) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(purpose=%s, value=%s, chain=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(repr_purpose),
+                                           gcc_python_string_as_string(repr_value),
+                                           gcc_python_string_as_string(repr_chain));
+ error:
+    Py_XDECREF(purpose);
+    Py_XDECREF(value);
+    Py_XDECREF(chain);
+    Py_XDECREF(repr_purpose);
+    Py_XDECREF(repr_value);
+    Py_XDECREF(repr_chain);
+
+    return result;
 }
 
 /* 

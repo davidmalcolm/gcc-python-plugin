@@ -261,6 +261,11 @@ Types
 
       The :py:class:`gcc.PointerType` representing the `(this_type *)` type
 
+   .. py:attribute:: attributes
+
+      The user-defined attributes on this type (using GCC's `__attribute`
+      syntax), as a :py:class:`gcc.TreeList`, or `None`.  Typically this will
+      be `None`.
 
    The standard C types are accessible via class methods of gcc.Type.
    They are only created by GCC after plugins are loaded, and so they're

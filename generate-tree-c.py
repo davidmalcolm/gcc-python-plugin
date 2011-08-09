@@ -184,6 +184,10 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
             add_simple_getter('pointer',
                               'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
                               "The gcc.PointerType representing '(this_type *)'")
+            getsettable.add_gsdef('attributes',
+                                  'gcc_Type_get_attributes',
+                                  None,
+                                  'The user-defined attributes on this type')
 
             methods = PyMethodTable('gcc_Type_methods', [])
 
@@ -404,6 +408,7 @@ def generate_tree_code_classes():
             add_simple_getter('name',
                               'gcc_python_string_or_none(IDENTIFIER_POINTER(self->t))',
                               "The name of this gcc.IdentifierNode, as a string")
+            tp_repr = '(reprfunc)gcc_IdentifierNode_repr'
 
         if tree_type.SYM == 'VAR_DECL':
             add_simple_getter('initial',
@@ -464,6 +469,10 @@ def generate_tree_code_classes():
             add_simple_getter('version',
                               'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',
                               "The SSA version number of this SSA name'")
+
+        if tree_type.SYM == 'TREE_LIST':
+            # c.f. "struct GTY(()) tree_list":
+            tp_repr = '(reprfunc)gcc_TreeList_repr'
 
         cu.add_defn(getsettable.c_defn())
 
