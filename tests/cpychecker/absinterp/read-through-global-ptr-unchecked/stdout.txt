@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)&Region('unknown')"
+    "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)&Region('heap-region-0')"
     'returning'
   Return value:
     repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0x2fc3b70>, loc=None)

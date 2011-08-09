@@ -687,11 +687,15 @@ class State:
         assert isinstance(ptr_rvalue, AbstractValue)
         assert isinstance(ptr_rvalue, UnknownValue)
         assert isinstance(ptr_rvalue.gcctype, gcc.PointerType)
-        region = Region('unknown', None)
+        global region_id
+        region = Region('heap-region-%i' % region_id, None)
+        region_id += 1
         self.region_for_var[region] = region
         non_null_ptr = PointerToRegion(ptr_rvalue.gcctype, loc, region)
         null_ptr = ConcreteValue(ptr_rvalue.gcctype, loc, 0)
         raise SplitValue(ptr_rvalue, [non_null_ptr, null_ptr])
+
+region_id = 0
 
 class Transition:
     def __init__(self, src, dest, desc):
