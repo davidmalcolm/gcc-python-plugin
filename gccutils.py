@@ -56,6 +56,41 @@ def get_global_vardecl_by_name(name):
                 if v.name == name:
                     return v
 
+def get_nonnull_arguments(funtype):
+    """
+    'nonnull' is an attribute on the fun.decl.type
+
+    http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+
+    It can either have no arguments (all pointer args are non-NULL), or
+    be a list of integers.  These integers are 1-based.
+
+    Return a frozenset of 0-based integers, giving the arguments for which we
+    can assume the "nonnull" property.
+
+    (Note the 0-based vs 1-based differences)
+
+    Compare with gcc/tree-vrp.c: nonnull_arg_p
+    """
+    assert isinstance(funtype, gcc.FunctionType)
+    if 'nonnull' in funtype.attributes:
+        result = []
+        nonnull = funtype.attributes['nonnull']
+        if nonnull == []:
+            # All pointer args are nonnull:
+            for idx, parm in enumerate(funtype.argument_types):
+                if isinstance(parm, gcc.PointerType):
+                    result.append(idx)
+        else:
+            # Only the listed args are nonnull:
+            for val in nonnull:
+                assert isinstance(val, gcc.IntegerCst)
+                result.append(val.constant - 1)
+        return frozenset(result)
+    else:
+        # No "nonnull" attribute was given:
+        return frozenset()
+
 def invoke_dot(dot):
     from subprocess import Popen, PIPE
 

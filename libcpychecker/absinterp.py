@@ -19,7 +19,7 @@ import gcc
 import gccutils
 import sys
 from six import StringIO
-from gccutils import get_src_for_loc
+from gccutils import get_src_for_loc, get_nonnull_arguments
 from collections import OrderedDict
 from libcpychecker.utils import log
 from libcpychecker.types import *
@@ -633,10 +633,18 @@ class State:
         log('init_for_function(%r)' % fun)
         root_region = Region('root', None)
         stack = Region('stack for %s' % fun.decl.name, root_region)
-        for parm in fun.decl.arguments:
+
+        nonnull_args = get_nonnull_arguments(fun.decl.type)
+        for idx, parm in enumerate(fun.decl.arguments):
             region = Region('region for %r' % parm, stack)
             self.region_for_var[parm] = region
-            self.value_for_region[region] = UnknownValue(parm.type, parm.location)
+            if idx in nonnull_args:
+                # Make a non-NULL ptr:
+                other = Region('region-for-arg-%s' % parm, None)
+                self.region_for_var[other] = other
+                self.value_for_region[region] = PointerToRegion(parm.type, parm.location, other)
+            else:
+                self.value_for_region[region] = UnknownValue(parm.type, parm.location)
         for local in fun.local_decls:
             region = Region('region for %r' % local, stack)
             self.region_for_var[local] = region

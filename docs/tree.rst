@@ -376,6 +376,24 @@ Additional attributes for various gcc.Type subclasses:
       A tuple of gcc.Type instances, representing the function's argument
       types
 
+   .. py:function:: gccutils.get_nonnull_arguments(funtype)
+
+      This is a utility function for working with the `"nonnull"` custom
+      attribute on function types:
+
+      http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+
+      Return a `frozenset` of 0-based integers, giving the arguments for
+      which we can assume "nonnull-ness", handling the various cases of:
+
+          * the attribute isn't present (returning the empty frozenset)
+
+          * the attribute is present, without args (all pointer args are
+            non-NULL)
+
+          * the attribute is present, with a list of 1-based argument indices
+            (Note that the result is still 0-based)
+
 Constants
 ---------
 

@@ -30,6 +30,7 @@ def on_finish_unit():
         assert isinstance(fn_type.argument_types, tuple)
         print('argument_types: %r' % [str(t) for t in fn_type.argument_types])
         print('fn_type.attributes: %r' % fn_type.attributes)
+        print('gccutils.get_nonnull_arguments(fn_type): %r' % gccutils.get_nonnull_arguments(fn_type))
         print('-----------------------------------------------------\n')
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,

@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0x28fab70>, loc=None)
+    str(): unknown int from None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/nonnull-attribute/input.c:38
