@@ -247,7 +247,7 @@ class Region:
             parent.children.append(self)
 
     def __repr__(self):
-        return 'Region(%r)' % self.name
+        return '%s(%r)' % (self.__class__.__name__, self.name)
 
 class RegionForGlobal(Region):
     """
@@ -277,6 +277,15 @@ class RegionOnHeap(Region):
     def __str__(self):
         return '%s allocated at %s' % (self.name, self.alloc_stmt.loc)
 
+
+class RegionForStringConstant(Region):
+    """
+    Represents an area of memory used for string constants
+    typically allocated in the .data segment
+    """
+    def __init__(self, text):
+        Region.__init__(self, text, None)
+        self.text = text
 
 class MissingValue(Exception):
     """
@@ -420,6 +429,10 @@ class State:
             return region
         elif isinstance(expr, gcc.ArrayRef):
             region = self.element_region(expr, loc)
+            assert isinstance(region, Region)
+            return region
+        elif isinstance(expr, gcc.StringCst):
+            region = self.string_constant_region(expr, loc)
             assert isinstance(region, Region)
             return region
         raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
@@ -589,6 +602,14 @@ class State:
                     return self.make_field_region(vr, cr.field.name)
         log('cr: %r %s' % (cr, cr))
         return self.region_for_var[cr]
+
+    def string_constant_region(self, expr, loc):
+        log('string_constant_region: %s' % expr)
+        assert isinstance(expr, gcc.StringCst)
+        if loc:
+            assert isinstance(loc, gcc.Location)
+        region = RegionForStringConstant(expr.constant)
+        return region
 
     def get_store(self, region, gcctype, loc):
         if gcctype:
