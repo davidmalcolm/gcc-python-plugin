@@ -273,6 +273,34 @@ class MyState(State):
             # go down by one:
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1)
 
+    def make_borrowed_ref(self, stmt, name):
+        """Make a new state, giving a borrowed ref to some object"""
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+
+        nonnull = newstate.make_heap_region(name, stmt)
+        ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+        newstate.value_for_region[ob_refcnt] = RefcountValue(0)
+        #ob_type = newstate.make_field_region(nonnull, 'ob_type')
+        #newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+        #                                                    stmt.loc,
+        #                                                    typeobjregion)
+        newstate.assign(stmt.lhs,
+                       PointerToRegion(stmt.lhs.type,
+                                       stmt.loc,
+                                       nonnull),
+                       stmt.loc)
+        return newstate
+
+    def make_exception(self, stmt, fnname):
+        """Make a new state, giving NULL and some exception"""
+        failure = self.make_assignment(stmt.lhs,
+                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       None)
+        failure.dest.set_exception('PyExc_MemoryError')
+        return failure.dest
+
+
     def make_transitions_for_fncall(self, stmt, success, failure):
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(success, State)
@@ -357,6 +385,23 @@ class MyState(State):
 
         return self.make_transitions_for_fncall(stmt, success, failure)
 
+    def impl_Py_InitModule4_64(self, stmt):
+        # Decl:
+        #   PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,
+        #                                         const char *doc, PyObject *self,
+        #                                         int apiver);
+        #  Returns a borrowed reference
+        #
+        # FIXME:
+        #  On 64-bit:
+        #    #define Py_InitModule4 Py_InitModule4_64
+        #  with tracerefs:
+        #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
+        #    #define Py_InitModule4 Py_InitModule4TraceRefs
+        success = self.make_borrowed_ref(stmt, 'output from Py_InitModule4')
+        failure = self.make_exception(stmt, 'Py_InitModule4')
+        return self.make_transitions_for_fncall(stmt, success, failure)
+
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
         log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
@@ -393,21 +438,16 @@ class MyState(State):
                 meth = getattr(self, 'impl_%s' % fnname)
                 return meth(stmt)
 
-            # Function returning borrowed references:
-            elif fnname in ('Py_InitModule4_64',):
-                return [self.make_assignment(stmt.lhs, NonNullPtrValue(1, stmt)),
-                        self.make_assignment(stmt.lhs, NullPtrValue())]
-            else:
-                #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
+            #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
 
-                #if fnname in c_stdio_functions:
-                #    return handle_c_stdio_function(self, fnname, stmt)
+            #if fnname in c_stdio_functions:
+            #    return handle_c_stdio_function(self, fnname, stmt)
 
-                # Unknown function:
-                log('Invocation of unknown function: %r' % fnname)
-                return [self.make_assignment(stmt.lhs,
-                                             UnknownValue(returntype, stmt.loc),
-                                             None)]
+            # Unknown function:
+            log('Invocation of unknown function: %r' % fnname)
+            return [self.make_assignment(stmt.lhs,
+                                         UnknownValue(returntype, stmt.loc),
+                                         None)]
 
         log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
         for i, arg in enumerate(stmt.args):

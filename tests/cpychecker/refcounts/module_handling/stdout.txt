@@ -1,0 +1,18 @@
+Trace 0:
+  Transitions:
+    'Py_InitModule4_64() succeeds'
+    'returning'
+  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:46:
+    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=46))
+    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:46
+    r->ob_refcnt: RefcountValue(0)
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/module_handling/input.c:41
+
+Trace 1:
+  Transitions:
+    'Py_InitModule4_64() fails'
+    'returning'
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
