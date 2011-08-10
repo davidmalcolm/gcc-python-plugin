@@ -1,0 +1,7 @@
+tests/cpychecker/absinterp/custom-strdup/input.c: In function 'test_strdup':
+tests/cpychecker/absinterp/custom-strdup/input.c:50:12: error: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50
+tests/cpychecker/absinterp/custom-strdup/input.c:45:8: note: when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45 at:     if (!result) {
+tests/cpychecker/absinterp/custom-strdup/input.c:45:8: note: when taking False path at:     if (!result) {
+tests/cpychecker/absinterp/custom-strdup/input.c:49:9: note: reaching:     dst = result;
+tests/cpychecker/absinterp/custom-strdup/input.c:50:12: note: when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as (const char *)0 at:     while (*str) {
+tests/cpychecker/absinterp/custom-strdup/input.c:39:1: note: graphical error report for function 'test_strdup' written out to 'tests/cpychecker/absinterp/custom-strdup/input.c.test_strdup-refcount-errors.html'

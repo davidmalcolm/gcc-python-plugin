@@ -1,0 +1,35 @@
+Trace 0:
+  Transitions:
+    "treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45"
+    'taking False path'
+    "treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as (const char *)&Region('heap-region-1')"
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=45), region=Region('heap-region-0'))
+    str(): (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39
+
+Trace 1:
+  Transitions:
+    "treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45"
+    'taking False path'
+    'treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as (const char *)0'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39
+
+Trace 2:
+  Transitions:
+    'treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:45'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='char *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=46), value=0L)
+    str(): (char *)0L from tests/cpychecker/absinterp/custom-strdup/input.c:46
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39

@@ -147,20 +147,22 @@ class InvalidlyNullParameter(PredictedError):
 
 
 class NullPtrDereference(PredictedError):
-    def __init__(self, state, cr, isdefinite):
+    def __init__(self, state, expr, ptr, isdefinite):
         assert isinstance(state, State)
-        assert isinstance(cr, gcc.ComponentRef)
+        assert isinstance(expr, (gcc.ComponentRef, gcc.MemRef))
+        assert isinstance(ptr, AbstractValue)
         self.state = state
-        self.cr = cr
+        self.expr = expr
+        self.ptr = ptr
         self.isdefinite = isdefinite
 
     def __str__(self):
         if self.isdefinite:
             return ('dereferencing NULL (%s) at %s'
-                    % (self.cr, self.state.loc.get_stmt().loc))
+                    % (self.expr, self.state.loc.get_stmt().loc))
         else:
             return ('possibly dereferencing NULL (%s) at %s'
-                    % (self.cr, self.state.loc.get_stmt().loc))
+                    % (self.expr, self.state.loc.get_stmt().loc))
 
 class ReadFromDeallocatedMemory(PredictedError):
     def __init__(self, stmt, value):
@@ -225,6 +227,13 @@ class Location:
     def get_stmt(self):
         if self.bb.gimple:
             return self.bb.gimple[self.idx]
+        else:
+            return None
+
+    def get_gcc_loc(self):
+        stmt = self.get_stmt()
+        if stmt:
+            return stmt.loc
         else:
             return None
 
@@ -395,83 +404,103 @@ class State:
                 raise TypeError('value for region %r is not an AbstractValue: %r'
                                 % (k, self.value_for_region[k]))
 
-    def eval_lvalue(self, expr):
+    def eval_lvalue(self, expr, loc):
         """
         Return the Region for the given expression
         """
         log('eval_lvalue: %r %s' % (expr, expr))
+        if loc:
+            assert isinstance(loc, gcc.Location)
         if isinstance(expr, gcc.VarDecl):
             region = self.var_region(expr)
             assert isinstance(region, Region)
             return region
         elif isinstance(expr, gcc.ArrayRef):
-            region = self.element_region(expr)
+            region = self.element_region(expr, loc)
             assert isinstance(region, Region)
             return region
         raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
 
-    def eval_rvalue(self, expr):
+    def eval_rvalue(self, expr, loc):
         """
         Return the value for the given expression, as an AbstractValue
         FIXME: also as a Region?
         """
         log('eval_rvalue: %r %s' % (expr, expr))
+        if loc:
+            assert isinstance(loc, gcc.Location)
+
         if isinstance(expr, AbstractValue):
             return expr
         if isinstance(expr, Region):
             return expr
         if isinstance(expr, gcc.IntegerCst):
-            return ConcreteValue(expr.type, None, expr.constant)
+            return ConcreteValue(expr.type, loc, expr.constant)
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
             region = self.var_region(expr)
             assert isinstance(region, Region)
-            value = self.get_store(region)
+            value = self.get_store(region, expr.type, loc)
             assert isinstance(value, AbstractValue)
             return value
             #return UnknownValue(expr.type, str(expr))
         if isinstance(expr, gcc.ComponentRef):
             #assert isinstance(expr.field, gcc.FieldDecl)
-            region = self.get_field_region(expr)#.target, expr.field.name)
+            region = self.get_field_region(expr, loc)#.target, expr.field.name)
             assert isinstance(region, Region)
             log('got field region for %s: %r' % (expr, region))
             try:
-                value = self.get_store(region)
+                value = self.get_store(region, expr.type, loc)
                 log('got value: %r' % value)
             except MissingValue:
-                value = UnknownValue(expr.type, None)
+                value = UnknownValue(expr.type, loc)
                 log('no value; using: %r' % value)
             assert isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
             log('expr.operand: %r' % expr.operand)
-            lvalue = self.eval_lvalue(expr.operand)
+            lvalue = self.eval_lvalue(expr.operand, loc)
             assert isinstance(lvalue, Region)
-            return PointerToRegion(expr.type, None, lvalue)
+            return PointerToRegion(expr.type, loc, lvalue)
         if isinstance(expr, gcc.ArrayRef):
             log('expr.array: %r' % expr.array)
             log('expr.index: %r' % expr.index)
-            lvalue = self.eval_lvalue(expr)
+            lvalue = self.eval_lvalue(expr, loc)
             assert isinstance(lvalue, Region)
-            rvalue = self.get_store(lvalue)
+            rvalue = self.get_store(lvalue, expr.type, loc)
+            assert isinstance(rvalue, AbstractValue)
+            return rvalue
+        if isinstance(expr, gcc.MemRef):
+            log('expr.operand: %r' % expr.operand)
+            opvalue = self.eval_rvalue(expr.operand, loc)
+            assert isinstance(opvalue, AbstractValue)
+            log('opvalue: %r' % opvalue)
+            self.raise_any_null_ptr_deref(expr, opvalue)
+            if isinstance(opvalue, UnknownValue):
+                # Split into null/non-null pointers:
+                self.raise_split_value(opvalue)
+            assert isinstance(opvalue, PointerToRegion) # FIXME
+            rvalue = self.get_store(opvalue.region, expr.type, loc)
             assert isinstance(rvalue, AbstractValue)
             return rvalue
         raise NotImplementedError('eval_rvalue: %r %s' % (expr, expr))
-        return UnknownValue(expr.type, None) # FIXME
+        return UnknownValue(expr.type, loc) # FIXME
 
-    def assign(self, lhs, rhs):
+    def assign(self, lhs, rhs, loc):
         log('assign(%r, %r)' % (lhs, rhs))
         log('assign(%s, %s)' % (lhs, rhs))
-        if isinstance(lhs, gcc.VarDecl):
+        if loc:
+            assert isinstance(loc, gcc.Location)
+        if isinstance(lhs, (gcc.VarDecl, gcc.ParmDecl)):
             dest_region = self.var_region(lhs)
         elif isinstance(lhs, gcc.ComponentRef):
             assert isinstance(lhs.field, gcc.FieldDecl)
-            dest_region = self.get_field_region(lhs)
+            dest_region = self.get_field_region(lhs, loc)
         #elif isinstance(lhs, gcc.ArrayRef):
         #    assert isinstance(lhs.field, gcc.FieldDecl)
         #    dest_region = self.get_array_region(lhs)
         elif isinstance(lhs, gcc.MemRef):
             # Write through a pointer:
-            dest_ptr = self.eval_rvalue(lhs.operand)
+            dest_ptr = self.eval_rvalue(lhs.operand, loc)
             log('dest_ptr: %r' % dest_ptr)
             assert isinstance(dest_ptr, PointerToRegion)
             dest_region = dest_ptr.region
@@ -479,7 +508,7 @@ class State:
         else:
             raise NotImplementedError("Don't know how to cope with assignment to %r (%s)"
                                       % (lhs, lhs))
-        value = self.eval_rvalue(rhs)
+        value = self.eval_rvalue(rhs, loc)
         log('value: %s %r' % (value, value))
         assert isinstance(value, AbstractValue)
         self.value_for_region[dest_region] = value
@@ -501,15 +530,18 @@ class State:
                 self.value_for_region[ob_refcnt] = RefcountValue(0)
         return self.region_for_var[var]
 
-    def element_region(self, ar):
+    def element_region(self, ar, loc):
         log('element_region: %s' % ar)
         assert isinstance(ar, gcc.ArrayRef)
+        if loc:
+            assert isinstance(loc, gcc.Location)
+
         log('  ar.array: %r' % ar.array)
         log('  ar.index: %r' % ar.index)
-        parent = self.eval_lvalue(ar.array)
+        parent = self.eval_lvalue(ar.array, loc)
         assert isinstance(parent, Region)
         log('  parent: %r' % parent)
-        index = self.eval_rvalue(ar.index)
+        index = self.eval_rvalue(ar.index, loc)
         assert isinstance(index, AbstractValue)
         log('  index: %r' % index)
         if isinstance(index, ConcreteValue):
@@ -524,8 +556,10 @@ class State:
         self.region_for_var[region] = region
         return region
 
-    def get_field_region(self, cr): #target, field):
+    def get_field_region(self, cr, loc): #target, field):
         assert isinstance(cr, gcc.ComponentRef)
+        if loc:
+            assert isinstance(loc, gcc.Location)
         #cr.debug()
         log('target: %r' % cr.target)
         log('field: %r' % cr.field)
@@ -534,16 +568,9 @@ class State:
             if 1: # cr.target not in self.region_for_var:
                 log('foo')
                 if isinstance(cr.target, gcc.MemRef):
-                    ptr = self.eval_rvalue(cr.target.operand) # FIXME
+                    ptr = self.eval_rvalue(cr.target.operand, loc) # FIXME
                     log('ptr: %r' % ptr)
-                    if isinstance(ptr, ConcreteValue) and ptr.value == 0:
-                        # Read through NULL
-                        # If we earlier split the analysis into NULL/non-NULL
-                        # cases, then we're only considering the possibility
-                        # that this pointer was NULL; we don't know for sure
-                        # that it was.
-                        isdefinite = not hasattr(ptr, 'fromsplit')
-                        raise NullPtrDereference(self, cr, isdefinite)
+                    self.raise_any_null_ptr_deref(cr, ptr)
                     if isinstance(ptr, UnknownValue):
                         # It could be NULL; it could be non-NULL
                         # Split the analysis
@@ -560,7 +587,27 @@ class State:
         log('cr: %r %s' % (cr, cr))
         return self.region_for_var[cr]
 
-    def get_store(self, region):
+    def get_store(self, region, gcctype, loc):
+        if gcctype:
+            assert isinstance(gcctype, gcc.Type)
+        if loc:
+            assert isinstance(loc, gcc.Location)
+        try:
+            val = self._get_store_recursive(region, gcctype, loc)
+            return val
+        except MissingValue:
+            # The first time we look up the value of a global, assign it a new
+            # "unknown" value:
+            if isinstance(region, RegionForGlobal):
+                newval = UnknownValue(region.vardecl.type, region.vardecl.location)
+                log('setting up %s for %s' % (newval, region.vardecl))
+                self.value_for_region[region] = newval
+                return newval
+
+            # OK: no value known:
+            return UnknownValue(gcctype, loc)
+
+    def _get_store_recursive(self, region, gcctype, loc):
         assert isinstance(region, Region)
         # self.log(log, 0)
         if region in self.value_for_region:
@@ -569,17 +616,9 @@ class State:
         # Not found; try default value from parent region:
         if region.parent:
             try:
-                return self.get_store(region.parent)
+                return self._get_store_recursive(region.parent, gcctype, loc)
             except MissingValue:
                 raise MissingValue(region)
-
-        # The first time we look up the value of a global, assign it a new
-        # "unknown" value:
-        if isinstance(region, RegionForGlobal):
-            newval = UnknownValue(region.vardecl.type, region.vardecl.location)
-            log('setting up %s for %s' % (newval, region.vardecl))
-            self.value_for_region[region] = newval
-            return newval
 
         raise MissingValue(region)
 
@@ -658,7 +697,7 @@ class State:
         new = self.copy()
         new.loc = self.loc.next_loc()
         if lhs:
-            new.assign(lhs, rhs)
+            new.assign(lhs, rhs, self.loc.get_gcc_loc())
         return Transition(self, new, desc)
 
     def update_loc(self, newloc):
@@ -685,6 +724,17 @@ class State:
         if gccloc is None:
             gccloc = fun.end
         return gccloc
+
+    def raise_any_null_ptr_deref(self, expr, ptr):
+        if isinstance(ptr, ConcreteValue):
+            if ptr.is_null_ptr():
+                # Read through NULL
+                # If we earlier split the analysis into NULL/non-NULL
+                # cases, then we're only considering the possibility
+                # that this pointer was NULL; we don't know for sure
+                # that it was.
+                isdefinite = not hasattr(ptr, 'fromsplit')
+                raise NullPtrDereference(self, expr, ptr, isdefinite)
 
     def raise_split_value(self, ptr_rvalue, loc=None):
         """

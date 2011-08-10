@@ -19,7 +19,7 @@ Trace 1:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/fold_conditional/input.c', line=28), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/fold_conditional/input.c:28
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))

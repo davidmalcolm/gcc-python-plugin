@@ -2,8 +2,8 @@ Trace 0:
   Transitions:
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=None, region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
-    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/correct_py_none/input.c', line=25), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
+    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/correct_py_none/input.c:25
     r->ob_refcnt: RefcountValue(1)
     r->ob_type: None
   Exception:

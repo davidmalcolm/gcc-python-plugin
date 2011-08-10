@@ -58,8 +58,8 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:45
   PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
@@ -80,8 +80,8 @@ Trace 3:
     'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:45
   PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
@@ -98,8 +98,8 @@ Trace 4:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=40), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:40
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
 
@@ -109,7 +109,7 @@ Trace 5:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=35), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:35
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))

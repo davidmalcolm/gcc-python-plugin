@@ -85,7 +85,7 @@ class GenericTpDealloc(AbstractValue):
         returntype = stmt.fn.type.dereference.type
 
         # Mark the arg as being deallocated:
-        value = state.eval_rvalue(stmt.args[0])
+        value = state.eval_rvalue(stmt.args[0], stmt.loc)
         assert isinstance(value, PointerToRegion)
         region = value.region
         assert isinstance(region, Region)
@@ -235,7 +235,8 @@ class MyState(State):
         success.assign(stmt.lhs,
                        PointerToRegion(stmt.lhs.type,
                                        stmt.loc,
-                                       nonnull))
+                                       nonnull),
+                       stmt.loc)
         success = Transition(self,
                              success,
                              '%s() succeeds' % fnname)
@@ -254,7 +255,8 @@ class MyState(State):
         newstate.loc = self.loc.next_loc()
         if stmt.lhs:
             newstate.assign(stmt.lhs,
-                            ConcreteValue(stmt.lhs.type, stmt.loc, value))
+                            ConcreteValue(stmt.lhs.type, stmt.loc, value),
+                            stmt.loc)
         return newstate
 
     def steal_reference(self, region):
@@ -284,7 +286,7 @@ class MyState(State):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
-        lenarg = self.eval_rvalue(stmt.args[0])
+        lenarg = self.eval_rvalue(stmt.args[0], stmt.loc)
         assert isinstance(lenarg, AbstractValue)
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
@@ -305,7 +307,8 @@ class MyState(State):
 
         result = []
 
-        arg_list, arg_index, arg_item = [self.eval_rvalue(arg) for arg in stmt.args]
+        arg_list, arg_index, arg_item = [self.eval_rvalue(arg, stmt.loc)
+                                         for arg in stmt.args]
 
         # Is it really a list?
         if 0: # FIXME: check
@@ -363,7 +366,7 @@ class MyState(State):
 
         if isinstance(stmt.fn, gcc.VarDecl):
             # Calling through a function pointer:
-            val = self.eval_rvalue(stmt.fn)
+            val = self.eval_rvalue(stmt.fn, stmt.loc)
             log('val: %s' %  val)
             assert isinstance(val, AbstractValue)
             return val.get_transitions_for_function_call(self, stmt)
@@ -460,8 +463,8 @@ class MyState(State):
             return None
 
         log('eval_condition: %s' % stmt)
-        lhs = self.eval_rvalue(stmt.lhs)
-        rhs = self.eval_rvalue(stmt.rhs)
+        lhs = self.eval_rvalue(stmt.lhs, stmt.loc)
+        rhs = self.eval_rvalue(stmt.rhs, stmt.loc)
         log('eval of lhs: %r' % lhs)
         log('eval of rhs: %r' % rhs)
         log('stmt.exprcode: %r' % stmt.exprcode)
@@ -491,8 +494,8 @@ class MyState(State):
         log('eval_rhs(%s): %s' % (stmt, stmt.rhs))
         rhs = stmt.rhs
         if stmt.exprcode == gcc.PlusExpr:
-            a = self.eval_rvalue(rhs[0])
-            b = self.eval_rvalue(rhs[1])
+            a = self.eval_rvalue(rhs[0], stmt.loc)
+            b = self.eval_rvalue(rhs[1], stmt.loc)
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
@@ -500,11 +503,13 @@ class MyState(State):
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue + b.value)
 
+            return UnknownValue(stmt.lhs.type, stmt.loc)
+
             raise NotImplementedError("Don't know how to cope with addition of\n  %r\nand\n  %r\nat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.MinusExpr:
-            a = self.eval_rvalue(rhs[0])
-            b = self.eval_rvalue(rhs[1])
+            a = self.eval_rvalue(rhs[0], stmt.loc)
+            b = self.eval_rvalue(rhs[1], stmt.loc)
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
@@ -512,19 +517,24 @@ class MyState(State):
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.VarDecl:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.ParmDecl:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.IntegerCst:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.AddrExpr:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.NopExpr:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.ArrayRef:
-            return self.eval_rvalue(rhs[0])
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.MemRef:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.PointerPlusExpr:
+            # For now, for pointer arithmetic, just return an unknown value:
+            return UnknownValue(stmt.lhs.type, stmt.loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
@@ -565,7 +575,7 @@ class MyState(State):
         nextstate = self.copy()
 
         if stmt.retval:
-            rvalue = self.eval_rvalue(stmt.retval)
+            rvalue = self.eval_rvalue(stmt.retval, stmt.loc)
             log('rvalue from eval_rvalue: %r' % rvalue)
             nextstate.return_rvalue = rvalue
         nextstate.has_returned = True

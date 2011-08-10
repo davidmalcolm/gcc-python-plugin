@@ -34,7 +34,7 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=None, value=0L)
-    str(): (struct PyObject *)0L
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/use_after_dealloc/input.c', line=33), value=0L)
+    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/use_after_dealloc/input.c:33
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
