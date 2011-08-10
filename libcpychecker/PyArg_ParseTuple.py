@@ -680,5 +680,7 @@ def check_pyargs(fun):
         for bb in fun.cfg.basic_blocks:
             if isinstance(bb.gimple, list):
                 for stmt in bb.gimple:
+                    if stmt.loc:
+                        gcc.set_location(stmt.loc)
                     if isinstance(stmt, gcc.GimpleCall):
                         maybe_check_callsite(stmt)

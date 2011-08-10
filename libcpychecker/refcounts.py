@@ -163,6 +163,8 @@ class MyState(State):
     def _get_transitions_for_stmt(self, stmt):
         log('_get_transitions_for_stmt: %r %s' % (stmt, stmt), 2)
         log('dir(stmt): %s' % dir(stmt), 3)
+        if stmt.loc:
+            gcc.set_location(stmt.loc)
         if isinstance(stmt, gcc.GimpleCall):
             return self._get_transitions_for_GimpleCall(stmt)
         elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
