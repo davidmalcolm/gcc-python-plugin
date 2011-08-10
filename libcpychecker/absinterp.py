@@ -327,7 +327,8 @@ class SplitValue(Exception):
 
 class State:
     """A Location with memory state"""
-    def __init__(self, loc, region_for_var=None, value_for_region=None, return_rvalue=None, has_returned=False):
+    def __init__(self, loc, region_for_var=None, value_for_region=None,
+                 return_rvalue=None, has_returned=False, not_returning=False):
         assert isinstance(loc, Location)
         self.loc = loc
 
@@ -347,6 +348,7 @@ class State:
 
         self.return_rvalue = return_rvalue
         self.has_returned = has_returned
+        self.not_returning = not_returning
 
     def __str__(self):
         return ('loc: %s region_for_var:%s value_for_region:%s%s'
@@ -391,7 +393,8 @@ class State:
                            self.region_for_var.copy(),
                            self.value_for_region.copy(),
                            self.return_rvalue,
-                           self.has_returned)
+                           self.has_returned,
+                           self.not_returning)
         return c
 
     def verify(self):
@@ -824,6 +827,10 @@ class Trace:
             # the same location as the state before it (before the split).
             # Don't treat it as a loop:
             return False
+        if endstate.not_returning:
+            # The handler not "exit" etc leads to a transition that has a
+            # repeated location:
+            return False
         for state in self.states[0:-1]:
             if state.loc == endstate.loc:
                 return True
@@ -887,6 +894,11 @@ def iter_traces(fun, stateclass, prefix=None):
 
         if curstate.has_returned:
             # This state has returned a value (and hence terminated):
+            return [prefix]
+
+        if curstate.not_returning:
+            # This state has called "exit" or similar, and thus this
+            # trace should terminate:
             return [prefix]
 
         # Stop interpreting when you see a loop, to ensure termination:
@@ -993,6 +1005,11 @@ class StateGraph:
 
                 if transition.dest.has_returned():
                     # This state has returned a value (and hence terminated)
+                    continue
+
+                if transition.dest.not_returning():
+                    # This state has called "exit" or similar, and thus this
+                    # trace should terminate:
                     continue
 
                 # Recurse:

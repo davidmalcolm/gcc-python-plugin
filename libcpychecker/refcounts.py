@@ -366,6 +366,15 @@ class MyState(State):
         returntype = stmt.fn.type.dereference.type
         log('returntype: %s' % returntype)
 
+        if stmt.noreturn:
+            # The function being called does not return e.g. "exit(0);"
+            # Transition to a special noreturn state:
+            newstate = self.copy()
+            newstate.not_returning = True
+            return [Transition(self,
+                               newstate,
+                               'not returning from %s' % stmt.fn)]
+
         if isinstance(stmt.fn, gcc.VarDecl):
             # Calling through a function pointer:
             val = self.eval_rvalue(stmt.fn, stmt.loc)

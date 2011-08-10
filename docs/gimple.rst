@@ -111,6 +111,11 @@ TODO
 
       The arguments for the call, as a list of gcc.Tree
 
+   .. py:attribute:: noreturn
+
+      (boolean) Has this call been marked as not returning?  (e.g. a call to
+      `exit`)
+
 .. py:class:: gcc.GimpleReturn
 
    Subclass of gcc.Gimple: a "return" statement, signifying the end of a `gcc.BasicBlock`

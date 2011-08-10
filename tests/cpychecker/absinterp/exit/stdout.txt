@@ -1,0 +1,5 @@
+Trace 0:
+  Transitions:
+    'not returning from exit'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/exit/input.c:26

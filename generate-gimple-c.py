@@ -284,7 +284,15 @@ def generate_gimple_subclasses():
                                              'gcc_GimpleCall_get_args',
                                              None,
                                              'The arguments for the call, as a list of gcc.Tree'),
-                                 ])
+                                 PyGetSetDef('noreturn',
+                                             cu.add_simple_getter('gcc_GimpleCall_get_noreturn',
+                                                                  'PyGccGimple',
+                                                                  'PyBool_FromLong(gimple_call_noreturn_p(self->stmt))'),
+
+                                             None,
+                                             'Has this call been marked as not returning, as a boolean'),
+                                 ],
+                                )
     def make_getset_Return():
         return PyGetSetDefTable('gcc_%s_getset_table' % cc,
                                 [PyGetSetDef('retval',
