@@ -461,6 +461,39 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
     return NULL;
 }
 
+extern PyTypeObject gcc_LabelDeclType;
+
+PyObject *
+gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
+{
+    struct PyGccCfg *self = (struct PyGccCfg *)s;
+    struct PyGccTree *label_decl;
+    int uid;
+    basic_block bb;
+
+    if (!PyArg_ParseTuple(args,
+                          "O!:get_block_for_label",
+                          &gcc_LabelDeclType, &label_decl)) {
+        return NULL;
+    }
+
+    /* See also gcc/tree-cfg.c: label_to_block_fn */
+    uid = LABEL_DECL_UID(label_decl->t);
+
+    if (uid < 0 ||
+        (VEC_length (basic_block, self->cfg->x_label_to_block_map)
+         <=
+         (unsigned int) uid)
+        ) {
+        return PyErr_Format(PyExc_ValueError,
+                            "uid %i not found", uid);
+    }
+
+    bb = VEC_index(basic_block, self->cfg->x_label_to_block_map, uid);
+
+    return gcc_python_make_wrapper_basic_block(bb);
+}
+
 PyObject *
 gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
 {

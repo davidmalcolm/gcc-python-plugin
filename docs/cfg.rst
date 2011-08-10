@@ -80,6 +80,11 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
 
      Instance of :py:class:`gcc.BasicBlock`: the final one within this CFG
 
+  .. py:method:: get_block_for_label(labeldecl)
+
+     Given a :py:class:`gcc.LabelDecl`, get the corresponding
+     :py:class:`gcc.BasicBlock`
+
   You can use ``gccutils.cfg_to_dot`` to render a gcc.Cfg as a graphviz
   diagram.  It will render the diagram, showing each basic block, with
   source code on the left-hand side, interleaved with the "gimple"

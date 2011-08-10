@@ -480,7 +480,7 @@ def generate_tree_code_classes():
                               "The low value of the case label, as a gcc.Tree (or None for the default)")
             add_simple_getter('high',
                               'gcc_python_make_wrapper_tree(CASE_HIGH(self->t))',
-                              "The high value of the case label, as a gcc.Tree (or None for the default)")
+                              "The high value of the case label, if any, as a gcc.Tree (None for the default and for single-valued case labels)")
             add_simple_getter('target',
                               'gcc_python_make_wrapper_tree(CASE_LABEL(self->t))',
                               "The target of the case label, as a gcc.LabelDecl")

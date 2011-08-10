@@ -163,6 +163,14 @@ def generate_cfg():
                           #tp_str = '(reprfunc)gcc_Cfg_repr',
                           tp_getset = getsettable.identifier,
                           )
+    methods = PyMethodTable('gcc_Cfg_methods', [])
+    methods.add_method('get_block_for_label',
+                       'gcc_Cfg_get_block_for_label',
+                       'METH_VARARGS',
+                       "Given a gcc.LabelDecl, get the corresponding gcc.BasicBlock")
+    cu.add_defn(methods.c_defn())
+    pytype.tp_methods = methods.identifier
+
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

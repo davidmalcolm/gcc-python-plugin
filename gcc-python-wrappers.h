@@ -79,6 +79,9 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure);
 PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure);
 
+PyObject *
+gcc_Cfg_get_block_for_label(PyObject *self, PyObject *args);
+
 /* gcc-python-tree.c: */
 PyObject *
 gcc_Tree_str(struct PyGccTree * self);

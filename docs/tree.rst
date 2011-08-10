@@ -849,13 +849,17 @@ Statements
 
    .. py:attribute:: low
 
-      The low value of the case label, as a :py:class:`gcc.Tree` (or `None`
-      for the default)
+      * for single-valued case labels, the value, as a :py:class:`gcc.Tree`
+
+      * for range-valued case labels, the lower bound, as a :py:class:`gcc.Tree`
+
+      * `None` for the default label
 
    .. py:attribute:: high
 
-      The high value of the case label, as a :py:class:`gcc.Tree` (or `None`
-      for the default)
+      For range-valued case labels, the upper bound, as a :py:class:`gcc.Tree`.
+
+      `None` for single-valued case labels, and for the default label
 
    .. py:attribute:: target
 

@@ -404,6 +404,8 @@ class State:
                            self.return_rvalue,
                            self.has_returned,
                            self.not_returning)
+        if hasattr(self, 'fun'):
+            c.fun = self.fun
         return c
 
     def verify(self):
@@ -694,6 +696,7 @@ class State:
 
     def init_for_function(self, fun):
         log('init_for_function(%r)' % fun)
+        self.fun = fun
         root_region = Region('root', None)
         stack = Region('stack for %s' % fun.decl.name, root_region)
 

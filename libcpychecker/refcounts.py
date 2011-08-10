@@ -121,13 +121,16 @@ class MyState(State):
         self.exception_rvalue = exception_rvalue
 
     def copy(self):
-        return self.__class__(self.loc,
-                              self.region_for_var.copy(),
-                              self.value_for_region.copy(),
-                              self.return_rvalue,
-                              self.owned_refs[:],
-                              self.resources.copy(),
-                              self.exception_rvalue)
+        c = self.__class__(self.loc,
+                           self.region_for_var.copy(),
+                           self.value_for_region.copy(),
+                           self.return_rvalue,
+                           self.owned_refs[:],
+                           self.resources.copy(),
+                           self.exception_rvalue)
+        if hasattr(self, 'fun'):
+            c.fun = self.fun
+        return c
 
     def _extra(self):
         return ' %s' % self.owned_refs
@@ -168,13 +171,17 @@ class MyState(State):
         if isinstance(stmt, gcc.GimpleCall):
             return self._get_transitions_for_GimpleCall(stmt)
         elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
-            return [self.use_next_loc()]
+            return [Transition(self,
+                               self.use_next_loc(),
+                               None)]
         elif isinstance(stmt, gcc.GimpleCond):
             return self._get_transitions_for_GimpleCond(stmt)
         elif isinstance(stmt, gcc.GimpleReturn):
             return self._get_transitions_for_GimpleReturn(stmt)
         elif isinstance(stmt, gcc.GimpleAssign):
             return self._get_transitions_for_GimpleAssign(stmt)
+        elif isinstance(stmt, gcc.GimpleSwitch):
+            return self._get_transitions_for_GimpleSwitch(stmt)
         else:
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
@@ -631,6 +638,39 @@ class MyState(State):
             nextstate.return_rvalue = rvalue
         nextstate.has_returned = True
         return [Transition(self, nextstate, 'returning')]
+
+    def _get_transitions_for_GimpleSwitch(self, stmt):
+        def get_labels_for_rvalue(self, stmt, rvalue):
+            # Gather all possible labels for the given rvalue
+            result = []
+            for label in stmt.labels:
+                # FIXME: for now, treat all labels as possible:
+                result.append(label)
+            return result
+        log('stmt.indexvar: %r' % stmt.indexvar)
+        log('stmt.labels: %r' % (stmt.labels,))
+        indexval = self.eval_rvalue(stmt.indexvar, stmt.loc)
+        log('indexval: %r'  % indexval)
+        labels = get_labels_for_rvalue(self, stmt, indexval)
+        log('labels: %r' % labels)
+        result = []
+        for label in labels:
+            newstate = self.copy()
+            bb = self.fun.cfg.get_block_for_label(label.target)
+            newstate.loc = Location(bb, 0)
+            if label.low:
+                assert isinstance(label.low, gcc.IntegerCst)
+                if label.high:
+                    assert isinstance(label.high, gcc.IntegerCst)
+                    desc = 'following cases %i...%i' % (label.low.constant, label.high.constant)
+                else:
+                    desc = 'following case %i' % label.low.constant
+            else:
+                desc = 'following default'
+            result.append(Transition(self,
+                                     newstate,
+                                     desc))
+        return result
 
 def get_traces(fun):
     return list(iter_traces(fun, MyState))
