@@ -139,6 +139,38 @@ See http://docs.python.org/library/pdb.html#debugger-commands for more
 information.
 
 
+If an exception occurs during Python code, and isn't handled by a try/except
+before returning into the plugin, the plugin prints the traceback to stderr and
+treats it as an error:
+
+.. code-block:: pytb
+
+  /home/david/test.c: In function ‘main’:
+  /home/david/test.c:28:1: error: Unhandled Python exception raised within callback
+  Traceback (most recent call last):
+    File "test.py", line 38, in my_pass_execution_callback
+      dot = gccutils.tree_to_dot(fun)
+  NameError: global name 'gccutils' is not defined
+
+(In this case, it was a missing `import` statement in the script)
+
+GCC reports errors at a particular location within the source code.  For an
+unhandled exception such as the one above, by default, the plugin reports
+the error as occurring as the top of the current source function (or the last
+location within the current source file for passes and callbacks that aren't
+associated with a function).
+
+You can override this using gcc.set_location:
+
+.. py:function:: gcc.set_location(loc)
+
+   Temporarily overrides the error-reporting location, so that if an exception
+   occurs, it will use this `gcc.Location`, rather than the default.  This may
+   be of use when debugging tracebacks from scripts.  The location is reset
+   each time after returning from Python back to the plugin, after printing
+   any traceback.
+
+
 Accessing parameters
 --------------------
 
@@ -220,19 +252,6 @@ directly wrap GCC's plugin mechanism.  The exact arguments you get aren't
 well-documented there, and may be subject to change.  I've tried to document
 what I've seen in GCC 4.6 here, but it's worth experimenting and printing args
 and kwargs as shown above.
-
-If an exception occurs during a callback, and isn't handled by a try/except
-before returning into the plugin, the plugin prints the traceback to stderr and
-treats it as an error:
-
-.. code-block:: pytb
-
-  /home/david/test.c: In function ‘main’:
-  /home/david/test.c:28:1: error: Unhandled Python exception raised within callback
-  Traceback (most recent call last):
-    File "test.py", line 38, in my_pass_execution_callback
-      dot = gccutils.tree_to_dot(fun)
-  NameError: global name 'gccutils' is not defined
 
 Currently useful callback events
 --------------------------------

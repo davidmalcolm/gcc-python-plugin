@@ -119,3 +119,14 @@ class MyIpaPass(gcc.IpaPass):
 ps = MyIpaPass(name='my-ipa-pass')
 print('registering: %r' % ps)
 ps.replace('ipa-profile')
+
+
+class GimplePassSettingLocation(gcc.GimplePass):
+    def execute(*args):
+        print('within %s.execute%r' % (args[0].__class__.__name__, args))
+        gcc.set_location(args[1].end)
+        raise ValueError('this should be at the end of the function')
+
+ps = GimplePassSettingLocation(name='gimple-pass-setting-location')
+print('registering: %r' % ps)
+ps.register_after('cfg')

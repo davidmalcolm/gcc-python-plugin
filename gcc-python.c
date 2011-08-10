@@ -157,6 +157,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
     PyObject *result = NULL;
+    location_t saved_loc = input_location;
 
     assert(closure);
     /* We take ownership of wrapped_gcc_data.
@@ -164,6 +165,11 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
        NULL if an error has occurred: */
     if (expect_wrapped_data && !wrapped_gcc_data) {
         goto cleanup;
+    }
+
+    if (cfun) {
+        /* Temporarily override input_location to the top of the function: */
+        input_location = cfun->function_start_locus;
     }
 
     args = gcc_python_closure_make_args(closure, wrapped_gcc_data);
@@ -185,6 +191,7 @@ cleanup:
     Py_XDECREF(result);
 
     PyGILState_Release(gstate);
+    input_location = saved_loc;
 }
 
 static void
@@ -396,6 +403,21 @@ gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     inform(loc_obj->loc, "%s", msg);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+gcc_python_set_location(PyObject *self, PyObject *args)
+{
+    PyGccLocation *loc_obj;
+    if (!PyArg_ParseTuple(args,
+                          "O!:set_location",
+                          &gcc_LocationType, &loc_obj)) {
+        return NULL;
+    }
+
+    input_location = loc_obj->loc;
 
     Py_RETURN_NONE;
 }
@@ -731,6 +753,10 @@ static PyMethodDef GccMethods[] = {
      (METH_VARARGS | METH_KEYWORDS),
      ("Report an information message\n"
       "FIXME\n")},
+    {"set_location",
+     (PyCFunction)gcc_python_set_location,
+     METH_VARARGS,
+     ("Temporarily set the default location for error reports\n")},
 
     /* Options: */
     {"get_option_list",
@@ -1199,37 +1225,22 @@ gcc_python_strdup(const char *str)
     return result;
 }
 
-static location_t
-get_location_for_exception(void)
-{
-    /*
-       Try to come up with a good source location for the error, to help
-       debug the script.
-
-       Typically, GCC uses "input_location", but by the time our code is
-       running, that's generally just the end of the source file.
-
-       If we were processing a specific function, try to use its location:
-    */
-    if (cfun) {
-        return cfun->function_start_locus;
-    }
-
-    return input_location;
-}
-
 void gcc_python_print_exception(const char *msg)
 {
     /* Handler for Python exceptions */
-    location_t loc;
-
     assert(msg);
 
     /*
-       Emit a gcc error, trying to use a good location for the error:
+       Emit a gcc error, using GCC's "input_location"
+
+       Typically, by the time our code is running, that's generally just the
+       end of the source file.
+
+       The value is saved and restored whenever calling into Python code, and
+       within passes is initialized to the top of the function; it can be
+       temporarily overridden using gcc.set_location()
     */
-    loc = get_location_for_exception();
-    error_at(loc, "%s", msg);
+    error_at(input_location, "%s", msg);
 
     /* Print the traceback: */
     PyErr_PrintEx(1);
