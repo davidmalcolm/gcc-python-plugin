@@ -160,6 +160,35 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
     return NULL;
 }
 
+PyObject *
+gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
+{
+    PyObject * result = NULL;
+    unsigned num_labels = gimple_switch_num_labels(self->stmt);
+    int i;
+
+    result = PyList_New(num_labels);
+    if (!result) {
+	goto error;
+    }
+
+    for (i = 0 ; i < num_labels; i++) {
+	tree t = gimple_switch_label(self->stmt, i);
+	PyObject *obj = gcc_python_make_wrapper_tree(t);
+	if (!obj) {
+	    goto error;
+	}
+	PyList_SetItem(result, i, obj);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+
 PyObject*
 gcc_python_make_wrapper_gimple(gimple stmt)
 {

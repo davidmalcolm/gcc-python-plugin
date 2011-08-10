@@ -334,6 +334,21 @@ def generate_gimple_subclasses():
                               'Get a list of (gcc.Tree, gcc.Edge) pairs representing the possible (expr, edge) inputs') # FIXME: should we instead have a dict here?
         return getsettable
 
+    def make_getset_Switch():
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [exprcode_getter],
+                                       'gcc_GimpleSwitch',
+                                       'PyGccGimple')
+        getsettable.add_simple_getter(cu,
+                                      'indexvar',
+                                      'gcc_python_make_wrapper_tree(gimple_switch_index(self->stmt))',
+                                      'Get the index variable used by the switch statement, as a gcc.Tree')
+        getsettable.add_gsdef('labels',
+                              'gcc_GimpleSwitch_get_labels',
+                              None,
+                              'Get a list of labels, as a list of gcc.CaseLabelExpr   The initial label in the list is always the default.')
+        return getsettable
+
     for gt in gimple_types:
         cc = gt.camel_cased_string()
 
@@ -348,6 +363,8 @@ def generate_gimple_subclasses():
             getsettable = make_getset_Return()
         elif cc == 'GimplePhi':
             getsettable = make_getset_Phi()
+        elif cc == 'GimpleSwitch':
+            getsettable = make_getset_Switch()
 
         if getsettable:
             cu.add_defn(getsettable.c_defn())

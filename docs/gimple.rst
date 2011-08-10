@@ -157,6 +157,21 @@ TODO
 
       A list of (:py:class:`gcc.Tree`, :py:class:`gcc.Edge`) pairs representing the possible (expr, edge) inputs
 
+.. py:class:: gcc.GimpleSwitch
+
+   Subclass of gcc.Gimple: a switch statement, signifying the end of a
+   `gcc.BasicBlock`
+
+   .. py:attribute:: indexvar
+
+      The index variable used by the switch statement, as a :py:class:`gcc.Tree`
+
+   .. py:attribute:: labels
+
+      The labels of the switch statement, as a list of :py:class:`gcc.CaseLabelExpr`.
+
+      The initial label in the list is always the default.
+
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Gimple
   ..        GimpleAsm

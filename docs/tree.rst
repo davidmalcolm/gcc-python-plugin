@@ -832,6 +832,35 @@ Other expression subclasses
 
 TODO
 
+Statements
+----------
+
+.. py:class:: gcc.Statement
+
+   A subclass of :py:class:`gcc.Tree` for statements
+
+   Corresponds to the `tcc_statement` value of `enum tree_code_class` within
+   GCC's own C sources.
+
+.. py:class:: CaseLabelExpr
+
+   A subclass of :py:class:`gcc.Statement` for the `case` and `default` labels
+   within a `switch` statement.
+
+   .. py:attribute:: low
+
+      The low value of the case label, as a :py:class:`gcc.Tree` (or `None`
+      for the default)
+
+   .. py:attribute:: high
+
+      The high value of the case label, as a :py:class:`gcc.Tree` (or `None`
+      for the default)
+
+   .. py:attribute:: target
+
+      The target of the case label, as a :py:class:`gcc.LabelDecl`
+
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Tree
   ..        ArgumentPackSelect

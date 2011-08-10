@@ -147,6 +147,9 @@ gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure);
 PyObject *
 gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure);
 
+PyObject *
+gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure);
+
 /* gcc-python-option.c: */
 int gcc_python_option_is_enabled(enum opt_code opt_code);
 

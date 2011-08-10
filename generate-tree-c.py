@@ -474,6 +474,17 @@ def generate_tree_code_classes():
             # c.f. "struct GTY(()) tree_list":
             tp_repr = '(reprfunc)gcc_TreeList_repr'
 
+        if tree_type.SYM == 'CASE_LABEL_EXPR':
+            add_simple_getter('low',
+                              'gcc_python_make_wrapper_tree(CASE_LOW(self->t))',
+                              "The low value of the case label, as a gcc.Tree (or None for the default)")
+            add_simple_getter('high',
+                              'gcc_python_make_wrapper_tree(CASE_HIGH(self->t))',
+                              "The high value of the case label, as a gcc.Tree (or None for the default)")
+            add_simple_getter('target',
+                              'gcc_python_make_wrapper_tree(CASE_LABEL(self->t))',
+                              "The target of the case label, as a gcc.LabelDecl")
+
         cu.add_defn(getsettable.c_defn())
 
         pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
