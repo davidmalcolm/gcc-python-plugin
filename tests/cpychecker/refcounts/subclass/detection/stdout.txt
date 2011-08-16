@@ -1,0 +1,29 @@
+type: int
+  is PyObject* subclass?: False
+
+type: char *
+  is PyObject* subclass?: False
+
+typedef: 'PyObject'
+  ptr_type: struct PyObject *
+  is PyObject* subclass?: True
+
+typedef: 'PyTypeObject'
+  ptr_type: struct PyTypeObject *
+  is PyObject* subclass?: True
+
+typename: 'FooObject'
+  struct_type: struct FooObject
+  ptr_type: struct FooObject *
+  is PyObject* subclass?: True
+
+typename: 'BarObject'
+  struct_type: struct BarObject
+  ptr_type: struct BarObject *
+  is PyObject* subclass?: True
+
+typename: 'NotAnObject'
+  struct_type: struct NotAnObject
+  ptr_type: struct NotAnObject *
+  is PyObject* subclass?: False
+

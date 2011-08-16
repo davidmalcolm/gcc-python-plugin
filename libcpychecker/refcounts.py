@@ -28,6 +28,7 @@ from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
 from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter
 from libcpychecker.PyArg_ParseTuple import log
+from libcpychecker.types import is_py3k, is_debug_build
 
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):
@@ -44,6 +45,38 @@ def type_is_pyobjptr(t):
     assert t is None or isinstance(t, gcc.Type)
     if str(t) == 'struct PyObject *':
         return True
+
+def type_is_pyobjptr_subclass(t):
+    assert t is None or isinstance(t, gcc.Type)
+    # It must be a pointer:
+    if not isinstance(t, gcc.PointerType):
+        return False
+
+    # ...to a struct:
+    if not isinstance(t.dereference, gcc.RecordType):
+        return False
+
+    fieldnames = [f.name for f in t.dereference.fields]
+    if is_py3k():
+        # For Python 3, the first field must be "ob_base", or it must be "PyObject":
+        if str(t) == 'struct PyObject *':
+            return True
+        if fieldnames[0] != 'ob_base':
+            return False
+    else:
+        # For Python 2, the first two fields must be "ob_refcnt" and "ob_type".
+        # (In a debug build, these are preceded by _ob_next and _ob_prev)
+        # FIXME: debug builds!
+        if is_debug_build():
+            if fieldnames[:4] != ['_ob_next', '_ob_prev',
+                                  'ob_refcnt', 'ob_type']:
+                return False
+        else:
+            if fieldnames[:2] != ['ob_refcnt', 'ob_type']:
+                return False
+
+    # Passed all tests:
+    return True
 
 def stmt_is_assignment_to_objptr(stmt):
     if hasattr(stmt, 'lhs'):

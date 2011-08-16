@@ -30,6 +30,13 @@ def is_py3k():
     else:
         return True
 
+def is_debug_build():
+    """
+    Is the Python.h we're compiling against configured --with-pydebug ?
+    """
+    obj = get_global_typedef('PyObject')
+    return obj.type.fields[0].name == '_ob_next'
+
 def get_Py_ssize_t():
     return get_global_typedef('Py_ssize_t')
 
