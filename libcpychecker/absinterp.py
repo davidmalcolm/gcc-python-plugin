@@ -950,10 +950,11 @@ def iter_traces(fun, stateclass, prefix=None):
         trace_with_err.add_error(err)
         trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
         return [trace_with_err]
-    except SplitValue, err:
+    except SplitValue:
         # Split the state up, splitting into parallel worlds with different
         # values for the given value
         # FIXME: this doesn't work; it thinks it's a loop :(
+        err = sys.exc_info()[1]
         transitions = err.split(curstate)
         assert isinstance(transitions, list)
 
