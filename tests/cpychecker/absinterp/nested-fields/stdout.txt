@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/nested-fields/input.c', line=50), value=1110L)
+    str(): (int)1110L from tests/cpychecker/absinterp/nested-fields/input.c:50
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/nested-fields/input.c:40

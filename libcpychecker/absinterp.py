@@ -579,7 +579,7 @@ class State:
         if loc:
             assert isinstance(loc, gcc.Location)
         #cr.debug()
-        log('target: %r' % cr.target)
+        log('target: %r %s ' % (cr.target, cr.target))
         log('field: %r' % cr.field)
         #fr = FIXME #self.make_field_region(target, field)
         if 1: # fr not in self.region_for_var:
@@ -600,6 +600,11 @@ class State:
                 elif isinstance(cr.target, gcc.VarDecl):
                     log('bar')
                     vr = self.var_region(cr.target)
+                    log(vr)
+                    return self.make_field_region(vr, cr.field.name)
+                elif isinstance(cr.target, gcc.ComponentRef):
+                    # nested field:
+                    vr = self.get_field_region(cr.target, loc)
                     log(vr)
                     return self.make_field_region(vr, cr.field.name)
         log('cr: %r %s' % (cr, cr))
