@@ -3,7 +3,7 @@ Trace 0:
     "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)&Region('heap-region-0')"
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0x2fc3b70>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c', line=35))
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c', line=35))
     str(): unknown int from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:34

@@ -4,7 +4,7 @@ gimple[0]:
   str(stmt): 'switch (i) <default: <L4>, case 1 ... 2: <L0>, case 4: <L0>, case 8: <L0>>'
   repr(stmt): 'gcc.GimpleSwitch()'
     stmt.indexvar: gcc.ParmDecl('i')
-    stmt.labels: [<gcc.CaseLabelExpr object at 0x7fb4e6083330>, <gcc.CaseLabelExpr object at 0x7fb4e6083348>, <gcc.CaseLabelExpr object at 0x7fb4e6083360>, <gcc.CaseLabelExpr object at 0x7fb4e6083378>]
+    stmt.labels: [<gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>]
       label[0].low: None
       label[0].high: None
       label[0].target: gcc.LabelDecl(1591)

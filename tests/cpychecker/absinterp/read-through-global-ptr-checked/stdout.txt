@@ -4,7 +4,7 @@ Trace 0:
     'taking True path'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0x3481c90>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=36))
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=36))
     str(): unknown int from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:36
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:34
