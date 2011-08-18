@@ -94,9 +94,16 @@ class TestStream:
             result += line + '\n'
         return result
 
-    def check_for_diff(self, out, err, p, args, label):
+    def check_for_diff(self, out, err, p, args, label, writeback):
         actual = self._cleanup(self.actual)
         expdata = self._cleanup(self.expdata)
+        if writeback:
+            # Special-case mode: don't compare, instead refresh the "gold"
+            # output by writing back to disk:
+            if self.expdata = '':
+                with open(self.exppath, 'w') as f:
+                    f.write(actual)
+            return
         if actual != expdata:
             raise UnexpectedOutput(out, err, p, args, self, label)
 
@@ -187,8 +194,8 @@ def run_test(testdir):
             sys.stderr.write(err.diff('stderr'))
             raise CompilationError(out.actual, err.actual, p, args)
     
-    out.check_for_diff(out.actual, err.actual, p, args, 'stdout')
-    err.check_for_diff(out.actual, err.actual, p, args, 'stderr')
+    out.check_for_diff(out.actual, err.actual, p, args, 'stdout', 0)
+    err.check_for_diff(out.actual, err.actual, p, args, 'stderr', 0)
 
 
 from optparse import OptionParser
