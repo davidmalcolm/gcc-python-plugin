@@ -425,7 +425,7 @@ class State:
         log('eval_lvalue: %r %s' % (expr, expr))
         if loc:
             assert isinstance(loc, gcc.Location)
-        if isinstance(expr, gcc.VarDecl):
+        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
             region = self.var_region(expr)
             assert isinstance(region, Region)
             return region
@@ -700,7 +700,7 @@ class State:
         return None
 
     def init_for_function(self, fun):
-        log('init_for_function(%r)' % fun)
+        log('State.init_for_function(%r)' % fun)
         self.fun = fun
         root_region = Region('root', None)
         stack = Region('stack for %s' % fun.decl.name, root_region)

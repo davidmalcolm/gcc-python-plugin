@@ -174,6 +174,36 @@ class MyState(State):
     def release(self, resource):
         self.resources.release(resource)
 
+    def init_for_function(self, fun):
+        log('MyState.init_for_function(%r)' % fun)
+        State.init_for_function(self, fun)
+
+        # Initialize PyObject* arguments to sane values
+        # (assume that they're non-NULL)
+        nonnull_args = get_nonnull_arguments(fun.decl.type)
+        for idx, parm in enumerate(fun.decl.arguments):
+            region = self.eval_lvalue(parm, None)
+            if type_is_pyobjptr_subclass(parm.type):
+                # We have a PyObject* (or a derived class)
+                log('got python obj arg: %r' % region)
+                # Assume it's a non-NULL ptr:
+                objregion = Region('region-for-arg-%s' % parm, None)
+                self.region_for_var[objregion] = objregion
+                self.value_for_region[region] = PointerToRegion(parm.type,
+                                                                parm.location,
+                                                                objregion)
+                # Assume we have a borrowed reference:
+                ob_refcnt = self.make_field_region(objregion, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+                self.value_for_region[ob_refcnt] = RefcountValue(0) # borrowed ref
+
+                # Assume it has a non-NULL ob_type:
+                ob_type = self.make_field_region(objregion, 'ob_type')
+                typeobjregion = Region('region-for-type-of-arg-%s' % parm, None)
+                self.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+                                                                 parm.location,
+                                                                 typeobjregion)
+        self.verify()
+
     def make_assignment(self, key, value, desc, additional_ptr=None):
         if desc:
             assert isinstance(desc, str)
