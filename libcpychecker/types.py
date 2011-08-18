@@ -74,3 +74,36 @@ def get_Py_complex():
 # Python 3:
 def get_PyBytesObject():
     return get_global_typedef('PyBytesObject')
+
+# Map from name of PyTypeObject global to the typedef for the corresponding
+# object structure:
+type_dict = {
+    'PyBuffer_Type' : 'PyBufferObject',
+    'PyComplex_Type' : 'PyComplexObject',
+    'PyCode_Type' : 'PyCodeObject',
+    'PyDict_Type' : 'PyDictObject',
+    'PyFile_Type' : 'PyFileObject',
+    'PyFloat_Type' : 'PyFloatObject',
+    'PyFrame_Type' : 'PyFrameObject',
+    'PyFunction_Type' : 'PyFunctionObject',
+    'PyInt_Type' : 'PyIntObject',
+    'PyList_Type' : 'PyListObject',
+    'PyLong_Type' : 'PyLongObject',
+    'PyModule_Type' : 'PyModuleObject',
+    'PyCapsule_Type' : 'PyCapsuleObject',
+    'PyRange_Type' : 'PyRangeObject',
+    'PySet_Type' : 'PySetObject',
+    'PyFrozenSet_Type' : 'PyFrozenSetObject',
+    'PyString_Type' : 'PyStringObject',
+    'PyTuple_Type' : 'PyTupleObject',
+    'PyType_Type' : 'PyTypeObject',
+    'PyUnicode_Type' : 'PyUnicodeObject',
+}
+
+def get_type_for_typeobject(typeobject):
+    assert isinstance(typeobject, gcc.VarDecl)
+    if typeobject.name not in type_dict:
+        return None
+
+    type_name = type_dict[typeobject.name]
+    return get_global_typedef(type_name)

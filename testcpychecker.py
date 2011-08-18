@@ -386,10 +386,8 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_O(self):
         self._test_format_code('O', ['PyObject *'], '"struct PyObject * *"')
 
-    def test_format_code_O_bang(self):
-        self._test_format_code('O!',
-                               ['PyTypeObject', 'PyObject *'],
-                               ['"struct PyTypeObject *"', '"struct PyObject *"'])
+    # Code "O!" is tested by:
+    #   tests/cpychecker/PyArg_ParseTuple/code_O_bang/
 
     # Code "O&" is tested by:
     #   tests/cpychecker/PyArg_ParseTuple/correct_converter/

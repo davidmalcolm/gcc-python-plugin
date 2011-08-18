@@ -137,7 +137,16 @@ class FormatUnit:
     def __init__(self, code):
         self.code = code
 
+    def get_expected_types(self):
+        # Return a list of the types expected for this format unit,
+        # either as gcc.Type instances, or as instances of AwkwardType
+        raise NotImplementedError
+
 class ConcreteUnit(FormatUnit):
+    """
+    The common case: a fragment of a format string that corresponds to a
+    pre-determined list of types (often just a single element)
+    """
     def __init__(self, code, expected_types):
         FormatUnit.__init__(self, code)
         self.expected_types = expected_types
@@ -148,9 +157,118 @@ class ConcreteUnit(FormatUnit):
     def __repr__(self):
         return 'ConcreteUnit(%r,%r)' % (self.code, self.expected_types)
 
+class AwkwardType:
+    """
+    Base class for expected types within a format unit that need special
+    handling (e.g. for "O!" and "O&")
+    """
+    def is_compatible(self, actual_type, actual_arg):
+        raise NotImplementedError
 
-# Handle the "O&" format code
+    def describe(self):
+        raise NotImplementedError
+
+class TypeCheck(FormatUnit):
+    """
+    Handler for the "O!" format code
+    """
+    def __init__(self, code):
+        FormatUnit.__init__(self, code)
+        self.checker = TypeCheckCheckerType(self)
+        self.result = TypeCheckResultType(self)
+
+        # The gcc.VarDecl for the PyTypeObject, if we know it (or None):
+        self.typeobject = None
+
+    def get_expected_types(self):
+        # We will discover the actual types as we go, using "self" to bind
+        # together the two arguments
+        return [self.checker, self.result]
+
+    def get_other_type(self):
+        if not self.typeobject:
+            return None
+        return get_type_for_typeobject(self.typeobject)
+
+class TypeCheckCheckerType(AwkwardType):
+    def __init__(self, typecheck):
+        self.typecheck = typecheck
+
+    def is_compatible(self, actual_type, actual_arg):
+        # We should be encountering a pointer to a PyTypeObject
+        # The result type (next argument) should be either a PyObject* or
+        # an pointer to the corresponding type.
+        #
+        # For example, "O!" with
+        #     &PyCode_Type, &code,
+        # then "code" should be either a PyObject* or a PyCodeObject*
+        # (and &code gets the usual extra level of indirection)
+
+        if str(actual_type) != 'struct PyTypeObject *':
+            return False
+
+        # OK, the type for this argument is good.
+        # Try to record the actual type object, assuming it's a pointer to a
+        # global:
+        if not isinstance(actual_arg, gcc.AddrExpr):
+            return True
+
+        if not isinstance(actual_arg.operand, gcc.VarDecl):
+            return True
+
+        # OK, we have a ptr to a global; record it:
+        self.typecheck.typeobject = actual_arg.operand
+
+        return True
+
+    def describe(self):
+        return '"struct PyTypeObject *"'
+
+class TypeCheckResultType(AwkwardType):
+    def __init__(self, typecheck):
+        self.typecheck = typecheck
+        self.base_type = get_PyObject().pointer.pointer
+
+    def is_compatible(self, actual_type, actual_arg):
+        if not isinstance(actual_type, gcc.PointerType):
+            return False
+
+        # If something went wrong with figuring out the type, we can only check
+        # against PyObject*:
+
+        # (PyObject **) is good:
+        if compatible_type(actual_type,
+                           self.base_type):
+            return True
+
+        other_type = self.typecheck.get_other_type()
+        if other_type:
+            if compatible_type(actual_type,
+                               other_type.pointer.pointer):
+                return True
+
+        return False
+
+    def describe(self):
+        other_type = self.typecheck.get_other_type()
+        if other_type:
+            return ('%s (based on PyTypeObject: %r) or %s'
+                    % (describe_type(other_type.pointer),
+                       self.typecheck.typeobject.name,
+                       describe_type(self.base_type)))
+        else:
+            if self.typecheck.typeobject:
+                return ('"%s" (unfamiliar with PyTypeObject: %r)'
+                        % (describe_type(self.base_type),
+                           self.typecheck.typeobject.name))
+            else:
+                return '"%s" (unable to determine relevant PyTypeObject)' % describe_type(self.base_type)
+
+
 class Conversion(FormatUnit):
+    """
+    Handler for the "O&" format code
+    """
     def __init__(self, code):
         FormatUnit.__init__(self, code)
         self.callback = ConverterCallbackType(self)
@@ -161,15 +279,12 @@ class Conversion(FormatUnit):
         # together the two arguments
         return [self.callback, self.result]
 
-class AwkwardType:
-    pass
-
 class ConverterCallbackType(AwkwardType):
     def __init__(self, conv):
         self.conv = conv
         self.actual_type = None
 
-    def is_compatible(self, actual_type):
+    def is_compatible(self, actual_type, actual_arg):
         # We should be encountering a function pointer of type:
         #   int (fn)(PyObject *, T*)
         # The result type (next argument) should be a T*
@@ -210,7 +325,7 @@ class ConverterResultType(AwkwardType):
         self.conv = conv
         self.type = None
 
-    def is_compatible(self, actual_type):
+    def is_compatible(self, actual_type, actual_arg):
         if not isinstance(actual_type, gcc.PointerType):
             return False
 
@@ -340,9 +455,7 @@ class PyArgParseFmt:
                                            get_PyObject().pointer.pointer)])
             elif c == 'O': # object
                 if next == '!':
-                    result.add_argument('O!',
-                                        [get_PyTypeObject().pointer,
-                                         get_PyObject().pointer.pointer])
+                    result.args.append(TypeCheck('O!'))
                     i += 1
                 elif next == '?':
                     raise UnhandledCode(richloc, fmt_string, c + next) # FIXME
@@ -489,9 +602,9 @@ def compatible_type(exp_type, actual_type, actualarg=None):
         # Didn't match any of them:
         return False
 
-    # Support the "O&" converter code:
+    # Support the "O!" and "O&" converter codes:
     if isinstance(exp_type, AwkwardType):
-        return exp_type.is_compatible(actual_type)
+        return exp_type.is_compatible(actual_type, actualarg)
 
     # Support the codes that can accept NULL:
     if isinstance(exp_type, NullPointer):
