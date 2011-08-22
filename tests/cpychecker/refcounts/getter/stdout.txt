@@ -1,0 +1,13 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42))
+    str(): unknown struct PyObject * from tests/cpychecker/refcounts/getter/input.c:42
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: RefcountValue(0)
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/getter/input.c:36
