@@ -19,7 +19,7 @@ import gcc
 import gccutils
 import sys
 from six import StringIO
-from gccutils import get_src_for_loc, get_nonnull_arguments
+from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
 from libcpychecker.utils import log
 from libcpychecker.types import *
@@ -27,9 +27,9 @@ from libcpychecker.types import *
 class AbstractValue:
     def __init__(self, gcctype, loc):
         if gcctype:
-            assert isinstance(gcctype, gcc.Type)
+            check_isinstance(gcctype, gcc.Type)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         self.gcctype = gcctype
         self.loc = loc
 
@@ -51,8 +51,8 @@ class AbstractValue:
         For use for handling function pointers.  Return a list of Transition
         instances giving the outcome of calling this function ptr value
         """
-        assert isinstance(state, State)
-        assert isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(state, State)
+        check_isinstance(stmt, gcc.GimpleCall)
         returntype = stmt.fn.type.dereference.type
         return [state.make_assignment(stmt.lhs,
                                       UnknownValue(returntype, stmt.loc),
@@ -79,9 +79,9 @@ class ConcreteValue(AbstractValue):
     A known, specific value (e.g. 0)
     """
     def __init__(self, gcctype, loc, value):
-        assert isinstance(gcctype, gcc.Type)
+        check_isinstance(gcctype, gcc.Type)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         self.gcctype = gcctype
         self.loc = loc
         self.value = value
@@ -104,7 +104,7 @@ class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
     def __init__(self, gcctype, loc, region):
         AbstractValue.__init__(self, gcctype, loc)
-        assert isinstance(region, Region)
+        check_isinstance(region, Region)
         self.region = region
 
     def __str__(self):
@@ -148,9 +148,9 @@ class InvalidlyNullParameter(PredictedError):
 
 class NullPtrDereference(PredictedError):
     def __init__(self, state, expr, ptr, isdefinite):
-        assert isinstance(state, State)
-        assert isinstance(expr, (gcc.ComponentRef, gcc.MemRef))
-        assert isinstance(ptr, AbstractValue)
+        check_isinstance(state, State)
+        check_isinstance(expr, (gcc.ComponentRef, gcc.MemRef))
+        check_isinstance(ptr, AbstractValue)
         self.state = state
         self.expr = expr
         self.ptr = ptr
@@ -166,8 +166,8 @@ class NullPtrDereference(PredictedError):
 
 class ReadFromDeallocatedMemory(PredictedError):
     def __init__(self, stmt, value):
-        assert isinstance(stmt, gcc.Gimple)
-        assert isinstance(value, DeallocatedMemory)
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(value, DeallocatedMemory)
         self.stmt = stmt
         self.value = value
 
@@ -187,8 +187,8 @@ class Location:
     """A location within a CFG: a gcc.BasicBlock together with an index into
     the gimple list.  (We don't support SSA passes)"""
     def __init__(self, bb, idx):
-        assert isinstance(bb, gcc.BasicBlock)
-        assert isinstance(idx, int)
+        check_isinstance(bb, gcc.BasicBlock)
+        check_isinstance(idx, int)
         self.bb = bb
         self.idx = idx
 
@@ -255,7 +255,7 @@ class RegionForGlobal(Region):
     used to store a particular globa
     """
     def __init__(self, vardecl):
-        assert isinstance(vardecl, gcc.VarDecl)
+        check_isinstance(vardecl, gcc.VarDecl)
         Region.__init__(self, vardecl.name, None)
         self.vardecl = vardecl
 
@@ -267,7 +267,7 @@ class RegionOnHeap(Region):
     Represents an area of memory allocated on the heap
     """
     def __init__(self, name, alloc_stmt):
-        assert isinstance(alloc_stmt, gcc.Gimple)
+        check_isinstance(alloc_stmt, gcc.Gimple)
         Region.__init__(self, name, None)
         self.alloc_stmt = alloc_stmt
 
@@ -338,19 +338,19 @@ class State:
     """A Location with memory state"""
     def __init__(self, loc, region_for_var=None, value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
-        assert isinstance(loc, Location)
+        check_isinstance(loc, Location)
         self.loc = loc
 
         # Mapping from VarDecl.name to Region:
         if region_for_var:
-            assert isinstance(region_for_var, OrderedDict)
+            check_isinstance(region_for_var, OrderedDict)
             self.region_for_var = region_for_var
         else:
             self.region_for_var = OrderedDict()
 
         # Mapping from Region to AbstractValue:
         if value_for_region:
-            assert isinstance(value_for_region, OrderedDict)
+            check_isinstance(value_for_region, OrderedDict)
             self.value_for_region = value_for_region
         else:
             self.value_for_region = OrderedDict()
@@ -413,7 +413,7 @@ class State:
         Perform self-tests to ensure sanity of this State
         """
         for k in self.value_for_region:
-            assert isinstance(k, Region)
+            check_isinstance(k, Region)
             if not isinstance(self.value_for_region[k], AbstractValue):
                 raise TypeError('value for region %r is not an AbstractValue: %r'
                                 % (k, self.value_for_region[k]))
@@ -424,27 +424,27 @@ class State:
         """
         log('eval_lvalue: %r %s' % (expr, expr))
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
             region = self.var_region(expr)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
             return region
         elif isinstance(expr, gcc.ArrayRef):
             region = self.element_region(expr, loc)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
             return region
         elif isinstance(expr, gcc.ComponentRef):
-            assert isinstance(expr.field, gcc.FieldDecl)
+            check_isinstance(expr.field, gcc.FieldDecl)
             return self.get_field_region(expr, loc)
         elif isinstance(expr, gcc.StringCst):
             region = self.string_constant_region(expr, loc)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
             return region
         elif isinstance(expr, gcc.MemRef):
             # Write through a pointer:
             dest_ptr = self.eval_rvalue(expr.operand, loc)
             log('dest_ptr: %r' % dest_ptr)
-            assert isinstance(dest_ptr, PointerToRegion)
+            check_isinstance(dest_ptr, PointerToRegion)
             dest_region = dest_ptr.region
             log('dest_region: %r' % dest_region)
             return dest_region
@@ -457,7 +457,7 @@ class State:
         """
         log('eval_rvalue: %r %s' % (expr, expr))
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
 
         if isinstance(expr, AbstractValue):
             return expr
@@ -467,15 +467,15 @@ class State:
             return ConcreteValue(expr.type, loc, expr.constant)
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
             region = self.var_region(expr)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
             value = self.get_store(region, expr.type, loc)
-            assert isinstance(value, AbstractValue)
+            check_isinstance(value, AbstractValue)
             return value
             #return UnknownValue(expr.type, str(expr))
         if isinstance(expr, gcc.ComponentRef):
-            #assert isinstance(expr.field, gcc.FieldDecl)
+            #check_isinstance(expr.field, gcc.FieldDecl)
             region = self.get_field_region(expr, loc)#.target, expr.field.name)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
             log('got field region for %s: %r' % (expr, region))
             try:
                 value = self.get_store(region, expr.type, loc)
@@ -483,33 +483,33 @@ class State:
             except MissingValue:
                 value = UnknownValue(expr.type, loc)
                 log('no value; using: %r' % value)
-            assert isinstance(value, AbstractValue)
+            check_isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
             log('expr.operand: %r' % expr.operand)
             lvalue = self.eval_lvalue(expr.operand, loc)
-            assert isinstance(lvalue, Region)
+            check_isinstance(lvalue, Region)
             return PointerToRegion(expr.type, loc, lvalue)
         if isinstance(expr, gcc.ArrayRef):
             log('expr.array: %r' % expr.array)
             log('expr.index: %r' % expr.index)
             lvalue = self.eval_lvalue(expr, loc)
-            assert isinstance(lvalue, Region)
+            check_isinstance(lvalue, Region)
             rvalue = self.get_store(lvalue, expr.type, loc)
-            assert isinstance(rvalue, AbstractValue)
+            check_isinstance(rvalue, AbstractValue)
             return rvalue
         if isinstance(expr, gcc.MemRef):
             log('expr.operand: %r' % expr.operand)
             opvalue = self.eval_rvalue(expr.operand, loc)
-            assert isinstance(opvalue, AbstractValue)
+            check_isinstance(opvalue, AbstractValue)
             log('opvalue: %r' % opvalue)
             self.raise_any_null_ptr_deref(expr, opvalue)
             if isinstance(opvalue, UnknownValue):
                 # Split into null/non-null pointers:
                 self.raise_split_value(opvalue)
-            assert isinstance(opvalue, PointerToRegion) # FIXME
+            check_isinstance(opvalue, PointerToRegion) # FIXME
             rvalue = self.get_store(opvalue.region, expr.type, loc)
-            assert isinstance(rvalue, AbstractValue)
+            check_isinstance(rvalue, AbstractValue)
             return rvalue
         raise NotImplementedError('eval_rvalue: %r %s' % (expr, expr))
         return UnknownValue(expr.type, loc) # FIXME
@@ -518,17 +518,17 @@ class State:
         log('assign(%r, %r)' % (lhs, rhs))
         log('assign(%s, %s)' % (lhs, rhs))
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         dest_region = self.eval_lvalue(lhs, loc)
         log('dest_region: %s %r' % (dest_region, dest_region))
         value = self.eval_rvalue(rhs, loc)
         log('value: %s %r' % (value, value))
-        assert isinstance(value, AbstractValue)
-        assert isinstance(dest_region, Region)
+        check_isinstance(value, AbstractValue)
+        check_isinstance(dest_region, Region)
         self.value_for_region[dest_region] = value
 
     def var_region(self, var):
-        assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+        check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
             log('adding region for global var: %r' % var)
@@ -546,17 +546,17 @@ class State:
 
     def element_region(self, ar, loc):
         log('element_region: %s' % ar)
-        assert isinstance(ar, gcc.ArrayRef)
+        check_isinstance(ar, gcc.ArrayRef)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
 
         log('  ar.array: %r' % ar.array)
         log('  ar.index: %r' % ar.index)
         parent = self.eval_lvalue(ar.array, loc)
-        assert isinstance(parent, Region)
+        check_isinstance(parent, Region)
         log('  parent: %r' % parent)
         index = self.eval_rvalue(ar.index, loc)
-        assert isinstance(index, AbstractValue)
+        check_isinstance(index, AbstractValue)
         log('  index: %r' % index)
         if isinstance(index, ConcreteValue):
             index = index.value
@@ -571,9 +571,9 @@ class State:
         return region
 
     def get_field_region(self, cr, loc): #target, field):
-        assert isinstance(cr, gcc.ComponentRef)
+        check_isinstance(cr, gcc.ComponentRef)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         #cr.debug()
         log('target: %r %s ' % (cr.target, cr.target))
         log('field: %r' % cr.field)
@@ -591,7 +591,7 @@ class State:
                         # Non-NULL pointer:
                         log('splitting %s into non-NULL/NULL pointers' % cr)
                         self.raise_split_value(ptr)
-                    assert isinstance(ptr, PointerToRegion)
+                    check_isinstance(ptr, PointerToRegion)
                     return self.make_field_region(ptr.region, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
                     log('bar')
@@ -608,17 +608,17 @@ class State:
 
     def string_constant_region(self, expr, loc):
         log('string_constant_region: %s' % expr)
-        assert isinstance(expr, gcc.StringCst)
+        check_isinstance(expr, gcc.StringCst)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         region = RegionForStringConstant(expr.constant)
         return region
 
     def get_store(self, region, gcctype, loc):
         if gcctype:
-            assert isinstance(gcctype, gcc.Type)
+            check_isinstance(gcctype, gcc.Type)
         if loc:
-            assert isinstance(loc, gcc.Location)
+            check_isinstance(loc, gcc.Location)
         try:
             val = self._get_store_recursive(region, gcctype, loc)
             return val
@@ -635,7 +635,7 @@ class State:
             return UnknownValue(gcctype, loc)
 
     def _get_store_recursive(self, region, gcctype, loc):
-        assert isinstance(region, Region)
+        check_isinstance(region, Region)
         # self.log(log, 0)
         if region in self.value_for_region:
             return self.value_for_region[region]
@@ -656,8 +656,8 @@ class State:
         return region
 
     def make_field_region(self, target, field):
-        assert isinstance(target, Region)
-        assert isinstance(field, str)
+        check_isinstance(target, Region)
+        check_isinstance(field, str)
         log('make_field_region(%r, %r)' % (target, field))
         if field in target.fields:
             log('reusing')
@@ -674,8 +674,8 @@ class State:
         # Lookup varname.field
         # For use in writing selftests
         log('get_value_of_field_by_varname(%r, %r)' % (varname, field), 0)
-        assert isinstance(varname, str)
-        assert isinstance(field, str)
+        check_isinstance(varname, str)
+        check_isinstance(field, str)
         for k in self.region_for_var:
             if isinstance(k, gcc.VarDecl):
                 if k.name == varname:
@@ -688,8 +688,8 @@ class State:
         # Lookup region->field
         # For use in writing selftests
         log('get_value_of_field_by_region(%r, %r)' % (region, field), 0)
-        assert isinstance(region, Region)
-        assert isinstance(field, str)
+        check_isinstance(region, Region)
+        check_isinstance(field, str)
         if field in region.fields:
             field_region = region.fields[field]
             return self.value_for_region.get(field_region, None)
@@ -721,7 +721,7 @@ class State:
     def make_assignment(self, lhs, rhs, desc):
         log('make_assignment(%r, %r, %r)' % (lhs, rhs, desc))
         if desc:
-            assert isinstance(desc, str)
+            check_isinstance(desc, str)
         new = self.copy()
         new.loc = self.loc.next_loc()
         if lhs:
@@ -773,9 +773,9 @@ class State:
         FIXME: we should split into multiple non-NULL values, covering the
         various aliasing possibilities
         """
-        assert isinstance(ptr_rvalue, AbstractValue)
-        assert isinstance(ptr_rvalue, UnknownValue)
-        assert isinstance(ptr_rvalue.gcctype, gcc.PointerType)
+        check_isinstance(ptr_rvalue, AbstractValue)
+        check_isinstance(ptr_rvalue, UnknownValue)
+        check_isinstance(ptr_rvalue.gcctype, gcc.PointerType)
         global region_id
         region = Region('heap-region-%i' % region_id, None)
         region_id += 1
@@ -788,8 +788,8 @@ region_id = 0
 
 class Transition:
     def __init__(self, src, dest, desc):
-        assert isinstance(src, State)
-        assert isinstance(dest, State)
+        check_isinstance(src, State)
+        check_isinstance(dest, State)
         self.src = src
         self.dest = dest
         self.desc = desc
@@ -810,7 +810,7 @@ class Trace:
         self.err = None
 
     def add(self, transition):
-        assert isinstance(transition, Transition)
+        check_isinstance(transition, Transition)
         self.states.append(transition.dest)
         self.transitions.append(transition)
         return self
@@ -914,7 +914,7 @@ def iter_traces(fun, stateclass, prefix=None):
                               ConcreteValue(get_PyObjectPtr(), fun.start, 0))
         curstate.init_for_function(fun)
     else:
-        assert isinstance(prefix, Trace)
+        check_isinstance(prefix, Trace)
         curstate = prefix.states[-1]
 
         if curstate.has_returned:
@@ -942,7 +942,7 @@ def iter_traces(fun, stateclass, prefix=None):
     log('  %s:%s' % (fun.decl.name, curstate.loc))
     try:
         transitions = curstate.get_transitions()
-        assert isinstance(transitions, list)
+        check_isinstance(transitions, list)
     except PredictedError:
         # We're at a terminating state:
         err = sys.exc_info()[1]
@@ -957,14 +957,14 @@ def iter_traces(fun, stateclass, prefix=None):
         # FIXME: this doesn't work; it thinks it's a loop :(
         err = sys.exc_info()[1]
         transitions = err.split(curstate)
-        assert isinstance(transitions, list)
+        check_isinstance(transitions, list)
 
     log('transitions: %s' % transitions, 2)
 
     if len(transitions) > 0:
         result = []
         for transition in transitions:
-            assert isinstance(transition, Transition)
+            check_isinstance(transition, Transition)
             transition.dest.verify()
 
             # Recurse:
@@ -985,7 +985,7 @@ class StateGraph:
     termination of the analysis
     """
     def __init__(self, fun, logger, stateclass):
-        assert isinstance(fun, gcc.Function)
+        check_isinstance(fun, gcc.Function)
         self.fun = fun
         self.states = []
         self.transitions = []
@@ -1008,7 +1008,7 @@ class StateGraph:
         try:
             transitions = curstate.get_transitions()
             #print transitions
-            assert isinstance(transitions, list)
+            check_isinstance(transitions, list)
         except PredictedError:
             # We're at a terminating state:
             err = sys.exc_info()[1]
@@ -1025,7 +1025,7 @@ class StateGraph:
         if len(transitions) > 0:
             for transition in transitions:
                 # FIXME: what about loops???
-                assert isinstance(transition, Transition)
+                check_isinstance(transition, Transition)
                 self.states.append(transition.dest)
                 self.transitions.append(transition)
 

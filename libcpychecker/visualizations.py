@@ -16,7 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 import gcc
-from gccutils import CfgPrettyPrinter, get_src_for_loc
+from gccutils import CfgPrettyPrinter, get_src_for_loc, check_isinstance
 
 class StatePrettyPrinter(CfgPrettyPrinter):
     """
@@ -180,7 +180,7 @@ class HtmlRenderer:
     which requires JavaScript and the HTML <canvas> element
     """
     def __init__(self, fun):
-        assert isinstance(fun, gcc.Function)
+        check_isinstance(fun, gcc.Function)
         self.fun = fun
 
         from pygments.styles import get_style_by_name

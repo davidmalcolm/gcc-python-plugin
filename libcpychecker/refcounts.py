@@ -23,7 +23,7 @@
 import sys
 import gcc
 
-from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc
+from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter
@@ -113,15 +113,15 @@ class GenericTpDealloc(AbstractValue):
     i.e. one that frees up the underlying memory
     """
     def get_transitions_for_function_call(self, state, stmt):
-        assert isinstance(state, State)
-        assert isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(state, State)
+        check_isinstance(stmt, gcc.GimpleCall)
         returntype = stmt.fn.type.dereference.type
 
         # Mark the arg as being deallocated:
         value = state.eval_rvalue(stmt.args[0], stmt.loc)
-        assert isinstance(value, PointerToRegion)
+        check_isinstance(value, PointerToRegion)
         region = value.region
-        assert isinstance(region, Region)
+        check_isinstance(region, Region)
         log('generic tp_dealloc called for %s' % region)
 
         # Get the description of the region before trashing it:
@@ -206,7 +206,7 @@ class MyState(State):
 
     def make_assignment(self, key, value, desc, additional_ptr=None):
         if desc:
-            assert isinstance(desc, str)
+            check_isinstance(desc, str)
         transition = State.make_assignment(self, key, value, desc)
         if additional_ptr:
             transition.dest.owned_refs.append(additional_ptr)
@@ -258,9 +258,9 @@ class MyState(State):
         The list of standard exception classes can be seen at:
           http://docs.python.org/c-api/exceptions.html#standard-exceptions
         """
-        assert isinstance(exc_name, str)
+        check_isinstance(exc_name, str)
         exc_decl = gccutils.get_global_vardecl_by_name(exc_name)
-        assert isinstance(exc_decl, gcc.VarDecl)
+        check_isinstance(exc_decl, gcc.VarDecl)
         exc_region = self.var_region(exc_decl)
         self.exception_rvalue = exc_region
 
@@ -271,17 +271,17 @@ class MyState(State):
            (newobj, success, failure)
         triple, where newobj is a region, and success/failure are Transitions
         """
-        assert isinstance(stmt, gcc.GimpleCall)
-        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
-        assert isinstance(typename, str)
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(stmt.fn.operand, gcc.FunctionDecl)
+        check_isinstance(typename, str)
         # the C struct for the type
 
-        assert isinstance(typeobjname, str)
+        check_isinstance(typeobjname, str)
         # the C identifier of the global PyTypeObject for the type
 
         # Get the gcc.VarDecl for the global PyTypeObject
         typeobjdecl = gccutils.get_global_vardecl_by_name(typeobjname)
-        assert isinstance(typeobjdecl, gcc.VarDecl)
+        check_isinstance(typeobjdecl, gcc.VarDecl)
 
         fnname = stmt.fn.operand.name
 
@@ -333,7 +333,7 @@ class MyState(State):
 
     def steal_reference(self, region):
         log('steal_reference(%r)' % region)
-        assert isinstance(region, Region)
+        check_isinstance(region, Region)
         ob_refcnt = self.make_field_region(region, 'ob_refcnt')
         value = self.value_for_region[ob_refcnt]
         if isinstance(value, RefcountValue):
@@ -372,9 +372,9 @@ class MyState(State):
 
 
     def make_transitions_for_fncall(self, stmt, success, failure):
-        assert isinstance(stmt, gcc.GimpleCall)
-        assert isinstance(success, State)
-        assert isinstance(failure, State)
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(success, State)
+        check_isinstance(failure, State)
 
         fnname = stmt.fn.operand.name
 
@@ -387,7 +387,7 @@ class MyState(State):
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
         lenarg = self.eval_rvalue(stmt.args[0], stmt.loc)
-        assert isinstance(lenarg, AbstractValue)
+        check_isinstance(lenarg, AbstractValue)
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
         # Set ob_size:
@@ -429,7 +429,7 @@ class MyState(State):
             # FIXME: update refcounts
             # "Steal" a reference to item:
             if isinstance(arg_item, PointerToRegion):
-                assert isinstance(arg_item.region, Region)
+                check_isinstance(arg_item.region, Region)
                 success.steal_reference(arg_item.region)
 
             # and discards a
@@ -494,7 +494,7 @@ class MyState(State):
             # Calling through a function pointer:
             val = self.eval_rvalue(stmt.fn, stmt.loc)
             log('val: %s' %  val)
-            assert isinstance(val, AbstractValue)
+            check_isinstance(val, AbstractValue)
             return val.get_transitions_for_function_call(self, stmt)
 
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
@@ -554,15 +554,15 @@ class MyState(State):
             nextstate = make_transition_for_false(stmt)
             return [nextstate]
         else:
-            assert isinstance(boolval, UnknownValue)
+            check_isinstance(boolval, UnknownValue)
             # We don't have enough information; both branches are possible:
             return [make_transition_for_true(stmt),
                     make_transition_for_false(stmt)]
 
     def eval_condition(self, stmt):
         def is_equal(lhs, rhs):
-            assert isinstance(lhs, AbstractValue)
-            assert isinstance(rhs, AbstractValue)
+            check_isinstance(lhs, AbstractValue)
+            check_isinstance(rhs, AbstractValue)
             if isinstance(rhs, ConcreteValue):
                 if isinstance(lhs, PointerToRegion) and rhs.value == 0:
                     log('ptr to region vs 0: %s is definitely not equal to %s' % (lhs, rhs))
@@ -668,7 +668,7 @@ class MyState(State):
 
         value = self.eval_rhs(stmt)
         log('value from eval_rhs: %r' % value)
-        assert isinstance(value, AbstractValue)
+        check_isinstance(value, AbstractValue)
 
         if isinstance(value, DeallocatedMemory):
             raise ReadFromDeallocatedMemory(stmt, value)
@@ -722,9 +722,9 @@ class MyState(State):
             bb = self.fun.cfg.get_block_for_label(label.target)
             newstate.loc = Location(bb, 0)
             if label.low:
-                assert isinstance(label.low, gcc.IntegerCst)
+                check_isinstance(label.low, gcc.IntegerCst)
                 if label.high:
-                    assert isinstance(label.high, gcc.IntegerCst)
+                    check_isinstance(label.high, gcc.IntegerCst)
                     desc = 'following cases %i...%i' % (label.low.constant, label.high.constant)
                 else:
                     desc = 'following case %i' % label.low.constant
@@ -746,7 +746,7 @@ def dump_traces_to_stdout(traces):
     objects, etc)
     """
     def dump_object(rvalue, title):
-        assert isinstance(rvalue, AbstractValue)
+        check_isinstance(rvalue, AbstractValue)
         print('  %s:' % title)
         print('    repr(): %r' % rvalue)
         print('    str(): %s' % rvalue)
@@ -757,7 +757,7 @@ def dump_traces_to_stdout(traces):
                   % endstate.get_value_of_field_by_region(rvalue.region, 'ob_type'))
 
     def dump_region(region, title):
-        assert isinstance(region, Region)
+        check_isinstance(region, Region)
         print('  %s:' % title)
         print('    repr(): %r' % region)
         print('    str(): %s' % region)
@@ -827,7 +827,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
     log('check_refcounts(%r, %r, %r)' % (fun, dump_traces, show_traces))
 
-    assert isinstance(fun, gcc.Function)
+    check_isinstance(fun, gcc.Function)
 
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
@@ -877,7 +877,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             region = endstate.region_for_var[k]
 
             log('considering ob_refcnt of %r' % region)
-            assert isinstance(region, Region)
+            check_isinstance(region, Region)
 
             # Consider those for which we know something about an "ob_refcnt"
             # field:

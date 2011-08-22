@@ -25,8 +25,8 @@ def get_src_for_loc(loc):
     return linecache.getline(loc.file, loc.line).rstrip()
 
 def get_field_by_name(typeobj, name):
-    assert isinstance(typeobj,
-                      (gcc.RecordType, gcc.UnionType, gcc.QualUnionType))
+    check_isinstance(typeobj,
+                     (gcc.RecordType, gcc.UnionType, gcc.QualUnionType))
     for field in typeobj.fields:
         if field.name == name:
             return field
@@ -72,7 +72,7 @@ def get_nonnull_arguments(funtype):
 
     Compare with gcc/tree-vrp.c: nonnull_arg_p
     """
-    assert isinstance(funtype, gcc.FunctionType)
+    check_isinstance(funtype, gcc.FunctionType)
     if 'nonnull' in funtype.attributes:
         result = []
         nonnull = funtype.attributes['nonnull']
@@ -84,7 +84,7 @@ def get_nonnull_arguments(funtype):
         else:
             # Only the listed args are nonnull:
             for val in nonnull:
-                assert isinstance(val, gcc.IntegerCst)
+                check_isinstance(val, gcc.IntegerCst)
                 result.append(val.constant - 1)
         return frozenset(result)
     else:
@@ -182,7 +182,7 @@ class TextualPrettyPrinter(PrettyPrinter):
         def str_for_kv(key, value):
             return '  %s = %s\n' % (key, value)
 
-        assert isinstance(obj, gcc.Tree)
+        check_isinstance(obj, gcc.Tree)
         visited.add(obj.addr)
 
         result = '<%s\n' % obj.__class__.__name__
@@ -462,7 +462,7 @@ class TreePrettyPrinter(DotPrettyPrinter):
     # nodes it references, as a string
     def __init__(self, root):
         print('root: %s' % root)
-        assert isinstance(root, gcc.Tree)
+        check_isinstance(root, gcc.Tree)
         self.root = root
         self.show_addr = False
         self.maxdepth = 6 # for now
@@ -496,13 +496,13 @@ class TreePrettyPrinter(DotPrettyPrinter):
         return 'id%s' % id(obj)
 
     def tree_to_dot(self, obj):
-        assert isinstance(obj, gcc.Tree)
+        check_isinstance(obj, gcc.Tree)
         return ('  %s [label=<%s>];\n'
                 % (self.tree_id(obj), self.label_for_tree(obj)))
 
     def recursive_tree_to_dot(self, obj, visited, depth):
         print('recursive_tree_to_dot(%r, %r)' % (obj, visited))
-        assert isinstance(obj, gcc.Tree)
+        check_isinstance(obj, gcc.Tree)
         result = self.tree_to_dot(obj)
         visited.add(obj.addr)
         if depth < self.maxdepth:
@@ -619,3 +619,12 @@ class CallgraphPrettyPrinter(DotPrettyPrinter):
 def callgraph_to_dot():
     pp = CallgraphPrettyPrinter()
     return pp.to_dot()
+
+def check_isinstance(obj, types):
+    """
+    Like:
+       assert isinstance(obj, types)
+    but with better error messages
+    """
+    if not isinstance(obj, types):
+        raise TypeError('%s is not an instance of %s' % (obj, types))

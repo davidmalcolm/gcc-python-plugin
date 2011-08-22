@@ -19,7 +19,7 @@
 Helper functions for looking up various CPython implementation types.
 """
 import gcc
-from gccutils import get_global_typedef
+from gccutils import get_global_typedef, check_isinstance
 
 def is_py3k():
     """
@@ -101,7 +101,7 @@ type_dict = {
 }
 
 def get_type_for_typeobject(typeobject):
-    assert isinstance(typeobject, gcc.VarDecl)
+    check_isinstance(typeobject, gcc.VarDecl)
     if typeobject.name not in type_dict:
         return None
 
