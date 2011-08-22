@@ -627,4 +627,4 @@ def check_isinstance(obj, types):
     but with better error messages
     """
     if not isinstance(obj, types):
-        raise TypeError('%s is not an instance of %s' % (obj, types))
+        raise TypeError('%s / %r is not an instance of %s' % (obj, obj, types))
