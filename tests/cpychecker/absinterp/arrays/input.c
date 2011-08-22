@@ -27,7 +27,8 @@ int test_arrays(void)
     int arr[10];
     int *ptr = &arr[5];
 
-    *ptr = 42;
+    *ptr = 41;
+    arr[5] += 1;
 
     /*
       The analyser ought to be able to figure out that there's a single trace

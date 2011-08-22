@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arrays/input.c', line=30), value=42L)
-    str(): (int)42L from tests/cpychecker/absinterp/arrays/input.c:30
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arrays/input.c', line=31), value=42L)
+    str(): (int)42L from tests/cpychecker/absinterp/arrays/input.c:31
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arrays/input.c:26

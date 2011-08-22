@@ -433,10 +433,21 @@ class State:
             region = self.element_region(expr, loc)
             assert isinstance(region, Region)
             return region
+        elif isinstance(expr, gcc.ComponentRef):
+            assert isinstance(expr.field, gcc.FieldDecl)
+            return self.get_field_region(expr, loc)
         elif isinstance(expr, gcc.StringCst):
             region = self.string_constant_region(expr, loc)
             assert isinstance(region, Region)
             return region
+        elif isinstance(expr, gcc.MemRef):
+            # Write through a pointer:
+            dest_ptr = self.eval_rvalue(expr.operand, loc)
+            log('dest_ptr: %r' % dest_ptr)
+            assert isinstance(dest_ptr, PointerToRegion)
+            dest_region = dest_ptr.region
+            log('dest_region: %r' % dest_region)
+            return dest_region
         raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
 
     def eval_rvalue(self, expr, loc):
@@ -508,27 +519,12 @@ class State:
         log('assign(%s, %s)' % (lhs, rhs))
         if loc:
             assert isinstance(loc, gcc.Location)
-        if isinstance(lhs, (gcc.VarDecl, gcc.ParmDecl)):
-            dest_region = self.var_region(lhs)
-        elif isinstance(lhs, gcc.ComponentRef):
-            assert isinstance(lhs.field, gcc.FieldDecl)
-            dest_region = self.get_field_region(lhs, loc)
-        #elif isinstance(lhs, gcc.ArrayRef):
-        #    assert isinstance(lhs.field, gcc.FieldDecl)
-        #    dest_region = self.get_array_region(lhs)
-        elif isinstance(lhs, gcc.MemRef):
-            # Write through a pointer:
-            dest_ptr = self.eval_rvalue(lhs.operand, loc)
-            log('dest_ptr: %r' % dest_ptr)
-            assert isinstance(dest_ptr, PointerToRegion)
-            dest_region = dest_ptr.region
-            log('dest_region: %r' % dest_region)
-        else:
-            raise NotImplementedError("Don't know how to cope with assignment to %r (%s)"
-                                      % (lhs, lhs))
+        dest_region = self.eval_lvalue(lhs, loc)
+        log('dest_region: %s %r' % (dest_region, dest_region))
         value = self.eval_rvalue(rhs, loc)
         log('value: %s %r' % (value, value))
         assert isinstance(value, AbstractValue)
+        assert isinstance(dest_region, Region)
         self.value_for_region[dest_region] = value
 
     def var_region(self, var):
