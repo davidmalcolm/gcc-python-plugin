@@ -100,7 +100,7 @@ class TestStream:
         if writeback:
             # Special-case mode: don't compare, instead refresh the "gold"
             # output by writing back to disk:
-            if self.expdata == '':
+            if self.expdata != '':
                 with open(self.exppath, 'w') as f:
                     f.write(actual)
             return
