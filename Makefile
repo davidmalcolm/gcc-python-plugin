@@ -195,3 +195,20 @@ docs/tables-of-passes.rst: plugin generate-tables-of-passes-rst.py
 # Likewise for this generated file:
 docs/passes.svg: plugin generate-passes-svg.py
 	./gcc-with-python generate-passes-svg.py test.c
+
+# Utility target, to help me to make releases
+#   - creates a tag in git, and pushes it
+#   - creates a tarball
+#   - publishes it below:
+#     https://fedorahosted.org/releases/g/c/gcc-python-plugin/
+#
+# The following assumes that VERSION has been set e.g.
+#   $ make release VERSION=0.4
+#
+# git push --tags
+# scp gcc-python-plugin-$(VERSION).tar.gz dmalcolm@fedorahosted.org:gcc-python-plugin
+
+release:
+	git tag -a v$(VERSION) -m"$(VERSION)"
+	git archive --format=tar --prefix=gcc-python-plugin-$(VERSION)/ v$(VERSION) | gzip > gcc-python-plugin-$(VERSION).tar.gz
+	cp gcc-python-plugin-$(VERSION).tar.gz ~/rpmbuild/SOURCES/
