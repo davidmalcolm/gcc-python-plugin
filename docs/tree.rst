@@ -269,7 +269,8 @@ Types
 
    .. py:attribute:: sizeof
 
-      `sizeof()` this type, as a :py:class:`gcc.IntegerCst`
+      `sizeof()` this type, as an `int`, or raising `TypeError` for those
+      types which don't have a well-defined size
 
    The standard C types are accessible via class methods of gcc.Type.
    They are only created by GCC after plugins are loaded, and so they're

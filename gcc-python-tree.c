@@ -221,8 +221,26 @@ gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
       c_sizeof_or_alignof_type wants a location; we use a fake one
     */
     tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t, true, 0);
+    PyObject *str;
 
-    return gcc_python_make_wrapper_tree(t_sizeof);
+    /* This gives us either an INTEGER_CST or the dummy error type: */
+    if (INTEGER_CST == TREE_CODE(t_sizeof)) {
+        return gcc_python_int_from_double_int(TREE_INT_CST(t_sizeof),
+                                              1);
+    }
+
+    /* Error handling: */
+    str = gcc_Tree_str(self);
+    if (str) {
+        PyErr_Format(PyExc_TypeError,
+                     "type \"%s\" does not have a \"sizeof\"",
+                     gcc_python_string_as_string(str));
+        Py_DECREF(str);
+    } else {
+        PyErr_Format(PyExc_TypeError,
+                     "type does not have a \"sizeof\"");
+    }
+    return NULL;
 }
 
 PyObject *

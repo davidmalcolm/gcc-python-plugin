@@ -30,6 +30,12 @@ def on_finish_unit():
     print('str(fn_type.type): %r' % str(fn_type.type))
     assert isinstance(fn_type.argument_types, tuple)
     print('argument_types: %r' % [str(t) for t in fn_type.argument_types])
+    try:
+        fn_type.sizeof
+        assert 0 # an exception should have been raised
+    except:
+        err = sys.exc_info()[1]
+        print('err: %s' % err)
 
 
 

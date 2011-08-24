@@ -30,7 +30,7 @@ def on_finish_unit():
         assert isinstance(t.max_value, gcc.IntegerCst)
         print('  t.min_value.constant: %r' % t.min_value.constant)
         print('  t.max_value.constant: %r' % t.max_value.constant)
-        assert isinstance(t.sizeof, gcc.IntegerCst)
+        assert isinstance(t.sizeof, int)
         print('  t.sizeof: %r' % t.sizeof)
         # gccutils.pprint(t)
 
@@ -43,7 +43,7 @@ def on_finish_unit():
         print('gcc.Type: %r' % str(t))
         print('  t.const: %r' % t.const)
         print('  t.precision: %r' % t.precision)
-        assert isinstance(t.sizeof, gcc.IntegerCst)
+        assert isinstance(t.sizeof, int)
         print('  t.sizeof: %r' % t.sizeof)
 
     dump_real_type(gcc.Type.float())
