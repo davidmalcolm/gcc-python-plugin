@@ -26,7 +26,7 @@ import gcc
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
-from libcpychecker.diagnostics import Reporter
+from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import log
 from libcpychecker.types import is_py3k, is_debug_build
 
@@ -810,6 +810,34 @@ def dump_traces_to_stdout(traces):
         if i + 1 < len(traces):
             sys.stdout.write('\n')
 
+class RefcountAnnotator(Annotator):
+    """
+    Annotate a trace with information on the reference count of a particular
+    object
+    """
+    def __init__(self, region):
+        self.region = region
+
+    def get_notes(self, transition):
+        """
+        Add a note to every transition that changes the reference count of
+        our target object
+        """
+        result = []
+        src_refcnt = transition.src.get_value_of_field_by_region(self.region,
+                                                                 'ob_refcnt')
+        dest_refcnt = transition.dest.get_value_of_field_by_region(self.region,
+                                                                   'ob_refcnt')
+        if src_refcnt != dest_refcnt:
+            log('src_refcnt: %r' % src_refcnt, 0)
+            log('dest_refcnt: %r' % dest_refcnt, 0)
+            loc = transition.src.get_gcc_loc_or_none()
+            if loc:
+                result.append(Note(loc,
+                                   ('ob_refcnt is now %s' % dest_refcnt)))
+
+        return result
+
 def check_refcounts(fun, dump_traces=False, show_traces=False):
     """
     The top-level function of the refcount checker, checking the refcounting
@@ -916,8 +944,18 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                                          get_src_for_loc(alloc_loc))))
 
                 # Summarize the control flow we followed through the function:
-                err.add_trace(trace)
+                if 1:
+                    annotator = RefcountAnnotator(region)
+                else:
+                    # Debug help:
+                    from libcpychecker.diagnostics import TestAnnotator
+                    annotator = TestAnnotator()
+                err.add_trace(trace, annotator)
 
+                if 0:
+                    # Handy for debugging:
+                    err.add_note(endstate.get_gcc_loc(fun),
+                                 'this was trace %i' % i)
                 return err
 
             # Here's where we verify the refcount:

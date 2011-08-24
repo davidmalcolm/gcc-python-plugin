@@ -327,6 +327,13 @@ pre {
         lines = html.splitlines()
         result = lines[0]
 
+        # Generate any notes from the report's annotator (if any):
+        notes = []
+        annotator = report.get_annotator_for_trace(trace)
+        if annotator:
+            for trans in trace.transitions:
+                notes += annotator.get_notes(trans)
+
         # The rest contains the actual source lines:
         lines = lines[1:]
         for linenum, line in zip(range(start_line, end_line), lines):
@@ -352,10 +359,16 @@ pre {
                     src_loc = trans.src.get_gcc_loc_or_none()
                     if src_loc and src_loc.line == linenum:
                         result += '<span class="transition">%s</span>\n' % trans.desc
+            # Report the top-level message, if it happens here:
             if report.loc.line == linenum:
                 result += '<span class="error">%s</span>\n' % report.msg
+            # Add any notes from the annotator:
+            for note in notes:
+                if note.loc and note.loc.line == linenum:
+                    result += '<span class="transition">%s</span>\n' % note.msg
+            # Add additional notes attached to the report:
             for note in report.notes:
-                if note.loc.line == linenum:
+                if note.loc and note.loc.line == linenum:
                     result += '<span class="note">%s</span>\n' % note.msg
 
         result += '\n'

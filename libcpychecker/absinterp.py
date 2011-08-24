@@ -767,19 +767,25 @@ class State:
 
     def get_gcc_loc_or_none(self):
         # Return the gcc.Location for this state, which could be None
-        return self.loc.get_stmt().loc
+        stmt = self.loc.get_stmt()
+        if stmt:
+            return stmt.loc
 
     def get_gcc_loc(self, fun):
         # Return a non-None gcc.Location for this state
         # Some statements have None for their location, but gcc.error() etc
         # don't allow this.  Use the end of the function for this case.
-        log('%s %r' % (self.loc.get_stmt(), self.loc.get_stmt()))
-        log(self.loc.get_stmt().loc)
-        # grrr... not all statements have a non-NULL location
-        gccloc = self.loc.get_stmt().loc
-        if gccloc is None:
-            gccloc = fun.end
-        return gccloc
+        stmt = self.loc.get_stmt()
+        log('%s %r' % (stmt, stmt))
+        if stmt:
+            log(self.loc.get_stmt().loc)
+            # grrr... not all statements have a non-NULL location
+            gccloc = self.loc.get_stmt().loc
+            if gccloc is None:
+                gccloc = fun.end
+            return gccloc
+        else:
+            return fun.end
 
     def raise_any_null_ptr_deref(self, expr, ptr):
         if isinstance(ptr, ConcreteValue):

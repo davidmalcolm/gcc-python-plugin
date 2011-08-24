@@ -25,7 +25,31 @@ from gccutils import get_src_for_loc
 from libcpychecker.visualizations import HtmlRenderer
 from libcpychecker.PyArg_ParseTuple import log
 
-def describe_trace(trace, fun):
+class Annotator:
+    """
+    A collection of hooks for use when describing a trace (either as text,
+    or as an HTML report)
+    """
+    def get_notes(self, transition):
+        """
+        Return a list of Note instances giving extra information about the
+        transition
+        """
+        raise NotImplementedError
+
+class TestAnnotator(Annotator):
+    def get_notes(self, transition):
+        result = []
+        srcloc = transition.src.get_gcc_loc_or_none()
+        if srcloc:
+            if transition.src.loc != transition.dest.loc:
+                result.append(Note(srcloc,
+                                   ('transition from "%s" to "%s"'
+                                    % (transition.src.loc.get_stmt(),
+                                       transition.dest.loc.get_stmt()))))
+        return result
+
+def describe_trace(trace, fun, annotator):
     """
     Print more details about the path through the function that
     leads to the error, using gcc.inform()
@@ -33,8 +57,8 @@ def describe_trace(trace, fun):
     awaiting_target = None
     for t in trace.transitions:
         log('transition: %s' % t)
+        srcloc = t.src.get_gcc_loc_or_none()
         if t.desc:
-            srcloc = t.src.get_gcc_loc_or_none()
             if srcloc:
                 gcc.inform(t.src.get_gcc_loc(fun),
                            ('when %s at: %s'
@@ -49,6 +73,12 @@ def describe_trace(trace, fun):
                 if destloc:
                     gcc.inform(destloc,
                                'reaching: %s' % get_src_for_loc(destloc))
+
+        if annotator:
+            notes = annotator.get_notes(t)
+            for note in notes:
+                if note.loc and note.loc == srcloc:
+                    gcc.inform(note.loc, note.msg)
 
 class Reporter:
     """
@@ -94,17 +124,23 @@ class Report:
         self.loc = loc
         self.msg = msg
         self.trace = None
+        self._annotators = {}
         self.notes = []
 
-    def add_trace(self, trace):
+    def add_trace(self, trace, annotator=None):
         self.trace = trace
-        describe_trace(trace, self.fun)
+        self._annotators[trace] = annotator
+        describe_trace(trace, self.fun, annotator)
 
     def add_note(self, loc, msg):
         gcc.inform(loc, msg)
         note = Note(loc, msg)
         self.notes.append(note)
         return note
+
+    def get_annotator_for_trace(self, trace):
+        return self._annotators.get(trace)
+
 
 
 class Note:
