@@ -30,6 +30,8 @@ def on_finish_unit():
         assert isinstance(t.max_value, gcc.IntegerCst)
         print('  t.min_value.constant: %r' % t.min_value.constant)
         print('  t.max_value.constant: %r' % t.max_value.constant)
+        assert isinstance(t.sizeof, gcc.IntegerCst)
+        print('  t.sizeof: %r' % t.sizeof)
         # gccutils.pprint(t)
 
     # Pick some types that ought to be arch-independent and thus suitable
@@ -41,6 +43,8 @@ def on_finish_unit():
         print('gcc.Type: %r' % str(t))
         print('  t.const: %r' % t.const)
         print('  t.precision: %r' % t.precision)
+        assert isinstance(t.sizeof, gcc.IntegerCst)
+        print('  t.sizeof: %r' % t.sizeof)
 
     dump_real_type(gcc.Type.float())
     dump_real_type(gcc.Type.double())

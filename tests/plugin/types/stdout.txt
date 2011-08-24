@@ -4,15 +4,19 @@ gcc.Type: 'unsigned char'
   t.precision: 8
   t.min_value.constant: 0L
   t.max_value.constant: 255L
+  t.sizeof: gcc.IntegerCst(1)
 gcc.Type: 'signed char'
   t.const: False
   t.unsigned: False
   t.precision: 8
   t.min_value.constant: -128L
   t.max_value.constant: 127L
+  t.sizeof: gcc.IntegerCst(1)
 gcc.Type: 'float'
   t.const: False
   t.precision: 32
+  t.sizeof: gcc.IntegerCst(4)
 gcc.Type: 'double'
   t.const: False
   t.precision: 64
+  t.sizeof: gcc.IntegerCst(8)

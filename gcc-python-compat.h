@@ -43,12 +43,16 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
 
 
 /*
-   This is declated in gcc/tree-pretty-print.c (around line 580); it doesn't
+   This is declared in gcc/tree-pretty-print.c (around line 580); it doesn't
    seem to be declared in any of the plugin headers:
  */
 extern int
 dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		   bool is_stmt);
+
+
+/* From c-family/c-common.h */
+extern tree c_sizeof_or_alignof_type (location_t, tree, bool, int);
 
 
 /*

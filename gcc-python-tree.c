@@ -215,6 +215,17 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
+{
+    /*
+      c_sizeof_or_alignof_type wants a location; we use a fake one
+    */
+    tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t, true, 0);
+
+    return gcc_python_make_wrapper_tree(t_sizeof);
+}
+
+PyObject *
 gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;

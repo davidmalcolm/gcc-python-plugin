@@ -111,6 +111,9 @@ PyObject *
 gcc_Type_get_attributes(struct PyGccTree *self, void *closure);
 
 PyObject *
+gcc_Type_get_sizeof(struct PyGccTree *self, void *closure);
+
+PyObject *
 gcc_FunctionType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *

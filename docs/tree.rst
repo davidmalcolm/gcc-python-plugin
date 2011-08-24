@@ -267,6 +267,10 @@ Types
       syntax), as a dictionary (mapping from attribute names to list of
       values).  Typically this will be the empty dictionary.
 
+   .. py:attribute:: sizeof
+
+      `sizeof()` this type, as a :py:class:`gcc.IntegerCst`
+
    The standard C types are accessible via class methods of gcc.Type.
    They are only created by GCC after plugins are loaded, and so they're
    only visible during callbacks, not during the initial run of the code.

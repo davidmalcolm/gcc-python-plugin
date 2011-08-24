@@ -188,6 +188,10 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   'gcc_Type_get_attributes',
                                   None,
                                   'The user-defined attributes on this type')
+            getsettable.add_gsdef('sizeof',
+                                  'gcc_Type_get_sizeof',
+                                  None,
+                                  'sizeof() this type, as a gcc.IntegerCst')
 
             methods = PyMethodTable('gcc_Type_methods', [])
 
