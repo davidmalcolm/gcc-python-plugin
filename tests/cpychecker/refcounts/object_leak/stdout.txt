@@ -1,4 +1,4 @@
 Trace 0:
-  returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_leak/input.c', line=29), value=0L)
+  returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_leak/input.c', line=29), value=0)
 Trace 1:
-  returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_leak/input.c', line=29), value=0L)
+  returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_leak/input.c', line=29), value=0)

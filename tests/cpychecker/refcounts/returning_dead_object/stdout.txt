@@ -53,8 +53,8 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=32), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/returning_dead_object/input.c:32
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=32), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/returning_dead_object/input.c:32
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

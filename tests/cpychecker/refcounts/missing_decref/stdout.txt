@@ -37,8 +37,8 @@ Trace 1:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=34), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/missing_decref/input.c:34
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=34), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/missing_decref/input.c:34
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -63,8 +63,8 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=29), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/missing_decref/input.c:29
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/missing_decref/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/missing_decref/input.c:29
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

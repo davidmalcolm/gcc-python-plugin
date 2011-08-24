@@ -39,7 +39,7 @@ Trace 3:
     'following cases 3...5'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='const char *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=39), value=0L)
-    str(): (const char *)0L from tests/cpychecker/absinterp/switch/input.c:39
+    repr(): ConcreteValue(gcctype='const char *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=39), value=0)
+    str(): (const char *)0 from tests/cpychecker/absinterp/switch/input.c:39
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/switch/input.c:26

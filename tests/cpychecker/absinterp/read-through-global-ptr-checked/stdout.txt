@@ -15,7 +15,7 @@ Trace 1:
     'taking False path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=38), value=42L)
-    str(): (int)42L from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:38
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=38), value=42)
+    str(): (int)42 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:38
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:34

@@ -78,8 +78,8 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:45
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -110,8 +110,8 @@ Trace 3:
     'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:45
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -138,8 +138,8 @@ Trace 4:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=40), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:40
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=40), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:40
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -159,8 +159,8 @@ Trace 5:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=35), value=0L)
-    str(): (struct PyObject *)0L from tests/cpychecker/refcounts/loop_n_times/input.c:35
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=35), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:35
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

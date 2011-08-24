@@ -29,7 +29,7 @@ Trace 2:
     'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='char *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=46), value=0L)
-    str(): (char *)0L from tests/cpychecker/absinterp/custom-strdup/input.c:46
+    repr(): ConcreteValue(gcctype='char *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=46), value=0)
+    str(): (char *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:46
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39

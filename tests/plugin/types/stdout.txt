@@ -2,15 +2,15 @@ gcc.Type: 'unsigned char'
   t.const: False
   t.unsigned: True
   t.precision: 8
-  t.min_value.constant: 0L
-  t.max_value.constant: 255L
+  t.min_value.constant: 0
+  t.max_value.constant: 255
   t.sizeof: gcc.IntegerCst(1)
 gcc.Type: 'signed char'
   t.const: False
   t.unsigned: False
   t.precision: 8
-  t.min_value.constant: -128L
-  t.max_value.constant: 127L
+  t.min_value.constant: -128
+  t.max_value.constant: 127
   t.sizeof: gcc.IntegerCst(1)
 gcc.Type: 'float'
   t.const: False

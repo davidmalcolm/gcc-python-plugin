@@ -19,7 +19,7 @@ local_decls[2]
 local_decls[3]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'i'
-  local.initial.constant: 42L
+  local.initial.constant: 42
   str(local.type): 'int'
 local_decls[4]
   type(local): <type 'gcc.VarDecl'>

@@ -1194,9 +1194,35 @@ gcc_python_double_int_as_text(double_int di, bool is_unsigned,
 PyObject *
 gcc_python_int_from_double_int(double_int di, bool is_unsigned)
 {
+    PyObject *long_obj;
+#if PY_MAJOR_VERSION < 3
+    long long_val;
+    int overflow;
+#endif
     char buf[512]; /* FIXME */
     gcc_python_double_int_as_text(di, is_unsigned, buf, sizeof(buf));
-    return PyLong_FromString(buf, NULL, 10);
+
+    long_obj = PyLong_FromString(buf, NULL, 10);
+    if (!long_obj) {
+        return NULL;
+    }
+#if PY_MAJOR_VERSION >= 3
+    return long_obj;
+#else
+    long_val = PyLong_AsLongAndOverflow(long_obj, &overflow);
+    if (overflow) {
+        /* Doesn't fit in a PyIntObject; use the PyLongObject: */
+        return long_obj;
+    } else {
+        /* Fits in a PyIntObject: use that */
+        PyObject *int_obj = PyInt_FromLong(long_val);
+        if (!int_obj) {
+            return long_obj;
+        }
+        Py_DECREF(long_obj);
+        return int_obj;
+    }
+#endif
 }
 
 /*
