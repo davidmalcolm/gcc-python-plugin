@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arrays2/input.c', line=38), value=6)
+    str(): (int)6 from tests/cpychecker/absinterp/arrays2/input.c:38
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arrays2/input.c:26

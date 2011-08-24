@@ -654,8 +654,8 @@ class MyState(State):
         elif stmt.exprcode == gcc.MemRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.PointerPlusExpr:
-            # For now, for pointer arithmetic, just return an unknown value:
-            return UnknownValue(stmt.lhs.type, stmt.loc)
+            region = self.pointer_plus_region(stmt)
+            return PointerToRegion(stmt.lhs.type, stmt.loc, region)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))

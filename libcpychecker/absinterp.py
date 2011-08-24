@@ -560,6 +560,34 @@ class State:
         log('  index: %r' % index)
         if isinstance(index, ConcreteValue):
             index = index.value
+        return self._array_region(parent, index)
+
+    def pointer_plus_region(self, stmt):
+        # Cope with treating pointers as arrays.
+        # The constant appears to be in bytes, rather than as units of the type
+        log('pointer_add_region')
+        assert stmt.exprcode == gcc.PointerPlusExpr
+        rhs = stmt.rhs
+        a = self.eval_rvalue(rhs[0], stmt.loc)
+        b = self.eval_rvalue(rhs[1], stmt.loc)
+        log('a: %r' % a)
+        log('b: %r' % b)
+        if isinstance(a, PointerToRegion) and isinstance(b, ConcreteValue):
+            parent = a.region
+            log(rhs[0].type)
+            log(rhs[0].type.dereference)
+            sizeof = rhs[0].type.dereference.sizeof
+            log(sizeof)
+            index = b.value / sizeof
+            return self._array_region(parent, index)
+        else:
+            raise NotImplementedError("Don't know how to cope with pointer addition of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
+
+    def _array_region(self, parent, index):
+        # Used by element_region, and pointer_add_region
+        check_isinstance(parent, Region)
+        check_isinstance(index, (int, long))
         if index in parent.fields:
             log('reusing')
             return parent.fields[index]
