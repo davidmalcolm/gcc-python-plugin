@@ -362,14 +362,14 @@ pre {
             # Report the top-level message, if it happens here:
             if report.loc.line == linenum:
                 result += '<span class="error">%s</span>\n' % report.msg
+            # Add notes attached to the report:
+            for note in report.notes:
+                if note.loc and note.loc.line == linenum:
+                    result += '<span class="note">%s</span>\n' % note.msg
             # Add any notes from the annotator:
             for note in notes:
                 if note.loc and note.loc.line == linenum:
                     result += '<span class="transition">%s</span>\n' % note.msg
-            # Add additional notes attached to the report:
-            for note in report.notes:
-                if note.loc and note.loc.line == linenum:
-                    result += '<span class="note">%s</span>\n' % note.msg
 
         result += '\n'
         result += '<script type="text/javascript">\n'

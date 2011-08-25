@@ -29,6 +29,9 @@ class Annotator:
     """
     A collection of hooks for use when describing a trace (either as text,
     or as an HTML report)
+
+    This allows us to add the annotations to the correct place in the textual
+    stream when reporting on flow through a function
     """
     def get_notes(self, transition):
         """
@@ -38,6 +41,10 @@ class Annotator:
         raise NotImplementedError
 
 class TestAnnotator(Annotator):
+    """
+    A sample annotator that adds information to the trace on movement between
+    gimple statements
+    """
     def get_notes(self, transition):
         result = []
         srcloc = transition.src.get_gcc_loc_or_none()

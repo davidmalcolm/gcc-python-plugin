@@ -249,6 +249,13 @@ class Region:
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.name)
 
+    def is_on_stack(self):
+        if isinstance(self, RegionOnStack):
+            return True
+        if self.parent:
+            return self.parent.is_on_stack()
+        return False
+
 class RegionForGlobal(Region):
     """
     Represents the area of memory (e.g. in .data or .bss section)
@@ -261,6 +268,13 @@ class RegionForGlobal(Region):
 
     def __repr__(self):
         return 'RegionForGlobal(%r)' % self.vardecl
+
+class RegionOnStack(Region):
+    def __repr__(self):
+        return 'RegionOnStack(%r)' % self.name
+
+    def __str__(self):
+        return '%s on stack' % self.name
 
 class RegionOnHeap(Region):
     """
@@ -541,7 +555,7 @@ class State:
             if str(var.type) == 'struct PyObject':
                 from libcpychecker.refcounts import RefcountValue
                 ob_refcnt = self.make_field_region(region, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                self.value_for_region[ob_refcnt] = RefcountValue(0)
+                self.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
         return self.region_for_var[var]
 
     def element_region(self, ar, loc):
@@ -727,21 +741,21 @@ class State:
         log('State.init_for_function(%r)' % fun)
         self.fun = fun
         root_region = Region('root', None)
-        stack = Region('stack for %s' % fun.decl.name, root_region)
+        stack = RegionOnStack('stack for %s' % fun.decl.name, root_region)
 
         nonnull_args = get_nonnull_arguments(fun.decl.type)
         for idx, parm in enumerate(fun.decl.arguments):
-            region = Region('region for %r' % parm, stack)
+            region = RegionOnStack('region for %r' % parm, stack)
             self.region_for_var[parm] = region
             if idx in nonnull_args:
                 # Make a non-NULL ptr:
-                other = Region('region-for-arg-%s' % parm, None)
+                other = RegionOnStack('region-for-arg-%s' % parm, None)
                 self.region_for_var[other] = other
                 self.value_for_region[region] = PointerToRegion(parm.type, parm.location, other)
             else:
                 self.value_for_region[region] = UnknownValue(parm.type, parm.location)
         for local in fun.local_decls:
-            region = Region('region for %r' % local, stack)
+            region = RegionOnStack('region for %r' % local, stack)
             self.region_for_var[local] = region
             self.value_for_region[region] = UninitializedData(local.type, fun.start)
         self.verify()

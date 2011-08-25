@@ -1,8 +1,10 @@
 tests/cpychecker/refcounts/object_leak/input.c: In function 'object_leak':
 tests/cpychecker/refcounts/object_leak/input.c:29:5: error: ob_refcnt of PyLongObject is 1 too high
+tests/cpychecker/refcounts/object_leak/input.c:29:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/object_leak/input.c:29:5: note: but final ob_refcnt is N + 1
 tests/cpychecker/refcounts/object_leak/input.c:26:15: note: PyLongObject allocated at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/object_leak/input.c:26:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
-tests/cpychecker/refcounts/object_leak/input.c:26:15: note: ob_refcnt is now refs: 1
+tests/cpychecker/refcounts/object_leak/input.c:26:15: note: ob_refcnt is now refs: 1 + N where N >= 0
 tests/cpychecker/refcounts/object_leak/input.c:29:5: note: when returning at:     return NULL;
 tests/cpychecker/refcounts/object_leak/input.c:29:5: error: returning (PyObject*)NULL without setting an exception
 tests/cpychecker/refcounts/object_leak/input.c:26:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);

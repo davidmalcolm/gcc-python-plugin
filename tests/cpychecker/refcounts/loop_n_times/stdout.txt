@@ -12,22 +12,22 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)) from tests/cpychecker/refcounts/loop_n_times/input.c:38
-    r->ob_refcnt: RefcountValue(1)
+    r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/loop_n_times/input.c:29
@@ -47,17 +47,17 @@ Trace 1:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)) from tests/cpychecker/refcounts/loop_n_times/input.c:38
-    r->ob_refcnt: RefcountValue(1)
+    r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=42))
@@ -83,17 +83,17 @@ Trace 2:
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
@@ -115,12 +115,12 @@ Trace 3:
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38))
@@ -143,12 +143,12 @@ Trace 4:
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
@@ -164,12 +164,12 @@ Trace 5:
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Region("region-for-arg-gcc.ParmDecl('args')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('args')")
     str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: RefcountValue(0)
+    r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))

@@ -1,5 +1,5 @@
 Trace 0:
   returned: PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/correct_object_ctor/input.c', line=30), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/correct_object_ctor/input.c', line=30)))
-  r->ob_refcnt: RefcountValue(1)
+  r->ob_refcnt: RefcountValue(1, 0)
 Trace 1:
   returned: ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/correct_object_ctor/input.c', line=30), value=0)

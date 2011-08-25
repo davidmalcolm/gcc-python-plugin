@@ -29,7 +29,7 @@ def verify_traces(optpass, fun):
             #print('traces: %r' % traces)
             assert len(traces) == 1
             state = traces[0].states[-1]
-            print('_Py_NoneStruct.ob_refcnt: %r'
+            print('_Py_NoneStruct.ob_refcnt: %s'
                   % state.get_value_of_field_by_varname('_Py_NoneStruct', 'ob_refcnt'))
             print('state.return_rvalue: %r' % state.return_rvalue)
 

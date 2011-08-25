@@ -96,16 +96,39 @@ class RefcountValue(AbstractValue):
 
     'relvalue' is all of the references owned within this function.
 
-    The actual value of ob_refcnt >= relvalue
+    'min_external' is a lower bound on all references owned outside the
+    scope of this function.
+
+    The actual value of ob_refcnt >= (relvalue + min_external)
+
+    Examples:
+
+      - an argument passed in a a borrowed ref starts with (0, 1), in that
+      the function doesn't own any refs on it, but it has a refcount of at
+      least 1, due to refs we know nothing about.
+
+      - a newly constructed object gets (1, 0): we own a reference on it,
+      and we don't know if there are any external refs on it.
     """
-    def __init__(self, relvalue):
+    def __init__(self, relvalue, min_external):
         self.relvalue = relvalue
+        self.min_external = min_external
+
+    @classmethod
+    def new_ref(cls):
+        return RefcountValue(relvalue=1,
+                             min_external=0)
+
+    @classmethod
+    def borrowed_ref(cls):
+        return RefcountValue(relvalue=0,
+                             min_external=1)
 
     def __str__(self):
-        return 'refs: %i' % self.relvalue
+        return 'refs: %i + N where N >= %i' % (self.relvalue, self.min_external)
 
     def __repr__(self):
-        return 'RefcountValue(%i)' % self.relvalue
+        return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
 
 class GenericTpDealloc(AbstractValue):
     """
@@ -194,7 +217,7 @@ class MyState(State):
                                                                 objregion)
                 # Assume we have a borrowed reference:
                 ob_refcnt = self.make_field_region(objregion, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                self.value_for_region[ob_refcnt] = RefcountValue(0) # borrowed ref
+                self.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
 
                 # Assume it has a non-NULL ob_type:
                 ob_type = self.make_field_region(objregion, 'ob_type')
@@ -299,7 +322,7 @@ class MyState(State):
 
         nonnull = success.make_heap_region(typename, stmt)
         ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-        success.value_for_region[ob_refcnt] = RefcountValue(1)
+        success.value_for_region[ob_refcnt] = RefcountValue.new_ref()
         ob_type = success.make_field_region(nonnull, 'ob_type')
         success.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
                                                             stmt.loc,
@@ -341,7 +364,8 @@ class MyState(State):
             # rest of the program.  Given that the rest of the program is
             # stealing a ref, that is increasing by one, hence our value must
             # go down by one:
-            self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1)
+            self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
+                                                             value.min_external + 1)
 
     def make_borrowed_ref(self, stmt, name):
         """Make a new state, giving a borrowed ref to some object"""
@@ -350,7 +374,7 @@ class MyState(State):
 
         nonnull = newstate.make_heap_region(name, stmt)
         ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-        newstate.value_for_region[ob_refcnt] = RefcountValue(0)
+        newstate.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
         #ob_type = newstate.make_field_region(nonnull, 'ob_type')
         #newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
         #                                                    stmt.loc,
@@ -393,6 +417,21 @@ class MyState(State):
         # Set ob_size:
         ob_size = success.dest.make_field_region(newobj, 'ob_size')
         success.dest.value_for_region[ob_size] = lenarg
+
+        # "Allocate" ob_item, and set it up so that all of the array is
+        # treated as NULL:
+        ob_item_region = success.dest.make_heap_region(
+            'ob_item array for PyListObject',
+            stmt)
+        success.dest.value_for_region[ob_item_region] = \
+            ConcreteValue(get_PyObjectPtr(),
+                          stmt.loc, 0)
+
+        ob_item = success.dest.make_field_region(newobj, 'ob_item')
+        success.dest.value_for_region[ob_item] = PointerToRegion(get_PyObjectPtr().pointer,
+                                                                 stmt.loc,
+                                                                 ob_item_region)
+
         return [success, failure]
 
     def impl_PyLong_FromLong(self, stmt):
@@ -622,7 +661,7 @@ class MyState(State):
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
                 return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
-                return RefcountValue(a.relvalue + b.value)
+                return RefcountValue(a.relvalue + b.value, a.min_external)
 
             return UnknownValue(stmt.lhs.type, stmt.loc)
 
@@ -634,7 +673,7 @@ class MyState(State):
             log('a: %r' % a)
             log('b: %r' % b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
-                return RefcountValue(a.relvalue - b.value)
+                return RefcountValue(a.relvalue - b.value, a.min_external)
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
@@ -735,6 +774,28 @@ class MyState(State):
                                      desc))
         return result
 
+    def get_persistent_refs_for_region(self, dst_region):
+        # Locate all regions containing pointers that point at the given region
+        # that are either on the heap or are globals (not locals)
+        check_isinstance(dst_region, Region)
+        result = []
+        for src_region in self.get_all_refs_for_region(dst_region):
+            if src_region.is_on_stack():
+                continue
+            result.append(src_region)
+        return result
+
+    def get_all_refs_for_region(self, dst_region):
+        # Locate all regions containing pointers that point at the given region
+        check_isinstance(dst_region, Region)
+        result = []
+        for src_region in self.value_for_region:
+            v = self.value_for_region[src_region]
+            if isinstance(v, PointerToRegion):
+                if v.region == dst_region:
+                    result.append(src_region)
+        return result
+
 def get_traces(fun):
     return list(iter_traces(fun, MyState))
 
@@ -751,7 +812,7 @@ def dump_traces_to_stdout(traces):
         print('    repr(): %r' % rvalue)
         print('    str(): %s' % rvalue)
         if isinstance(rvalue, PointerToRegion):
-            print('    r->ob_refcnt: %r'
+            print('    r->ob_refcnt: %s'
                   % endstate.get_value_of_field_by_region(rvalue.region, 'ob_refcnt'))
             print('    r->ob_type: %r'
                   % endstate.get_value_of_field_by_region(rvalue.region, 'ob_type'))
@@ -761,7 +822,7 @@ def dump_traces_to_stdout(traces):
         print('  %s:' % title)
         print('    repr(): %r' % region)
         print('    str(): %s' % region)
-        print('    r->ob_refcnt: %r'
+        print('    r->ob_refcnt: %s'
               % endstate.get_value_of_field_by_region(region, 'ob_refcnt'))
         print('    r->ob_type: %r'
               % endstate.get_value_of_field_by_region(region, 'ob_type'))
@@ -816,14 +877,22 @@ class RefcountAnnotator(Annotator):
     object
     """
     def __init__(self, region):
+        check_isinstance(region, Region)
         self.region = region
 
     def get_notes(self, transition):
         """
-        Add a note to every transition that changes the reference count of
+        Add a note to every transition that affects reference-counting for
         our target object
         """
+        loc = transition.src.get_gcc_loc_or_none()
+        if loc is None:
+            # (we can't add a note without a valid location)
+            return []
+
         result = []
+
+        # Add a note when the ob_refcnt of the object changes:
         src_refcnt = transition.src.get_value_of_field_by_region(self.region,
                                                                  'ob_refcnt')
         dest_refcnt = transition.dest.get_value_of_field_by_region(self.region,
@@ -831,11 +900,28 @@ class RefcountAnnotator(Annotator):
         if src_refcnt != dest_refcnt:
             log('src_refcnt: %r' % src_refcnt, 0)
             log('dest_refcnt: %r' % dest_refcnt, 0)
-            loc = transition.src.get_gcc_loc_or_none()
-            if loc:
-                result.append(Note(loc,
-                                   ('ob_refcnt is now %s' % dest_refcnt)))
+            result.append(Note(loc,
+                               ('ob_refcnt is now %s' % dest_refcnt)))
 
+        # Add a note when there's a change to the set of persistent storage
+        # locations referencing this object:
+        src_refs = transition.src.get_persistent_refs_for_region(self.region)
+        dest_refs = transition.dest.get_persistent_refs_for_region(self.region)
+        if src_refs != dest_refs:
+            result.append(Note(loc,
+                               ('%s is now referenced by %i non-stack value(s): %s'
+                                % (self.region.name,
+                                   len(dest_refs),
+                                   ', '.join([ref.name for ref in dest_refs])))))
+
+        if 0:
+            # For debugging: show the history of all references to the given
+            # object:
+            src_refs = transition.src.get_all_refs_for_region(self.region)
+            dest_refs = transition.dest.get_all_refs_for_region(self.region)
+            if src_refs != dest_refs:
+                result.append(Note(loc,
+                                   ('all refs: %s' % dest_refs)))
         return result
 
 def check_refcounts(fun, dump_traces=False, show_traces=False):
@@ -920,19 +1006,34 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             # 1; all other PyObject should have a net delta of 0:
             if isinstance(return_value, PointerToRegion) and region == return_value.region:
                 desc = 'return value'
-                exp_refcnt = 1
+                exp_refs = ['return value']
             else:
                 desc = 'PyObject'
                 # We may have a more descriptive name within the region:
                 if isinstance(region, RegionOnHeap):
                     desc = region.name
-                exp_refcnt = 0
-            log('exp_refcnt: %r' % exp_refcnt, 0)
+                exp_refs = []
+
+            # The reference count should also reflect any non-stack pointers
+            # that point at this object:
+            exp_refs += [ref.name
+                         for ref in endstate.get_persistent_refs_for_region(region)]
+            exp_refcnt = len(exp_refs)
+            log('exp_refs: %r' % exp_refs, 0)
 
             # Helper function for when ob_refcnt is wrong:
             def emit_refcount_error(msg):
                 err = rep.make_error(fun, endstate.get_gcc_loc(fun), msg)
-
+                err.add_note(endstate.get_gcc_loc(fun),
+                             ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
+                              % exp_refcnt))
+                if exp_refcnt > 0:
+                    err.add_note(endstate.get_gcc_loc(fun),
+                                 ('due to object being referenced by: %s'
+                                  % ', '.join(exp_refs)))
+                err.add_note(endstate.get_gcc_loc(fun),
+                             ('but final ob_refcnt is N + %i'
+                              % ob_refcnt.relvalue))
                 # For dynamically-allocated objects, indicate where they
                 # were allocated:
                 if isinstance(region, RegionOnHeap):

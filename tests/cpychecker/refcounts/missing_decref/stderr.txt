@@ -1,8 +1,10 @@
 tests/cpychecker/refcounts/missing_decref/input.c: In function 'missing_decref':
 tests/cpychecker/refcounts/missing_decref/input.c:38:1: error: ob_refcnt of PyListObject is 1 too high
+tests/cpychecker/refcounts/missing_decref/input.c:38:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/missing_decref/input.c:38:1: note: but final ob_refcnt is N + 1
 tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: PyListObject allocated at:     list = PyList_New(1);
 tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: when PyList_New() succeeds at:     list = PyList_New(1);
-tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: ob_refcnt is now refs: 1
+tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: ob_refcnt is now refs: 1 + N where N >= 0
 tests/cpychecker/refcounts/missing_decref/input.c:28:8: note: when taking False path at:     if (!list)
 tests/cpychecker/refcounts/missing_decref/input.c:30:10: note: reaching:     item = PyLong_FromLong(42);
 tests/cpychecker/refcounts/missing_decref/input.c:30:10: note: when PyLong_FromLong() fails at:     item = PyLong_FromLong(42);

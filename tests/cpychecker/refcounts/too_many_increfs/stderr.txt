@@ -1,9 +1,12 @@
 tests/cpychecker/refcounts/too_many_increfs/input.c: In function 'too_many_increfs':
 tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: error: ob_refcnt of return value is 1 too high
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: due to object being referenced by: return value
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: but final ob_refcnt is N + 2
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: PyLongObject allocated at:     tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() succeeds at:     tmp = PyLong_FromLong(0x1000);
-tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: ob_refcnt is now refs: 1
-tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: note: ob_refcnt is now refs: 2
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: note: ob_refcnt is now refs: 2 + N where N >= 0
 tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: when returning at:     return tmp;
 tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: error: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() fails at:     tmp = PyLong_FromLong(0x1000);
