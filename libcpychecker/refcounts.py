@@ -124,6 +124,9 @@ class RefcountValue(AbstractValue):
         return RefcountValue(relvalue=0,
                              min_external=1)
 
+    def get_min_value(self):
+        return self.relvalue + self.min_external
+
     def __str__(self):
         return 'refs: %i + N where N >= %i' % (self.relvalue, self.min_external)
 
@@ -405,6 +408,61 @@ class MyState(State):
         return [Transition(self, success, '%s() succeeds' % fnname),
                 Transition(self, failure, '%s() fails' % fnname)]
 
+    def eval_stmt_args(self, stmt):
+        assert isinstance(stmt, gcc.GimpleCall)
+        return [self.eval_rvalue(arg, stmt.loc)
+                for arg in stmt.args]
+
+    # Treat calls to various function prefixed with __cpychecker as special,
+    # to help with debugging, and when writing selftests:
+
+    def impl___cpychecker_log(self, stmt):
+        """
+        Assuming a C function with this declaration:
+            extern void __cpychecker_log(const char *);
+        and that it is called with a string constant, log the message
+        within the trace.
+        """
+        returntype = stmt.fn.type.dereference.type
+        args = self.eval_stmt_args(stmt)
+        desc = None
+        if isinstance(args[0], PointerToRegion):
+            if isinstance(args[0].region, RegionForStringConstant):
+                desc = args[0].region.text
+        return [self.make_assignment(stmt.lhs,
+                                     UnknownValue(returntype, stmt.loc),
+                                     desc)]
+
+    def impl___cpychecker_dump(self, stmt):
+        returntype = stmt.fn.type.dereference.type
+        # Give the transition a description that embeds the argument values
+        # This will show up in selftests (and in error reports that embed
+        # traces)
+        args = self.eval_stmt_args(stmt)
+        desc = '__dump(%s)' % (','.join([str(arg) for arg in args]))
+        return [self.make_assignment(stmt.lhs,
+                                     UnknownValue(returntype, stmt.loc),
+                                     desc)]
+
+    def impl___cpychecker_assert_equal(self, stmt):
+        """
+        Assuming a C function with this declaration:
+            extern void __cpychecker_assert_equal(T, T);
+        for some type T, raise an exception within the checker if the two
+        arguments are non-equal (for use in writing selftests).
+        """
+        returntype = stmt.fn.type.dereference.type
+        # Give the transition a description that embeds the argument values
+        # This will show up in selftests (and in error reports that embed
+        # traces)
+        args = self.eval_stmt_args(stmt)
+        if args[0] != args[1]:
+            raise AssertionError('%s != %s' % (args[0], args[1]))
+        desc = '__cpychecker_assert_equal(%s)' % (','.join([str(arg) for arg in args]))
+        return [self.make_assignment(stmt.lhs,
+                                     UnknownValue(returntype, stmt.loc),
+                                     desc)]
+
     # Specific Python API function implementations:
     def impl_PyList_New(self, stmt):
         # Decl:
@@ -581,9 +639,7 @@ class MyState(State):
         log('stmt.exprtype: %s', stmt.exprtype)
         log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
         log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
-        log('dir(stmt.lhs): %s', dir(stmt.lhs))
-        log('dir(stmt.rhs): %s', dir(stmt.rhs))
-        boolval = self.eval_condition(stmt)
+        boolval = self.eval_condition(stmt, stmt.lhs, stmt.exprcode, stmt.rhs)
         if boolval is True:
             log('taking True edge')
             nextstate = make_transition_for_true(stmt)
@@ -598,7 +654,20 @@ class MyState(State):
             return [make_transition_for_true(stmt),
                     make_transition_for_false(stmt)]
 
-    def eval_condition(self, stmt):
+    def eval_condition(self, stmt, expr_lhs, exprcode, expr_rhs):
+        """
+        Evaluate a comparison, returning one of True, False, or None
+        """
+        log('eval_condition: %s %s %s ', expr_lhs, exprcode, expr_rhs)
+        check_isinstance(expr_lhs, gcc.Tree)
+        check_isinstance(exprcode, type) # it's a type, rather than an instance
+        check_isinstance(expr_rhs, gcc.Tree)
+
+        lhs = self.eval_rvalue(expr_lhs, stmt.loc)
+        rhs = self.eval_rvalue(expr_rhs, stmt.loc)
+        check_isinstance(lhs, AbstractValue)
+        check_isinstance(rhs, AbstractValue)
+
         def is_equal(lhs, rhs):
             check_isinstance(lhs, AbstractValue)
             check_isinstance(rhs, AbstractValue)
@@ -622,32 +691,84 @@ class MyState(State):
             # We don't know:
             return None
 
-        log('eval_condition: %s', stmt)
-        lhs = self.eval_rvalue(stmt.lhs, stmt.loc)
-        rhs = self.eval_rvalue(stmt.rhs, stmt.loc)
-        log('eval of lhs: %r', lhs)
-        log('eval of rhs: %r', rhs)
-        log('stmt.exprcode: %r', stmt.exprcode)
-        if stmt.exprcode == gcc.EqExpr:
+        def is_lt(lhs, rhs):
+            # "less-than"
+            check_isinstance(lhs, AbstractValue)
+            check_isinstance(rhs, AbstractValue)
+            if isinstance(rhs, ConcreteValue):
+                if isinstance(lhs, ConcreteValue):
+                    log('comparing concrete values: %s %s', lhs, rhs)
+                    return lhs.value < rhs.value
+                if isinstance(lhs, RefcountValue):
+                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+                    if lhs.get_min_value() >= rhs.value:
+                        return False
+            # We don't know:
+            return None
+
+        def is_le(lhs, rhs):
+            # "less-than-or-equal"
+            # Implement using is_equal and is_lt:
+            # First try "less-than":
+            lt_result = is_lt(lhs, rhs)
+            if lt_result is not None:
+                if lt_result:
+                    return True
+            # Either not less than, or we don't know
+            # Try equality:
+            eq_result = is_equal(lhs, rhs)
+            if eq_result is not None:
+                if eq_result:
+                    # Definitely equal:
+                    return eq_result
+                else:
+                    # Definitely not equal
+                    # If we have a definite result for less-than, use it:
+                    if lt_result is not None:
+                        return lt_result
+            # We don't know:
+            return None
+
+        if exprcode == gcc.EqExpr:
             result = is_equal(lhs, rhs)
             if result is not None:
                 return result
-        elif stmt.exprcode == gcc.NeExpr:
+        elif exprcode == gcc.NeExpr:
             result = is_equal(lhs, rhs)
+            if result is not None:
+                return not result
+        elif exprcode == gcc.LtExpr:
+            result = is_lt(lhs, rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.LeExpr:
+            result = is_le(lhs, rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.GeExpr:
+            # Implement "A >= B" as "not(A < B)":
+            result = is_lt(lhs, rhs)
+            if result is not None:
+                return not result
+        elif exprcode == gcc.GtExpr:
+            # Implement "A > B " as "not(A <= B)":
+            result = is_le(lhs, rhs)
             if result is not None:
                 return not result
 
         # Specialcasing: comparison of unknown ptr with NULL:
-        if (isinstance(stmt.lhs, gcc.VarDecl)
-            and isinstance(stmt.rhs, gcc.IntegerCst)
-            and isinstance(stmt.lhs.type, gcc.PointerType)):
+        if (isinstance(expr_lhs, gcc.VarDecl)
+            and isinstance(expr_rhs, gcc.IntegerCst)
+            and isinstance(expr_lhs.type, gcc.PointerType)):
             # Split the ptr variable immediately into NULL and non-NULL
             # versions, so that we can evaluate the true and false branch with
             # explicitly data
-            log('splitting %s into non-NULL/NULL pointers', stmt.lhs)
+            log('splitting %s into non-NULL/NULL pointers', expr_lhs)
             self.raise_split_value(lhs, stmt.loc)
 
         log('unable to compare %r with %r', lhs, rhs)
+        #raise NotImplementedError("Don't know how to do %s comparison of %s with %s"
+        #                          % (exprcode, lhs, rhs))
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
     def eval_rhs(self, stmt):
@@ -658,6 +779,8 @@ class MyState(State):
             b = self.eval_rvalue(rhs[1], stmt.loc)
             log('a: %r', a)
             log('b: %r', b)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
                 return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
@@ -672,6 +795,8 @@ class MyState(State):
             b = self.eval_rvalue(rhs[1], stmt.loc)
             log('a: %r', a)
             log('b: %r', b)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue - b.value, a.min_external)
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
@@ -695,6 +820,15 @@ class MyState(State):
         elif stmt.exprcode == gcc.PointerPlusExpr:
             region = self.pointer_plus_region(stmt)
             return PointerToRegion(stmt.lhs.type, stmt.loc, region)
+        elif stmt.exprcode in (gcc.EqExpr, gcc.NeExpr, gcc.LtExpr,
+                               gcc.LeExpr, gcc.GeExpr, gcc.GtExpr):
+            # Comparisons
+            result = self.eval_condition(stmt, rhs[0], stmt.exprcode, rhs[1])
+            if result is not None:
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     1 if result else 0)
+            else:
+                return UnknownValue(stmt.lhs.type, stmt.loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))

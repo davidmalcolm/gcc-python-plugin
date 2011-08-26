@@ -1,0 +1,26 @@
+Trace 0:
+  Transitions:
+    'Comparing 1 with 1'
+    'taking False path'
+    'taking True path'
+    'taking True path'
+    'taking False path'
+    'taking True path'
+    'taking False path'
+    'Comparing 1 with 2'
+    'taking True path'
+    'taking True path'
+    'taking False path'
+    'taking True path'
+    'taking False path'
+    'taking False path'
+    'Comparing 2 with 1'
+    'taking False path'
+    'taking False path'
+    'taking False path'
+    'taking True path'
+    'taking True path'
+    'taking True path'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/conditionals/input.c:29

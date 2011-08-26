@@ -86,6 +86,11 @@ class ConcreteValue(AbstractValue):
         self.loc = loc
         self.value = value
 
+    def __ne__(self, other):
+        if isinstance(other, ConcreteValue):
+            return self.value != other.value
+        return NotImplemented
+
     def __str__(self):
         if self.loc:
             return '(%s)%r from %s' % (self.gcctype, self.value, self.loc)

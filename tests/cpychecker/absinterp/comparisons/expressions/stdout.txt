@@ -1,0 +1,26 @@
+Trace 0:
+  Transitions:
+    'Comparing 1 with 1'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:45,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:45)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:46,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:46)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:47,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:47)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:48,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:48)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:49,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:49)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:50,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:50)'
+    'Comparing 1 with 2'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:53,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:53)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:54,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:54)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:55,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:55)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:56,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:56)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:57,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:57)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:58,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:58)'
+    'Comparing 2 with 1'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:61,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:61)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:62,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:62)'
+    '__cpychecker_assert_equal((int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:63,(int)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:63)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:64,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:64)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:65,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:65)'
+    '__cpychecker_assert_equal((int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:66,(int)1 from tests/cpychecker/absinterp/comparisons/expressions/input.c:66)'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/expressions/input.c:30
