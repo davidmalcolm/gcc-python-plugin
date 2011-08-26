@@ -388,8 +388,8 @@ class State:
                    self._extra()))
 
     def log(self, logger, indent):
-        logger(str(self.region_for_var), indent + 1)
-        logger(str(self.value_for_region), indent + 1)
+        #logger(str(self.region_for_var), indent + 1)
+        #logger(str(self.value_for_region), indent + 1)
         # Display data in tabular form:
         from gccutils import Table
         t = Table(['Expression', 'Region', 'Value'])
@@ -402,10 +402,10 @@ class State:
         for line in s.getvalue().splitlines():
             logger(line, indent + 1)
 
-        logger('extra: %s' % (self._extra(), ), indent)
+        #logger('extra: %s' % (self._extra(), ), indent)
 
         # FIXME: derived class/extra:
-        self.resources.log(logger, indent)
+        #self.resources.log(logger, indent)
 
         logger('loc: %s' % self.loc, indent)
         if self.loc.get_stmt():
