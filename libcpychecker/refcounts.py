@@ -145,7 +145,7 @@ class GenericTpDealloc(AbstractValue):
         check_isinstance(value, PointerToRegion)
         region = value.region
         check_isinstance(region, Region)
-        log('generic tp_dealloc called for %s' % region)
+        log('generic tp_dealloc called for %s', region)
 
         # Get the description of the region before trashing it:
         desc = 'calling tp_dealloc on %s' % region
@@ -198,7 +198,7 @@ class MyState(State):
         self.resources.release(resource)
 
     def init_for_function(self, fun):
-        log('MyState.init_for_function(%r)' % fun)
+        log('MyState.init_for_function(%r)', fun)
         State.init_for_function(self, fun)
 
         # Initialize PyObject* arguments to sane values
@@ -208,7 +208,7 @@ class MyState(State):
             region = self.eval_lvalue(parm, None)
             if type_is_pyobjptr_subclass(parm.type):
                 # We have a PyObject* (or a derived class)
-                log('got python obj arg: %r' % region)
+                log('got python obj arg: %r', region)
                 # Assume it's a non-NULL ptr:
                 objregion = Region('region-for-arg-%s' % parm, None)
                 self.region_for_var[objregion] = objregion
@@ -246,12 +246,12 @@ class MyState(State):
                 newstate = self.copy()
                 newstate.loc = loc
                 result.append(Transition(self, newstate, ''))
-            log('result: %s' % result)
+            log('result: %s', result)
             return result
 
     def _get_transitions_for_stmt(self, stmt):
-        log('_get_transitions_for_stmt: %r %s' % (stmt, stmt), 2)
-        log('dir(stmt): %s' % dir(stmt), 3)
+        log('_get_transitions_for_stmt: %r %s', stmt, stmt)
+        log('dir(stmt): %s', dir(stmt))
         if stmt.loc:
             gcc.set_location(stmt.loc)
         if isinstance(stmt, gcc.GimpleCall):
@@ -355,7 +355,7 @@ class MyState(State):
         return newstate
 
     def steal_reference(self, region):
-        log('steal_reference(%r)' % region)
+        log('steal_reference(%r)', region)
         check_isinstance(region, Region)
         ob_refcnt = self.make_field_region(region, 'ob_refcnt')
         value = self.value_for_region[ob_refcnt]
@@ -512,13 +512,13 @@ class MyState(State):
         return self.make_transitions_for_fncall(stmt, success, failure)
 
     def _get_transitions_for_GimpleCall(self, stmt):
-        log('stmt.lhs: %s %r' % (stmt.lhs, stmt.lhs), 3)
-        log('stmt.fn: %s %r' % (stmt.fn, stmt.fn), 3)
-        log('dir(stmt.fn): %s' % dir(stmt.fn), 4)
+        log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
+        log('stmt.fn: %s %r', stmt.fn, stmt.fn)
+        log('dir(stmt.fn): %s', dir(stmt.fn))
         if hasattr(stmt.fn, 'operand'):
-            log('stmt.fn.operand: %s' % stmt.fn.operand, 4)
+            log('stmt.fn.operand: %s', stmt.fn.operand)
         returntype = stmt.fn.type.dereference.type
-        log('returntype: %s' % returntype)
+        log('returntype: %s', returntype)
 
         if stmt.noreturn:
             # The function being called does not return e.g. "exit(0);"
@@ -532,13 +532,13 @@ class MyState(State):
         if isinstance(stmt.fn, gcc.VarDecl):
             # Calling through a function pointer:
             val = self.eval_rvalue(stmt.fn, stmt.loc)
-            log('val: %s' %  val)
+            log('val: %s',  val)
             check_isinstance(val, AbstractValue)
             return val.get_transitions_for_function_call(self, stmt)
 
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-            log('dir(stmt.fn.operand): %s' % dir(stmt.fn.operand), 4)
-            log('stmt.fn.operand.name: %r' % stmt.fn.operand.name, 4)
+            log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
+            log('stmt.fn.operand.name: %r', stmt.fn.operand.name)
             fnname = stmt.fn.operand.name
 
             # Hand off to impl_* methods, where these exist:
@@ -553,14 +553,14 @@ class MyState(State):
             #    return handle_c_stdio_function(self, fnname, stmt)
 
             # Unknown function:
-            log('Invocation of unknown function: %r' % fnname)
+            log('Invocation of unknown function: %r', fnname)
             return [self.make_assignment(stmt.lhs,
                                          UnknownValue(returntype, stmt.loc),
                                          None)]
 
-        log('stmt.args: %s %r' % (stmt.args, stmt.args), 3)
+        log('stmt.args: %s %r', stmt.args, stmt.args)
         for i, arg in enumerate(stmt.args):
-            log('args[%i]: %s %r' % (i, arg, arg), 4)
+            log('args[%i]: %s %r', i, arg, arg)
 
     def _get_transitions_for_GimpleCond(self, stmt):
         def make_transition_for_true(stmt):
@@ -577,19 +577,19 @@ class MyState(State):
             nextstate.prior_bool = False
             return Transition(self, nextstate, 'taking False path')
 
-        log('stmt.exprcode: %s' % stmt.exprcode, 4)
-        log('stmt.exprtype: %s' % stmt.exprtype, 4)
-        log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs), 4)
-        log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs), 4)
-        log('dir(stmt.lhs): %s' % dir(stmt.lhs), 5)
-        log('dir(stmt.rhs): %s' % dir(stmt.rhs), 5)
+        log('stmt.exprcode: %s', stmt.exprcode)
+        log('stmt.exprtype: %s', stmt.exprtype)
+        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        log('dir(stmt.lhs): %s', dir(stmt.lhs))
+        log('dir(stmt.rhs): %s', dir(stmt.rhs))
         boolval = self.eval_condition(stmt)
         if boolval is True:
-            log('taking True edge', 2)
+            log('taking True edge')
             nextstate = make_transition_for_true(stmt)
             return [nextstate]
         elif boolval is False:
-            log('taking False edge', 2)
+            log('taking False edge')
             nextstate = make_transition_for_false(stmt)
             return [nextstate]
         else:
@@ -604,30 +604,30 @@ class MyState(State):
             check_isinstance(rhs, AbstractValue)
             if isinstance(rhs, ConcreteValue):
                 if isinstance(lhs, PointerToRegion) and rhs.value == 0:
-                    log('ptr to region vs 0: %s is definitely not equal to %s' % (lhs, rhs))
+                    log('ptr to region vs 0: %s is definitely not equal to %s', lhs, rhs)
                     return False
                 if isinstance(lhs, ConcreteValue):
-                    log('comparing concrete values: %s %s' % (lhs, rhs))
+                    log('comparing concrete values: %s %s', lhs, rhs)
                     return lhs.value == rhs.value
                 if isinstance(lhs, RefcountValue):
-                    log('comparing refcount value %s with concrete value: %s' % (lhs, rhs))
+                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
                     # The actual value of ob_refcnt >= lhs.relvalue
                     if lhs.relvalue > rhs.value:
                         # (Equality is thus not possible for this case)
                         return False
             if isinstance(rhs, PointerToRegion):
                 if isinstance(lhs, PointerToRegion):
-                    log('comparing regions: %s %s' % (lhs, rhs))
+                    log('comparing regions: %s %s', lhs, rhs)
                     return lhs.region == rhs.region
             # We don't know:
             return None
 
-        log('eval_condition: %s' % stmt)
+        log('eval_condition: %s', stmt)
         lhs = self.eval_rvalue(stmt.lhs, stmt.loc)
         rhs = self.eval_rvalue(stmt.rhs, stmt.loc)
-        log('eval of lhs: %r' % lhs)
-        log('eval of rhs: %r' % rhs)
-        log('stmt.exprcode: %r' % stmt.exprcode)
+        log('eval of lhs: %r', lhs)
+        log('eval of rhs: %r', rhs)
+        log('stmt.exprcode: %r', stmt.exprcode)
         if stmt.exprcode == gcc.EqExpr:
             result = is_equal(lhs, rhs)
             if result is not None:
@@ -644,20 +644,20 @@ class MyState(State):
             # Split the ptr variable immediately into NULL and non-NULL
             # versions, so that we can evaluate the true and false branch with
             # explicitly data
-            log('splitting %s into non-NULL/NULL pointers' % stmt.lhs)
+            log('splitting %s into non-NULL/NULL pointers', stmt.lhs)
             self.raise_split_value(lhs, stmt.loc)
 
-        log('unable to compare %r with %r' % (lhs, rhs))
+        log('unable to compare %r with %r', lhs, rhs)
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
     def eval_rhs(self, stmt):
-        log('eval_rhs(%s): %s' % (stmt, stmt.rhs))
+        log('eval_rhs(%s): %s', stmt, stmt.rhs)
         rhs = stmt.rhs
         if stmt.exprcode == gcc.PlusExpr:
             a = self.eval_rvalue(rhs[0], stmt.loc)
             b = self.eval_rvalue(rhs[1], stmt.loc)
-            log('a: %r' % a)
-            log('b: %r' % b)
+            log('a: %r', a)
+            log('b: %r', b)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
                 return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
@@ -670,8 +670,8 @@ class MyState(State):
         elif stmt.exprcode == gcc.MinusExpr:
             a = self.eval_rvalue(rhs[0], stmt.loc)
             b = self.eval_rvalue(rhs[1], stmt.loc)
-            log('a: %r' % a)
-            log('b: %r' % b)
+            log('a: %r', a)
+            log('b: %r', b)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue - b.value, a.min_external)
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
@@ -700,13 +700,13 @@ class MyState(State):
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
 
     def _get_transitions_for_GimpleAssign(self, stmt):
-        log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
-        log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
-        log('stmt: %r %s' % (stmt, stmt))
-        log('stmt.exprcode: %r' % stmt.exprcode)
+        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        log('stmt: %r %s', stmt, stmt)
+        log('stmt.exprcode: %r', stmt.exprcode)
 
         value = self.eval_rhs(stmt)
-        log('value from eval_rhs: %r' % value)
+        log('value from eval_rhs: %r', value)
         check_isinstance(value, AbstractValue)
 
         if isinstance(value, DeallocatedMemory):
@@ -715,11 +715,11 @@ class MyState(State):
         nextstate = self.use_next_loc()
         """
         if isinstance(stmt.lhs, gcc.MemRef):
-            log('value: %s %r' % (value, value))
+            log('value: %s %r', value, value)
             # We're writing a value to memory; if it's a PyObject*
             # then we're surrending a reference on it:
             if value in nextstate.owned_refs:
-                log('removing ownership of %s' % value)
+                log('removing ownership of %s', value)
                 nextstate.owned_refs.remove(value)
         """
         return [self.make_assignment(stmt.lhs,
@@ -727,16 +727,16 @@ class MyState(State):
                                      None)]
 
     def _get_transitions_for_GimpleReturn(self, stmt):
-        #log('stmt.lhs: %r %s' % (stmt.lhs, stmt.lhs))
-        #log('stmt.rhs: %r %s' % (stmt.rhs, stmt.rhs))
-        log('stmt: %r %s' % (stmt, stmt))
-        log('stmt.retval: %r' % stmt.retval)
+        #log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        #log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        log('stmt: %r %s', stmt, stmt)
+        log('stmt.retval: %r', stmt.retval)
 
         nextstate = self.copy()
 
         if stmt.retval:
             rvalue = self.eval_rvalue(stmt.retval, stmt.loc)
-            log('rvalue from eval_rvalue: %r' % rvalue)
+            log('rvalue from eval_rvalue: %r', rvalue)
             nextstate.return_rvalue = rvalue
         nextstate.has_returned = True
         return [Transition(self, nextstate, 'returning')]
@@ -749,12 +749,12 @@ class MyState(State):
                 # FIXME: for now, treat all labels as possible:
                 result.append(label)
             return result
-        log('stmt.indexvar: %r' % stmt.indexvar)
-        log('stmt.labels: %r' % (stmt.labels,))
+        log('stmt.indexvar: %r', stmt.indexvar)
+        log('stmt.labels: %r', stmt.labels)
         indexval = self.eval_rvalue(stmt.indexvar, stmt.loc)
-        log('indexval: %r'  % indexval)
+        log('indexval: %r', indexval)
         labels = get_labels_for_rvalue(self, stmt, indexval)
-        log('labels: %r' % labels)
+        log('labels: %r', labels)
         result = []
         for label in labels:
             newstate = self.copy()
@@ -898,8 +898,8 @@ class RefcountAnnotator(Annotator):
         dest_refcnt = transition.dest.get_value_of_field_by_region(self.region,
                                                                    'ob_refcnt')
         if src_refcnt != dest_refcnt:
-            log('src_refcnt: %r' % src_refcnt, 0)
-            log('dest_refcnt: %r' % dest_refcnt, 0)
+            log('src_refcnt: %r', src_refcnt)
+            log('dest_refcnt: %r', dest_refcnt)
             result.append(Note(loc,
                                ('ob_refcnt is now %s' % dest_refcnt)))
 
@@ -939,7 +939,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
-    log('check_refcounts(%r, %r, %r)' % (fun, dump_traces, show_traces))
+    log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
 
     check_isinstance(fun, gcc.Function)
 
@@ -960,18 +960,18 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
     rep = Reporter()
 
     for i, trace in enumerate(traces):
-        trace.log(log, 'TRACE %i' % i, 0)
+        trace.log(log, 'TRACE %i' % i)
         if trace.err:
             # This trace bails early with a fatal error; it probably doesn't
             # have a return value
-            log('trace.err: %s %r' % (trace.err, trace.err))
+            log('trace.err: %s %r', trace.err, trace.err)
             err = rep.make_error(fun, trace.err.loc, str(trace.err))
             err.add_trace(trace)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
         return_value = trace.return_value()
-        log('trace.return_value(): %s' % trace.return_value())
+        log('trace.return_value(): %s', trace.return_value())
 
         # Ideally, we should "own" exactly one reference, and it should be
         # the return value.  Anything else is an error (and there are other
@@ -979,10 +979,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
         # Locate all PyObject that we touched
         endstate = trace.states[-1]
-        endstate.log(log, 0)
-        log('return_value: %r' % return_value, 0)
-        log('endstate.region_for_var: %r' % endstate.region_for_var, 0)
-        log('endstate.value_for_region: %r' % endstate.value_for_region, 0)
+        endstate.log(log)
+        log('return_value: %r', return_value)
+        log('endstate.region_for_var: %r', endstate.region_for_var)
+        log('endstate.value_for_region: %r', endstate.value_for_region)
 
         # Consider all regions of memory we know about:
         for k in endstate.region_for_var:
@@ -990,7 +990,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                 continue
             region = endstate.region_for_var[k]
 
-            log('considering ob_refcnt of %r' % region)
+            log('considering ob_refcnt of %r', region)
             check_isinstance(region, Region)
 
             # Consider those for which we know something about an "ob_refcnt"
@@ -1000,7 +1000,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
 
             ob_refcnt = endstate.get_value_of_field_by_region(region,
                                                               'ob_refcnt')
-            log('ob_refcnt: %r' % ob_refcnt, 0)
+            log('ob_refcnt: %r', ob_refcnt)
 
             # If it's the return value, it should have a net refcnt delta of
             # 1; all other PyObject should have a net delta of 0:
@@ -1019,7 +1019,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             exp_refs += [ref.name
                          for ref in endstate.get_persistent_refs_for_region(region)]
             exp_refcnt = len(exp_refs)
-            log('exp_refs: %r' % exp_refs, 0)
+            log('exp_refs: %r', exp_refs)
 
             # Helper function for when ob_refcnt is wrong:
             def emit_refcount_error(msg):

@@ -311,7 +311,7 @@ class ConverterCallbackType(AwkwardType):
             return False
 
         # Write back to the ConverterResultType with the second arg:
-        log('2nd argument of converter should be of type %s' % signature.argument_types[1])
+        log('2nd argument of converter should be of type %s', signature.argument_types[1])
         self.conv.result.type = signature.argument_types[1]
         self.actual_type = actual_type
 
@@ -589,9 +589,9 @@ class MismatchingType(ParsedFormatStringError):
                 % (self.funcname, self.fmt.fmt_string))
 
 def compatible_type(exp_type, actual_type, actualarg=None):
-    log('comparing exp_type: %s (%r) with actual_type: %s (%r)' % (exp_type, exp_type, actual_type, actual_type))
-    log('type(exp_type): %r %s' % (type(exp_type), type(exp_type)))
-    log('actualarg: %s (%r)' % (actualarg, actualarg))
+    log('comparing exp_type: %s (%r) with actual_type: %s (%r)', exp_type, exp_type, actual_type, actual_type)
+    log('type(exp_type): %r %s', type(exp_type), type(exp_type))
+    log('actualarg: %s (%r)', actualarg, actualarg)
 
     # Support exp_type being actually a tuple of expected types (we need this
     # for "S" and "U"):
@@ -705,12 +705,12 @@ def check_pyargs(fun):
                         i = i + 1
 
     def check_callsite(stmt, funcname, format_idx, varargs_idx, with_size_t):
-        log('got call at %s' % stmt.loc)
+        log('got call at %s', stmt.loc)
         log(get_src_for_loc(stmt.loc))
-        # log('stmt: %r %s' % (stmt, stmt))
-        # log('args: %r' % stmt.args)
+        # log('stmt: %r %s', (stmt, stmt))
+        # log('args: %r', stmt.args)
         # for arg in stmt.args:
-        #    # log('  arg: %s %r' % (arg, arg))
+        #    # log('  arg: %s %r', (arg, arg))
             
 
         # We expect the following args:
@@ -721,7 +721,7 @@ def check_pyargs(fun):
         if len(stmt.args) > 1:
             fmt_string = get_format_string(stmt, format_idx)
             if fmt_string:
-                log('fmt_string: %r' % fmt_string)
+                log('fmt_string: %r', fmt_string)
 
                 loc = stmt.loc
 
@@ -732,14 +732,14 @@ def check_pyargs(fun):
                     exc = sys.exc_info()[1]
                     gcc.permerror(stmt.loc, str(exc))
                     return
-                log('fmt: %r' % fmt.args)
+                log('fmt: %r', fmt.args)
 
                 exp_types = list(fmt.iter_exp_types())
-                log('exp_types: %r' % exp_types)
+                log('exp_types: %r', exp_types)
 
                 # ...then compare them against the actual types:
                 varargs = stmt.args[varargs_idx:]
-                # log('varargs: %r' % varargs)
+                # log('varargs: %r', varargs)
                 if len(varargs) < len(exp_types):
                     gcc.permerror(loc, str(NotEnoughVars(funcname, fmt, varargs)))
                     return

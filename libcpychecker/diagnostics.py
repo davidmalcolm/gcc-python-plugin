@@ -63,7 +63,7 @@ def describe_trace(trace, fun, annotator):
     """
     awaiting_target = None
     for t in trace.transitions:
-        log('transition: %s' % t)
+        log('transition: %s', t)
         srcloc = t.src.get_gcc_loc_or_none()
         if t.desc:
             if srcloc:

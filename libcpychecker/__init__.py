@@ -35,7 +35,7 @@ class CpyChecker(gcc.GimplePass):
 
     def execute(self, fun):
         if fun:
-            log(fun)
+            log('%s', fun)
             check_pyargs(fun)
 
             # The refcount code is too buggy for now to be on by default:
@@ -44,7 +44,7 @@ class CpyChecker(gcc.GimplePass):
 
 def is_a_method_callback(decl):
     methods = get_all_PyMethodDef_methods()
-    log('methods: %s' % methods)
+    log('methods: %s', methods)
     # FIXME
     
 
@@ -59,10 +59,10 @@ def get_all_PyMethodDef_methods():
              if isinstance(idx2, gcc.Declaration):
                  if idx2.name == 'ml_meth':
                      if isinstance(value2, gcc.AddrExpr):
-                         log('    GOT A PyMethodDef.ml_meth initializer declaration: %s' % value2)
-                         log('      value2.operand: %r' % value2.operand) # gcc.Declaration
-                         log('      value2.operand: %s' % value2.operand)
-                         log('      value2.operand.function: %s' % value2.operand.function)
+                         log('    GOT A PyMethodDef.ml_meth initializer declaration: %s', value2)
+                         log('      value2.operand: %r', value2.operand) # gcc.Declaration
+                         log('      value2.operand: %s', value2.operand)
+                         log('      value2.operand.function: %s', value2.operand.function)
                          return (value2.operand, value2.location)
     result = []
     vars = gcc.get_variables()

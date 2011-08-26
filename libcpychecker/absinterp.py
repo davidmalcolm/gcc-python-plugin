@@ -21,7 +21,7 @@ import sys
 from six import StringIO
 from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
-from libcpychecker.utils import log
+from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
 
 class AbstractValue:
@@ -330,10 +330,10 @@ class SplitValue(Exception):
                    '\n'.join([repr(alt) for alt in self.altvalues])))
 
     def split(self, state):
-        log('creating states for split of %s into %s' % (self.value, self.altvalues))
+        log('creating states for split of %s into %s', self.value, self.altvalues)
         result = []
         for altvalue in self.altvalues:
-            log(' creating state for split where %s is %s' % (self.value, altvalue))
+            log(' creating state for split where %s is %s', self.value, altvalue)
             altvalue.fromsplit = True
 
             newstate = state.copy()
@@ -341,7 +341,7 @@ class SplitValue(Exception):
             for r in newstate.value_for_region:
                 # Replace instances of the value itself:
                 if newstate.value_for_region[r] is self.value:
-                    log('  replacing value for region %s with %s' % (r, altvalue))
+                    log('  replacing value for region %s with %s', r, altvalue)
                     newstate.value_for_region[r] = altvalue
             result.append(Transition(state,
                                      newstate,
@@ -387,9 +387,9 @@ class State:
                    self.value_for_region,
                    self._extra()))
 
-    def log(self, logger, indent):
-        #logger(str(self.region_for_var), indent + 1)
-        #logger(str(self.value_for_region), indent + 1)
+    def log(self, logger):
+        if not logging_enabled:
+            return
         # Display data in tabular form:
         from gccutils import Table
         t = Table(['Expression', 'Region', 'Value'])
@@ -399,17 +399,16 @@ class State:
             t.add_row((k, region, value),)
         s = StringIO()
         t.write(s)
-        for line in s.getvalue().splitlines():
-            logger(line, indent + 1)
+        logger('%s', s.getvalue())
 
         #logger('extra: %s' % (self._extra(), ), indent)
 
         # FIXME: derived class/extra:
         #self.resources.log(logger, indent)
 
-        logger('loc: %s' % self.loc, indent)
+        logger('loc: %s', self.loc)
         if self.loc.get_stmt():
-            logger('%s' % self.loc.get_stmt().loc, indent + 1)
+            logger('%s', self.loc.get_stmt().loc)
 
     def copy(self):
         c = self.__class__(loc,
@@ -436,7 +435,7 @@ class State:
         """
         Return the Region for the given expression
         """
-        log('eval_lvalue: %r %s' % (expr, expr))
+        log('eval_lvalue: %r %s', expr, expr)
         if loc:
             check_isinstance(loc, gcc.Location)
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
@@ -457,10 +456,10 @@ class State:
         elif isinstance(expr, gcc.MemRef):
             # Write through a pointer:
             dest_ptr = self.eval_rvalue(expr.operand, loc)
-            log('dest_ptr: %r' % dest_ptr)
+            log('dest_ptr: %r', dest_ptr)
             check_isinstance(dest_ptr, PointerToRegion)
             dest_region = dest_ptr.region
-            log('dest_region: %r' % dest_region)
+            log('dest_region: %r', dest_region)
             return dest_region
         raise NotImplementedError('eval_lvalue: %r %s' % (expr, expr))
 
@@ -469,7 +468,7 @@ class State:
         Return the value for the given expression, as an AbstractValue
         FIXME: also as a Region?
         """
-        log('eval_rvalue: %r %s' % (expr, expr))
+        log('eval_rvalue: %r %s', expr, expr)
         if loc:
             check_isinstance(loc, gcc.Location)
 
@@ -490,33 +489,33 @@ class State:
             #check_isinstance(expr.field, gcc.FieldDecl)
             region = self.get_field_region(expr, loc)#.target, expr.field.name)
             check_isinstance(region, Region)
-            log('got field region for %s: %r' % (expr, region))
+            log('got field region for %s: %r', expr, region)
             try:
                 value = self.get_store(region, expr.type, loc)
-                log('got value: %r' % value)
+                log('got value: %r', value)
             except MissingValue:
                 value = UnknownValue(expr.type, loc)
-                log('no value; using: %r' % value)
+                log('no value; using: %r', value)
             check_isinstance(value, AbstractValue)
             return value
         if isinstance(expr, gcc.AddrExpr):
-            log('expr.operand: %r' % expr.operand)
+            log('expr.operand: %r', expr.operand)
             lvalue = self.eval_lvalue(expr.operand, loc)
             check_isinstance(lvalue, Region)
             return PointerToRegion(expr.type, loc, lvalue)
         if isinstance(expr, gcc.ArrayRef):
-            log('expr.array: %r' % expr.array)
-            log('expr.index: %r' % expr.index)
+            log('expr.array: %r', expr.array)
+            log('expr.index: %r', expr.index)
             lvalue = self.eval_lvalue(expr, loc)
             check_isinstance(lvalue, Region)
             rvalue = self.get_store(lvalue, expr.type, loc)
             check_isinstance(rvalue, AbstractValue)
             return rvalue
         if isinstance(expr, gcc.MemRef):
-            log('expr.operand: %r' % expr.operand)
+            log('expr.operand: %r', expr.operand)
             opvalue = self.eval_rvalue(expr.operand, loc)
             check_isinstance(opvalue, AbstractValue)
-            log('opvalue: %r' % opvalue)
+            log('opvalue: %r', opvalue)
             self.raise_any_null_ptr_deref(expr, opvalue)
             if isinstance(opvalue, UnknownValue):
                 # Split into null/non-null pointers:
@@ -529,14 +528,14 @@ class State:
         return UnknownValue(expr.type, loc) # FIXME
 
     def assign(self, lhs, rhs, loc):
-        log('assign(%r, %r)' % (lhs, rhs))
-        log('assign(%s, %s)' % (lhs, rhs))
+        log('assign(%r, %r)', lhs, rhs)
+        log('assign(%s, %s)', lhs, rhs)
         if loc:
             check_isinstance(loc, gcc.Location)
         dest_region = self.eval_lvalue(lhs, loc)
-        log('dest_region: %s %r' % (dest_region, dest_region))
+        log('dest_region: %s %r', dest_region, dest_region)
         value = self.eval_rvalue(rhs, loc)
-        log('value: %s %r' % (value, value))
+        log('value: %s %r', value, value)
         check_isinstance(value, AbstractValue)
         check_isinstance(dest_region, Region)
         self.value_for_region[dest_region] = value
@@ -545,7 +544,7 @@ class State:
         check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
-            log('adding region for global var: %r' % var)
+            log('adding region for global var: %r', var)
             region = RegionForGlobal(var)
             # it is its own region:
             self.region_for_var[var] = region
@@ -559,19 +558,19 @@ class State:
         return self.region_for_var[var]
 
     def element_region(self, ar, loc):
-        log('element_region: %s' % ar)
+        log('element_region: %s', ar)
         check_isinstance(ar, gcc.ArrayRef)
         if loc:
             check_isinstance(loc, gcc.Location)
 
-        log('  ar.array: %r' % ar.array)
-        log('  ar.index: %r' % ar.index)
+        log('  ar.array: %r', ar.array)
+        log('  ar.index: %r', ar.index)
         parent = self.eval_lvalue(ar.array, loc)
         check_isinstance(parent, Region)
-        log('  parent: %r' % parent)
+        log('  parent: %r', parent)
         index = self.eval_rvalue(ar.index, loc)
         check_isinstance(index, AbstractValue)
-        log('  index: %r' % index)
+        log('  index: %r', index)
         if isinstance(index, ConcreteValue):
             index = index.value
         return self._array_region(parent, index)
@@ -584,14 +583,14 @@ class State:
         rhs = stmt.rhs
         a = self.eval_rvalue(rhs[0], stmt.loc)
         b = self.eval_rvalue(rhs[1], stmt.loc)
-        log('a: %r' % a)
-        log('b: %r' % b)
+        log('a: %r', a)
+        log('b: %r', b)
         if isinstance(a, PointerToRegion) and isinstance(b, ConcreteValue):
             parent = a.region
-            log(rhs[0].type)
-            log(rhs[0].type.dereference)
+            log('%s', rhs[0].type)
+            log('%s', rhs[0].type.dereference)
             sizeof = rhs[0].type.dereference.sizeof
-            log(sizeof)
+            log('%s', sizeof)
             index = b.value / sizeof
             return self._array_region(parent, index)
         else:
@@ -617,39 +616,39 @@ class State:
         if loc:
             check_isinstance(loc, gcc.Location)
         #cr.debug()
-        log('target: %r %s ' % (cr.target, cr.target))
-        log('field: %r' % cr.field)
+        log('target: %r %s ', cr.target, cr.target)
+        log('field: %r', cr.field)
         #fr = FIXME #self.make_field_region(target, field)
         if 1: # fr not in self.region_for_var:
             if 1: # cr.target not in self.region_for_var:
                 log('foo')
                 if isinstance(cr.target, gcc.MemRef):
                     ptr = self.eval_rvalue(cr.target.operand, loc) # FIXME
-                    log('ptr: %r' % ptr)
+                    log('ptr: %r', ptr)
                     self.raise_any_null_ptr_deref(cr, ptr)
                     if isinstance(ptr, UnknownValue):
                         # It could be NULL; it could be non-NULL
                         # Split the analysis
                         # Non-NULL pointer:
-                        log('splitting %s into non-NULL/NULL pointers' % cr)
+                        log('splitting %s into non-NULL/NULL pointers', cr)
                         self.raise_split_value(ptr)
                     check_isinstance(ptr, PointerToRegion)
                     return self.make_field_region(ptr.region, cr.field.name)
                 elif isinstance(cr.target, gcc.VarDecl):
                     log('bar')
                     vr = self.var_region(cr.target)
-                    log(vr)
+                    log('%s', vr)
                     return self.make_field_region(vr, cr.field.name)
                 elif isinstance(cr.target, gcc.ComponentRef):
                     # nested field:
                     vr = self.get_field_region(cr.target, loc)
-                    log(vr)
+                    log('%s', vr)
                     return self.make_field_region(vr, cr.field.name)
-        log('cr: %r %s' % (cr, cr))
+        log('cr: %r %s', cr, cr)
         return self.region_for_var[cr]
 
     def string_constant_region(self, expr, loc):
-        log('string_constant_region: %s' % expr)
+        log('string_constant_region: %s', expr)
         check_isinstance(expr, gcc.StringCst)
         if loc:
             check_isinstance(loc, gcc.Location)
@@ -669,7 +668,7 @@ class State:
             # "unknown" value:
             if isinstance(region, RegionForGlobal):
                 newval = UnknownValue(region.vardecl.type, region.vardecl.location)
-                log('setting up %s for %s' % (newval, region.vardecl))
+                log('setting up %s for %s', newval, region.vardecl)
                 self.value_for_region[region] = newval
                 return newval
 
@@ -678,7 +677,7 @@ class State:
 
     def _get_store_recursive(self, region, gcctype, loc):
         check_isinstance(region, Region)
-        # self.log(log, 0)
+        # self.log(log)
         if region in self.value_for_region:
             return self.value_for_region[region]
 
@@ -700,7 +699,7 @@ class State:
     def make_field_region(self, target, field):
         check_isinstance(target, Region)
         check_isinstance(field, str)
-        log('make_field_region(%r, %r)' % (target, field))
+        log('make_field_region(%r, %r)', target, field)
         if field in target.fields:
             log('reusing')
             return target.fields[field]
@@ -715,7 +714,7 @@ class State:
     def get_value_of_field_by_varname(self, varname, field):
         # Lookup varname.field
         # For use in writing selftests
-        log('get_value_of_field_by_varname(%r, %r)' % (varname, field), 0)
+        log('get_value_of_field_by_varname(%r, %r)', varname, field)
         check_isinstance(varname, str)
         check_isinstance(field, str)
         for k in self.region_for_var:
@@ -729,7 +728,7 @@ class State:
     def get_value_of_field_by_region(self, region, field):
         # Lookup region->field
         # For use in writing selftests
-        log('get_value_of_field_by_region(%r, %r)' % (region, field), 0)
+        log('get_value_of_field_by_region(%r, %r)', region, field)
         check_isinstance(region, Region)
         check_isinstance(field, str)
         if field in region.fields:
@@ -738,7 +737,7 @@ class State:
         return None
 
     def init_for_function(self, fun):
-        log('State.init_for_function(%r)' % fun)
+        log('State.init_for_function(%r)', fun)
         self.fun = fun
         root_region = Region('root', None)
         stack = RegionOnStack('stack for %s' % fun.decl.name, root_region)
@@ -761,7 +760,7 @@ class State:
         self.verify()
 
     def make_assignment(self, lhs, rhs, desc):
-        log('make_assignment(%r, %r, %r)' % (lhs, rhs, desc))
+        log('make_assignment(%r, %r, %r)', lhs, rhs, desc)
         if desc:
             check_isinstance(desc, str)
         new = self.copy()
@@ -790,9 +789,9 @@ class State:
         # Some statements have None for their location, but gcc.error() etc
         # don't allow this.  Use the end of the function for this case.
         stmt = self.loc.get_stmt()
-        log('%s %r' % (stmt, stmt))
+        log('%s %r', stmt, stmt)
         if stmt:
-            log(self.loc.get_stmt().loc)
+            log('%s' % self.loc.get_stmt().loc)
             # grrr... not all statements have a non-NULL location
             gccloc = self.loc.get_stmt().loc
             if gccloc is None:
@@ -845,10 +844,10 @@ class Transition:
     def __repr__(self):
         return 'Transition(%r, %r)' % (self.dest, self.desc)
 
-    def log(self, logger, indent):
-        logger('desc: %r' % self.desc, indent)
-        logger('dest:', indent)
-        self.dest.log(logger, indent + 1)
+    def log(self, logger):
+        logger('desc: %r' % self.desc)
+        logger('dest:')
+        self.dest.log(logger)
 
 class Trace:
     """A sequence of States and Transitions"""
@@ -873,13 +872,13 @@ class Trace:
         t.err = self.err # FIXME: should this be a copy?
         return t
 
-    def log(self, logger, name, indent):
-        logger('%s:' % name, indent)
+    def log(self, logger, name):
+        logger('%s:' % name)
         for i, state in enumerate(self.states):
-            logger('%i:' % i, indent + 1)
-            state.log(logger, indent + 2)
+            logger('%i:' % i)
+            state.log(logger)
         if self.err:
-            logger('  Trace ended with error: %s' % self.err, indent + 1)
+            logger('  Trace ended with error: %s' % self.err)
 
     def get_last_stmt(self):
         return self.states[-1].loc.get_stmt()
@@ -939,10 +938,10 @@ class Resources:
     def release(self, resource):
         self._releases.append(resource)
 
-    def log(self, logger, indent):
-        logger('resources:', indent)
-        logger('acquisitions: %s' % self._acquisitions, indent + 1)
-        logger('releases: %s' % self._releases, indent + 1)
+    def log(self, logger):
+        logger('resources:')
+        logger('acquisitions: %s' % self._acquisitions)
+        logger('releases: %s' % self._releases)
 
 def iter_traces(fun, stateclass, prefix=None):
     """
@@ -952,7 +951,7 @@ def iter_traces(fun, stateclass, prefix=None):
     For now, don't include any traces that contain loops, as a primitive
     way of ensuring termination of the analysis
     """
-    log('iter_traces(%r, %r, %r)' % (fun, stateclass, prefix))
+    log('iter_traces(%r, %r, %r)', fun, stateclass, prefix)
     if prefix is None:
         prefix = Trace()
         curstate = stateclass(Location.get_block_start(fun.cfg.entry),
@@ -986,8 +985,8 @@ def iter_traces(fun, stateclass, prefix=None):
     else:
         prevstate = None
 
-    prefix.log(log, 'PREFIX', 1)
-    log('  %s:%s' % (fun.decl.name, curstate.loc))
+    prefix.log(log, 'PREFIX')
+    log('  %s:%s', fun.decl.name, curstate.loc)
     try:
         transitions = curstate.get_transitions()
         check_isinstance(transitions, list)
@@ -997,7 +996,7 @@ def iter_traces(fun, stateclass, prefix=None):
         err.loc = prefix.get_last_stmt().loc
         trace_with_err = prefix.copy()
         trace_with_err.add_error(err)
-        trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err, 1)
+        trace_with_err.log(log, 'FINISHED TRACE WITH ERROR: %s' % err)
         return [trace_with_err]
     except SplitValue:
         # Split the state up, splitting into parallel worlds with different
@@ -1007,7 +1006,7 @@ def iter_traces(fun, stateclass, prefix=None):
         transitions = err.split(curstate)
         check_isinstance(transitions, list)
 
-    log('transitions: %s' % transitions, 2)
+    log('transitions: %s', transitions)
 
     if len(transitions) > 0:
         result = []
@@ -1021,7 +1020,7 @@ def iter_traces(fun, stateclass, prefix=None):
         return result
     else:
         # We're at a terminating state:
-        prefix.log(log, 'FINISHED TRACE', 1)
+        prefix.log(log, 'FINISHED TRACE')
         return [prefix]
 
 class StateGraph:

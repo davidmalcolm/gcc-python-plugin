@@ -16,16 +16,25 @@
 #   <http://www.gnu.org/licenses/>.
 
 # Logging
+import sys
 
 import gcc
 
 logfile = None
 
-def log(msg, indent=0):
-    if 0:
-        global logfile
-        if not logfile:
-            logfile = open(gcc.get_dump_base_name() + '.cpychecker-log.txt', 'w')
-        logfile.write('%s%s\n' % ('  ' * indent, msg))
-    if 0:
-        sys.stderr.write('%s%s\n' % ('  ' * indent, msg))
+logging_enabled = False
+
+def log(msg, *args):
+    if logging_enabled:
+        # Only do the work of expanding the message if logging is enabled:
+        expanded_msg = msg % args
+        if 1:
+            global logfile
+            if not logfile:
+                filename = gcc.get_dump_base_name() + '.cpychecker-log.txt'
+                logfile = open(filename, 'w')
+            logfile.write(expanded_msg)
+            logfile.write('\n')
+        if 0:
+            sys.stderr.write(expanded_msg)
+            sys.stderr.write('\n')
