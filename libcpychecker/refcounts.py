@@ -1005,6 +1005,44 @@ def dump_traces_to_stdout(traces):
         if i + 1 < len(traces):
             sys.stdout.write('\n')
 
+class DebugAnnotator(Annotator):
+    """
+    Annotate a trace with copious debug information
+    """
+    def get_notes(self, transition):
+        loc = transition.src.get_gcc_loc_or_none()
+        if loc is None:
+            # (we can't add a note without a valid location)
+            return []
+
+        result = []
+
+        # Add refcount information on all PyObject*
+        for k in transition.dest.region_for_var:
+            region = transition.dest.region_for_var[k]
+            check_isinstance(region, Region)
+            if 'ob_refcnt' not in region.fields:
+                continue
+            ra = RefcountAnnotator(region)
+            result += ra.get_notes(transition)
+
+        # Show all new/changing regions:
+        for region in transition.dest.value_for_region:
+            dest_value = transition.dest.value_for_region[region]
+            if region in transition.src.value_for_region:
+                src_value = transition.src.value_for_region[region]
+                if dest_value != src_value:
+                    result.append(Note(loc,
+                                       ('%s now has value: %s'
+                                        % (region, dest_value))))
+            else:
+                result.append(Note(loc,
+                                   ('%s has initial value: %s'
+                                    % (region, dest_value))))
+
+        return result
+
+
 class RefcountAnnotator(Annotator):
     """
     Annotate a trace with information on the reference count of a particular
@@ -1090,6 +1128,22 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
     if dump_traces:
         traces = list(traces)
         dump_traces_to_stdout(traces)
+
+    # Debug dump of all traces in HTML form:
+    if 0:
+        filename = ('%s.%s-refcount-traces.html'
+                    % (gcc.get_dump_base_name(), fun.decl.name))
+        rep = Reporter()
+        for i, trace in enumerate(traces):
+            endstate = trace.states[-1]
+            r = rep.make_debug_dump(fun,
+                                    endstate.get_gcc_loc(fun),
+                                    'Debug dump of trace %i' % i)
+            r.add_trace(trace, DebugAnnotator())
+        rep.dump_html(fun, filename)
+        gcc.inform(fun.start,
+                   ('graphical debug report for function %r written out to %r'
+                    % (fun.decl.name, filename)))
 
     rep = Reporter()
 

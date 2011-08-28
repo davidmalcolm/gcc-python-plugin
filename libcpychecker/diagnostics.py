@@ -94,18 +94,28 @@ class Reporter:
     """
     def __init__(self):
         self.reports = []
+        self._got_errors = False
 
     def make_error(self, fun, loc, msg):
         assert isinstance(fun, gcc.Function)
         assert isinstance(loc, gcc.Location)
         gcc.error(loc, msg)
 
+        self._got_errors = True
+
         err = Report(fun, loc, msg)
         self.reports.append(err)
         return err
 
+    def make_debug_dump(self, fun, loc, msg):
+        assert isinstance(fun, gcc.Function)
+        assert isinstance(loc, gcc.Location)
+        r = Report(fun, loc, msg)
+        self.reports.append(r)
+        return r
+
     def got_errors(self):
-        return self.reports != []
+        return self._got_errors
 
     def to_html(self, fun):
         # (FIXME: eliminate self.fun from HtmlRenderer and the above arg)
