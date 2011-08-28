@@ -275,6 +275,20 @@ class MyState(State):
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
 
+    def add_ref(self, pyobjectptr, loc):
+        assert isinstance(pyobjectptr, AbstractValue)
+        assert isinstance(pyobjectptr, PointerToRegion)
+        ob_refcnt = self.make_field_region(pyobjectptr.region, 'ob_refcnt')
+        assert isinstance(ob_refcnt, Region)
+        oldvalue = self.get_store(ob_refcnt, None, loc) # FIXME: gcctype
+        assert isinstance(oldvalue, AbstractValue)
+        log('oldvalue: %r' % oldvalue)
+        #if isinstance(oldvalue, UnknownValue):
+        #    self.raise_split_value(oldvalue, loc)
+        assert isinstance(oldvalue, RefcountValue)
+        newvalue = RefcountValue(oldvalue.relvalue + 1, oldvalue.min_external)
+        self.value_for_region[ob_refcnt] = newvalue
+
     def set_exception(self, exc_name):
         """
         Given the name of a (PyObject*) global for an exception class, such as
@@ -496,6 +510,36 @@ class MyState(State):
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
+
+    def impl_PyList_Append(self, stmt):
+        # Declared in listobject.h as:
+        #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
+        #
+        # Defined in listobject.c
+        #
+        # http://docs.python.org/c-api/list.html#PyList_Append
+        #
+        # If it succeeds, it adds a reference on the item
+        #
+        op, newitem = self.eval_stmt_args(stmt)
+
+        # On success, adds a ref on input:
+        success = self.make_concrete_return_of(stmt, 0)
+        success.add_ref(newitem, stmt.loc)
+        #...and set the pointer value within ob_item array, so that we can
+        # discount that refcount:
+        ob_item_region = self.make_field_region(op.region, 'ob_item')
+        ob_size_region = self.make_field_region(op.region, 'ob_size')
+        check_isinstance(success.value_for_region[ob_size_region], ConcreteValue) # for now
+        index = success.value_for_region[ob_size_region].value
+        array_region = success._array_region(ob_item_region, index)
+        success.value_for_region[array_region] = newitem
+
+        # Can fail with memory error, overflow error:
+        failure = self.make_concrete_return_of(stmt, -1)
+        failure.set_exception('PyExc_MemoryError')
+
+        return self.make_transitions_for_fncall(stmt, success, failure)
 
     def impl_PyList_SetItem(self, stmt):
         # Decl:
