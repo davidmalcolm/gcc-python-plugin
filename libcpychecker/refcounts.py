@@ -1353,10 +1353,11 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                     err = emit_refcount_error('ob_refcnt of %s is %i too low'
                                               % (desc, exp_refcnt - ob_refcnt.relvalue))
                     # Special-case hint for when None has too low a refcount:
-                    if isinstance(return_value.region, RegionForGlobal):
-                        if return_value.region.vardecl.name == '_Py_NoneStruct':
-                            err.add_note(endstate.get_gcc_loc(fun),
-                                         'consider using "Py_RETURN_NONE;"')
+                    if return_value:
+                        if isinstance(return_value.region, RegionForGlobal):
+                            if return_value.region.vardecl.name == '_Py_NoneStruct':
+                                err.add_note(endstate.get_gcc_loc(fun),
+                                             'consider using "Py_RETURN_NONE;"')
 
         # Detect returning a deallocated object:
         if return_value:
