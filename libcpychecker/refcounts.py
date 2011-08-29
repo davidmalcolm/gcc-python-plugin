@@ -325,24 +325,16 @@ class MyState(State):
 
         fnname = stmt.fn.operand.name
 
-        # The "success" case: allocation and assignment:
-        success, nonnull = self.make_new_ref(stmt, typename)
+        # (the region hierarchy is shared by all states, so we can get the
+        # var region from "self", rather than "success")
+        typeobjregion = self.var_region(typeobjdecl)
 
-        # ...and set up type object:
-        typeobjregion = success.var_region(typeobjdecl)
-        tp_dealloc = success.make_field_region(typeobjregion, 'tp_dealloc')
-        type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
-                                                        'tp_dealloc').type
-        success.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
-                                                                stmt.loc)
-
-        ob_type = success.make_field_region(nonnull, 'ob_type')
-        success.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
-                                                            stmt.loc,
-                                                            typeobjregion)
+        # The "success" case:
+        success, nonnull = self.make_new_ref(stmt, typename, typeobjregion)
         success = Transition(self,
                              success,
                              '%s() succeeds' % fnname)
+        # The "failure" case:
         failure = self.make_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '%s() fails' % fnname)
@@ -375,7 +367,7 @@ class MyState(State):
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
                                                              value.min_external + 1)
 
-    def make_new_ref(self, stmt, name):
+    def make_new_ref(self, stmt, name, typeobjregion=None):
         """
         Make a new State, in which a new ref to some object has been
         assigned to the statement's LHS.
@@ -394,6 +386,24 @@ class MyState(State):
                                             stmt.loc,
                                             nonnull),
                             stmt.loc)
+        # Ensure that the new object has a sane ob_type:
+        if typeobjregion is None:
+            # If no specific type object provided by caller, supply one:
+            typeobjregion = Region('PyTypeObject for %s' % name, None)
+            # it is its own region:
+            self.region_for_var[typeobjregion] = typeobjregion
+
+        # Set up obj->ob_type:
+        ob_type = newstate.make_field_region(nonnull, 'ob_type')
+        newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+                                                            stmt.loc,
+                                                            typeobjregion)
+        # Set up obj->ob_type->tp_dealloc:
+        tp_dealloc = newstate.make_field_region(typeobjregion, 'tp_dealloc')
+        type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
+                                                        'tp_dealloc').type
+        newstate.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
+                                                                stmt.loc)
         return newstate, nonnull
 
     def make_borrowed_ref(self, stmt, name):

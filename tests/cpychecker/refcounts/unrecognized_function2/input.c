@@ -28,8 +28,19 @@ extern PyObject *foo(int i);
 PyObject *
 call_to_unrecognized_function(PyObject *self, PyObject *args)
 {
-    PyObject *result = foo(42);
-    return result;
+    PyObject *tmp;
+
+    /* Call an unrecognized function: */
+    tmp = foo(42);
+    if (!tmp) {
+        return NULL;
+    }
+
+    /* Verify that tp_dealloc is sane: */
+    Py_DECREF(tmp);
+
+    /* Now do it again, to get a sane return value: */
+    return foo(42);
 }
 static PyMethodDef test_methods[] = {
     {"test_method",  call_to_unrecognized_function, METH_VARARGS, NULL},

@@ -6,7 +6,7 @@ Trace 0:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39), region=RegionOnHeap('new ref from (unknown) PyString_FromFormat', gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39)))
     str(): (struct PyObject *)&RegionOnHeap('new ref from (unknown) PyString_FromFormat', gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39)) from tests/cpychecker/refcounts/subclass/handling/input.c:39
     r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: None
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39), region=Region('PyTypeObject for new ref from (unknown) PyString_FromFormat'))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
