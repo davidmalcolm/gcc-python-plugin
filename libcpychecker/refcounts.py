@@ -397,11 +397,12 @@ class MyState(State):
         nonnull = newstate.make_heap_region(name, stmt)
         ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
         newstate.value_for_region[ob_refcnt] = RefcountValue.new_ref()
-        newstate.assign(stmt.lhs,
-                       PointerToRegion(stmt.lhs.type,
-                                       stmt.loc,
-                                       nonnull),
-                       stmt.loc)
+        if stmt.lhs:
+            newstate.assign(stmt.lhs,
+                            PointerToRegion(stmt.lhs.type,
+                                            stmt.loc,
+                                            nonnull),
+                            stmt.loc)
         return newstate, nonnull
 
     def make_borrowed_ref(self, stmt, name):
@@ -416,11 +417,12 @@ class MyState(State):
         #newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
         #                                                    stmt.loc,
         #                                                    typeobjregion)
-        newstate.assign(stmt.lhs,
-                       PointerToRegion(stmt.lhs.type,
-                                       stmt.loc,
-                                       nonnull),
-                       stmt.loc)
+        if stmt.lhs:
+            newstate.assign(stmt.lhs,
+                            PointerToRegion(stmt.lhs.type,
+                                            stmt.loc,
+                                            nonnull),
+                            stmt.loc)
         return newstate
 
     def make_exception(self, stmt, fnname):
