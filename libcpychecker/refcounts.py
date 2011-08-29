@@ -384,6 +384,26 @@ class MyState(State):
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
                                                              value.min_external + 1)
 
+    def make_new_ref(self, stmt, name):
+        """
+        Make a new State, in which a new ref to some object has been
+        assigned to the statement's LHS.
+
+        Returns a pair: (newstate, RegionOnHeap for the new object)
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+
+        nonnull = newstate.make_heap_region(name, stmt)
+        ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+        newstate.value_for_region[ob_refcnt] = RefcountValue.new_ref()
+        newstate.assign(stmt.lhs,
+                       PointerToRegion(stmt.lhs.type,
+                                       stmt.loc,
+                                       nonnull),
+                       stmt.loc)
+        return newstate, nonnull
+
     def make_borrowed_ref(self, stmt, name):
         """Make a new state, giving a borrowed ref to some object"""
         newstate = self.copy()
@@ -612,6 +632,37 @@ class MyState(State):
         success = self.make_borrowed_ref(stmt, 'output from Py_InitModule4')
         failure = self.make_exception(stmt, 'Py_InitModule4')
         return self.make_transitions_for_fncall(stmt, success, failure)
+
+    def impl__PyObject_New(self, stmt):
+        # Declaration in objimpl.h:
+        #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
+        #
+        # For use via this macro:
+        #   #define PyObject_New(type, typeobj) \
+        #      ( (type *) _PyObject_New(typeobj) )
+        #
+        # Definition is in Objects/object.c
+        #
+        #   Return value: New reference.
+        assert isinstance(stmt, gcc.GimpleCall)
+        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
+
+        tp_rvalue = self.eval_rvalue(stmt.args[0], stmt.loc)
+
+        # Success case: allocation and assignment:
+        success, nonnull = self.make_new_ref(stmt, '_PyObject_New')
+        # ...and set up ob_type on the result object:
+        ob_type = success.make_field_region(nonnull, 'ob_type')
+        success.value_for_region[ob_type] = tp_rvalue
+        success = Transition(self,
+                             success,
+                             '_PyObject_New() succeeds')
+        # Failure case:
+        failure = self.make_assignment(stmt.lhs,
+                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       '_PyObject_New() fails')
+        failure.dest.set_exception('PyExc_MemoryError')
+        return [success, failure]
 
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
