@@ -325,11 +325,10 @@ class MyState(State):
 
         fnname = stmt.fn.operand.name
 
-        # Allocation and assignment:
-        success = self.copy()
-        success.loc = self.loc.next_loc()
+        # The "success" case: allocation and assignment:
+        success, nonnull = self.make_new_ref(stmt, typename)
 
-        # Set up type object:
+        # ...and set up type object:
         typeobjregion = success.var_region(typeobjdecl)
         tp_dealloc = success.make_field_region(typeobjregion, 'tp_dealloc')
         type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
@@ -337,18 +336,10 @@ class MyState(State):
         success.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
                                                                 stmt.loc)
 
-        nonnull = success.make_heap_region(typename, stmt)
-        ob_refcnt = success.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-        success.value_for_region[ob_refcnt] = RefcountValue.new_ref()
         ob_type = success.make_field_region(nonnull, 'ob_type')
         success.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
                                                             stmt.loc,
                                                             typeobjregion)
-        success.assign(stmt.lhs,
-                       PointerToRegion(stmt.lhs.type,
-                                       stmt.loc,
-                                       nonnull),
-                       stmt.loc)
         success = Transition(self,
                              success,
                              '%s() succeeds' % fnname)
