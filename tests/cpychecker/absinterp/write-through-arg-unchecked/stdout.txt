@@ -1,0 +1,14 @@
+Trace 0:
+  Transitions:
+    "treating unknown char * from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:27 as (char *)&Region('heap-region-0')"
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:28
+
+Trace 1:
+  Transitions:
+    'treating unknown char * from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:27 as (char *)0'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (*out) at tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:30
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:28

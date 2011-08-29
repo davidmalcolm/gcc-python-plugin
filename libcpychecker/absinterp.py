@@ -462,6 +462,10 @@ class State:
             # Write through a pointer:
             dest_ptr = self.eval_rvalue(expr.operand, loc)
             log('dest_ptr: %r', dest_ptr)
+            self.raise_any_null_ptr_deref(expr, dest_ptr)
+            if isinstance(dest_ptr, UnknownValue):
+                # Split into null/non-null pointers:
+                self.raise_split_value(dest_ptr)
             check_isinstance(dest_ptr, PointerToRegion)
             dest_region = dest_ptr.region
             log('dest_region: %r', dest_region)
