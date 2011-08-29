@@ -16,28 +16,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-import gcc
-from libcpychecker import main, get_traces
-
-def verify_traces(optpass, fun):
-    # Only run in one pass
-    # FIXME: should we be adding our own pass for this?
-    if optpass.name == '*warn_function_return':
-        if fun:
-            traces = get_traces(fun)
-
-            # We should have one trace
-            # print('traces: %r' % traces)
-            assert len(traces) == 1
-
-            # Verify the trace:
-            state = traces[0].states[-1]
-            print('Trace 0:')
-            print('  returned: %s' % state.return_rvalue)
-
-gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
-                      verify_traces)
-
 from libcpychecker import main
 main(verify_refcounting=True,
+     dump_traces=True,
      show_traces=False)

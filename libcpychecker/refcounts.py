@@ -705,7 +705,18 @@ class MyState(State):
             #if fnname in c_stdio_functions:
             #    return handle_c_stdio_function(self, fnname, stmt)
 
-            # Unknown function:
+            # Unknown function returning (PyObject*):
+            if str(stmt.fn.operand.type.type) == 'struct PyObject *':
+                log('Invocation of unknown function returning PyObject *: %r' % fnname)
+                # Assume that all such functions either:
+                #   - return a new reference, or
+                #   - return NULL and set an exception (e.g. MemoryError)
+                success, nonnull = self.make_new_ref(stmt,
+                                                     'new ref from (unknown) %s' % fnname)
+                failure = self.make_exception(stmt, fnname)
+                return self.make_transitions_for_fncall(stmt, success, failure)
+
+            # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
             return [self.make_assignment(stmt.lhs,
                                          UnknownValue(returntype, stmt.loc),

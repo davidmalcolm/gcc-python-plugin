@@ -1,9 +1,12 @@
 Trace 0:
   Transitions:
+    'make_wrapper() succeeds'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42))
-    str(): unknown struct PyObject * from tests/cpychecker/refcounts/getter/input.c:42
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42), region=RegionOnHeap('new ref from (unknown) make_wrapper', gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from (unknown) make_wrapper', gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42)) from tests/cpychecker/refcounts/getter/input.c:42
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: None
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -11,3 +14,18 @@ Trace 0:
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/getter/input.c:36
+
+Trace 1:
+  Transitions:
+    'make_wrapper() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/getter/input.c:42
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
