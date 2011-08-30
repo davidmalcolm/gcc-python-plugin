@@ -54,7 +54,7 @@ class AbstractValue:
         check_isinstance(state, State)
         check_isinstance(stmt, gcc.GimpleCall)
         returntype = stmt.fn.type.dereference.type
-        return [state.make_assignment(stmt.lhs,
+        return [state.mktrans_assignment(stmt.lhs,
                                       UnknownValue(returntype, stmt.loc),
                                       'calling %s' % self)]
 
@@ -768,8 +768,12 @@ class State:
             self.value_for_region[region] = UninitializedData(local.type, fun.start)
         self.verify()
 
-    def make_assignment(self, lhs, rhs, desc):
-        log('make_assignment(%r, %r, %r)', lhs, rhs, desc)
+    def mktrans_assignment(self, lhs, rhs, desc):
+        """
+        Return a Transition to a state at the next location, with the RHS
+        assigned to the LHS, if LHS is not None
+        """
+        log('mktrans_assignment(%r, %r, %r)', lhs, rhs, desc)
         if desc:
             check_isinstance(desc, str)
         new = self.copy()

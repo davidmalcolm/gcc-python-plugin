@@ -30,6 +30,18 @@ from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import log
 from libcpychecker.types import is_py3k, is_debug_build
 
+# I found myself regularly getting State and Transition instances confused.  To
+# ameliorate that, here are some naming conventions and abbreviations:
+#
+# Within method names:
+#   "mktrans_" means "make a Transition"
+#   "mkstate_" means "make a State"
+#
+# Within variable names
+#   the prefix "t_" means a Transition
+#   the prefix "s_" means a State
+#   the prefix "v_" means an AbstractValue
+
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):
         if stmt.lhs:
@@ -152,7 +164,7 @@ class GenericTpDealloc(AbstractValue):
 
         # Get the description of the region before trashing it:
         desc = 'calling tp_dealloc on %s' % region
-        result = state.make_assignment(stmt.lhs,
+        result = state.mktrans_assignment(stmt.lhs,
                                        UnknownValue(returntype, stmt.loc),
                                        'calling tp_dealloc on %s' % region)
         new = state.copy()
@@ -230,10 +242,10 @@ class MyState(State):
                                                                  typeobjregion)
         self.verify()
 
-    def make_assignment(self, key, value, desc, additional_ptr=None):
+    def mktrans_assignment(self, key, value, desc, additional_ptr=None):
         if desc:
             check_isinstance(desc, str)
-        transition = State.make_assignment(self, key, value, desc)
+        transition = State.mktrans_assignment(self, key, value, desc)
         if additional_ptr:
             transition.dest.owned_refs.append(additional_ptr)
         return transition
@@ -308,7 +320,7 @@ class MyState(State):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
         PyObject*, generate a
-           (newobj, success, failure)
+           (newobj, t_success, t_failure)
         triple, where newobj is a region, and success/failure are Transitions
         """
         check_isinstance(stmt, gcc.GimpleCall)
@@ -330,18 +342,18 @@ class MyState(State):
         typeobjregion = self.var_region(typeobjdecl)
 
         # The "success" case:
-        success, nonnull = self.make_new_ref(stmt, typename, typeobjregion)
-        success = Transition(self,
-                             success,
-                             '%s() succeeds' % fnname)
+        s_success, nonnull = self.mkstate_new_ref(stmt, typename, typeobjregion)
+        t_success = Transition(self,
+                               s_success,
+                               '%s() succeeds' % fnname)
         # The "failure" case:
-        failure = self.make_assignment(stmt.lhs,
+        t_failure = self.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '%s() fails' % fnname)
-        failure.dest.set_exception('PyExc_MemoryError')
-        return (nonnull, success, failure)
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return (nonnull, t_success, t_failure)
 
-    def make_concrete_return_of(self, stmt, value):
+    def mkstate_concrete_return_of(self, stmt, value):
         """
         Clone this state (at a function call), updating the location, and
         setting the result of the call to the given concrete value
@@ -367,7 +379,7 @@ class MyState(State):
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
                                                              value.min_external + 1)
 
-    def make_new_ref(self, stmt, name, typeobjregion=None):
+    def mkstate_new_ref(self, stmt, name, typeobjregion=None):
         """
         Make a new State, in which a new ref to some object has been
         assigned to the statement's LHS.
@@ -406,8 +418,8 @@ class MyState(State):
                                                                 stmt.loc)
         return newstate, nonnull
 
-    def make_borrowed_ref(self, stmt, name):
-        """Make a new state, giving a borrowed ref to some object"""
+    def mkstate_borrowed_ref(self, stmt, name):
+        """Make a new State, giving a borrowed ref to some object"""
         newstate = self.copy()
         newstate.loc = self.loc.next_loc()
 
@@ -426,28 +438,32 @@ class MyState(State):
                             stmt.loc)
         return newstate
 
-    def make_exception(self, stmt, fnname):
-        """Make a new state, giving NULL and some exception"""
+    def mkstate_exception(self, stmt, fnname):
+        """Make a new State, giving NULL and some exception"""
         if stmt.lhs:
             value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
         else:
             value = None
-        failure = self.make_assignment(stmt.lhs,
-                                       value,
-                                       None)
-        failure.dest.set_exception('PyExc_MemoryError')
-        return failure.dest
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                            value,
+                                            None)
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return t_failure.dest
 
-
-    def make_transitions_for_fncall(self, stmt, success, failure):
+    def make_transitions_for_fncall(self, stmt, s_success, s_failure):
+        """
+        Given a function call, convert a pair of State instances into a pair
+        of Transition instances, marking one as a successful call, the other
+        as a failed call.
+        """
         check_isinstance(stmt, gcc.GimpleCall)
-        check_isinstance(success, State)
-        check_isinstance(failure, State)
+        check_isinstance(s_success, State)
+        check_isinstance(s_failure, State)
 
         fnname = stmt.fn.operand.name
 
-        return [Transition(self, success, '%s() succeeds' % fnname),
-                Transition(self, failure, '%s() fails' % fnname)]
+        return [Transition(self, s_success, '%s() succeeds' % fnname),
+                Transition(self, s_failure, '%s() fails' % fnname)]
 
     def eval_stmt_args(self, stmt):
         assert isinstance(stmt, gcc.GimpleCall)
@@ -470,7 +486,7 @@ class MyState(State):
         if isinstance(args[0], PointerToRegion):
             if isinstance(args[0].region, RegionForStringConstant):
                 desc = args[0].region.text
-        return [self.make_assignment(stmt.lhs,
+        return [self.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -481,7 +497,7 @@ class MyState(State):
         # traces)
         args = self.eval_stmt_args(stmt)
         desc = '__dump(%s)' % (','.join([str(arg) for arg in args]))
-        return [self.make_assignment(stmt.lhs,
+        return [self.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -500,7 +516,7 @@ class MyState(State):
         if args[0] != args[1]:
             raise AssertionError('%s != %s' % (args[0], args[1]))
         desc = '__cpychecker_assert_equal(%s)' % (','.join([str(arg) for arg in args]))
-        return [self.make_assignment(stmt.lhs,
+        return [self.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -551,22 +567,22 @@ class MyState(State):
         op, newitem = self.eval_stmt_args(stmt)
 
         # On success, adds a ref on input:
-        success = self.make_concrete_return_of(stmt, 0)
-        success.add_ref(newitem, stmt.loc)
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success.add_ref(newitem, stmt.loc)
         #...and set the pointer value within ob_item array, so that we can
         # discount that refcount:
         ob_item_region = self.make_field_region(op.region, 'ob_item')
         ob_size_region = self.make_field_region(op.region, 'ob_size')
-        check_isinstance(success.value_for_region[ob_size_region], ConcreteValue) # for now
-        index = success.value_for_region[ob_size_region].value
-        array_region = success._array_region(ob_item_region, index)
-        success.value_for_region[array_region] = newitem
+        check_isinstance(s_success.value_for_region[ob_size_region], ConcreteValue) # for now
+        index = s_success.value_for_region[ob_size_region].value
+        array_region = s_success._array_region(ob_item_region, index)
+        s_success.value_for_region[array_region] = newitem
 
         # Can fail with memory error, overflow error:
-        failure = self.make_concrete_return_of(stmt, -1)
-        failure.set_exception('PyExc_MemoryError')
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError')
 
-        return self.make_transitions_for_fncall(stmt, success, failure)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyList_SetItem(self, stmt):
         # Decl:
@@ -580,30 +596,30 @@ class MyState(State):
 
         # Is it really a list?
         if 0: # FIXME: check
-            not_a_list = self.make_concrete_return_of(stmt, -1)
+            not_a_list = self.mkstate_concrete_return_of(stmt, -1)
             result.append(Transition(self,
                            not_a_list,
                            '%s() fails (not a list)' % fnname))
 
         # Index out of range?
         if 0: # FIXME: check
-            out_of_range = self.make_concrete_return_of(stmt, -1)
+            out_of_range = self.mkstate_concrete_return_of(stmt, -1)
             result.append(Transition(self,
                            out_of_range,
                            '%s() fails (index out of range)' % fnname))
 
         if 1:
-            success  = self.make_concrete_return_of(stmt, 0)
+            s_success  = self.mkstate_concrete_return_of(stmt, 0)
             # FIXME: update refcounts
             # "Steal" a reference to item:
             if isinstance(arg_item, PointerToRegion):
                 check_isinstance(arg_item.region, Region)
-                success.steal_reference(arg_item.region)
+                s_success.steal_reference(arg_item.region)
 
             # and discards a
             # reference to an item already in the list at the affected position.
             result.append(Transition(self,
-                                     success,
+                                     s_success,
                                      '%s() succeeds' % fnname))
 
         return result
@@ -614,14 +630,14 @@ class MyState(State):
         # Also:
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        success = self.make_concrete_return_of(stmt, 1)
+        s_success = self.mkstate_concrete_return_of(stmt, 1)
 
-        failure = self.make_concrete_return_of(stmt, 0)
+        s_failure = self.mkstate_concrete_return_of(stmt, 0)
         # Various errors are possible, but a TypeError is always possible
         # e.g. for the case of the wrong number of arguments:
-        failure.set_exception('PyExc_TypeError')
+        s_failure.set_exception('PyExc_TypeError')
 
-        return self.make_transitions_for_fncall(stmt, success, failure)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_Py_InitModule4_64(self, stmt):
         # Decl:
@@ -636,9 +652,9 @@ class MyState(State):
         #  with tracerefs:
         #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
         #    #define Py_InitModule4 Py_InitModule4TraceRefs
-        success = self.make_borrowed_ref(stmt, 'output from Py_InitModule4')
-        failure = self.make_exception(stmt, 'Py_InitModule4')
-        return self.make_transitions_for_fncall(stmt, success, failure)
+        s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
+        s_failure = self.mkstate_exception(stmt, 'Py_InitModule4')
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl__PyObject_New(self, stmt):
         # Declaration in objimpl.h:
@@ -657,19 +673,19 @@ class MyState(State):
         tp_rvalue = self.eval_rvalue(stmt.args[0], stmt.loc)
 
         # Success case: allocation and assignment:
-        success, nonnull = self.make_new_ref(stmt, '_PyObject_New')
+        s_success, nonnull = self.mkstate_new_ref(stmt, '_PyObject_New')
         # ...and set up ob_type on the result object:
-        ob_type = success.make_field_region(nonnull, 'ob_type')
-        success.value_for_region[ob_type] = tp_rvalue
-        success = Transition(self,
-                             success,
+        ob_type = s_success.make_field_region(nonnull, 'ob_type')
+        s_success.value_for_region[ob_type] = tp_rvalue
+        t_success = Transition(self,
+                             s_success,
                              '_PyObject_New() succeeds')
         # Failure case:
-        failure = self.make_assignment(stmt.lhs,
+        t_failure = self.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '_PyObject_New() fails')
-        failure.dest.set_exception('PyExc_MemoryError')
-        return [success, failure]
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return [t_success, t_failure]
 
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
@@ -718,14 +734,14 @@ class MyState(State):
                 # Assume that all such functions either:
                 #   - return a new reference, or
                 #   - return NULL and set an exception (e.g. MemoryError)
-                success, nonnull = self.make_new_ref(stmt,
-                                                     'new ref from (unknown) %s' % fnname)
-                failure = self.make_exception(stmt, fnname)
-                return self.make_transitions_for_fncall(stmt, success, failure)
+                s_success, nonnull = self.mkstate_new_ref(stmt,
+                                                          'new ref from (unknown) %s' % fnname)
+                s_failure = self.mkstate_exception(stmt, fnname)
+                return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
             # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
-            return [self.make_assignment(stmt.lhs,
+            return [self.mktrans_assignment(stmt.lhs,
                                          UnknownValue(returntype, stmt.loc),
                                          None)]
 
@@ -969,9 +985,9 @@ class MyState(State):
                 log('removing ownership of %s', value)
                 nextstate.owned_refs.remove(value)
         """
-        return [self.make_assignment(stmt.lhs,
-                                     value,
-                                     None)]
+        return [self.mktrans_assignment(stmt.lhs,
+                                        value,
+                                        None)]
 
     def _get_transitions_for_GimpleReturn(self, stmt):
         #log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
