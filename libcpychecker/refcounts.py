@@ -428,8 +428,12 @@ class MyState(State):
 
     def make_exception(self, stmt, fnname):
         """Make a new state, giving NULL and some exception"""
+        if stmt.lhs:
+            value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
+        else:
+            value = None
         failure = self.make_assignment(stmt.lhs,
-                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       value,
                                        None)
         failure.dest.set_exception('PyExc_MemoryError')
         return failure.dest

@@ -1,0 +1,38 @@
+Trace 0:
+  Transitions:
+    'foo() succeeds'
+    'returning'
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  new ref from (unknown) foo allocated at tests/cpychecker/refcounts/unrecognized_function3/input.c:32:
+    repr(): RegionOnHeap('new ref from (unknown) foo', gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=32))
+    str(): new ref from (unknown) foo allocated at tests/cpychecker/refcounts/unrecognized_function3/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=32), region=Region('PyTypeObject for new ref from (unknown) foo'))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/unrecognized_function3/input.c:30
+
+Trace 1:
+  Transitions:
+    'foo() fails'
+    'returning'
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function3/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
