@@ -545,7 +545,30 @@ class MyState(State):
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
-    # Specific Python API function implementations:
+    # Specific Python API function implementations
+    # (keep this list alphabetized, discounting case and underscores)
+
+    ########################################################################
+    # PyArg_*
+    ########################################################################
+    def impl_PyArg_ParseTuple(self, stmt):
+        # Decl:
+        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
+        # Also:
+        #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
+
+        s_success = self.mkstate_concrete_return_of(stmt, 1)
+
+        s_failure = self.mkstate_concrete_return_of(stmt, 0)
+        # Various errors are possible, but a TypeError is always possible
+        # e.g. for the case of the wrong number of arguments:
+        s_failure.set_exception('PyExc_TypeError')
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    ########################################################################
+    # PyDict_*
+    ########################################################################
     def impl_PyDict_GetItemString(self, stmt):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);
@@ -565,6 +588,9 @@ class MyState(State):
                 t_notfound]
                 #t_memoryexc]
 
+    ########################################################################
+    # PyErr_*
+    ########################################################################
     def impl_PyErr_Print(self, stmt):
         # Declared in pythonrun.h:
         #   PyAPI_FUNC(void) PyErr_Print(void);
@@ -595,47 +621,29 @@ class MyState(State):
         t_next.dest.exception_rvalue = v_exc
         return [t_next]
 
-    def impl_PyList_New(self, stmt):
+    ########################################################################
+    # Py_InitModule*
+    ########################################################################
+    def impl_Py_InitModule4_64(self, stmt):
         # Decl:
-        #   PyObject* PyList_New(Py_ssize_t len)
-        # Returns a new reference, or raises MemoryError
-        lenarg = self.eval_rvalue(stmt.args[0], stmt.loc)
-        check_isinstance(lenarg, AbstractValue)
-        newobj, success, failure = self.impl_object_ctor(stmt,
-                                                         'PyListObject', 'PyList_Type')
-        # Set ob_size:
-        ob_size = success.dest.make_field_region(newobj, 'ob_size')
-        success.dest.value_for_region[ob_size] = lenarg
+        #   PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,
+        #                                         const char *doc, PyObject *self,
+        #                                         int apiver);
+        #  Returns a borrowed reference
+        #
+        # FIXME:
+        #  On 64-bit:
+        #    #define Py_InitModule4 Py_InitModule4_64
+        #  with tracerefs:
+        #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
+        #    #define Py_InitModule4 Py_InitModule4TraceRefs
+        s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
+        s_failure = self.mkstate_exception(stmt, 'Py_InitModule4')
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-        # "Allocate" ob_item, and set it up so that all of the array is
-        # treated as NULL:
-        ob_item_region = success.dest.make_heap_region(
-            'ob_item array for PyListObject',
-            stmt)
-        success.dest.value_for_region[ob_item_region] = \
-            ConcreteValue(get_PyObjectPtr(),
-                          stmt.loc, 0)
-
-        ob_item = success.dest.make_field_region(newobj, 'ob_item')
-        success.dest.value_for_region[ob_item] = PointerToRegion(get_PyObjectPtr().pointer,
-                                                                 stmt.loc,
-                                                                 ob_item_region)
-
-        return [success, failure]
-
-    def impl_PyLong_FromLong(self, stmt):
-        newobj, success, failure = self.impl_object_ctor(stmt,
-                                                         'PyLongObject', 'PyLong_Type')
-        return [success, failure]
-
-    def impl_PyLong_FromString(self, stmt):
-        # Declared in longobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
-        # Defined in longobject.c
-        newobj, success, failure = self.impl_object_ctor(stmt,
-                                                         'PyLongObject', 'PyLong_Type')
-        return [success, failure]
-
+    ########################################################################
+    # PyList_*
+    ########################################################################
     def impl_PyList_Append(self, stmt):
         # Declared in listobject.h as:
         #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
@@ -665,6 +673,34 @@ class MyState(State):
         s_failure.set_exception('PyExc_MemoryError')
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def impl_PyList_New(self, stmt):
+        # Decl:
+        #   PyObject* PyList_New(Py_ssize_t len)
+        # Returns a new reference, or raises MemoryError
+        lenarg = self.eval_rvalue(stmt.args[0], stmt.loc)
+        check_isinstance(lenarg, AbstractValue)
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyListObject', 'PyList_Type')
+        # Set ob_size:
+        ob_size = success.dest.make_field_region(newobj, 'ob_size')
+        success.dest.value_for_region[ob_size] = lenarg
+
+        # "Allocate" ob_item, and set it up so that all of the array is
+        # treated as NULL:
+        ob_item_region = success.dest.make_heap_region(
+            'ob_item array for PyListObject',
+            stmt)
+        success.dest.value_for_region[ob_item_region] = \
+            ConcreteValue(get_PyObjectPtr(),
+                          stmt.loc, 0)
+
+        ob_item = success.dest.make_field_region(newobj, 'ob_item')
+        success.dest.value_for_region[ob_item] = PointerToRegion(get_PyObjectPtr().pointer,
+                                                                 stmt.loc,
+                                                                 ob_item_region)
+
+        return [success, failure]
 
     def impl_PyList_SetItem(self, stmt):
         # Decl:
@@ -706,38 +742,25 @@ class MyState(State):
 
         return result
 
-    def impl_PyArg_ParseTuple(self, stmt):
-        # Decl:
-        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
-        # Also:
-        #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
+    ########################################################################
+    # PyLong_*
+    ########################################################################
+    def impl_PyLong_FromLong(self, stmt):
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyLongObject', 'PyLong_Type')
+        return [success, failure]
 
-        s_success = self.mkstate_concrete_return_of(stmt, 1)
+    def impl_PyLong_FromString(self, stmt):
+        # Declared in longobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
+        # Defined in longobject.c
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyLongObject', 'PyLong_Type')
+        return [success, failure]
 
-        s_failure = self.mkstate_concrete_return_of(stmt, 0)
-        # Various errors are possible, but a TypeError is always possible
-        # e.g. for the case of the wrong number of arguments:
-        s_failure.set_exception('PyExc_TypeError')
-
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
-
-    def impl_Py_InitModule4_64(self, stmt):
-        # Decl:
-        #   PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,
-        #                                         const char *doc, PyObject *self,
-        #                                         int apiver);
-        #  Returns a borrowed reference
-        #
-        # FIXME:
-        #  On 64-bit:
-        #    #define Py_InitModule4 Py_InitModule4_64
-        #  with tracerefs:
-        #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
-        #    #define Py_InitModule4 Py_InitModule4TraceRefs
-        s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
-        s_failure = self.mkstate_exception(stmt, 'Py_InitModule4')
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
-
+    ########################################################################
+    # PyObject_*
+    ########################################################################
     def impl__PyObject_New(self, stmt):
         # Declaration in objimpl.h:
         #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
@@ -778,13 +801,19 @@ class MyState(State):
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
-
+    ########################################################################
+    # PyString_*
+    ########################################################################
     def impl_PyString_FromString(self, stmt):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
+
+    ########################################################################
+    # (end of Python API implementations)
+    ########################################################################
 
     def _get_transitions_for_GimpleCall(self, stmt):
         log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
