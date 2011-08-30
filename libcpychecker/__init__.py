@@ -27,11 +27,13 @@ class CpyChecker(gcc.GimplePass):
     def __init__(self,
                  dump_traces=False,
                  show_traces=False,
-                 verify_refcounting=False):
+                 verify_refcounting=False,
+                 show_possible_null_derefs=False):
         gcc.GimplePass.__init__(self, 'cpychecker')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.verify_refcounting = verify_refcounting
+        self.show_possible_null_derefs = show_possible_null_derefs
 
     def execute(self, fun):
         if fun:
@@ -40,7 +42,8 @@ class CpyChecker(gcc.GimplePass):
 
             # The refcount code is too buggy for now to be on by default:
             if self.verify_refcounting:
-                check_refcounts(fun, self.dump_traces, self.show_traces)
+                check_refcounts(fun, self.dump_traces, self.show_traces,
+                                self.show_possible_null_derefs)
 
 def is_a_method_callback(decl):
     methods = get_all_PyMethodDef_methods()

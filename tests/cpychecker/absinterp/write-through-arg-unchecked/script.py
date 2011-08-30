@@ -19,4 +19,5 @@
 from libcpychecker import main
 main(verify_refcounting=True,
      dump_traces=True,
-     show_traces=False)
+     show_traces=False,
+     show_possible_null_derefs=True)

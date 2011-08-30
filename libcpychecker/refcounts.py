@@ -1388,7 +1388,8 @@ class ExceptionStateAnnotator(Annotator):
 
         return result
 
-def check_refcounts(fun, dump_traces=False, show_traces=False):
+def check_refcounts(fun, dump_traces=False, show_traces=False,
+                    show_possible_null_derefs=False):
     """
     The top-level function of the refcount checker, checking the refcounting
     behavior of a function
@@ -1445,6 +1446,16 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
             # This trace bails early with a fatal error; it probably doesn't
             # have a return value
             log('trace.err: %s %r', trace.err, trace.err)
+
+            # Unless explicitly enabled, don't report on NULL pointer
+            # dereferences that are only possible, not definite: it may be
+            # that there are invariants that we know nothing about that mean
+            # that they can't happen:
+            if isinstance(trace.err, NullPtrDereference):
+                if not trace.err.isdefinite:
+                    if not show_possible_null_derefs:
+                        continue
+
             err = rep.make_error(fun, trace.err.loc, str(trace.err))
             err.add_trace(trace)
             # FIXME: in our example this ought to mention where the values came from
