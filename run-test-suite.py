@@ -249,7 +249,7 @@ if six.MAXSIZE == 0x7fffffff:
 
 num_passes = 0
 failed_tests = []
-for testdir in testdirs:
+for testdir in sorted(testdirs):
     try:
         sys.stdout.write('%s: ' % testdir)
         run_test(testdir)
