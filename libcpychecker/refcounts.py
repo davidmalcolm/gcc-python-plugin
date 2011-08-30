@@ -628,6 +628,14 @@ class MyState(State):
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
+    def impl_PyLong_FromString(self, stmt):
+        # Declared in longobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
+        # Defined in longobject.c
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyLongObject', 'PyLong_Type')
+        return [success, failure]
+
     def impl_PyList_Append(self, stmt):
         # Declared in listobject.h as:
         #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
@@ -759,6 +767,23 @@ class MyState(State):
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '_PyObject_New() fails')
         t_failure.dest.set_exception('PyExc_MemoryError')
+        return [t_success, t_failure]
+
+    def impl_PyObject_Str(self, stmt):
+        # Declared in object.h as:
+        #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
+        # also with:
+        #  #define PyObject_Bytes PyObject_Str
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyStringObject', 'PyString_Type')
+        return [t_success, t_failure]
+
+
+    def impl_PyString_FromString(self, stmt):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
     def _get_transitions_for_GimpleCall(self, stmt):
