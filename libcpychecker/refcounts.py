@@ -1087,6 +1087,8 @@ class MyState(State):
             log('b: %r', b)
             if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
                 return UnknownValue(stmt.lhs.type, stmt.loc)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+               return ConcreteValue(stmt.lhs.type, stmt.loc, a.value * b.value)
             raise NotImplementedError("Don't know how to cope with multiplication of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
