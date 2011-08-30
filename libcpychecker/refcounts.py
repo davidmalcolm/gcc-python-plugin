@@ -1065,6 +1065,15 @@ class MyState(State):
                 return RefcountValue(a.relvalue - b.value, a.min_external)
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
+        elif stmt.exprcode == gcc.MultExpr:
+            a = self.eval_rvalue(rhs[0], stmt.loc)
+            b = self.eval_rvalue(rhs[1], stmt.loc)
+            log('a: %r', a)
+            log('b: %r', b)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+            raise NotImplementedError("Don't know how to cope with multiplication of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.VarDecl:
@@ -1082,8 +1091,11 @@ class MyState(State):
         elif stmt.exprcode == gcc.MemRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.PointerPlusExpr:
-            region = self.pointer_plus_region(stmt)
-            return PointerToRegion(stmt.lhs.type, stmt.loc, region)
+            try:
+                region = self.pointer_plus_region(stmt)
+                return PointerToRegion(stmt.lhs.type, stmt.loc, region)
+            except NotImplementedError:
+                return UnknownValue(stmt.lhs.type, stmt.loc)
         elif stmt.exprcode in (gcc.EqExpr, gcc.NeExpr, gcc.LtExpr,
                                gcc.LeExpr, gcc.GeExpr, gcc.GtExpr):
             # Comparisons

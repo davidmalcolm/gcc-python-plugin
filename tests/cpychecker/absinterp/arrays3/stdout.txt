@@ -1,0 +1,17 @@
+Trace 0:
+  Transitions:
+    "treating unknown struct Foo * from tests/cpychecker/absinterp/arrays3/input.c:37 as (struct Foo *)&Region('heap-region-0')"
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/arrays3/input.c', line=37))
+    str(): unknown const char * from tests/cpychecker/absinterp/arrays3/input.c:37
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arrays3/input.c:36
+
+Trace 1:
+  Transitions:
+    'treating unknown struct Foo * from tests/cpychecker/absinterp/arrays3/input.c:37 as (struct Foo *)0'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (D.12021->fieldA) at tests/cpychecker/absinterp/arrays3/input.c:37
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arrays3/input.c:36

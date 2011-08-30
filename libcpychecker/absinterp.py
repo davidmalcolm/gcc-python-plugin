@@ -609,7 +609,7 @@ class State:
     def _array_region(self, parent, index):
         # Used by element_region, and pointer_add_region
         check_isinstance(parent, Region)
-        check_isinstance(index, (int, long))
+        check_isinstance(index, (int, long, UnknownValue))
         if index in parent.fields:
             log('reusing')
             return parent.fields[index]
