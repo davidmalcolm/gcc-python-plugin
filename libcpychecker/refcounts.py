@@ -1231,10 +1231,8 @@ class DebugAnnotator(Annotator):
                                     % (region, dest_value))))
 
         # Show exception information:
-        if transition.dest.exception_rvalue != transition.src.exception_rvalue:
-            result.append(Note(loc,
-                               ('thread-local exception state now has value: %s'
-                                % transition.dest.exception_rvalue)))
+        esa = ExceptionStateAnnotator()
+        result += esa.get_notes(transition)
 
         return result
 
@@ -1290,6 +1288,30 @@ class RefcountAnnotator(Annotator):
             if src_refs != dest_refs:
                 result.append(Note(loc,
                                    ('all refs: %s' % dest_refs)))
+        return result
+
+class ExceptionStateAnnotator(Annotator):
+    """
+    Annotate a trace with information on changes to the thread-local exception
+    state
+    """
+    def get_notes(self, transition):
+        """
+        Add a note to every transition that affects thread-local exception
+        state
+        """
+        loc = transition.src.get_gcc_loc_or_none()
+        if loc is None:
+            # (we can't add a note without a valid location)
+            return []
+
+        result = []
+
+        if transition.dest.exception_rvalue != transition.src.exception_rvalue:
+            result.append(Note(loc,
+                               ('thread-local exception state now has value: %s'
+                                % transition.dest.exception_rvalue)))
+
         return result
 
 def check_refcounts(fun, dump_traces=False, show_traces=False):
@@ -1484,7 +1506,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False):
                     err = rep.make_error(fun,
                                          endstate.get_gcc_loc(fun),
                                          'returning (PyObject*)NULL without setting an exception')
-                    err.add_trace(trace)
+                    err.add_trace(trace, ExceptionStateAnnotator())
 
     # (all traces analysed)
 
