@@ -1153,6 +1153,12 @@ class DebugAnnotator(Annotator):
                                    ('%s has initial value: %s'
                                     % (region, dest_value))))
 
+        # Show exception information:
+        if transition.dest.exception_rvalue != transition.src.exception_rvalue:
+            result.append(Note(loc,
+                               ('thread-local exception state now has value: %s'
+                                % transition.dest.exception_rvalue)))
+
         return result
 
 
