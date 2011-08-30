@@ -591,6 +591,21 @@ class MyState(State):
     ########################################################################
     # PyErr_*
     ########################################################################
+    def impl_PyErr_Format(self, stmt):
+        # Declared in pyerrors.h:
+        #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
+        # Defined in Python/errors.c
+        #
+        args = self.eval_stmt_args(stmt)
+        v_exc = args[0]
+        v_fmt = args[1]
+        # It always returns NULL:
+        t_next = self.mktrans_assignment(stmt.lhs,
+                                         make_null_pyobject_ptr(stmt),
+                                         'PyErr_Format()')
+        t_next.dest.exception_rvalue = v_exc
+        return [t_next]
+
     def impl_PyErr_Print(self, stmt):
         # Declared in pythonrun.h:
         #   PyAPI_FUNC(void) PyErr_Print(void);
