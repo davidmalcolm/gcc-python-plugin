@@ -728,6 +728,13 @@ class MyState(State):
             #if fnname in c_stdio_functions:
             #    return handle_c_stdio_function(self, fnname, stmt)
 
+            if 0:
+                # For extending coverage of the Python API:
+                # Detect and complain about Python API entrypoints that
+                # weren't explicitly handled
+                if fnname.startswith('_Py') or fnname.startswith('Py'):
+                    raise NotImplementedError('not yet implemented: %s' % fnname)
+
             # Unknown function returning (PyObject*):
             if str(stmt.fn.operand.type.type) == 'struct PyObject *':
                 log('Invocation of unknown function returning PyObject *: %r' % fnname)
