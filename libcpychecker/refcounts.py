@@ -28,7 +28,7 @@ from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import log
-from libcpychecker.types import is_py3k, is_debug_build
+from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
 
 # I found myself regularly getting State and Transition instances confused.  To
 # ameliorate that, here are some naming conventions and abbreviations:
@@ -101,6 +101,9 @@ def stmt_is_return_of_objptr(stmt):
         if stmt.retval:
             if type_is_pyobjptr(stmt.retval.type):
                 return True
+
+def make_null_pyobject_ptr(stmt):
+    return ConcreteValue(get_PyObjectPtr(), stmt.loc, 0)
 
 class RefcountValue(AbstractValue):
     """
@@ -460,6 +463,18 @@ class MyState(State):
         t_failure.dest.set_exception('PyExc_MemoryError')
         return t_failure.dest
 
+
+    def mktrans_from_fncall_state(self, stmt, state, partialdesc):
+        """
+        Given a function call here, convert a State instance into a Transition
+        instance, marking it.
+        """
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(state, State)
+        check_isinstance(partialdesc, str)
+        fnname = stmt.fn.operand.name
+        return Transition(self, state, '%s() %s' % (fnname, partialdesc))
+
     def make_transitions_for_fncall(self, stmt, s_success, s_failure):
         """
         Given a function call, convert a pair of State instances into a pair
@@ -531,6 +546,25 @@ class MyState(State):
                                      desc)]
 
     # Specific Python API function implementations:
+    def impl_PyDict_GetItemString(self, stmt):
+        # Declared in dictobject.h:
+        #   PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);
+        # Defined in dictobject.c
+        #
+        # Returns a borrowed ref, or NULL if not found (can also return NULL
+        # and set MemoryError)
+        s_success = self.mkstate_borrowed_ref(stmt, 'PyDict_GetItemString')
+        t_notfound = self.mktrans_assignment(stmt.lhs,
+                                             make_null_pyobject_ptr(stmt),
+                                             'PyDict_GetItemString does not find string')
+        if 0:
+            t_memoryexc = self.mktrans_assignment(stmt.lhs,
+                                                  make_null_pyobject_ptr(stmt),
+                                                  'OOM allocating string') # FIXME: set exception
+        return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+                t_notfound]
+                #t_memoryexc]
+
     def impl_PyErr_SetString(self, stmt):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
