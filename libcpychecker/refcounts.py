@@ -379,6 +379,16 @@ class MyState(State):
             self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
                                                              value.min_external + 1)
 
+    def mktrans_nop(self, stmt, fnname):
+        """
+        Make a Transition for handling a function call that has no "visible"
+        effect within our simulation (beyond advancing to the next location).
+        [We might subsequently modify the destination state, though]
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        return Transition(self, newstate, 'calling %s()' % fnname)
+
     def mkstate_new_ref(self, stmt, name, typeobjregion=None):
         """
         Make a new State, in which a new ref to some object has been
@@ -521,6 +531,16 @@ class MyState(State):
                                      desc)]
 
     # Specific Python API function implementations:
+    def impl_PyErr_SetString(self, stmt):
+        # Declared in pyerrors.h:
+        #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
+        # Defined in Python/errors.c
+        #
+        v_exc, v_string = self.eval_stmt_args(stmt)
+        t_next = self.mktrans_nop(stmt, 'PyErr_SetString')
+        t_next.dest.exception_rvalue = v_exc
+        return [t_next]
+
     def impl_PyList_New(self, stmt):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
