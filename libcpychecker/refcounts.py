@@ -565,6 +565,26 @@ class MyState(State):
                 t_notfound]
                 #t_memoryexc]
 
+    def impl_PyErr_Print(self, stmt):
+        # Declared in pythonrun.h:
+        #   PyAPI_FUNC(void) PyErr_Print(void);
+        # Defined in pythonrun.c
+
+        t_next = self.mktrans_nop(stmt, 'PyErr_Print')
+        # Clear the error indicator:
+        t_next.dest.exception_rvalue = make_null_pyobject_ptr(stmt)
+        return [t_next]
+
+    def impl_PyErr_PrintEx(self, stmt):
+        # Declared in pythonrun.h:
+        #   PyAPI_FUNC(void) PyErr_PrintEx(int);
+        # Defined in pythonrun.c
+
+        t_next = self.mktrans_nop(stmt, 'PyErr_PrintEx')
+        # Clear the error indicator:
+        t_next.dest.exception_rvalue = make_null_pyobject_ptr(stmt)
+        return [t_next]
+
     def impl_PyErr_SetString(self, stmt):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);

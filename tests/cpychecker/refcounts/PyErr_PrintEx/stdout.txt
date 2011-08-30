@@ -1,0 +1,10 @@
+Trace 0:
+  Transitions:
+    'calling PyErr_SetString()'
+    'calling PyErr_PrintEx()'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_PrintEx/input.c', line=37), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_PrintEx/input.c:37
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34
