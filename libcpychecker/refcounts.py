@@ -290,19 +290,49 @@ class MyState(State):
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
 
-    def add_ref(self, pyobjectptr, loc):
+    def change_refcount(self, pyobjectptr, loc, fn):
+        """
+        Manipulate pyobjectptr's ob_refcnt.
+
+        fn is a function taking a RefcountValue instance, returning another one
+        """
         assert isinstance(pyobjectptr, AbstractValue)
         assert isinstance(pyobjectptr, PointerToRegion)
         ob_refcnt = self.make_field_region(pyobjectptr.region, 'ob_refcnt')
         assert isinstance(ob_refcnt, Region)
         oldvalue = self.get_store(ob_refcnt, None, loc) # FIXME: gcctype
         assert isinstance(oldvalue, AbstractValue)
-        log('oldvalue: %r' % oldvalue)
+        log('oldvalue: %r', oldvalue)
         #if isinstance(oldvalue, UnknownValue):
         #    self.raise_split_value(oldvalue, loc)
         assert isinstance(oldvalue, RefcountValue)
-        newvalue = RefcountValue(oldvalue.relvalue + 1, oldvalue.min_external)
+        newvalue = fn(oldvalue)
+        log('newvalue: %r', newvalue)
         self.value_for_region[ob_refcnt] = newvalue
+
+    def add_ref(self, pyobjectptr, loc):
+        """
+        Add a "visible" reference to pyobjectptr's ob_refcnt i.e. a reference
+        being held by a PyObject* that we are directly tracking.
+        """
+        def _incref_internal(oldvalue):
+            return RefcountValue(oldvalue.relvalue + 1,
+                                 oldvalue.min_external)
+        self.change_refcount(pyobjectptr,
+                             loc,
+                             _incref_internal)
+
+    def add_external_ref(self, pyobjectptr, loc):
+        """
+        Add an "external" reference to pyobjectptr's ob_refcnt i.e. a reference
+        being held by a PyObject* that we're not directly tracking.
+        """
+        def _incref_external(oldvalue):
+            return RefcountValue(oldvalue.relvalue,
+                                 oldvalue.min_external + 1)
+        self.change_refcount(pyobjectptr,
+                             loc,
+                             _incref_external)
 
     def set_exception(self, exc_name):
         """
@@ -587,6 +617,29 @@ class MyState(State):
         return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
                 t_notfound]
                 #t_memoryexc]
+
+    def impl_PyDict_SetItemString(self, stmt):
+        # Declared in dictobject.h:
+        #   PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);
+        # Defined in dictobject.c
+        #
+        # API docs:
+        #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
+        # Can return -1, setting MemoryError
+        # Otherwise returns 0, and adds a ref on the value
+        v_dp, v_key, v_item = self.eval_stmt_args(stmt)
+
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        # the dictionary now owns a new ref on "item".  We won't model the
+        # insides of the dictionary type.  Instead, treat it as a new
+        # external reference:
+        s_success.add_external_ref(v_item, stmt.loc)
+
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError')
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
 
     ########################################################################
     # PyErr_*
