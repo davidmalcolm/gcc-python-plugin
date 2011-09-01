@@ -618,13 +618,13 @@ class MyState(State):
                 t_notfound]
                 #t_memoryexc]
 
-    def impl_PyDict_SetItemString(self, stmt):
+    def impl_PyDict_SetItem(self, stmt):
         # Declared in dictobject.h:
-        #   PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);
+        #   PyAPI_FUNC(int) PyDict_SetItem(PyObject *mp, PyObject *key, PyObject *item);
         # Defined in dictobject.c
         #
         # API docs:
-        #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
+        #   http://docs.python.org/c-api/dict.html#PyDict_SetItem
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
         v_dp, v_key, v_item = self.eval_stmt_args(stmt)
@@ -640,6 +640,20 @@ class MyState(State):
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    def impl_PyDict_SetItemString(self, stmt):
+        # Declared in dictobject.h:
+        #   PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);
+        # Defined in dictobject.c
+        #
+        # API docs:
+        #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
+        # Can return -1, setting MemoryError
+        # Otherwise returns 0, and adds a ref on the value
+        v_dp, v_key, v_item = self.eval_stmt_args(stmt)
+
+        # This is implemented in terms of PyDict_SetItem and shows the same
+        # success and failures:
+        return self.impl_PyDict_SetItem(stmt)
 
     ########################################################################
     # PyErr_*
