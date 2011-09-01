@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+  error: UninitializedPtrDereference()
+  error: dereferencing uninitialized pointer (coord_ptr->x) at tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:35
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:32

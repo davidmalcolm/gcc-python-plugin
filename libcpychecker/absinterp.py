@@ -161,6 +161,17 @@ class PredictedValueError(PredictedError):
         self.value = value
         self.isdefinite = isdefinite
 
+class UninitializedPtrDereference(PredictedValueError):
+    def __init__(self, state, expr, ptr):
+        check_isinstance(state, State)
+        check_isinstance(expr, gcc.Tree)
+        check_isinstance(ptr, AbstractValue)
+        PredictedValueError.__init__(self, state, expr, ptr, True)
+
+    def __str__(self):
+        return ('dereferencing uninitialized pointer (%s) at %s'
+                    % (self.expr, self.state.loc.get_stmt().loc))
+
 class NullPtrDereference(PredictedValueError):
     def __init__(self, state, expr, ptr, isdefinite):
         check_isinstance(state, State)
@@ -832,6 +843,10 @@ class State:
     def raise_any_null_ptr_deref(self, expr, ptr):
         check_isinstance(expr, gcc.Tree)
         check_isinstance(ptr, AbstractValue)
+
+        if isinstance(ptr, UninitializedData):
+            raise UninitializedPtrDereference(self, expr, ptr)
+
         if isinstance(ptr, ConcreteValue):
             if ptr.is_null_ptr():
                 # Read through NULL
