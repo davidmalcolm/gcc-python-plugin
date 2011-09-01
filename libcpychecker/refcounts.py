@@ -296,8 +296,7 @@ class MyState(State):
 
         fn is a function taking a RefcountValue instance, returning another one
         """
-        assert isinstance(pyobjectptr, AbstractValue)
-        assert isinstance(pyobjectptr, PointerToRegion)
+        check_isinstance(pyobjectptr, PointerToRegion)
         ob_refcnt = self.make_field_region(pyobjectptr.region, 'ob_refcnt')
         assert isinstance(ob_refcnt, Region)
         oldvalue = self.get_store(ob_refcnt, None, loc) # FIXME: gcctype
@@ -629,6 +628,9 @@ class MyState(State):
         # Otherwise returns 0, and adds a ref on the value
         v_dp, v_key, v_item = self.eval_stmt_args(stmt)
 
+        self.raise_any_null_ptr_func_arg(stmt, 1, v_key)
+        self.raise_any_null_ptr_func_arg(stmt, 2, v_item)
+
         s_success = self.mkstate_concrete_return_of(stmt, 0)
         # the dictionary now owns a new ref on "item".  We won't model the
         # insides of the dictionary type.  Instead, treat it as a new
@@ -653,6 +655,8 @@ class MyState(State):
 
         # This is implemented in terms of PyDict_SetItem and shows the same
         # success and failures:
+        self.raise_any_null_ptr_func_arg(stmt, 1, v_key)
+        self.raise_any_null_ptr_func_arg(stmt, 2, v_item)
         return self.impl_PyDict_SetItem(stmt)
 
     ########################################################################

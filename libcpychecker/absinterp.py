@@ -151,15 +151,22 @@ class InvalidlyNullParameter(PredictedError):
                 % (self.fnname, self.paramidx, self.nullvalue))
 
 
-class NullPtrDereference(PredictedError):
-    def __init__(self, state, expr, ptr, isdefinite):
+class PredictedValueError(PredictedError):
+    def __init__(self, state, expr, value, isdefinite):
         check_isinstance(state, State)
-        check_isinstance(expr, (gcc.ComponentRef, gcc.MemRef))
-        check_isinstance(ptr, AbstractValue)
+        check_isinstance(expr, gcc.Tree)
+        check_isinstance(value, AbstractValue)
         self.state = state
         self.expr = expr
-        self.ptr = ptr
+        self.value = value
         self.isdefinite = isdefinite
+
+class NullPtrDereference(PredictedValueError):
+    def __init__(self, state, expr, ptr, isdefinite):
+        check_isinstance(state, State)
+        check_isinstance(expr, gcc.Tree)
+        check_isinstance(expr, (gcc.ComponentRef, gcc.MemRef))
+        PredictedValueError.__init__(self, state, expr, ptr, isdefinite)
 
     def __str__(self):
         if self.isdefinite:
@@ -168,6 +175,28 @@ class NullPtrDereference(PredictedError):
         else:
             return ('possibly dereferencing NULL (%s) at %s'
                     % (self.expr, self.state.loc.get_stmt().loc))
+
+class NullPtrArgument(PredictedValueError):
+    def __init__(self, state, stmt, idx, ptr, isdefinite):
+        check_isinstance(state, State)
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(idx, int)
+        check_isinstance(ptr, AbstractValue)
+        PredictedValueError.__init__(self, state, stmt.args[idx], ptr, isdefinite)
+        self.stmt = stmt
+        self.idx = idx
+
+    def __str__(self):
+        if self.isdefinite:
+            return ('calling %s with NULL (%s) as argument %i at %s'
+                    % (self.stmt.fn, self.expr,
+                       self.idx, self.state.loc.get_stmt().loc))
+        else:
+            return ('possibly calling %s with NULL (%s) as argument %i at %s'
+                    % (self.stmt.fn, self.expr,
+                       self.idx, self.state.loc.get_stmt().loc))
+
+
 
 class ReadFromDeallocatedMemory(PredictedError):
     def __init__(self, stmt, value):
@@ -801,6 +830,8 @@ class State:
             return fun.end
 
     def raise_any_null_ptr_deref(self, expr, ptr):
+        check_isinstance(expr, gcc.Tree)
+        check_isinstance(ptr, AbstractValue)
         if isinstance(ptr, ConcreteValue):
             if ptr.is_null_ptr():
                 # Read through NULL
@@ -810,6 +841,20 @@ class State:
                 # that it was.
                 isdefinite = not hasattr(ptr, 'fromsplit')
                 raise NullPtrDereference(self, expr, ptr, isdefinite)
+
+    def raise_any_null_ptr_func_arg(self, stmt, idx, ptr):
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(idx, int)
+        check_isinstance(ptr, AbstractValue)
+        if isinstance(ptr, ConcreteValue):
+            if ptr.is_null_ptr():
+                # NULL argument to a function that requires non-NULL
+                # If we earlier split the analysis into NULL/non-NULL
+                # cases, then we're only considering the possibility
+                # that this pointer was NULL; we don't know for sure
+                # that it was.
+                isdefinite = not hasattr(ptr, 'fromsplit')
+                raise NullPtrArgument(self, stmt, idx, ptr, isdefinite)
 
     def raise_split_value(self, ptr_rvalue, loc=None):
         """
