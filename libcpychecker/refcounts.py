@@ -1087,6 +1087,15 @@ class MyState(State):
         t_failure.dest.set_exception('PyExc_MemoryError')
         return [t_success, t_failure]
 
+    def impl_PyObject_Repr(self, stmt):
+        # Declared in object.h as:
+        #  PyAPI_FUNC(PyObject *) PyObject_Repr(PyObject *);
+        # Docs:
+        #   http://docs.python.org/c-api/object.html#PyObject_Repr
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyStringObject', 'PyString_Type')
+        return [t_success, t_failure]
+
     def impl_PyObject_Str(self, stmt):
         # Declared in object.h as:
         #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
