@@ -734,6 +734,20 @@ class MyState(State):
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
 
     ########################################################################
+    # PyBool_*
+    ########################################################################
+    def impl_PyBool_FromLong(self, stmt):
+        # Declared in boolobject.h:
+        #   PyAPI_FUNC(PyObject *) PyBool_FromLong(long);
+        # Defined in Objects/boolobject.c
+        #
+        # Always succeeds, returning a new ref to one of the two singleton
+        # booleans
+        # v_ok = self.eval_stmt_args(stmt)[0]
+        s_success, r_nonnull = self.mkstate_new_ref(stmt, 'PyBool_FromLong')
+        return [self.mktrans_from_fncall_state(stmt, s_success, 'returns')]
+
+    ########################################################################
     # PyDict_*
     ########################################################################
     def impl_PyDict_GetItemString(self, stmt):
