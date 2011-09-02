@@ -1054,6 +1054,49 @@ class MyState(State):
         return [success, failure]
 
     ########################################################################
+    # PyModule_*
+    ########################################################################
+    def impl_PyModule_AddIntConstant(self, stmt):
+        # http://docs.python.org/c-api/module.html#PyModule_AddIntConstant
+
+        # (No externally-visible refcount changes)
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+
+        # Can fail with memory error, overflow error:
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError')
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def impl_PyModule_AddObject(self, stmt):
+        # Steals a reference to the object if if succeeds:
+        #   http://docs.python.org/c-api/module.html#PyModule_AddObject
+        # Implemented in Python/modsupport.c
+        v_module, v_name, v_value = self.eval_stmt_args(stmt)
+
+        # On success, steals a ref from v_value:
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success.steal_reference(v_value.region)
+
+        # Can fail with memory error, overflow error:
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError')
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def impl_PyModule_AddStringConstant(self, stmt):
+        # http://docs.python.org/c-api/module.html#PyModule_AddStringConstant
+
+        # (No externally-visible refcount changes)
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+
+        # Can fail with memory error, overflow error:
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError')
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    ########################################################################
     # PyObject_*
     ########################################################################
     def impl_PyObject_IsTrue(self, stmt):

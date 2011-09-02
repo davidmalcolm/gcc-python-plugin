@@ -37,17 +37,45 @@ static struct PyModuleDef example_module_def = {
 };
 #endif
 
+#define MY_INT_MACRO     (42)
+#define MY_STRING_MACRO  ("Arthur")
+
 static PyMODINIT_FUNC PyInit_example(void)
 {
     PyObject *m;
+    PyObject *obj;
 #if PY_MAJOR_VERSION == 3
     m = PyModule_Create(&example_module_def);
 #else
     m = Py_InitModule("example", ExampleMethods);
 #endif
 
+    if (!m) {
+        goto error;
+    }
+
+    /* Exercise the various PyModule_Add* entrypoints: */
+    obj = PyDict_New();
+    if (!obj) {
+        goto error;
+    }
+
+    /* We now own a ref on "obj", which PyModule_AddObject steals: */
+    if (-1 == PyModule_AddObject(m, "obj", obj)) {
+        Py_DECREF(obj);
+        goto error;
+    }
+
+    PyModule_AddIntConstant(m, "int_constant", 42);
+    PyModule_AddStringConstant(m, "string_constant", "Marvin");
+    PyModule_AddIntMacro(m, MY_INT_MACRO);
+    PyModule_AddStringMacro(m, MY_STRING_MACRO);
+
+    error:
 #if PY_MAJOR_VERSION == 3
     return m;
+#else
+    (void)0; /* to avoid "label at end of compound statement" error */
 #endif
 }
 
