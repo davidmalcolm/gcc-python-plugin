@@ -937,6 +937,32 @@ class MyState(State):
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
+    # Py_Int*
+    ########################################################################
+    def impl_PyInt_FromLong(self, stmt):
+        # Declared in intobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
+        # Defined in Objects/intobject.c
+        #
+        # CPython2 shares objects for integers in the range:
+        #   -5 <= ival < 257
+        # within intobject.c's "small_ints" array and these are preallocated
+        # by _PyInt_Init().  Thus, for these values, we know that the call
+        # cannot fail
+
+        args = self.eval_stmt_args(stmt)
+        v_ival = args[0]
+
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyIntObject', 'PyInt_Type')
+        if isinstance(v_ival, ConcreteValue):
+            if v_ival.value >= -5 and v_ival.value < 257:
+                # We know that failure isn't possible:
+                return [success]
+
+        return [success, failure]
+
+    ########################################################################
     # PyList_*
     ########################################################################
     def impl_PyList_Append(self, stmt):
