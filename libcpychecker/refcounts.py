@@ -1224,6 +1224,21 @@ class MyState(State):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyType_*
+    ########################################################################
+    def impl_PyType_Ready(self, stmt):
+        #  http://docs.python.org/dev/c-api/type.html#PyType_Ready
+        args = self.eval_stmt_args(stmt)
+        v_type = args[0]
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError') # various possible errors
+
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+
+    ########################################################################
     # (end of Python API implementations)
     ########################################################################
 
