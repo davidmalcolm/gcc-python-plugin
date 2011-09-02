@@ -27,8 +27,9 @@ from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter, Annotator, Note
-from libcpychecker.PyArg_ParseTuple import log
+from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
+from libcpychecker.utils import log
 
 # I found myself regularly getting State and Transition instances confused.  To
 # ameliorate that, here are some naming conventions and abbreviations:
@@ -580,11 +581,13 @@ class MyState(State):
     ########################################################################
     # PyArg_*
     ########################################################################
-    def impl_PyArg_ParseTuple(self, stmt):
-        # Decl:
-        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
-        # Also:
-        #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
+    def _handle_PyArg_function(self, stmt, v_fmt, v_varargs, with_size_t):
+        """
+        Handle one of the various PyArg_Parse* functions
+        """
+        check_isinstance(v_fmt, AbstractValue)
+        check_isinstance(v_varargs, list) # of AbstractValue
+        check_isinstance(with_size_t, bool)
 
         s_success = self.mkstate_concrete_return_of(stmt, 1)
 
@@ -593,7 +596,45 @@ class MyState(State):
         # e.g. for the case of the wrong number of arguments:
         s_failure.set_exception('PyExc_TypeError')
 
+        # Parse the format string, and figure out what the effects of a
+        # successful parsing are:
+
+        def _get_format_string(v_fmt):
+            if isinstance(v_fmt, PointerToRegion):
+                if isinstance(v_fmt.region, RegionForStringConstant):
+                    return v_fmt.region.text
+
+        def _handle_successful_parse(fmt):
+            exptypes = fmt.iter_exp_types()
+            for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
+                # print('v_vararg: %r' % v_vararg)
+                # print('  unit: %r' % unit)
+                # print('  exptype: %r %s' % (exptype, exptype))
+                if isinstance(v_vararg, PointerToRegion):
+                    s_success.value_for_region[v_vararg.region] = UnknownValue(exptype.dereference, stmt.loc)
+
+        fmt_string = _get_format_string(v_fmt)
+        if fmt_string:
+            try:
+                fmt = PyArgParseFmt.from_string(fmt_string, with_size_t)
+                _handle_successful_parse(fmt)
+            except FormatStringError:
+                pass
+
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def impl_PyArg_ParseTuple(self, stmt):
+        # Decl:
+        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
+        # Also:
+        #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
+
+        args = self.eval_stmt_args(stmt)
+        v_args = args[0]
+        v_fmt = args[1]
+        v_varargs = args[2:]
+        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+
 
     ########################################################################
     # PyDict_*

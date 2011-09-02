@@ -352,6 +352,10 @@ class PyArgParseFmt:
         self.fmt_string = fmt_string
         self.args = []
 
+    def __repr__(self):
+        return ('PyArgParseFmt(fmt_string=%r, args=%r)'
+                % (self.fmt_string, self.args))
+
     def add_argument(self, code, expected_types):
         self.args.append(ConcreteUnit(code, expected_types))
 
