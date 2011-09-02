@@ -1056,6 +1056,18 @@ class MyState(State):
     ########################################################################
     # PyObject_*
     ########################################################################
+    def impl_PyObject_IsTrue(self, stmt):
+        #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
+        s_true = self.mkstate_concrete_return_of(stmt, 1)
+        s_false = self.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_MemoryError') # arbitrarily chosen error
+
+        fnname = stmt.fn.operand.name
+        return [Transition(self, s_true, '%s() returns 1 (true)' % fnname),
+                Transition(self, s_false, '%s() returns 0 (false)' % fnname),
+                Transition(self, s_failure, '%s() returns -1 (failure)' % fnname)]
+
     def impl__PyObject_New(self, stmt):
         # Declaration in objimpl.h:
         #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
