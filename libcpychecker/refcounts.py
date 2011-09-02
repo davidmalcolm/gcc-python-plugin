@@ -1079,6 +1079,12 @@ class MyState(State):
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
+    def impl_PyLong_FromVoidPtr(self, stmt):
+        # http://docs.python.org/c-api/long.html#PyLong_FromVoidPtr
+        newobj, success, failure = self.impl_object_ctor(stmt,
+                                                         'PyLongObject', 'PyLong_Type')
+        return [success, failure]
+
     ########################################################################
     # PyModule_*
     ########################################################################
