@@ -1163,6 +1163,19 @@ class MyState(State):
     ########################################################################
     # PyString_*
     ########################################################################
+    def impl_PyString_FromFormat(self, stmt):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)
+        #                             Py_GCC_ATTRIBUTE((format(printf, 1, 2)));
+        # Returns a new reference
+        #   http://docs.python.org/c-api/string.html#PyString_FromFormat
+        #
+        # (We do not yet check that the format string matches the types of the
+        # varargs)
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyStringObject', 'PyString_Type')
+        return [t_success, t_failure]
+
     def impl_PyString_FromString(self, stmt):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
