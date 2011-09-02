@@ -881,6 +881,29 @@ class MyState(State):
         t_next.dest.exception_rvalue = make_null_pyobject_ptr(stmt)
         return [t_next]
 
+    def impl_PyErr_SetFromErrno(self, stmt):
+        # API docs:
+        #   http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno
+        #
+        args = self.eval_stmt_args(stmt)
+        v_exc = args[0]
+        # It always returns NULL:
+        t_next = self.mktrans_assignment(stmt.lhs,
+                                         make_null_pyobject_ptr(stmt),
+                                         'PyErr_SetFromErrno()')
+        t_next.dest.exception_rvalue = v_exc
+        return [t_next]
+
+    def impl_PyErr_SetFromErrnoWithFilename(self, stmt):
+        args = self.eval_stmt_args(stmt)
+        v_exc = args[0]
+        # It always returns NULL:
+        t_next = self.mktrans_assignment(stmt.lhs,
+                                         make_null_pyobject_ptr(stmt),
+                                         'PyErr_SetFromErrnoWithFilename()')
+        t_next.dest.exception_rvalue = v_exc
+        return [t_next]
+
     def impl_PyErr_SetString(self, stmt):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
