@@ -42,6 +42,7 @@ from libcpychecker.utils import log
 #   the prefix "t_" means a Transition
 #   the prefix "s_" means a State
 #   the prefix "v_" means an AbstractValue
+#   the prefix "r_" means a Region
 
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):
@@ -422,6 +423,49 @@ class MyState(State):
         newstate.loc = self.loc.next_loc()
         return Transition(self, newstate, 'calling %s()' % fnname)
 
+    def make_sane_object(self, stmt, name, v_refcount, r_typeobj=None):
+        """
+        Modify this State, adding a new object.
+
+        The ob_refcnt is set to the given value.
+
+        The object has ob_type set to either the given typeobj,
+        or a sane new one.
+
+        Returns r_nonnull, a Region
+        """
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(name, str)
+        check_isinstance(v_refcount, RefcountValue)
+
+        # Claim a Region for the object:
+        r_nonnull = self.make_heap_region(name, stmt)
+
+        # Set up ob_refcnt to the given value:
+        r_ob_refcnt = self.make_field_region(r_nonnull,
+                                             'ob_refcnt') # FIXME: this should be a memref and fieldref
+        self.value_for_region[r_ob_refcnt] = v_refcount
+
+        # Ensure that the new object has a sane ob_type:
+        if r_typeobj is None:
+            # If no specific type object provided by caller, supply one:
+            r_typeobj = Region('PyTypeObject for %s' % name, None)
+            # it is its own region:
+            self.region_for_var[r_typeobj] = r_typeobj
+
+        # Set up obj->ob_type:
+        ob_type = self.make_field_region(r_nonnull, 'ob_type')
+        self.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+                                                         stmt.loc,
+                                                         r_typeobj)
+        # Set up obj->ob_type->tp_dealloc:
+        tp_dealloc = self.make_field_region(r_typeobj, 'tp_dealloc')
+        type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
+                                                        'tp_dealloc').type
+        self.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
+                                                             stmt.loc)
+        return r_nonnull
+
     def mkstate_new_ref(self, stmt, name, typeobjregion=None):
         """
         Make a new State, in which a new ref to some object has been
@@ -432,52 +476,31 @@ class MyState(State):
         newstate = self.copy()
         newstate.loc = self.loc.next_loc()
 
-        nonnull = newstate.make_heap_region(name, stmt)
-        ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-        newstate.value_for_region[ob_refcnt] = RefcountValue.new_ref()
+        r_nonnull = newstate.make_sane_object(stmt, name,
+                                              RefcountValue.new_ref(),
+                                              typeobjregion)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             PointerToRegion(stmt.lhs.type,
                                             stmt.loc,
-                                            nonnull),
+                                            r_nonnull),
                             stmt.loc)
-        # Ensure that the new object has a sane ob_type:
-        if typeobjregion is None:
-            # If no specific type object provided by caller, supply one:
-            typeobjregion = Region('PyTypeObject for %s' % name, None)
-            # it is its own region:
-            self.region_for_var[typeobjregion] = typeobjregion
+        # FIXME
+        return newstate, r_nonnull
 
-        # Set up obj->ob_type:
-        ob_type = newstate.make_field_region(nonnull, 'ob_type')
-        newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
-                                                            stmt.loc,
-                                                            typeobjregion)
-        # Set up obj->ob_type->tp_dealloc:
-        tp_dealloc = newstate.make_field_region(typeobjregion, 'tp_dealloc')
-        type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
-                                                        'tp_dealloc').type
-        newstate.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
-                                                                stmt.loc)
-        return newstate, nonnull
-
-    def mkstate_borrowed_ref(self, stmt, name):
+    def mkstate_borrowed_ref(self, stmt, name, r_typeobj=None):
         """Make a new State, giving a borrowed ref to some object"""
         newstate = self.copy()
         newstate.loc = self.loc.next_loc()
 
-        nonnull = newstate.make_heap_region(name, stmt)
-        ob_refcnt = newstate.make_field_region(nonnull, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-        newstate.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
-        #ob_type = newstate.make_field_region(nonnull, 'ob_type')
-        #newstate.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
-        #                                                    stmt.loc,
-        #                                                    typeobjregion)
+        r_nonnull = newstate.make_sane_object(stmt, name,
+                                              RefcountValue.borrowed_ref(),
+                                              r_typeobj)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             PointerToRegion(stmt.lhs.type,
                                             stmt.loc,
-                                            nonnull),
+                                            r_nonnull),
                             stmt.loc)
         return newstate
 
@@ -604,6 +627,17 @@ class MyState(State):
                 if isinstance(v_fmt.region, RegionForStringConstant):
                     return v_fmt.region.text
 
+        def _get_new_value_for_vararg(unit, exptype):
+            if unit.code == 'O':
+                # non-NULL sane PyObject*:
+                return PointerToRegion(exptype.dereference,
+                                       stmt.loc,
+                                       self.make_sane_object(stmt, 'object from arg "O"',
+                                                             RefcountValue.borrowed_ref()))
+
+            # Unknown value:
+            return UnknownValue(exptype.dereference, stmt.loc)
+
         def _handle_successful_parse(fmt):
             exptypes = fmt.iter_exp_types()
             for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
@@ -611,7 +645,9 @@ class MyState(State):
                 # print('  unit: %r' % unit)
                 # print('  exptype: %r %s' % (exptype, exptype))
                 if isinstance(v_vararg, PointerToRegion):
-                    s_success.value_for_region[v_vararg.region] = UnknownValue(exptype.dereference, stmt.loc)
+                    v_new = _get_new_value_for_vararg(unit, exptype)
+                    check_isinstance(v_new, AbstractValue)
+                    s_success.value_for_region[v_vararg.region] = v_new
 
         fmt_string = _get_format_string(v_fmt)
         if fmt_string:

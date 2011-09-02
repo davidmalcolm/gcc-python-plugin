@@ -6,7 +6,7 @@ Trace 0:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=46))
     str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:46
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: None
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=46), region=Region('PyTypeObject for output from Py_InitModule4'))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/module_handling/input.c:41
 

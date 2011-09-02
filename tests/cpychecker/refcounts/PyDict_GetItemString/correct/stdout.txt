@@ -7,7 +7,7 @@ Trace 0:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/correct/input.c', line=32), region=RegionOnHeap('PyDict_GetItemString', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/correct/input.c', line=32)))
     str(): (struct PyObject *)&RegionOnHeap('PyDict_GetItemString', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/correct/input.c', line=32)) from tests/cpychecker/refcounts/PyDict_GetItemString/correct/input.c:32
     r->ob_refcnt: refs: 1 + N where N >= 1
-    r->ob_type: None
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/correct/input.c', line=32), region=Region('PyTypeObject for PyDict_GetItemString'))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
