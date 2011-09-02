@@ -544,6 +544,22 @@ class MyState(State):
         return [Transition(self, s_success, '%s() succeeds' % fnname),
                 Transition(self, s_failure, '%s() fails' % fnname)]
 
+    def make_transitions_for_new_ref_or_fail(self, stmt, objname=None):
+        """
+        Generate the appropriate list of 2 transitions for a call to a
+        function that either:
+          - returns either a new ref, or
+          - fails with NULL and sets an exception
+        Optionally, a name for the new object can be supplied; otherwise
+        a sane default will be used.
+        """
+        fnname = stmt.fn.operand.name
+        if objname is None:
+            objname = 'new ref from call to %s' % fnname
+        s_success, nonnull = self.mkstate_new_ref(stmt, objname)
+        s_failure = self.mkstate_exception(stmt, fnname)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
     def eval_stmt_args(self, stmt):
         assert isinstance(stmt, gcc.GimpleCall)
         return [self.eval_rvalue(arg, stmt.loc)
@@ -768,6 +784,9 @@ class MyState(State):
         return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
                 t_notfound]
                 #t_memoryexc]
+
+    def impl_PyDict_New(self, stmt):
+        return self.make_transitions_for_new_ref_or_fail(stmt)
 
     def impl_PyDict_SetItem(self, stmt):
         # Declared in dictobject.h:
@@ -1107,10 +1126,8 @@ class MyState(State):
                 # Assume that all such functions either:
                 #   - return a new reference, or
                 #   - return NULL and set an exception (e.g. MemoryError)
-                s_success, nonnull = self.mkstate_new_ref(stmt,
-                                                          'new ref from (unknown) %s' % fnname)
-                s_failure = self.mkstate_exception(stmt, fnname)
-                return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+                return self.make_transitions_for_new_ref_or_fail(stmt,
+                                                                 'new ref from (unknown) %s' % fnname)
 
             # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
