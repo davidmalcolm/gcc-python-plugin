@@ -1216,6 +1216,36 @@ class MyState(State):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyStructSequence_*
+    ########################################################################
+    def impl_PyStructSequence_New(self, stmt):
+        # Declared in structseq.h as:
+        #   PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);
+        #
+        # Implemented in Objects/structseq.c
+
+        # From our perspective, this is very similar to _PyObject_New
+        assert isinstance(stmt, gcc.GimpleCall)
+        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
+
+        tp_rvalue = self.eval_rvalue(stmt.args[0], stmt.loc)
+
+        # Success case: allocation and assignment:
+        s_success, nonnull = self.mkstate_new_ref(stmt, 'PyStructSequence_New')
+        # ...and set up ob_type on the result object:
+        ob_type = s_success.make_field_region(nonnull, 'ob_type')
+        s_success.value_for_region[ob_type] = tp_rvalue
+        t_success = Transition(self,
+                             s_success,
+                             'PyStructSequence_New() succeeds')
+        # Failure case:
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       'PyStructSequence_New() fails')
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return [t_success, t_failure]
+
+    ########################################################################
     # PyTuple_*
     ########################################################################
     def impl_PyTuple_New(self, stmt):
