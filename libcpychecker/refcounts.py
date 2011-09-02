@@ -848,6 +848,19 @@ class MyState(State):
         t_next.dest.exception_rvalue = v_exc
         return [t_next]
 
+    def impl_PyErr_NoMemory(self, stmt):
+        # Declared in pyerrors.h:
+        #   PyAPI_FUNC(PyObject *) PyErr_NoMemory(void);
+        #
+        # Defined in Python/errors.c
+        #
+        # It always returns NULL:
+        t_next = self.mktrans_assignment(stmt.lhs,
+                                         make_null_pyobject_ptr(stmt),
+                                         'PyErr_NoMemory()')
+        t_next.dest.set_exception('PyExc_MemoryError')
+        return [t_next]
+
     def impl_PyErr_Print(self, stmt):
         # Declared in pythonrun.h:
         #   PyAPI_FUNC(void) PyErr_Print(void);
