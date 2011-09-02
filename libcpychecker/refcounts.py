@@ -786,7 +786,9 @@ class MyState(State):
                 #t_memoryexc]
 
     def impl_PyDict_New(self, stmt):
-        return self.make_transitions_for_new_ref_or_fail(stmt)
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyDictObject', 'PyDict_Type')
+        return [t_success, t_failure]
 
     def impl_PyDict_SetItem(self, stmt):
         # Declared in dictobject.h:
