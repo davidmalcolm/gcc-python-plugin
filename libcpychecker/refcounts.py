@@ -1226,6 +1226,15 @@ class MyState(State):
     ########################################################################
     # PyType_*
     ########################################################################
+    def impl_PyType_IsSubtype(self, stmt):
+        # http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype
+        args = self.eval_stmt_args(stmt)
+        v_a, v_b = args
+        returntype = stmt.fn.type.dereference.type
+        return [self.mktrans_assignment(stmt.lhs,
+                                        UnknownValue(returntype, stmt.loc),
+                                        None)]
+
     def impl_PyType_Ready(self, stmt):
         #  http://docs.python.org/dev/c-api/type.html#PyType_Ready
         args = self.eval_stmt_args(stmt)
