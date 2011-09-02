@@ -660,15 +660,31 @@ class MyState(State):
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyArg_ParseTuple(self, stmt):
-        # Decl:
+        # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
-        # Also:
+        # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
         args = self.eval_stmt_args(stmt)
         v_args = args[0]
         v_fmt = args[1]
         v_varargs = args[2:]
+        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+
+    def impl_PyArg_ParseTupleAndKeywords(self, stmt):
+        # Declared in modsupport.h:
+        #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
+        #                                               const char *, char **, ...);
+        #
+        # Also, with #ifdef PY_SSIZE_T_CLEAN
+        #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
+
+        args = self.eval_stmt_args(stmt)
+        v_args = args[0]
+        v_kwargs = args[1]
+        v_fmt = args[2]
+        v_keywords = args[3]
+        v_varargs = args[4:]
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
 

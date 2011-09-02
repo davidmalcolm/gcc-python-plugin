@@ -1,0 +1,53 @@
+Trace 0:
+  Transitions:
+    'PyArg_ParseTupleAndKeywords() succeeds'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=33), region=RegionOnHeap('object from arg "O"', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=33)))
+    str(): (struct PyObject *)&RegionOnHeap('object from arg "O"', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=33)) from tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c:33
+    r->ob_refcnt: unknown Py_ssize_t from tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c:44
+    r->ob_type: None
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Region("region-for-arg-gcc.ParmDecl('kwargs')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('kwargs')")
+    str(): Region("region-for-arg-gcc.ParmDecl('kwargs')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('kwargs')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c:29
+
+Trace 1:
+  Transitions:
+    'PyArg_ParseTupleAndKeywords() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=36), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c:36
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Region("region-for-arg-gcc.ParmDecl('kwargs')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('kwargs')")
+    str(): Region("region-for-arg-gcc.ParmDecl('kwargs')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('kwargs')"))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))
