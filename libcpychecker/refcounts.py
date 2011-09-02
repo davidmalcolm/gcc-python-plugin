@@ -27,7 +27,8 @@ from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter, Annotator, Note
-from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError
+from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
+    TypeCheckCheckerType, TypeCheckResultType
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
 from libcpychecker.utils import log
 
@@ -635,19 +636,36 @@ class MyState(State):
                                        self.make_sane_object(stmt, 'object from arg "O"',
                                                              RefcountValue.borrowed_ref()))
 
+            if unit.code == 'O!':
+                if isinstance(exptype, TypeCheckCheckerType):
+                    # This is read from, not written to:
+                    return None
+                if isinstance(exptype, TypeCheckResultType):
+                    # non-NULL sane PyObject*
+                    # FIXME: we could perhaps set ob_type to the given type.
+                    # However "O!" only enforces the weaker condition:
+                    #    if (PyType_IsSubtype(arg->ob_type, type))
+                    return PointerToRegion(get_PyObjectPtr(),
+                                           stmt.loc,
+                                           self.make_sane_object(stmt, 'object from arg "O!"',
+                                                                 RefcountValue.borrowed_ref()))
+
             # Unknown value:
+            check_isinstance(exptype, gcc.PointerType)
             return UnknownValue(exptype.dereference, stmt.loc)
 
         def _handle_successful_parse(fmt):
             exptypes = fmt.iter_exp_types()
             for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
-                # print('v_vararg: %r' % v_vararg)
-                # print('  unit: %r' % unit)
-                # print('  exptype: %r %s' % (exptype, exptype))
+                if 0:
+                    print('v_vararg: %r' % v_vararg)
+                    print('  unit: %r' % unit)
+                    print('  exptype: %r %s' % (exptype, exptype))
                 if isinstance(v_vararg, PointerToRegion):
                     v_new = _get_new_value_for_vararg(unit, exptype)
-                    check_isinstance(v_new, AbstractValue)
-                    s_success.value_for_region[v_vararg.region] = v_new
+                    if v_new:
+                        check_isinstance(v_new, AbstractValue)
+                        s_success.value_for_region[v_vararg.region] = v_new
 
         fmt_string = _get_format_string(v_fmt)
         if fmt_string:

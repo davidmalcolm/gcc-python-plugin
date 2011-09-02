@@ -27,18 +27,21 @@ class CpyChecker(gcc.GimplePass):
     def __init__(self,
                  dump_traces=False,
                  show_traces=False,
+                 verify_pyargs=True,
                  verify_refcounting=False,
                  show_possible_null_derefs=False):
         gcc.GimplePass.__init__(self, 'cpychecker')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
+        self.verify_pyargs = verify_pyargs
         self.verify_refcounting = verify_refcounting
         self.show_possible_null_derefs = show_possible_null_derefs
 
     def execute(self, fun):
         if fun:
             log('%s', fun)
-            check_pyargs(fun)
+            if self.verify_pyargs:
+                check_pyargs(fun)
 
             # The refcount code is too buggy for now to be on by default:
             if self.verify_refcounting:
