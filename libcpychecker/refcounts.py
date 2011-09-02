@@ -1105,6 +1105,14 @@ class MyState(State):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyTuple_*
+    ########################################################################
+    def impl_PyTuple_New(self, stmt):
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyTupleObject', 'PyTuple_Type')
+        return [t_success, t_failure]
+
+    ########################################################################
     # (end of Python API implementations)
     ########################################################################
 
