@@ -565,6 +565,21 @@ class MyState(State):
         return [self.eval_rvalue(arg, stmt.loc)
                 for arg in stmt.args]
 
+    def object_ptr_has_global_ob_type(self, v_object_ptr, vardecl_name):
+        """
+        Boolean: do we know that the given PyObject* has an ob_type matching
+        the given global PyTypeObject (e.g. "PyString_Type")
+        """
+        check_isinstance(v_object_ptr, AbstractValue)
+        check_isinstance(vardecl_name, str)
+        if isinstance(v_object_ptr, PointerToRegion):
+            v_ob_type = self.get_value_of_field_by_region(v_object_ptr.region,
+                                                          'ob_type')
+            if isinstance(v_ob_type, PointerToRegion):
+                if isinstance(v_ob_type.region, RegionForGlobal):
+                    if v_ob_type.region.vardecl.name == vardecl_name:
+                        return True
+
     # Treat calls to various function prefixed with __cpychecker as special,
     # to help with debugging, and when writing selftests:
 
@@ -1195,6 +1210,48 @@ class MyState(State):
     ########################################################################
     # PyString_*
     ########################################################################
+    def impl_PyString_AsString(self, stmt):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(char *) PyString_AsString(PyObject *);
+        # Implemented in Objects/stringobject.c
+        #
+        #  http://docs.python.org/c-api/string.html#PyString_AsString
+        #
+        # With PyStringObject and their subclasses, it returns
+        #    ((PyStringObject *)op) -> ob_sval
+        # With other classes, this call can fail
+
+        v_op, = self.eval_stmt_args(stmt)
+
+        # It will segfault if called with NULL, since it uses PyString_Check,
+        # which reads through the object's ob_type:
+        self.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+
+        returntype = stmt.fn.type.dereference.type
+
+        if self.object_ptr_has_global_ob_type(v_op, 'PyString_Type'):
+            # We know it's a PyStringObject; the call will succeed:
+            # FIXME: cast:
+            r_ob_sval = self.make_field_region(v_op.region, 'ob_sval')
+            v_result = PointerToRegion(returntype, stmt.loc, r_ob_sval)
+            t_success = self.mktrans_assignment(stmt.lhs,
+                                                v_result,
+                                                'PyString_AsString() returns ob_sval')
+            return [t_success]
+
+        # We don't know if it's a PyStringObject (or subclass); the call could
+        # fail:
+        r_nonnull = self.make_heap_region('buffer from PyString_AsString()', stmt)
+        v_success = PointerToRegion(returntype, stmt.loc, r_nonnull)
+        t_success = self.mktrans_assignment(stmt.lhs,
+                                            v_success,
+                                            'PyString_AsString() succeeds')
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, 0),
+                                            'PyString_AsString() fails')
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return [t_success, t_failure]
+
     def impl_PyString_FromFormat(self, stmt):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)

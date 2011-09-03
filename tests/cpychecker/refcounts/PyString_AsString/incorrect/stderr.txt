@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c:38:33: error: calling PyString_AsString with NULL (gcc.VarDecl('repr_args')) as argument 0 at tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c:38
+tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c:31:15: note: when PyObject_Repr() fails at:     repr_args = PyObject_Repr(args);
+tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c:27:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_AsString/incorrect/input.c.test-refcount-errors.html'
