@@ -1303,6 +1303,33 @@ class MyState(State):
         return [t_success, t_failure]
 
     ########################################################################
+    # PySys_*
+    ########################################################################
+    def impl_PySys_SetObject(self, stmt):
+        # Declated in sysmodule.h
+        # Defined in Python/sysmodule.c:
+        #   int PySys_SetObject(char *name, PyObject *v)
+        # Docs:
+        #   http://docs.python.org/c-api/sys.html#PySys_SetObject
+        #
+        # can be called with NULL or non-NULL, calls PyDict_SetItemString
+        # on non-NULL, which adds a ref on it
+        fnname = 'PySys_SetObject'
+        returntype = stmt.fn.type.dereference.type
+        args = self.eval_stmt_args(stmt)
+        v_name, v_value = args
+        t_success = self.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, 0),
+                                            '%s() succeeds' % fnname)
+        if isinstance(v_value, PointerToRegion):
+            t_success.dest.add_external_ref(v_value, stmt.loc)
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, -1),
+                                            '%s() fails' % fnname)
+        t_failure.dest.set_exception('PyExc_MemoryError')
+        return [t_success, t_failure]
+
+    ########################################################################
     # PyTuple_*
     ########################################################################
     def impl_PyTuple_New(self, stmt):
