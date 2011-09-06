@@ -951,6 +951,14 @@ class MyState(State):
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
+    # Py_Initialize*
+    ########################################################################
+    def impl_Py_Initialize(self, stmt):
+        # http://docs.python.org/c-api/init.html#Py_Initialize
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'Py_Initialize')]
+
+    ########################################################################
     # Py_InitModule*
     ########################################################################
     def impl_Py_InitModule4_64(self, stmt):
