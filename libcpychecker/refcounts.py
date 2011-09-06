@@ -371,6 +371,7 @@ class MyState(State):
         check_isinstance(typeobjdecl, gcc.VarDecl)
 
         fnname = stmt.fn.operand.name
+        returntype = stmt.fn.type.dereference.type
 
         # (the region hierarchy is shared by all states, so we can get the
         # var region from "self", rather than "success")
@@ -383,7 +384,7 @@ class MyState(State):
                                '%s() succeeds' % fnname)
         # The "failure" case:
         t_failure = self.mktrans_assignment(stmt.lhs,
-                                       ConcreteValue(stmt.lhs.type, stmt.loc, 0),
+                                       ConcreteValue(returntype, stmt.loc, 0),
                                        '%s() fails' % fnname)
         t_failure.dest.set_exception('PyExc_MemoryError')
         return (nonnull, t_success, t_failure)
