@@ -940,6 +940,17 @@ class MyState(State):
         return [self.mktrans_nop(stmt, 'Py_Finalize')]
 
     ########################################################################
+    # PyImport_*
+    ########################################################################
+    def impl_PyImport_AppendInittab(self, stmt):
+        # http://docs.python.org/c-api/import.html#PyImport_AppendInittab
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        # (doesn't set an exception on failure, and Py_Initialize shouldn't
+        # have been called yet, in any case)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    ########################################################################
     # Py_InitModule*
     ########################################################################
     def impl_Py_InitModule4_64(self, stmt):
