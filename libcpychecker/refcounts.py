@@ -1396,6 +1396,13 @@ class MyState(State):
     ########################################################################
     # PyStructSequence_*
     ########################################################################
+    def impl_PyStructSequence_InitType(self, stmt):
+        # void PyStructSequence_InitType(PyTypeObject *type, PyStructSequence_Desc *desc)
+        #
+        # Implemented in Objects/structseq.c
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'PyStructSequence_InitType')]
+
     def impl_PyStructSequence_New(self, stmt):
         # Declared in structseq.h as:
         #   PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);
