@@ -932,6 +932,14 @@ class MyState(State):
         return [t_next]
 
     ########################################################################
+    # Py_Finalize()
+    ########################################################################
+    def impl_Py_Finalize(self, stmt):
+        # http://docs.python.org/c-api/init.html#Py_Finalize
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'Py_Finalize')]
+
+    ########################################################################
     # Py_InitModule*
     ########################################################################
     def impl_Py_InitModule4_64(self, stmt):

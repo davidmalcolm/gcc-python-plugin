@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+    'calling Py_Finalize()'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/Py_Finalize/correct/input.c:28
