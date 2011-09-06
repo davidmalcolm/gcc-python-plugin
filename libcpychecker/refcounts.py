@@ -933,6 +933,14 @@ class MyState(State):
         return [t_next]
 
     ########################################################################
+    # PyEval_InitThreads()
+    ########################################################################
+    def impl_PyEval_InitThreads(self, stmt):
+        # http://docs.python.org/c-api/init.html#PyEval_InitThreads
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'PyEval_InitThreads')]
+
+    ########################################################################
     # Py_Finalize()
     ########################################################################
     def impl_Py_Finalize(self, stmt):
