@@ -1296,6 +1296,24 @@ class MyState(State):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyRun_*
+    ########################################################################
+    def impl_PyRun_SimpleFileExFlags(self, stmt):
+        # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        # (no way to get the exception on failure)
+        # (FIXME: handle the potential autoclosing of the FILE*)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def impl_PyRun_SimpleStringFlags(self, stmt):
+        # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags
+        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        # (no way to get the exception on failure)
+        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    ########################################################################
     # PyString_*
     ########################################################################
     def impl_PyString_AsString(self, stmt):
