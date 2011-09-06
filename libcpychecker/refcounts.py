@@ -1101,6 +1101,67 @@ class MyState(State):
         return [success, failure]
 
     ########################################################################
+    # PyMem_*
+    ########################################################################
+    def impl_PyMem_Free(self, stmt):
+        # http://docs.python.org/c-api/memory.html#PyMem_Free
+        fnname = 'PyMem_Free'
+        args = self.eval_stmt_args(stmt)
+        v_ptr, = args
+
+        # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
+
+        s_new = self.copy()
+        s_new.loc = self.loc.next_loc()
+        desc = None
+
+        # It's safe to call on NULL
+        if isinstance(v_ptr, ConcreteValue):
+            if v_ptr.is_null_ptr():
+                desc = 'calling PyMem_Free on NULL'
+        elif isinstance(v_ptr, PointerToRegion):
+            # Mark the arg as being deallocated:
+            region = v_ptr.region
+            check_isinstance(region, Region)
+
+            # Get the description of the region before trashing it:
+            desc = 'calling PyMem_Free on %s' % region
+            #t_temp = state.mktrans_assignment(stmt.lhs,
+            #                                  UnknownValue(None, stmt.loc),
+            #                                  'calling tp_dealloc on %s' % region)
+
+            # Mark the region as deallocated
+            # Since regions are shared with other states, we have to set this up
+            # for this state by assigning it with a special "DeallocatedMemory"
+            # value
+            # Clear the value for any fields within the region:
+            for k, v in region.fields.items():
+                if v in s_new.value_for_region:
+                    del s_new.value_for_region[v]
+            # Set the default value for the whole region to be "DeallocatedMemory"
+            s_new.region_for_var[region] = region
+            s_new.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
+
+        return [Transition(self, s_new, desc)]
+
+    def impl_PyMem_Malloc(self, stmt):
+        # http://docs.python.org/c-api/memory.html#PyMem_Malloc
+        fnname = 'PyMem_Malloc'
+        returntype = stmt.fn.type.dereference.type
+        args = self.eval_stmt_args(stmt)
+        v_size, = args
+        r_nonnull = self.make_heap_region('PyMem_Malloc', stmt)
+        v_nonnull = PointerToRegion(returntype, stmt.loc, r_nonnull)
+        # FIXME: it hasn't been initialized
+        t_success = self.mktrans_assignment(stmt.lhs,
+                                            v_nonnull,
+                                            '%s() succeeds' % fnname)
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, 0),
+                                            '%s() fails' % fnname)
+        return [t_success, t_failure]
+
+    ########################################################################
     # PyModule_*
     ########################################################################
     def impl_PyModule_AddIntConstant(self, stmt):
