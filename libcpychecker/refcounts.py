@@ -959,6 +959,12 @@ class MyState(State):
         # have been called yet, in any case)
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    def impl_PyImport_ImportModule(self, stmt):
+        # http://docs.python.org/c-api/import.html#PyImport_ImportModule
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyModuleObject', 'PyModule_Type')
+        return [t_success, t_failure]
+
     ########################################################################
     # Py_Initialize*
     ########################################################################
