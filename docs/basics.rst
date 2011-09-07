@@ -35,6 +35,11 @@ The plugin has the following requirements:
 
        http://pypi.python.org/pypi/six/
 
+  * "pygments": The libcpychecker code uses the "pygments" Python
+    syntax-highlighting library when writing out error reports:
+
+       http://pygments.org/
+
 Basic usage of the plugin
 =========================
 
