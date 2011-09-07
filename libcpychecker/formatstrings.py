@@ -292,7 +292,6 @@ def compatible_type(exp_type, actual_type, actualarg=None):
 
 def check_pyargs(fun):
     from libcpychecker.PyArg_ParseTuple import PyArgParseFmt
-    from libcpychecker.Py_BuildValue import PyBuildValueFmt
 
     def get_format_string(stmt, format_idx):
         fmt_code = stmt.args[format_idx]
