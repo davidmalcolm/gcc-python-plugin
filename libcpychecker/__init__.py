@@ -16,7 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 import gcc
-from libcpychecker.PyArg_ParseTuple import check_pyargs
+from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
 
