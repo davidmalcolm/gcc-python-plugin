@@ -949,6 +949,19 @@ class MyState(State):
         return [self.mktrans_nop(stmt, 'Py_Finalize')]
 
     ########################################################################
+    # PyGILState_*
+    ########################################################################
+    def impl_PyGILState_Ensure(self, stmt):
+        # http://docs.python.org/c-api/init.html#PyGILState_Ensure
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'PyGILState_Ensure')]
+
+    def impl_PyGILState_Release(self, stmt):
+        # http://docs.python.org/c-api/init.html#PyGILState_Release
+        # For now, treat it as a no-op:
+        return [self.mktrans_nop(stmt, 'PyGILState_Release')]
+
+    ########################################################################
     # PyImport_*
     ########################################################################
     def impl_PyImport_AppendInittab(self, stmt):
