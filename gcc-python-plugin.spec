@@ -31,6 +31,10 @@ BuildRequires:  python3-six
 # sphinx is used for building documentation:
 BuildRequires:  python-sphinx
 
+# pygments is used when running the selftests:
+BuildRequires: python-pygments
+BuildRequires: python3-pygments
+
 %global gcc_plugins_dir %(gcc --print-file-name=plugin)
 
 %description
