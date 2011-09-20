@@ -1750,6 +1750,9 @@ class MyState(State):
             log('b: %r', b)
             if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
                 return UnknownValue(stmt.lhs.type, stmt.loc)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     a.value - b.value)
             if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
                 return RefcountValue(a.relvalue - b.value, a.min_external)
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
