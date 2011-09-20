@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/casts/pointer-to-long/input.c', line=29))
+    str(): unknown long int from tests/cpychecker/absinterp/casts/pointer-to-long/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/casts/pointer-to-long/input.c:28

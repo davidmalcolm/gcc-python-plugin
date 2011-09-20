@@ -1796,6 +1796,18 @@ class MyState(State):
                                      1 if result else 0)
             else:
                 return UnknownValue(stmt.lhs.type, stmt.loc)
+        elif stmt.exprcode == gcc.ConvertExpr:
+            # Type-conversions (e.g. casts)
+            # Seems to just involve stmt.lhs.type and stmt.rhs[0].type
+            # (and the lvalue/rvalue)
+            rvalue = self.eval_rvalue(stmt.rhs[0], stmt.loc)
+            if isinstance(rvalue, UnknownValue):
+                # Update the type to that of the lhs:
+                return UnknownValue(stmt.lhs.type,
+                                    stmt.loc)
+            else:
+                raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
+                                          % (rvalue, rvalue, stmt.loc, stmt.lhs.type))
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
