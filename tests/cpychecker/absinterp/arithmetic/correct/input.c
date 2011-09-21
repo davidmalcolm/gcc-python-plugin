@@ -33,6 +33,8 @@ test(void)
     foo(i++);
     foo(i++);
     foo(i--);
+    foo(i * 2);
+    foo(i / 2);
 
     return i;
 }

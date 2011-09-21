@@ -1724,14 +1724,20 @@ class MyState(State):
         #                          % (exprcode, lhs, rhs))
         return UnknownValue(stmt.lhs.type, stmt.loc)
 
+    def eval_binop_args(self, stmt):
+        rhs = stmt.rhs
+        a = self.eval_rvalue(rhs[0], stmt.loc)
+        b = self.eval_rvalue(rhs[1], stmt.loc)
+        log('a: %r', a)
+        log('b: %r', b)
+        return a, b
+
     def eval_rhs(self, stmt):
         log('eval_rhs(%s): %s', stmt, stmt.rhs)
         rhs = stmt.rhs
+        # Handle arithmetic expressions:
         if stmt.exprcode == gcc.PlusExpr:
-            a = self.eval_rvalue(rhs[0], stmt.loc)
-            b = self.eval_rvalue(rhs[1], stmt.loc)
-            log('a: %r', a)
-            log('b: %r', b)
+            a, b = self.eval_binop_args(stmt)
             if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
                 return UnknownValue(stmt.lhs.type, stmt.loc)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
@@ -1744,10 +1750,7 @@ class MyState(State):
             raise NotImplementedError("Don't know how to cope with addition of\n  %r\nand\n  %r\nat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.MinusExpr:
-            a = self.eval_rvalue(rhs[0], stmt.loc)
-            b = self.eval_rvalue(rhs[1], stmt.loc)
-            log('a: %r', a)
-            log('b: %r', b)
+            a, b = self.eval_binop_args(stmt)
             if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
                 return UnknownValue(stmt.lhs.type, stmt.loc)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
@@ -1758,15 +1761,21 @@ class MyState(State):
             raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.MultExpr:
-            a = self.eval_rvalue(rhs[0], stmt.loc)
-            b = self.eval_rvalue(rhs[1], stmt.loc)
-            log('a: %r', a)
-            log('b: %r', b)
+            a, b = self.eval_binop_args(stmt)
             if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
                 return UnknownValue(stmt.lhs.type, stmt.loc)
             if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
                return ConcreteValue(stmt.lhs.type, stmt.loc, a.value * b.value)
             raise NotImplementedError("Don't know how to cope with multiplication of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
+        elif stmt.exprcode == gcc.TruncDivExpr:
+            a, b = self.eval_binop_args(stmt)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     a.value // b.value)
+            raise NotImplementedError("Don't know how to cope with division of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
