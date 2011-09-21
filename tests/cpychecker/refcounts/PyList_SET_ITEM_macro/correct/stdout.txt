@@ -1,0 +1,109 @@
+Trace 0:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() succeeds'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27)))
+    str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27)) from tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:32:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=32))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:24
+
+Trace 1:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() fails'
+    'taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=35), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:35
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+
+Trace 2:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'PyLong_FromLong() fails'
+    'taking True path'
+    'taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=35), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:35
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=27))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:27
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+
+Trace 3:
+  Transitions:
+    'PyList_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
