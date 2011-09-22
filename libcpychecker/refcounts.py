@@ -1262,6 +1262,29 @@ class MyState(State):
     ########################################################################
     # PyObject_*
     ########################################################################
+    def impl_PyObject_HasAttrString(self, stmt):
+        # http://docs.python.org/c-api/object.html#PyObject_HasAttrString
+
+        fnname = stmt.fn.operand.name
+        v_o, v_attr_name = self.eval_stmt_args(stmt)
+
+        # the object must be non-NULL: it is unconditionally
+        # dereferenced to get the ob_type:
+        self.raise_any_null_ptr_func_arg(stmt, 0, v_o)
+
+        # attr_name must be non-NULL, this fn calls:
+        #   PyObject_GetAttrString(PyObject *v, const char *name)
+        # which can call:
+        #   PyString_InternFromString(const char *cp)
+        #     PyString_FromString(str) <-- must be non-NULL
+        self.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name)
+
+        s_true = self.mkstate_concrete_return_of(stmt, 1)
+        s_false = self.mkstate_concrete_return_of(stmt, 0)
+
+        return [Transition(self, s_true, '%s() returns 1 (true)' % fnname),
+                Transition(self, s_false, '%s() returns 0 (false)' % fnname)]
+
     def impl_PyObject_IsTrue(self, stmt):
         #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
         s_true = self.mkstate_concrete_return_of(stmt, 1)
