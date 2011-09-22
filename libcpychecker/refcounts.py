@@ -1600,7 +1600,7 @@ class MyState(State):
                                newstate,
                                'not returning from %s' % stmt.fn)]
 
-        if isinstance(stmt.fn, gcc.VarDecl):
+        if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl)):
             # Calling through a function pointer:
             val = self.eval_rvalue(stmt.fn, stmt.loc)
             log('val: %s',  val)
