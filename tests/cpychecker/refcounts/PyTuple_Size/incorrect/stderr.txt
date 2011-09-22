@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:37:17: error: calling PyTuple_Size with NULL (gcc.VarDecl('dict')) as argument 0 at tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:37
+tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:30:10: note: when PyDict_New() fails at:     dict = PyDict_New();
+tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c.test-refcount-errors.html'

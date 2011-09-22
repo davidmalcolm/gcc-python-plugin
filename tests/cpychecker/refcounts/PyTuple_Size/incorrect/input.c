@@ -20,24 +20,24 @@
 #include <Python.h>
 
 /*
-  Test of correct reference-handling in a call to PyTuple_New
+  Test of incorrect call to PyTuple_Size
 */
-
-extern void __cpychecker_dump(Py_ssize_t s);
 
 PyObject *
 test(PyObject *self, PyObject *args)
 {
-    PyObject *tuple;
-    tuple = PyTuple_New(0);
-    if (!tuple) {
-        return NULL;
-    }
+    PyObject *dict;
+    dict = PyDict_New();
 
-    __cpychecker_dump(PyTuple_Size(tuple));
+    /*
+      This can go wrong in two ways:
+      - if the allocation failed, then we have a read through NULL
+      - it the allocation succeeded, it's a dict, not a tuple
+    */
+    PyTuple_Size(dict);
 
-    /* "tuple" should now have an ob_refcnt of 1 */
-    return tuple;
+    /* "dict" should either be NULL or have an ob_refcnt of 1 */
+    return dict;
 }
 static PyMethodDef test_methods[] = {
     {"test_method",  test, METH_VARARGS, NULL},

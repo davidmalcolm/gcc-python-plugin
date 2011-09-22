@@ -1474,8 +1474,47 @@ class MyState(State):
     # PyTuple_*
     ########################################################################
     def impl_PyTuple_New(self, stmt):
+        # http://docs.python.org/c-api/tuple.html#PyTuple_New
+        v_len = self.eval_rvalue(stmt.args[0], stmt.loc)
+
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyTupleObject', 'PyTuple_Type')
+        # Set ob_size:
+        r_ob_size = t_success.dest.make_field_region(newobj, 'ob_size')
+        t_success.dest.value_for_region[r_ob_size] = v_len
+        return [t_success, t_failure]
+
+    def impl_PyTuple_Size(self, stmt):
+        # http://docs.python.org/c-api/tuple.html#PyTuple_Size
+        # Implemented in Objects/tupleobject.c
+        fnname = 'PyTuple_Size'
+        returntype = stmt.fn.type.dereference.type
+        args = self.eval_stmt_args(stmt)
+        v_op = args[0]
+
+        # The CPython implementation uses PyTuple_Check, which uses
+        # Py_TYPE(op), an unchecked read through the ptr:
+        self.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+
+        # FIXME: cast:
+        v_ob_size = self.get_value_of_field_by_region(v_op.region,
+                                                      'ob_size')
+        t_success = self.mktrans_assignment(stmt.lhs,
+                                            v_ob_size,
+                                            'PyTuple_Size() returns ob_size')
+
+        if self.object_ptr_has_global_ob_type(v_op, 'PyTuple_Type'):
+            # We know it's a PyTupleObject; the call will succeed:
+            return [t_success]
+
+        # Can fail if not a tuple:
+        # (For now, ignore the fact that it could be a tuple subclass)
+
+        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_failure.set_exception('PyExc_SystemError')
+        t_failure = Transition(self,
+                               s_failure,
+                               '%s() fails (not a tuple)' % fnname)
         return [t_success, t_failure]
 
     ########################################################################
