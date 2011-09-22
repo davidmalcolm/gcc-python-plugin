@@ -782,6 +782,20 @@ class MyState(State):
     ########################################################################
     # PyDict_*
     ########################################################################
+    def impl_PyDict_GetItem(self, stmt):
+        # Declared in dictobject.h:
+        #   PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *mp, PyObject *key);
+        # Defined in dictobject.c
+        #
+        # Returns a borrowed ref, or NULL if not found.  It does _not_ set
+        # an exception (for historical reasons)
+        s_success = self.mkstate_borrowed_ref(stmt, 'result from PyDict_GetItem')
+        t_notfound = self.mktrans_assignment(stmt.lhs,
+                                             make_null_pyobject_ptr(stmt),
+                                             'PyDict_GetItem does not find item')
+        return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+                t_notfound]
+
     def impl_PyDict_GetItemString(self, stmt):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);
