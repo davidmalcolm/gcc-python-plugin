@@ -36,6 +36,11 @@ test(void)
     foo(i * 2);
     foo(i / 2);
 
+    /* Bitwise: */
+    i |= 0xf0f0;
+    i &= 0xaaaa;
+    i ^= 0xaaaa;
+
     return i;
 }
 
