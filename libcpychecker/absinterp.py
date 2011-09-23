@@ -1003,7 +1003,26 @@ class Resources:
         logger('acquisitions: %s' % self._acquisitions)
         logger('releases: %s' % self._releases)
 
-def iter_traces(fun, stateclass, prefix=None):
+class TooComplicated(Exception):
+    """
+    The function is too complicated for the checker to analyze.
+    """
+    pass
+
+class Limits:
+    """
+    Resource limits, to avoid an analysis going out of control
+    """
+    def __init__(self, maxtrans):
+        self.maxtrans = maxtrans
+        self.trans_seen = 0
+
+    def on_transition(self, transition):
+        self.trans_seen += 1
+        if self.trans_seen > self.maxtrans:
+            raise TooComplicated()
+
+def iter_traces(fun, stateclass, prefix=None, limits=None):
     """
     Traverse the tree of traces of program state, returning a list
     of Trace instances.
@@ -1074,8 +1093,13 @@ def iter_traces(fun, stateclass, prefix=None):
             check_isinstance(transition, Transition)
             transition.dest.verify()
 
+            if limits:
+                limits.on_transition(transition)
+
+            newprefix = prefix.copy().add(transition)
+
             # Recurse:
-            for trace in iter_traces(fun, stateclass, prefix.copy().add(transition)):
+            for trace in iter_traces(fun, stateclass, newprefix, limits):
                 result.append(trace)
         return result
     else:

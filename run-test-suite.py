@@ -181,8 +181,16 @@ def run_test(testdir):
     #print 'err: %r' % err.actual
     c = p.wait()
 
+    expsuccess = (err.expdata == '')
+
+    # Special case:
+    if testdir == 'tests/cpychecker/refcounts/combinatorial-explosion':
+        # This test case should succeed, whilst emitting a note on stderr;
+        # don't treat the stderr output as leading to an expected failure:
+        expsuccess = True
+
     # Check exit code:
-    if err.expdata == '':
+    if expsuccess:
         # Expect a successful exit:
         if c != 0:
             raise CompilationError(out.actual, err.actual, p, args)

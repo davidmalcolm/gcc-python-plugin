@@ -2272,7 +2272,13 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         # print(dot)
         invoke_dot(dot)
 
-    traces = iter_traces(fun, MyState)
+    try:
+        traces = iter_traces(fun, MyState, limits=Limits(maxtrans=1024))
+    except TooComplicated:
+        gcc.inform(fun.start,
+                   'this function is too complicated for the reference-count checker to analyze')
+        return
+
     if dump_traces:
         traces = list(traces)
         dump_traces_to_stdout(traces)
