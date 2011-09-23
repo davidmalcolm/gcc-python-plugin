@@ -41,6 +41,10 @@ test(void)
     i &= 0xaaaa;
     i ^= 0xaaaa;
 
+    /* Bit shifting */
+    i <<= 2;
+    i >>= 1;
+
     return i;
 }
 

@@ -1905,6 +1905,24 @@ class MyState(State):
                                      a.value ^ b.value)
             raise NotImplementedError("Don't know how to cope with bitwise-xor of\n  %r\nand\n  %rat %s"
                                       % (a, b, stmt.loc))
+        elif stmt.exprcode == gcc.LshiftExpr:
+            a, b = self.eval_binop_args(stmt)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     a.value << b.value)
+            raise NotImplementedError("Don't know how to cope with left shift of of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
+        elif stmt.exprcode == gcc.RshiftExpr:
+            a, b = self.eval_binop_args(stmt)
+            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     a.value >> b.value)
+            raise NotImplementedError("Don't know how to cope with right shift of of\n  %r\nand\n  %rat %s"
+                                      % (a, b, stmt.loc))
         elif stmt.exprcode == gcc.ComponentRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.VarDecl:

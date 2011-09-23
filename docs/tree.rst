@@ -516,9 +516,9 @@ Binary Expressions
       Subclass                             C/C++ operators
       ===================================  ======================
       .. py:class:: gcc.LrotateExpr
-      .. py:class:: gcc.LshiftExpr
+      .. py:class:: gcc.LshiftExpr         `<<`, `<<=`
       .. py:class:: gcc.RrotateExpr
-      .. py:class:: gcc.RshiftExpr
+      .. py:class:: gcc.RshiftExpr         `>>`, `>>=`
       ===================================  ======================
 
    Bitwise binary expressions:
