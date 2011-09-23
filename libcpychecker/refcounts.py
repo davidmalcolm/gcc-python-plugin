@@ -1439,6 +1439,31 @@ class MyState(State):
     def impl_PyString_FromString(self, stmt):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
+        #
+        #   http://docs.python.org/c-api/string.html#PyString_FromString
+        #
+        v_str, = self.eval_stmt_args(stmt)
+
+        # The input _must_ be non-NULL; it is not checked:
+        self.raise_any_null_ptr_func_arg(stmt, 0, v_str)
+
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyStringObject', 'PyString_Type')
+        return [t_success, t_failure]
+
+    def impl_PyString_FromStringAndSize(self, stmt):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);
+        #
+        # http://docs.python.org/c-api/string.html#PyString_FromStringAndSize
+        #
+        # Defined in Objects/stringobject.c:
+        #   # PyObject *
+        #   PyString_FromStringAndSize(const char *str, Py_ssize_t size)
+
+        # v_str, v_size = self.eval_stmt_args(stmt)
+        # (the input can legitimately be NULL)
+
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
