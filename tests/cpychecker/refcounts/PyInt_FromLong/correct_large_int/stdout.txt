@@ -38,4 +38,4 @@ Trace 1:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyInt_FromLong/correct_large_int/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyInt_FromLong/correct_large_int/input.c:34

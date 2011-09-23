@@ -42,7 +42,7 @@ Trace 1:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52
 
 Trace 2:
   Transitions:
@@ -63,4 +63,4 @@ Trace 2:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:39

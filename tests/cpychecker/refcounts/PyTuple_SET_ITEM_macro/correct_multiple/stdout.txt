@@ -85,7 +85,7 @@ Trace 1:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=44), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 2:
   Transitions:
@@ -131,7 +131,7 @@ Trace 2:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=44), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 3:
   Transitions:
@@ -177,7 +177,7 @@ Trace 3:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=44), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 4:
   Transitions:
@@ -224,7 +224,7 @@ Trace 4:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=44), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 5:
   Transitions:
@@ -270,7 +270,7 @@ Trace 5:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 6:
   Transitions:
@@ -317,7 +317,7 @@ Trace 6:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 7:
   Transitions:
@@ -364,7 +364,7 @@ Trace 7:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 8:
   Transitions:
@@ -412,7 +412,7 @@ Trace 8:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:50
 
 Trace 9:
   Transitions:
@@ -449,7 +449,7 @@ Trace 9:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:44
 
 Trace 10:
   Transitions:
@@ -487,7 +487,7 @@ Trace 10:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:44
 
 Trace 11:
   Transitions:
@@ -525,7 +525,7 @@ Trace 11:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:44
 
 Trace 12:
   Transitions:
@@ -564,7 +564,7 @@ Trace 12:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:44
 
 Trace 13:
   Transitions:
@@ -593,7 +593,7 @@ Trace 13:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyTuple_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:39
 
 Trace 14:
   Transitions:
@@ -623,7 +623,7 @@ Trace 14:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:39
 
 Trace 15:
   Transitions:
@@ -644,4 +644,4 @@ Trace 15:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple/input.c:33

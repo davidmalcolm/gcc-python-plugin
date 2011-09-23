@@ -96,7 +96,7 @@ Trace 2:
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loop_n_times/input.c:42
 
 Trace 3:
   Transitions:
@@ -128,7 +128,7 @@ Trace 3:
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loop_n_times/input.c:42
 
 Trace 4:
   Transitions:
@@ -151,7 +151,7 @@ Trace 4:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_MemoryError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loop_n_times/input.c:38
 
 Trace 5:
   Transitions:
@@ -172,4 +172,4 @@ Trace 5:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/loop_n_times/input.c:34

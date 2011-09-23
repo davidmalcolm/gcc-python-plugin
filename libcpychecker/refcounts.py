@@ -336,7 +336,7 @@ class MyState(State):
                              loc,
                              _incref_external)
 
-    def set_exception(self, exc_name):
+    def set_exception(self, exc_name, loc):
         """
         Given the name of a (PyObject*) global for an exception class, such as
         the string "PyExc_MemoryError", set the exception state to the
@@ -348,8 +348,9 @@ class MyState(State):
         check_isinstance(exc_name, str)
         exc_decl = gccutils.get_global_vardecl_by_name(exc_name)
         check_isinstance(exc_decl, gcc.VarDecl)
-        exc_region = self.var_region(exc_decl)
-        self.exception_rvalue = exc_region
+        r_exception = self.var_region(exc_decl)
+        v_exception = PointerToRegion(get_PyObjectPtr(), loc, r_exception)
+        self.exception_rvalue = v_exception
 
     def impl_object_ctor(self, stmt, typename, typeobjname):
         """
@@ -386,7 +387,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(returntype, stmt.loc, 0),
                                        '%s() fails' % fnname)
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return (nonnull, t_success, t_failure)
 
     def mkstate_concrete_return_of(self, stmt, value):
@@ -515,7 +516,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                             value,
                                             None)
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return t_failure.dest
 
 
@@ -650,7 +651,7 @@ class MyState(State):
         s_failure = self.mkstate_concrete_return_of(stmt, 0)
         # Various errors are possible, but a TypeError is always possible
         # e.g. for the case of the wrong number of arguments:
-        s_failure.set_exception('PyExc_TypeError')
+        s_failure.set_exception('PyExc_TypeError', stmt.loc)
 
         # Parse the format string, and figure out what the effects of a
         # successful parsing are:
@@ -841,7 +842,7 @@ class MyState(State):
         s_success.add_external_ref(v_item, stmt.loc)
 
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError')
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -890,7 +891,7 @@ class MyState(State):
         t_next = self.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_NoMemory()')
-        t_next.dest.set_exception('PyExc_MemoryError')
+        t_next.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_next]
 
     def impl_PyErr_Print(self, stmt):
@@ -1075,7 +1076,7 @@ class MyState(State):
 
         # Can fail with memory error, overflow error:
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError')
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -1241,7 +1242,7 @@ class MyState(State):
 
         # Can fail with memory error, overflow error:
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError')
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -1257,7 +1258,7 @@ class MyState(State):
 
         # Can fail with memory error, overflow error:
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError')
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -1269,7 +1270,7 @@ class MyState(State):
 
         # Can fail with memory error, overflow error:
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError')
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -1304,7 +1305,7 @@ class MyState(State):
         s_true = self.mkstate_concrete_return_of(stmt, 1)
         s_false = self.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError') # arbitrarily chosen error
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
 
         fnname = stmt.fn.operand.name
         return [Transition(self, s_true, '%s() returns 1 (true)' % fnname),
@@ -1339,7 +1340,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '_PyObject_New() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     def impl_PyObject_Repr(self, stmt):
@@ -1420,7 +1421,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
                                             'PyString_AsString() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     def impl_PyString_FromFormat(self, stmt):
@@ -1502,7 +1503,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        'PyStructSequence_New() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1529,7 +1530,7 @@ class MyState(State):
         t_failure = self.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
                                             '%s() fails' % fnname)
-        t_failure.dest.set_exception('PyExc_MemoryError')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1573,7 +1574,7 @@ class MyState(State):
         # (For now, ignore the fact that it could be a tuple subclass)
 
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_SystemError')
+        s_failure.set_exception('PyExc_SystemError', stmt.loc)
         t_failure = Transition(self,
                                s_failure,
                                '%s() fails (not a tuple)' % fnname)
@@ -1598,7 +1599,7 @@ class MyState(State):
         s_success = self.mkstate_concrete_return_of(stmt, 0)
 
         s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError') # various possible errors
+        s_failure.set_exception('PyExc_MemoryError', stmt.loc) # various possible errors
 
         return self.make_transitions_for_fncall(stmt, s_success, s_failure)
 

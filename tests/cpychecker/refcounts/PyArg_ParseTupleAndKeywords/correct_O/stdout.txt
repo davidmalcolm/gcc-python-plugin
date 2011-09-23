@@ -50,4 +50,4 @@ Trace 1:
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('kwargs')"))
   Exception:
-    RegionForGlobal(gcc.VarDecl('PyExc_TypeError'))
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O/input.c:33
