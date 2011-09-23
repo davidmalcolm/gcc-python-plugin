@@ -946,9 +946,6 @@ class Trace:
     def return_value(self):
         return self.states[-1].return_rvalue
 
-    def final_references(self):
-        return self.states[-1].owned_refs
-
     def has_looped(self):
         """
         Is the tail state of the Trace at a location where it's been before?
@@ -1035,7 +1032,6 @@ def iter_traces(fun, stateclass, prefix=None, limits=None):
         prefix = Trace()
         curstate = stateclass(Location.get_block_start(fun.cfg.entry),
                               None, None, None,
-                              [],
                               Resources(),
                               ConcreteValue(get_PyObjectPtr(), fun.start, 0))
         curstate.init_for_function(fun)
@@ -1127,7 +1123,6 @@ class StateGraph:
         # Recursively gather states:
         initial = stateclass(Location.get_block_start(fun.cfg.entry),
                              None, None, None,
-                             [],
                              Resources(),
                              ConcreteValue(get_PyObjectPtr(), fun.start, 0))
         initial.init_for_function(fun)

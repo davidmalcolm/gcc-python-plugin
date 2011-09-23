@@ -191,9 +191,8 @@ class GenericTpDealloc(AbstractValue):
         return [Transition(state, new, desc)]
 
 class MyState(State):
-    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, owned_refs, resources, exception_rvalue):
+    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, resources, exception_rvalue):
         State.__init__(self, loc, region_for_var, value_for_region, return_rvalue)
-        self.owned_refs = owned_refs
         self.resources = resources
         self.exception_rvalue = exception_rvalue
 
@@ -202,15 +201,11 @@ class MyState(State):
                            self.region_for_var.copy(),
                            self.value_for_region.copy(),
                            self.return_rvalue,
-                           self.owned_refs[:],
                            self.resources.copy(),
                            self.exception_rvalue)
         if hasattr(self, 'fun'):
             c.fun = self.fun
         return c
-
-    def _extra(self):
-        return ' %s' % self.owned_refs
 
     def acquire(self, resource):
         self.resources.acquire(resource)
@@ -247,14 +242,6 @@ class MyState(State):
                                                                  parm.location,
                                                                  typeobjregion)
         self.verify()
-
-    def mktrans_assignment(self, key, value, desc, additional_ptr=None):
-        if desc:
-            check_isinstance(desc, str)
-        transition = State.mktrans_assignment(self, key, value, desc)
-        if additional_ptr:
-            transition.dest.owned_refs.append(additional_ptr)
-        return transition
 
     def get_transitions(self):
         # Return a list of Transition instances, based on input State
@@ -2037,15 +2024,6 @@ class MyState(State):
             raise ReadFromDeallocatedMemory(stmt, value)
 
         nextstate = self.use_next_loc()
-        """
-        if isinstance(stmt.lhs, gcc.MemRef):
-            log('value: %s %r', value, value)
-            # We're writing a value to memory; if it's a PyObject*
-            # then we're surrending a reference on it:
-            if value in nextstate.owned_refs:
-                log('removing ownership of %s', value)
-                nextstate.owned_refs.remove(value)
-        """
         return [self.mktrans_assignment(stmt.lhs,
                                         value,
                                         None)]
