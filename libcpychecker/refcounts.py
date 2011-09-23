@@ -894,6 +894,19 @@ class MyState(State):
         t_next.dest.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_next]
 
+    def impl_PyErr_Occurred(self, stmt):
+        # Declared in pyerrors.h:
+        #   PyAPI_FUNC(PyObject *) PyErr_Occurred(void);
+        #
+        # Defined in Python/errors.c
+        #
+        # http://docs.python.org/c-api/exceptions.html#PyErr_Occurred
+        # Returns a borrowed reference; can't fail:
+        t_next = self.mktrans_assignment(stmt.lhs,
+                                         self.exception_rvalue,
+                                         'PyErr_Occurred()')
+        return [t_next]
+
     def impl_PyErr_Print(self, stmt):
         # Declared in pythonrun.h:
         #   PyAPI_FUNC(void) PyErr_Print(void);
@@ -1024,6 +1037,41 @@ class MyState(State):
     ########################################################################
     # Py_Int*
     ########################################################################
+    def impl_PyInt_AsLong(self, stmt):
+        # Declared in intobject.h as:
+        #   PyAPI_FUNC(long) PyInt_AsLong(PyObject *);
+        # Defined in Objects/intobject.c
+        #
+        # http://docs.python.org/c-api/int.html#PyInt_AsLong
+
+        # Can fail (gracefully) with NULL, and with non-int objects
+
+        args = self.eval_stmt_args(stmt)
+        v_op = args[0]
+
+        returntype = stmt.fn.type.dereference.type
+
+        if self.object_ptr_has_global_ob_type(v_op, 'PyInt_Type'):
+            # We know it's a PyIntObject; the call will succeed:
+            # FIXME: cast:
+            v_ob_ival = self.get_value_of_field_by_region(v_op.region,
+                                                          'ob_ival')
+            t_success = self.mktrans_assignment(stmt.lhs,
+                                                v_ob_ival,
+                                                'PyInt_AsLong() returns ob_ival')
+            return [t_success]
+
+        # We don't know if it's a PyIntObject (or subclass); the call could
+        # fail:
+        t_success = self.mktrans_assignment(stmt.lhs,
+                                            UnknownValue(returntype, stmt.loc),
+                                            'PyInt_AsLong() succeeds')
+        t_failure = self.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, -1),
+                                            'PyInt_AsLong() fails')
+        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        return [t_success, t_failure]
+
     def impl_PyInt_FromLong(self, stmt):
         # Declared in intobject.h as:
         #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
@@ -1038,14 +1086,18 @@ class MyState(State):
         args = self.eval_stmt_args(stmt)
         v_ival = args[0]
 
-        newobj, success, failure = self.impl_object_ctor(stmt,
-                                                         'PyIntObject', 'PyInt_Type')
+        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+                                                             'PyIntObject', 'PyInt_Type')
+        # Set ob_size:
+        r_ob_size = t_success.dest.make_field_region(newobj, 'ob_ival')
+        t_success.dest.value_for_region[r_ob_size] = v_ival
+
         if isinstance(v_ival, ConcreteValue):
             if v_ival.value >= -5 and v_ival.value < 257:
                 # We know that failure isn't possible:
-                return [success]
+                return [t_success]
 
-        return [success, failure]
+        return [t_success, t_failure]
 
     ########################################################################
     # PyList_*
