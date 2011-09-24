@@ -959,7 +959,7 @@ class CPython(Facet):
     ########################################################################
     # PyList_*
     ########################################################################
-    def impl_PyList_Append(self, stmt, op, newitem):
+    def impl_PyList_Append(self, stmt, v_op, v_newitem):
         # Declared in listobject.h as:
         #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
         #
@@ -972,15 +972,15 @@ class CPython(Facet):
 
         # On success, adds a ref on input:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_success.cpython.add_ref(newitem, stmt.loc)
+        s_success.cpython.add_ref(v_newitem, stmt.loc)
         #...and set the pointer value within ob_item array, so that we can
         # discount that refcount:
-        ob_item_region = self.state.make_field_region(op.region, 'ob_item')
-        ob_size_region = self.state.make_field_region(op.region, 'ob_size')
+        ob_item_region = self.state.make_field_region(v_op.region, 'ob_item')
+        ob_size_region = self.state.make_field_region(v_op.region, 'ob_size')
         check_isinstance(s_success.value_for_region[ob_size_region], ConcreteValue) # for now
         index = s_success.value_for_region[ob_size_region].value
         array_region = s_success._array_region(ob_item_region, index)
-        s_success.value_for_region[array_region] = newitem
+        s_success.value_for_region[array_region] = v_newitem
 
         # Can fail with memory error, overflow error:
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -988,17 +988,17 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyList_New(self, stmt, lenarg):
+    def impl_PyList_New(self, stmt, v_len):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
 
-        check_isinstance(lenarg, AbstractValue)
+        check_isinstance(v_len, AbstractValue)
         newobj, success, failure = self.object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
         # Set ob_size:
         ob_size = success.dest.make_field_region(newobj, 'ob_size')
-        success.dest.value_for_region[ob_size] = lenarg
+        success.dest.value_for_region[ob_size] = v_len
 
         # "Allocate" ob_item, and set it up so that all of the array is
         # treated as NULL:
@@ -1016,7 +1016,7 @@ class CPython(Facet):
 
         return [success, failure]
 
-    def impl_PyList_SetItem(self, stmt, arg_list, arg_index, arg_item):
+    def impl_PyList_SetItem(self, stmt, v_list, v_index, v_item):
         # Decl:
         #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
         fnname = stmt.fn.operand.name
@@ -1041,9 +1041,9 @@ class CPython(Facet):
             s_success  = self.state.mkstate_concrete_return_of(stmt, 0)
             # FIXME: update refcounts
             # "Steal" a reference to item:
-            if isinstance(arg_item, PointerToRegion):
-                check_isinstance(arg_item.region, Region)
-                s_success.cpython.steal_reference(arg_item.region)
+            if isinstance(v_item, PointerToRegion):
+                check_isinstance(v_item.region, Region)
+                s_success.cpython.steal_reference(v_item.region)
 
             # and discards a
             # reference to an item already in the list at the affected position.
@@ -1212,7 +1212,7 @@ class CPython(Facet):
                 Transition(self.state, s_false, '%s() returns 0 (false)' % fnname),
                 Transition(self.state, s_failure, '%s() returns -1 (failure)' % fnname)]
 
-    def impl__PyObject_New(self, stmt, tp_rvalue):
+    def impl__PyObject_New(self, stmt, v_typeptr):
         # Declaration in objimpl.h:
         #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
         #
@@ -1230,7 +1230,7 @@ class CPython(Facet):
         s_success, nonnull = self.mkstate_new_ref(stmt, '_PyObject_New')
         # ...and set up ob_type on the result object:
         ob_type = s_success.make_field_region(nonnull, 'ob_type')
-        s_success.value_for_region[ob_type] = tp_rvalue
+        s_success.value_for_region[ob_type] = v_typeptr
         t_success = Transition(self.state,
                              s_success,
                              '_PyObject_New() succeeds')
@@ -1375,7 +1375,7 @@ class CPython(Facet):
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyStructSequence_InitType')]
 
-    def impl_PyStructSequence_New(self, stmt, tp_rvalue):
+    def impl_PyStructSequence_New(self, stmt, v_typeptr):
         # Declared in structseq.h as:
         #   PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);
         #
@@ -1389,7 +1389,7 @@ class CPython(Facet):
         s_success, nonnull = self.mkstate_new_ref(stmt, 'PyStructSequence_New')
         # ...and set up ob_type on the result object:
         ob_type = s_success.make_field_region(nonnull, 'ob_type')
-        s_success.value_for_region[ob_type] = tp_rvalue
+        s_success.value_for_region[ob_type] = v_typeptr
         t_success = Transition(self.state,
                              s_success,
                              'PyStructSequence_New() succeeds')
