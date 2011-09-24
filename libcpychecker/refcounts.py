@@ -299,7 +299,7 @@ class CPython(Facet):
         v_exception = PointerToRegion(get_PyObjectPtr(), loc, r_exception)
         self.exception_rvalue = v_exception
 
-    def impl_object_ctor(self, stmt, typename, typeobjname):
+    def object_ctor(self, stmt, typename, typeobjname):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
         PyObject*, generate a
@@ -688,7 +688,7 @@ class CPython(Facet):
                 #t_memoryexc]
 
     def impl_PyDict_New(self, stmt):
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyDictObject', 'PyDict_Type')
         return [t_success, t_failure]
 
@@ -864,7 +864,7 @@ class CPython(Facet):
 
     def impl_PyImport_ImportModule(self, stmt, v_name):
         # http://docs.python.org/c-api/import.html#PyImport_ImportModule
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyModuleObject', 'PyModule_Type')
         return [t_success, t_failure]
 
@@ -943,7 +943,7 @@ class CPython(Facet):
         # by _PyInt_Init().  Thus, for these values, we know that the call
         # cannot fail
 
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyIntObject', 'PyInt_Type')
         # Set ob_size:
         r_ob_size = t_success.dest.make_field_region(newobj, 'ob_ival')
@@ -994,7 +994,7 @@ class CPython(Facet):
         # Returns a new reference, or raises MemoryError
 
         check_isinstance(lenarg, AbstractValue)
-        newobj, success, failure = self.impl_object_ctor(stmt,
+        newobj, success, failure = self.object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
         # Set ob_size:
         ob_size = success.dest.make_field_region(newobj, 'ob_size')
@@ -1057,7 +1057,7 @@ class CPython(Facet):
     # PyLong_*
     ########################################################################
     def impl_PyLong_FromLong(self, stmt, v_long):
-        newobj, success, failure = self.impl_object_ctor(stmt,
+        newobj, success, failure = self.object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
@@ -1066,13 +1066,13 @@ class CPython(Facet):
         #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
         # Defined in longobject.c
         # http://docs.python.org/c-api/long.html#PyLong_FromString
-        newobj, success, failure = self.impl_object_ctor(stmt,
+        newobj, success, failure = self.object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
     def impl_PyLong_FromVoidPtr(self, stmt, v_p):
         # http://docs.python.org/c-api/long.html#PyLong_FromVoidPtr
-        newobj, success, failure = self.impl_object_ctor(stmt,
+        newobj, success, failure = self.object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
@@ -1246,7 +1246,7 @@ class CPython(Facet):
         #  PyAPI_FUNC(PyObject *) PyObject_Repr(PyObject *);
         # Docs:
         #   http://docs.python.org/c-api/object.html#PyObject_Repr
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
@@ -1255,7 +1255,7 @@ class CPython(Facet):
         #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
         # also with:
         #  #define PyObject_Bytes PyObject_Str
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
@@ -1330,7 +1330,7 @@ class CPython(Facet):
         #
         # (We do not yet check that the format string matches the types of the
         # varargs)
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
@@ -1344,7 +1344,7 @@ class CPython(Facet):
         # The input _must_ be non-NULL; it is not checked:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
 
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
@@ -1361,7 +1361,7 @@ class CPython(Facet):
         # v_str, v_size = self.state.eval_stmt_args(stmt)
         # (the input can legitimately be NULL)
 
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
@@ -1431,7 +1431,7 @@ class CPython(Facet):
     def impl_PyTuple_New(self, stmt, v_len):
         # http://docs.python.org/c-api/tuple.html#PyTuple_New
 
-        newobj, t_success, t_failure = self.impl_object_ctor(stmt,
+        newobj, t_success, t_failure = self.object_ctor(stmt,
                                                              'PyTupleObject', 'PyTuple_Type')
         # Set ob_size:
         r_ob_size = t_success.dest.make_field_region(newobj, 'ob_size')
