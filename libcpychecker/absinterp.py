@@ -24,6 +24,20 @@ from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
 
+# I found myself regularly getting State and Transition instances confused.  To
+# ameliorate that, here are some naming conventions and abbreviations:
+#
+# Within method names:
+#   "mktrans_" means "make a Transition"
+#   "mkstate_" means "make a State"
+#
+# Within variable names
+#   the prefix "t_" means a Transition
+#   the prefix "s_" means a State
+#   the prefix "v_" means an AbstractValue
+#   the prefix "r_" means a Region
+#   the prefix "f_" means a Facet
+
 class AbstractValue:
     def __init__(self, gcctype, loc):
         if gcctype:
@@ -58,6 +72,15 @@ class AbstractValue:
                                       UnknownValue(returntype, stmt.loc),
                                       'calling %s' % self)]
 
+    def eval_binop(self, exprcode, rhs, gcctype, loc):
+        raise NotImplementedError
+
+    def is_equal(self, rhs):
+        """
+        Return a boolean, or None (meaning we don't know)
+        """
+        raise NotImplementedError
+
 class UnknownValue(AbstractValue):
     """
     A value that we know nothing about
@@ -73,6 +96,12 @@ class UnknownValue(AbstractValue):
 
     def __repr__(self):
         return 'UnknownValue(gcctype=%r, loc=%r)' % (self.gcctype, self.loc)
+
+    def eval_binop(self, exprcode, rhs, gcctype, loc):
+        return UnknownValue(gcctype, loc)
+
+    def is_equal(self, rhs):
+        return None
 
 class ConcreteValue(AbstractValue):
     """
@@ -104,6 +133,33 @@ class ConcreteValue(AbstractValue):
         if isinstance(self.gcctype, gcc.PointerType):
             return self.value == 0
 
+    def eval_binop(self, exprcode, rhs, gcctype, loc):
+        if isinstance(rhs, ConcreteValue):
+            if exprcode == gcc.PlusExpr:
+                return ConcreteValue(gcctype, loc, self.value + rhs.value)
+            elif exprcode == gcc.MinusExpr:
+                return ConcreteValue(gcctype, loc, self.value - rhs.value)
+            elif exprcode == gcc.MultExpr:
+                return ConcreteValue(gcctype, loc, self.value * rhs.value)
+            elif exprcode == gcc.TruncDivExpr:
+                return ConcreteValue(gcctype, loc, self.value // rhs.value)
+            elif exprcode == gcc.BitIorExpr:
+                return ConcreteValue(gcctype, loc, self.value | rhs.value)
+            elif exprcode == gcc.BitAndExpr:
+                return ConcreteValue(gcctype, loc, self.value & rhs.value)
+            elif exprcode == gcc.BitXorExpr:
+                return ConcreteValue(gcctype, loc, self.value ^ rhs.value)
+            elif exprcode == gcc.LshiftExpr:
+                return ConcreteValue(gcctype, loc, self.value << rhs.value)
+            elif exprcode == gcc.RshiftExpr:
+                return ConcreteValue(gcctype, loc, self.value >> rhs.value)
+        return UnknownValue(gcctype, loc)
+
+    def is_equal(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing concrete values: %s %s', self, rhs)
+            return self.value == rhs.value
+        return None
 
 class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
@@ -120,6 +176,18 @@ class PointerToRegion(AbstractValue):
 
     def __repr__(self):
         return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
+
+    def is_equal(self, rhs):
+        if isinstance(rhs, ConcreteValue) and rhs.value == 0:
+            log('ptr to region vs 0: %s is definitely not equal to %s', self, rhs)
+            return False
+
+        if isinstance(rhs, PointerToRegion):
+            log('comparing regions: %s %s', self, rhs)
+            return self.region == rhs.region
+
+        # We don't know:
+        return None
 
 class DeallocatedMemory(AbstractValue):
     def __str__(self):
@@ -393,12 +461,59 @@ class SplitValue(Exception):
                                      "treating %s as %s" % (self.value, altvalue)))
         return result
 
+
+class Facet:
+    """
+    A facet of state, relating to a particular API (e.g. libc, cpython, etc)
+
+    Each facet knows which State instance it relates to, and knows how to
+    copy itself to a new State.
+
+    Potentially it can also supply "impl_" methods, which implement named
+    functions within the API, describing all possible transitions from the
+    current state to new states (e.g. success, failure, etc), creating
+    appropriate new States with appropriate new Facet subclass instances.
+    """
+    def __init__(self, state):
+        check_isinstance(state, State)
+        self.state = state
+
+    def copy(self, newstate):
+        # Concrete subclasses should implement this.
+        raise NotImplementedError
+
 class State:
-    """A Location with memory state"""
-    def __init__(self, loc, region_for_var=None, value_for_region=None,
+    """
+    A Location with memory state, and zero or more additional "facets" of
+    state, one per API that we care about.
+
+    'facets' is a dict, mapping attribute names to Facet subclass.
+
+    For example, it might be:
+       {'cpython': CPython,
+        'libc': Libc,
+        'glib': GLib}
+    indicating that we expect all State instances to have a s.cpython field,
+    with a CPython instance, and a s.libc field (a Libc instance), etc.
+
+    Every State "knows" what all its facets are, and each Facet has a "state"
+    attribute recording which State instance it is part of.
+
+    For example, a CPython facet can keep track of the thread-local exception
+    status, and a Libc facet can keep track of file-descriptors, malloc
+    buffers, etc.
+
+    Hopefully this will allow checking of additional APIs to be slotted into
+    the checker, whilst keeping each API's special-case rules isolated.
+    """
+    def __init__(self, fun, loc, facets, region_for_var=None, value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
+        check_isinstance(fun, gcc.Function)
         check_isinstance(loc, Location)
+        check_isinstance(facets, dict)
+        self.fun = fun
         self.loc = loc
+        self.facets = facets
 
         # Mapping from VarDecl.name to Region:
         if region_for_var:
@@ -419,18 +534,16 @@ class State:
         self.not_returning = not_returning
 
     def __str__(self):
-        return ('loc: %s region_for_var:%s value_for_region:%s%s'
+        return ('loc: %s region_for_var:%s value_for_region:%s'
                 % (self.loc,
                    self.region_for_var,
-                   self.value_for_region,
-                   self._extra()))
+                   self.value_for_region))
 
     def __repr__(self):
-        return ('loc: %r region_for_var:%r value_for_region:%r%r'
+        return ('loc: %r region_for_var:%r value_for_region:%r'
                 % (self.loc,
                    self.region_for_var,
-                   self.value_for_region,
-                   self._extra()))
+                   self.value_for_region))
 
     def log(self, logger):
         if not logging_enabled:
@@ -456,15 +569,21 @@ class State:
             logger('%s', self.loc.get_stmt().loc)
 
     def copy(self):
-        c = self.__class__(loc,
-                           self.region_for_var.copy(),
-                           self.value_for_region.copy(),
-                           self.return_rvalue,
-                           self.has_returned,
-                           self.not_returning)
-        if hasattr(self, 'fun'):
-            c.fun = self.fun
-        return c
+        s_new = State(self.fun,
+                      self.loc,
+                      self.facets,
+                      self.region_for_var.copy(),
+                      self.value_for_region.copy(),
+                      self.return_rvalue,
+                      self.has_returned,
+                      self.not_returning)
+        # Make a copy of each facet into the new state:
+        for key in self.facets:
+            facetcls = self.facets[key]
+            f_old = getattr(self, key)
+            f_new = f_old.copy(s_new)
+            setattr(s_new, key, f_new)
+        return s_new
 
     def verify(self):
         """
@@ -891,6 +1010,456 @@ class State:
         null_ptr = ConcreteValue(ptr_rvalue.gcctype, loc, 0)
         raise SplitValue(ptr_rvalue, [non_null_ptr, null_ptr])
 
+    def get_transitions(self):
+        # Return a list of Transition instances, based on input State
+        stmt = self.loc.get_stmt()
+        if stmt:
+            return self._get_transitions_for_stmt(stmt)
+        else:
+            result = []
+            for loc in self.loc.next_locs():
+                newstate = self.copy()
+                newstate.loc = loc
+                result.append(Transition(self, newstate, ''))
+            log('result: %s', result)
+            return result
+
+    def _get_transitions_for_stmt(self, stmt):
+        log('_get_transitions_for_stmt: %r %s', stmt, stmt)
+        log('dir(stmt): %s', dir(stmt))
+        if stmt.loc:
+            gcc.set_location(stmt.loc)
+        if isinstance(stmt, gcc.GimpleCall):
+            return self._get_transitions_for_GimpleCall(stmt)
+        elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
+            return [Transition(self,
+                               self.use_next_loc(),
+                               None)]
+        elif isinstance(stmt, gcc.GimpleCond):
+            return self._get_transitions_for_GimpleCond(stmt)
+        elif isinstance(stmt, gcc.GimpleReturn):
+            return self._get_transitions_for_GimpleReturn(stmt)
+        elif isinstance(stmt, gcc.GimpleAssign):
+            return self._get_transitions_for_GimpleAssign(stmt)
+        elif isinstance(stmt, gcc.GimpleSwitch):
+            return self._get_transitions_for_GimpleSwitch(stmt)
+        else:
+            raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
+                                      % (stmt, stmt, stmt.loc))
+
+    def mkstate_concrete_return_of(self, stmt, value):
+        """
+        Clone this state (at a function call), updating the location, and
+        setting the result of the call to the given concrete value
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        if stmt.lhs:
+            newstate.assign(stmt.lhs,
+                            ConcreteValue(stmt.lhs.type, stmt.loc, value),
+                            stmt.loc)
+        return newstate
+
+    def mktrans_nop(self, stmt, fnname):
+        """
+        Make a Transition for handling a function call that has no "visible"
+        effect within our simulation (beyond advancing to the next location).
+        [We might subsequently modify the destination state, though]
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        return Transition(self, newstate, 'calling %s()' % fnname)
+
+    def mktrans_from_fncall_state(self, stmt, state, partialdesc):
+        """
+        Given a function call here, convert a State instance into a Transition
+        instance, marking it.
+        """
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(state, State)
+        check_isinstance(partialdesc, str)
+        fnname = stmt.fn.operand.name
+        return Transition(self, state, '%s() %s' % (fnname, partialdesc))
+
+    def make_transitions_for_fncall(self, stmt, s_success, s_failure):
+        """
+        Given a function call, convert a pair of State instances into a pair
+        of Transition instances, marking one as a successful call, the other
+        as a failed call.
+        """
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(s_success, State)
+        check_isinstance(s_failure, State)
+
+        fnname = stmt.fn.operand.name
+
+        return [Transition(self, s_success, '%s() succeeds' % fnname),
+                Transition(self, s_failure, '%s() fails' % fnname)]
+
+    def eval_stmt_args(self, stmt):
+        assert isinstance(stmt, gcc.GimpleCall)
+        return [self.eval_rvalue(arg, stmt.loc)
+                for arg in stmt.args]
+
+    def _get_transitions_for_GimpleCall(self, stmt):
+        log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
+        log('stmt.fn: %s %r', stmt.fn, stmt.fn)
+        log('dir(stmt.fn): %s', dir(stmt.fn))
+        if hasattr(stmt.fn, 'operand'):
+            log('stmt.fn.operand: %s', stmt.fn.operand)
+        returntype = stmt.fn.type.dereference.type
+        log('returntype: %s', returntype)
+
+        if stmt.noreturn:
+            # The function being called does not return e.g. "exit(0);"
+            # Transition to a special noreturn state:
+            newstate = self.copy()
+            newstate.not_returning = True
+            return [Transition(self,
+                               newstate,
+                               'not returning from %s' % stmt.fn)]
+
+        if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl)):
+            # Calling through a function pointer:
+            val = self.eval_rvalue(stmt.fn, stmt.loc)
+            log('val: %s',  val)
+            check_isinstance(val, AbstractValue)
+            return val.get_transitions_for_function_call(self, stmt)
+
+        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
+            log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
+            log('stmt.fn.operand.name: %r', stmt.fn.operand.name)
+            fnname = stmt.fn.operand.name
+
+            # Hand off to impl_* methods of facets, where these methods exist:
+            methname = 'impl_%s' % fnname
+            for key in self.facets:
+                facet = getattr(self, key)
+                if hasattr(facet, methname):
+                    meth = getattr(facet, 'impl_%s' % fnname)
+                    return meth(stmt)
+
+            #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
+
+            #if fnname in c_stdio_functions:
+            #    return handle_c_stdio_function(self, fnname, stmt)
+
+            if 0:
+                # For extending coverage of the Python API:
+                # Detect and complain about Python API entrypoints that
+                # weren't explicitly handled
+                if fnname.startswith('_Py') or fnname.startswith('Py'):
+                    raise NotImplementedError('not yet implemented: %s' % fnname)
+
+            # Unknown function returning (PyObject*):
+            if str(stmt.fn.operand.type.type) == 'struct PyObject *':
+                log('Invocation of unknown function returning PyObject *: %r' % fnname)
+                # Assume that all such functions either:
+                #   - return a new reference, or
+                #   - return NULL and set an exception (e.g. MemoryError)
+                return self.cpython.make_transitions_for_new_ref_or_fail(stmt,
+                                                                 'new ref from (unknown) %s' % fnname)
+
+            # Unknown function of other type:
+            log('Invocation of unknown function: %r', fnname)
+            return [self.mktrans_assignment(stmt.lhs,
+                                         UnknownValue(returntype, stmt.loc),
+                                         None)]
+
+        log('stmt.args: %s %r', stmt.args, stmt.args)
+        for i, arg in enumerate(stmt.args):
+            log('args[%i]: %s %r', i, arg, arg)
+
+    def _get_transitions_for_GimpleCond(self, stmt):
+        def make_transition_for_true(stmt):
+            e = true_edge(self.loc.bb)
+            assert e
+            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate.prior_bool = True
+            return Transition(self, nextstate, 'taking True path')
+
+        def make_transition_for_false(stmt):
+            e = false_edge(self.loc.bb)
+            assert e
+            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate.prior_bool = False
+            return Transition(self, nextstate, 'taking False path')
+
+        log('stmt.exprcode: %s', stmt.exprcode)
+        log('stmt.exprtype: %s', stmt.exprtype)
+        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        boolval = self.eval_condition(stmt, stmt.lhs, stmt.exprcode, stmt.rhs)
+        if boolval is True:
+            log('taking True edge')
+            nextstate = make_transition_for_true(stmt)
+            return [nextstate]
+        elif boolval is False:
+            log('taking False edge')
+            nextstate = make_transition_for_false(stmt)
+            return [nextstate]
+        else:
+            check_isinstance(boolval, UnknownValue)
+            # We don't have enough information; both branches are possible:
+            return [make_transition_for_true(stmt),
+                    make_transition_for_false(stmt)]
+
+    def eval_condition(self, stmt, expr_lhs, exprcode, expr_rhs):
+        """
+        Evaluate a comparison, returning one of True, False, or None
+        """
+        log('eval_condition: %s %s %s ', expr_lhs, exprcode, expr_rhs)
+        check_isinstance(expr_lhs, gcc.Tree)
+        check_isinstance(exprcode, type) # it's a type, rather than an instance
+        check_isinstance(expr_rhs, gcc.Tree)
+
+        lhs = self.eval_rvalue(expr_lhs, stmt.loc)
+        rhs = self.eval_rvalue(expr_rhs, stmt.loc)
+        check_isinstance(lhs, AbstractValue)
+        check_isinstance(rhs, AbstractValue)
+
+        def is_equal(lhs, rhs):
+            check_isinstance(lhs, AbstractValue)
+            check_isinstance(rhs, AbstractValue)
+            return lhs.is_equal(rhs)
+
+        def is_lt(lhs, rhs):
+            # "less-than"
+            check_isinstance(lhs, AbstractValue)
+            check_isinstance(rhs, AbstractValue)
+            if isinstance(rhs, ConcreteValue):
+                if isinstance(lhs, ConcreteValue):
+                    log('comparing concrete values: %s %s', lhs, rhs)
+                    return lhs.value < rhs.value
+                if isinstance(lhs, RefcountValue):
+                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+                    if lhs.get_min_value() >= rhs.value:
+                        return False
+            # We don't know:
+            return None
+
+        def is_le(lhs, rhs):
+            # "less-than-or-equal"
+            # Implement using is_equal and is_lt:
+            # First try "less-than":
+            lt_result = is_lt(lhs, rhs)
+            if lt_result is not None:
+                if lt_result:
+                    return True
+            # Either not less than, or we don't know
+            # Try equality:
+            eq_result = is_equal(lhs, rhs)
+            if eq_result is not None:
+                if eq_result:
+                    # Definitely equal:
+                    return eq_result
+                else:
+                    # Definitely not equal
+                    # If we have a definite result for less-than, use it:
+                    if lt_result is not None:
+                        return lt_result
+            # We don't know:
+            return None
+
+        if exprcode == gcc.EqExpr:
+            result = is_equal(lhs, rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.NeExpr:
+            result = is_equal(lhs, rhs)
+            if result is not None:
+                return not result
+        elif exprcode == gcc.LtExpr:
+            result = is_lt(lhs, rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.LeExpr:
+            result = is_le(lhs, rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.GeExpr:
+            # Implement "A >= B" as "not(A < B)":
+            result = is_lt(lhs, rhs)
+            if result is not None:
+                return not result
+        elif exprcode == gcc.GtExpr:
+            # Implement "A > B " as "not(A <= B)":
+            result = is_le(lhs, rhs)
+            if result is not None:
+                return not result
+
+        # Specialcasing: comparison of unknown ptr with NULL:
+        if (isinstance(expr_lhs, gcc.VarDecl)
+            and isinstance(expr_rhs, gcc.IntegerCst)
+            and isinstance(expr_lhs.type, gcc.PointerType)):
+            # Split the ptr variable immediately into NULL and non-NULL
+            # versions, so that we can evaluate the true and false branch with
+            # explicitly data
+            log('splitting %s into non-NULL/NULL pointers', expr_lhs)
+            self.raise_split_value(lhs, stmt.loc)
+
+        log('unable to compare %r with %r', lhs, rhs)
+        #raise NotImplementedError("Don't know how to do %s comparison of %s with %s"
+        #                          % (exprcode, lhs, rhs))
+        return UnknownValue(stmt.lhs.type, stmt.loc)
+
+    def eval_binop_args(self, stmt):
+        rhs = stmt.rhs
+        a = self.eval_rvalue(rhs[0], stmt.loc)
+        b = self.eval_rvalue(rhs[1], stmt.loc)
+        log('a: %r', a)
+        log('b: %r', b)
+        return a, b
+
+    def eval_rhs(self, stmt):
+        log('eval_rhs(%s): %s', stmt, stmt.rhs)
+        rhs = stmt.rhs
+        # Handle arithmetic expressions:
+        if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
+                             gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
+                             gcc.LshiftExpr, gcc.RshiftExpr):
+            a, b = self.eval_binop_args(stmt)
+            try:
+                c = a.eval_binop(stmt.exprcode, b, stmt.lhs.type, stmt.loc)
+                check_isinstance(c, AbstractValue)
+                return c
+            except NotImplementedError:
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+        elif stmt.exprcode == gcc.ComponentRef:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.VarDecl:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.ParmDecl:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.IntegerCst:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.AddrExpr:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.NopExpr:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.ArrayRef:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.MemRef:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.PointerPlusExpr:
+            try:
+                region = self.pointer_plus_region(stmt)
+                return PointerToRegion(stmt.lhs.type, stmt.loc, region)
+            except NotImplementedError:
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+        elif stmt.exprcode in (gcc.EqExpr, gcc.NeExpr, gcc.LtExpr,
+                               gcc.LeExpr, gcc.GeExpr, gcc.GtExpr):
+            # Comparisons
+            result = self.eval_condition(stmt, rhs[0], stmt.exprcode, rhs[1])
+            if result is not None:
+                return ConcreteValue(stmt.lhs.type, stmt.loc,
+                                     1 if result else 0)
+            else:
+                return UnknownValue(stmt.lhs.type, stmt.loc)
+        elif stmt.exprcode == gcc.ConvertExpr:
+            # Type-conversions (e.g. casts)
+            # Seems to just involve stmt.lhs.type and stmt.rhs[0].type
+            # (and the lvalue/rvalue)
+            rvalue = self.eval_rvalue(stmt.rhs[0], stmt.loc)
+            if isinstance(rvalue, UnknownValue):
+                # Update the type to that of the lhs:
+                return UnknownValue(stmt.lhs.type,
+                                    stmt.loc)
+            else:
+                raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
+                                          % (rvalue, rvalue, stmt.loc, stmt.lhs.type))
+        else:
+            raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
+                                      % (stmt.exprcode, stmt.exprcode, stmt.loc))
+
+    def _get_transitions_for_GimpleAssign(self, stmt):
+        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        log('stmt: %r %s', stmt, stmt)
+        log('stmt.exprcode: %r', stmt.exprcode)
+
+        value = self.eval_rhs(stmt)
+        log('value from eval_rhs: %r', value)
+        check_isinstance(value, AbstractValue)
+
+        if isinstance(value, DeallocatedMemory):
+            raise ReadFromDeallocatedMemory(stmt, value)
+
+        nextstate = self.use_next_loc()
+        return [self.mktrans_assignment(stmt.lhs,
+                                        value,
+                                        None)]
+
+    def _get_transitions_for_GimpleReturn(self, stmt):
+        #log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
+        #log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
+        log('stmt: %r %s', stmt, stmt)
+        log('stmt.retval: %r', stmt.retval)
+
+        nextstate = self.copy()
+
+        if stmt.retval:
+            rvalue = self.eval_rvalue(stmt.retval, stmt.loc)
+            log('rvalue from eval_rvalue: %r', rvalue)
+            nextstate.return_rvalue = rvalue
+        nextstate.has_returned = True
+        return [Transition(self, nextstate, 'returning')]
+
+    def _get_transitions_for_GimpleSwitch(self, stmt):
+        def get_labels_for_rvalue(self, stmt, rvalue):
+            # Gather all possible labels for the given rvalue
+            result = []
+            for label in stmt.labels:
+                # FIXME: for now, treat all labels as possible:
+                result.append(label)
+            return result
+        log('stmt.indexvar: %r', stmt.indexvar)
+        log('stmt.labels: %r', stmt.labels)
+        indexval = self.eval_rvalue(stmt.indexvar, stmt.loc)
+        log('indexval: %r', indexval)
+        labels = get_labels_for_rvalue(self, stmt, indexval)
+        log('labels: %r', labels)
+        result = []
+        for label in labels:
+            newstate = self.copy()
+            bb = self.fun.cfg.get_block_for_label(label.target)
+            newstate.loc = Location(bb, 0)
+            if label.low:
+                check_isinstance(label.low, gcc.IntegerCst)
+                if label.high:
+                    check_isinstance(label.high, gcc.IntegerCst)
+                    desc = 'following cases %i...%i' % (label.low.constant, label.high.constant)
+                else:
+                    desc = 'following case %i' % label.low.constant
+            else:
+                desc = 'following default'
+            result.append(Transition(self,
+                                     newstate,
+                                     desc))
+        return result
+
+    def get_persistent_refs_for_region(self, dst_region):
+        # Locate all regions containing pointers that point at the given region
+        # that are either on the heap or are globals (not locals)
+        check_isinstance(dst_region, Region)
+        result = []
+        for src_region in self.get_all_refs_for_region(dst_region):
+            if src_region.is_on_stack():
+                continue
+            result.append(src_region)
+        return result
+
+    def get_all_refs_for_region(self, dst_region):
+        # Locate all regions containing pointers that point at the given region
+        check_isinstance(dst_region, Region)
+        result = []
+        for src_region in self.value_for_region:
+            v = self.value_for_region[src_region]
+            if isinstance(v, PointerToRegion):
+                if v.region == dst_region:
+                    result.append(src_region)
+        return result
+
 region_id = 0
 
 class Transition:
@@ -1019,7 +1588,7 @@ class Limits:
         if self.trans_seen > self.maxtrans:
             raise TooComplicated()
 
-def iter_traces(fun, stateclass, prefix=None, limits=None):
+def iter_traces(fun, facets, prefix=None, limits=None):
     """
     Traverse the tree of traces of program state, returning a list
     of Trace instances.
@@ -1027,14 +1596,20 @@ def iter_traces(fun, stateclass, prefix=None, limits=None):
     For now, don't include any traces that contain loops, as a primitive
     way of ensuring termination of the analysis
     """
-    log('iter_traces(%r, %r, %r)', fun, stateclass, prefix)
+    log('iter_traces(%r, %r, %r)', fun, facets, prefix)
     if prefix is None:
         prefix = Trace()
-        curstate = stateclass(Location.get_block_start(fun.cfg.entry),
-                              None, None, None,
-                              Resources(),
-                              ConcreteValue(get_PyObjectPtr(), fun.start, 0))
+        curstate = State(fun,
+                         Location.get_block_start(fun.cfg.entry),
+                         facets,
+                         None, None, None)
+        #Resources())
         curstate.init_for_function(fun)
+        for key in facets:
+            facet_cls = facets[key]
+            f_new = facet_cls(curstate, fun=fun)
+            setattr(curstate, key, f_new)
+            f_new.init_for_function(fun)
     else:
         check_isinstance(prefix, Trace)
         curstate = prefix.states[-1]
@@ -1095,7 +1670,7 @@ def iter_traces(fun, stateclass, prefix=None, limits=None):
             newprefix = prefix.copy().add(transition)
 
             # Recurse:
-            for trace in iter_traces(fun, stateclass, newprefix, limits):
+            for trace in iter_traces(fun, facets, newprefix, limits):
                 result.append(trace)
         return result
     else:

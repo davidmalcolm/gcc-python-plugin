@@ -32,19 +32,6 @@ from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
 from libcpychecker.utils import log
 
-# I found myself regularly getting State and Transition instances confused.  To
-# ameliorate that, here are some naming conventions and abbreviations:
-#
-# Within method names:
-#   "mktrans_" means "make a Transition"
-#   "mkstate_" means "make a State"
-#
-# Within variable names
-#   the prefix "t_" means a Transition
-#   the prefix "s_" means a State
-#   the prefix "v_" means an AbstractValue
-#   the prefix "r_" means a Region
-
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):
         if stmt.lhs:
@@ -151,6 +138,22 @@ class RefcountValue(AbstractValue):
     def __repr__(self):
         return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
 
+    def eval_binop(self, exprcode, rhs, gcctype, loc):
+        if isinstance(rhs, ConcreteValue):
+            if exprcode == gcc.PlusExpr:
+                return RefcountValue(self.relvalue + rhs.value, self.min_external)
+            elif exprcode == gcc.MinusExpr:
+                return RefcountValue(self.relvalue - rhs.value, self.min_external)
+        return UnknownValue(gcctype, loc)
+
+    def is_equal(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing refcount value %s with concrete value: %s', self, rhs)
+            # The actual value of ob_refcnt >= lhs.relvalue
+            if self.relvalue > rhs.value:
+                # (Equality is thus not possible for this case)
+                return False
+
 class GenericTpDealloc(AbstractValue):
     """
     A function pointer that points to a "typical" tp_dealloc callback
@@ -190,95 +193,51 @@ class GenericTpDealloc(AbstractValue):
 
         return [Transition(state, new, desc)]
 
-class MyState(State):
-    def __init__(self, loc, region_for_var, value_for_region, return_rvalue, resources, exception_rvalue):
-        State.__init__(self, loc, region_for_var, value_for_region, return_rvalue)
-        self.resources = resources
-        self.exception_rvalue = exception_rvalue
+class CPython(Facet):
+    def __init__(self, state, exception_rvalue=None, fun=None):
+        Facet.__init__(self, state)
+        if exception_rvalue:
+            check_isinstance(exception_rvalue, AbstractValue)
+            self.exception_rvalue = exception_rvalue
+        else:
+            check_isinstance(fun, gcc.Function)
+            self.exception_rvalue = ConcreteValue(get_PyObjectPtr(),
+                                                  fun.start,
+                                                  0)
 
-    def copy(self):
-        c = self.__class__(self.loc,
-                           self.region_for_var.copy(),
-                           self.value_for_region.copy(),
-                           self.return_rvalue,
-                           self.resources.copy(),
-                           self.exception_rvalue)
-        if hasattr(self, 'fun'):
-            c.fun = self.fun
-        return c
-
-    def acquire(self, resource):
-        self.resources.acquire(resource)
-
-    def release(self, resource):
-        self.resources.release(resource)
+    def copy(self, newstate):
+        f_new = CPython(newstate,
+                        self.exception_rvalue)
+        return f_new
 
     def init_for_function(self, fun):
-        log('MyState.init_for_function(%r)', fun)
-        State.init_for_function(self, fun)
+        log('CPython.init_for_function(%r)', fun)
 
         # Initialize PyObject* arguments to sane values
         # (assume that they're non-NULL)
         nonnull_args = get_nonnull_arguments(fun.decl.type)
         for idx, parm in enumerate(fun.decl.arguments):
-            region = self.eval_lvalue(parm, None)
+            region = self.state.eval_lvalue(parm, None)
             if type_is_pyobjptr_subclass(parm.type):
                 # We have a PyObject* (or a derived class)
                 log('got python obj arg: %r', region)
                 # Assume it's a non-NULL ptr:
                 objregion = Region('region-for-arg-%s' % parm, None)
-                self.region_for_var[objregion] = objregion
-                self.value_for_region[region] = PointerToRegion(parm.type,
+                self.state.region_for_var[objregion] = objregion
+                self.state.value_for_region[region] = PointerToRegion(parm.type,
                                                                 parm.location,
                                                                 objregion)
                 # Assume we have a borrowed reference:
-                ob_refcnt = self.make_field_region(objregion, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                self.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
+                ob_refcnt = self.state.make_field_region(objregion, 'ob_refcnt') # FIXME: this should be a memref and fieldref
+                self.state.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
 
                 # Assume it has a non-NULL ob_type:
-                ob_type = self.make_field_region(objregion, 'ob_type')
+                ob_type = self.state.make_field_region(objregion, 'ob_type')
                 typeobjregion = Region('region-for-type-of-arg-%s' % parm, None)
-                self.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+                self.state.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
                                                                  parm.location,
                                                                  typeobjregion)
-        self.verify()
-
-    def get_transitions(self):
-        # Return a list of Transition instances, based on input State
-        stmt = self.loc.get_stmt()
-        if stmt:
-            return self._get_transitions_for_stmt(stmt)
-        else:
-            result = []
-            for loc in self.loc.next_locs():
-                newstate = self.copy()
-                newstate.loc = loc
-                result.append(Transition(self, newstate, ''))
-            log('result: %s', result)
-            return result
-
-    def _get_transitions_for_stmt(self, stmt):
-        log('_get_transitions_for_stmt: %r %s', stmt, stmt)
-        log('dir(stmt): %s', dir(stmt))
-        if stmt.loc:
-            gcc.set_location(stmt.loc)
-        if isinstance(stmt, gcc.GimpleCall):
-            return self._get_transitions_for_GimpleCall(stmt)
-        elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
-            return [Transition(self,
-                               self.use_next_loc(),
-                               None)]
-        elif isinstance(stmt, gcc.GimpleCond):
-            return self._get_transitions_for_GimpleCond(stmt)
-        elif isinstance(stmt, gcc.GimpleReturn):
-            return self._get_transitions_for_GimpleReturn(stmt)
-        elif isinstance(stmt, gcc.GimpleAssign):
-            return self._get_transitions_for_GimpleAssign(stmt)
-        elif isinstance(stmt, gcc.GimpleSwitch):
-            return self._get_transitions_for_GimpleSwitch(stmt)
-        else:
-            raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
-                                      % (stmt, stmt, stmt.loc))
+        self.state.verify()
 
     def change_refcount(self, pyobjectptr, loc, fn):
         """
@@ -287,9 +246,10 @@ class MyState(State):
         fn is a function taking a RefcountValue instance, returning another one
         """
         check_isinstance(pyobjectptr, PointerToRegion)
-        ob_refcnt = self.make_field_region(pyobjectptr.region, 'ob_refcnt')
+        ob_refcnt = self.state.make_field_region(pyobjectptr.region,
+                                                 'ob_refcnt')
         assert isinstance(ob_refcnt, Region)
-        oldvalue = self.get_store(ob_refcnt, None, loc) # FIXME: gcctype
+        oldvalue = self.state.get_store(ob_refcnt, None, loc) # FIXME: gcctype
         assert isinstance(oldvalue, AbstractValue)
         log('oldvalue: %r', oldvalue)
         #if isinstance(oldvalue, UnknownValue):
@@ -297,7 +257,7 @@ class MyState(State):
         assert isinstance(oldvalue, RefcountValue)
         newvalue = fn(oldvalue)
         log('newvalue: %r', newvalue)
-        self.value_for_region[ob_refcnt] = newvalue
+        self.state.value_for_region[ob_refcnt] = newvalue
 
     def add_ref(self, pyobjectptr, loc):
         """
@@ -335,7 +295,7 @@ class MyState(State):
         check_isinstance(exc_name, str)
         exc_decl = gccutils.get_global_vardecl_by_name(exc_name)
         check_isinstance(exc_decl, gcc.VarDecl)
-        r_exception = self.var_region(exc_decl)
+        r_exception = self.state.var_region(exc_decl)
         v_exception = PointerToRegion(get_PyObjectPtr(), loc, r_exception)
         self.exception_rvalue = v_exception
 
@@ -363,55 +323,32 @@ class MyState(State):
 
         # (the region hierarchy is shared by all states, so we can get the
         # var region from "self", rather than "success")
-        typeobjregion = self.var_region(typeobjdecl)
+        typeobjregion = self.state.var_region(typeobjdecl)
 
         # The "success" case:
         s_success, nonnull = self.mkstate_new_ref(stmt, typename, typeobjregion)
-        t_success = Transition(self,
+        t_success = Transition(self.state,
                                s_success,
                                '%s() succeeds' % fnname)
         # The "failure" case:
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(returntype, stmt.loc, 0),
                                        '%s() fails' % fnname)
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return (nonnull, t_success, t_failure)
-
-    def mkstate_concrete_return_of(self, stmt, value):
-        """
-        Clone this state (at a function call), updating the location, and
-        setting the result of the call to the given concrete value
-        """
-        newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
-        if stmt.lhs:
-            newstate.assign(stmt.lhs,
-                            ConcreteValue(stmt.lhs.type, stmt.loc, value),
-                            stmt.loc)
-        return newstate
 
     def steal_reference(self, region):
         log('steal_reference(%r)', region)
         check_isinstance(region, Region)
-        ob_refcnt = self.make_field_region(region, 'ob_refcnt')
-        value = self.value_for_region[ob_refcnt]
+        ob_refcnt = self.state.make_field_region(region, 'ob_refcnt')
+        value = self.state.value_for_region[ob_refcnt]
         if isinstance(value, RefcountValue):
             # We have a value known relative to all of the refs owned by the
             # rest of the program.  Given that the rest of the program is
             # stealing a ref, that is increasing by one, hence our value must
             # go down by one:
-            self.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
-                                                             value.min_external + 1)
-
-    def mktrans_nop(self, stmt, fnname):
-        """
-        Make a Transition for handling a function call that has no "visible"
-        effect within our simulation (beyond advancing to the next location).
-        [We might subsequently modify the destination state, though]
-        """
-        newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
-        return Transition(self, newstate, 'calling %s()' % fnname)
+            self.state.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
+                                                                   value.min_external + 1)
 
     def make_sane_object(self, stmt, name, v_refcount, r_typeobj=None):
         """
@@ -429,30 +366,30 @@ class MyState(State):
         check_isinstance(v_refcount, RefcountValue)
 
         # Claim a Region for the object:
-        r_nonnull = self.make_heap_region(name, stmt)
+        r_nonnull = self.state.make_heap_region(name, stmt)
 
         # Set up ob_refcnt to the given value:
-        r_ob_refcnt = self.make_field_region(r_nonnull,
+        r_ob_refcnt = self.state.make_field_region(r_nonnull,
                                              'ob_refcnt') # FIXME: this should be a memref and fieldref
-        self.value_for_region[r_ob_refcnt] = v_refcount
+        self.state.value_for_region[r_ob_refcnt] = v_refcount
 
         # Ensure that the new object has a sane ob_type:
         if r_typeobj is None:
             # If no specific type object provided by caller, supply one:
             r_typeobj = Region('PyTypeObject for %s' % name, None)
             # it is its own region:
-            self.region_for_var[r_typeobj] = r_typeobj
+            self.state.region_for_var[r_typeobj] = r_typeobj
 
         # Set up obj->ob_type:
-        ob_type = self.make_field_region(r_nonnull, 'ob_type')
-        self.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
+        ob_type = self.state.make_field_region(r_nonnull, 'ob_type')
+        self.state.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
                                                          stmt.loc,
                                                          r_typeobj)
         # Set up obj->ob_type->tp_dealloc:
-        tp_dealloc = self.make_field_region(r_typeobj, 'tp_dealloc')
+        tp_dealloc = self.state.make_field_region(r_typeobj, 'tp_dealloc')
         type_of_tp_dealloc = gccutils.get_field_by_name(get_PyTypeObject().type,
                                                         'tp_dealloc').type
-        self.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
+        self.state.value_for_region[tp_dealloc] = GenericTpDealloc(type_of_tp_dealloc,
                                                              stmt.loc)
         return r_nonnull
 
@@ -463,10 +400,10 @@ class MyState(State):
 
         Returns a pair: (newstate, RegionOnHeap for the new object)
         """
-        newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate = self.state.copy()
+        newstate.loc = self.state.loc.next_loc()
 
-        r_nonnull = newstate.make_sane_object(stmt, name,
+        r_nonnull = newstate.cpython.make_sane_object(stmt, name,
                                               RefcountValue.new_ref(),
                                               typeobjregion)
         if stmt.lhs:
@@ -480,10 +417,10 @@ class MyState(State):
 
     def mkstate_borrowed_ref(self, stmt, name, r_typeobj=None):
         """Make a new State, giving a borrowed ref to some object"""
-        newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate = self.state.copy()
+        newstate.loc = self.state.loc.next_loc()
 
-        r_nonnull = newstate.make_sane_object(stmt, name,
+        r_nonnull = newstate.cpython.make_sane_object(stmt, name,
                                               RefcountValue.borrowed_ref(),
                                               r_typeobj)
         if stmt.lhs:
@@ -500,38 +437,11 @@ class MyState(State):
             value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
         else:
             value = None
-        t_failure = self.mktrans_assignment(stmt.lhs,
-                                            value,
-                                            None)
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                                  value,
+                                                  None)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return t_failure.dest
-
-
-    def mktrans_from_fncall_state(self, stmt, state, partialdesc):
-        """
-        Given a function call here, convert a State instance into a Transition
-        instance, marking it.
-        """
-        check_isinstance(stmt, gcc.GimpleCall)
-        check_isinstance(state, State)
-        check_isinstance(partialdesc, str)
-        fnname = stmt.fn.operand.name
-        return Transition(self, state, '%s() %s' % (fnname, partialdesc))
-
-    def make_transitions_for_fncall(self, stmt, s_success, s_failure):
-        """
-        Given a function call, convert a pair of State instances into a pair
-        of Transition instances, marking one as a successful call, the other
-        as a failed call.
-        """
-        check_isinstance(stmt, gcc.GimpleCall)
-        check_isinstance(s_success, State)
-        check_isinstance(s_failure, State)
-
-        fnname = stmt.fn.operand.name
-
-        return [Transition(self, s_success, '%s() succeeds' % fnname),
-                Transition(self, s_failure, '%s() fails' % fnname)]
 
     def make_transitions_for_new_ref_or_fail(self, stmt, objname=None):
         """
@@ -547,12 +457,7 @@ class MyState(State):
             objname = 'new ref from call to %s' % fnname
         s_success, nonnull = self.mkstate_new_ref(stmt, objname)
         s_failure = self.mkstate_exception(stmt, fnname)
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
-
-    def eval_stmt_args(self, stmt):
-        assert isinstance(stmt, gcc.GimpleCall)
-        return [self.eval_rvalue(arg, stmt.loc)
-                for arg in stmt.args]
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def object_ptr_has_global_ob_type(self, v_object_ptr, vardecl_name):
         """
@@ -562,7 +467,7 @@ class MyState(State):
         check_isinstance(v_object_ptr, AbstractValue)
         check_isinstance(vardecl_name, str)
         if isinstance(v_object_ptr, PointerToRegion):
-            v_ob_type = self.get_value_of_field_by_region(v_object_ptr.region,
+            v_ob_type = self.state.get_value_of_field_by_region(v_object_ptr.region,
                                                           'ob_type')
             if isinstance(v_ob_type, PointerToRegion):
                 if isinstance(v_ob_type.region, RegionForGlobal):
@@ -580,12 +485,12 @@ class MyState(State):
         within the trace.
         """
         returntype = stmt.fn.type.dereference.type
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         desc = None
         if isinstance(args[0], PointerToRegion):
             if isinstance(args[0].region, RegionForStringConstant):
                 desc = args[0].region.text
-        return [self.mktrans_assignment(stmt.lhs,
+        return [self.state.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -594,9 +499,9 @@ class MyState(State):
         # Give the transition a description that embeds the argument values
         # This will show up in selftests (and in error reports that embed
         # traces)
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         desc = '__dump(%s)' % (','.join([str(arg) for arg in args]))
-        return [self.mktrans_assignment(stmt.lhs,
+        return [self.state.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -611,11 +516,11 @@ class MyState(State):
         # Give the transition a description that embeds the argument values
         # This will show up in selftests (and in error reports that embed
         # traces)
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         if args[0] != args[1]:
             raise AssertionError('%s != %s' % (args[0], args[1]))
         desc = '__cpychecker_assert_equal(%s)' % (','.join([str(arg) for arg in args]))
-        return [self.mktrans_assignment(stmt.lhs,
+        return [self.state.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
@@ -633,12 +538,12 @@ class MyState(State):
         check_isinstance(v_varargs, list) # of AbstractValue
         check_isinstance(with_size_t, bool)
 
-        s_success = self.mkstate_concrete_return_of(stmt, 1)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 1)
 
-        s_failure = self.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, 0)
         # Various errors are possible, but a TypeError is always possible
         # e.g. for the case of the wrong number of arguments:
-        s_failure.set_exception('PyExc_TypeError', stmt.loc)
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc)
 
         # Parse the format string, and figure out what the effects of a
         # successful parsing are:
@@ -695,7 +600,7 @@ class MyState(State):
             except FormatStringError:
                 pass
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyArg_ParseTuple(self, stmt):
         # Declared in modsupport.h:
@@ -703,7 +608,7 @@ class MyState(State):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_args = args[0]
         v_fmt = args[1]
         v_varargs = args[2:]
@@ -715,7 +620,7 @@ class MyState(State):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_args = args[0]
         v_fmt = args[1]
         v_varargs = args[2:]
@@ -729,7 +634,7 @@ class MyState(State):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_args = args[0]
         v_kwargs = args[1]
         v_fmt = args[2]
@@ -745,7 +650,7 @@ class MyState(State):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_args = args[0]
         v_kwargs = args[1]
         v_fmt = args[2]
@@ -763,9 +668,9 @@ class MyState(State):
         #
         # Always succeeds, returning a new ref to one of the two singleton
         # booleans
-        # v_ok = self.eval_stmt_args(stmt)[0]
+        # v_ok = self.state.eval_stmt_args(stmt)[0]
         s_success, r_nonnull = self.mkstate_new_ref(stmt, 'PyBool_FromLong')
-        return [self.mktrans_from_fncall_state(stmt, s_success, 'returns')]
+        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'returns')]
 
     ########################################################################
     # PyDict_*
@@ -778,10 +683,10 @@ class MyState(State):
         # Returns a borrowed ref, or NULL if not found.  It does _not_ set
         # an exception (for historical reasons)
         s_success = self.mkstate_borrowed_ref(stmt, 'result from PyDict_GetItem')
-        t_notfound = self.mktrans_assignment(stmt.lhs,
+        t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
                                              'PyDict_GetItem does not find item')
-        return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
                 t_notfound]
 
     def impl_PyDict_GetItemString(self, stmt):
@@ -792,14 +697,14 @@ class MyState(State):
         # Returns a borrowed ref, or NULL if not found (can also return NULL
         # and set MemoryError)
         s_success = self.mkstate_borrowed_ref(stmt, 'PyDict_GetItemString')
-        t_notfound = self.mktrans_assignment(stmt.lhs,
+        t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
                                              'PyDict_GetItemString does not find string')
         if 0:
-            t_memoryexc = self.mktrans_assignment(stmt.lhs,
+            t_memoryexc = self.state.mktrans_assignment(stmt.lhs,
                                                   make_null_pyobject_ptr(stmt),
                                                   'OOM allocating string') # FIXME: set exception
-        return [self.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
                 t_notfound]
                 #t_memoryexc]
 
@@ -817,21 +722,21 @@ class MyState(State):
         #   http://docs.python.org/c-api/dict.html#PyDict_SetItem
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
-        v_dp, v_key, v_item = self.eval_stmt_args(stmt)
+        v_dp, v_key, v_item = self.state.eval_stmt_args(stmt)
 
-        self.raise_any_null_ptr_func_arg(stmt, 1, v_key)
-        self.raise_any_null_ptr_func_arg(stmt, 2, v_item)
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
+        self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
 
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         # the dictionary now owns a new ref on "item".  We won't model the
         # insides of the dictionary type.  Instead, treat it as a new
         # external reference:
-        s_success.add_external_ref(v_item, stmt.loc)
+        s_success.cpython.add_external_ref(v_item, stmt.loc)
 
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyDict_SetItemString(self, stmt):
         # Declared in dictobject.h:
@@ -842,12 +747,12 @@ class MyState(State):
         #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
-        v_dp, v_key, v_item = self.eval_stmt_args(stmt)
+        v_dp, v_key, v_item = self.state.eval_stmt_args(stmt)
 
         # This is implemented in terms of PyDict_SetItem and shows the same
         # success and failures:
-        self.raise_any_null_ptr_func_arg(stmt, 1, v_key)
-        self.raise_any_null_ptr_func_arg(stmt, 2, v_item)
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
+        self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
         return self.impl_PyDict_SetItem(stmt)
 
     ########################################################################
@@ -858,14 +763,14 @@ class MyState(State):
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
         # Defined in Python/errors.c
         #
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_exc = args[0]
         v_fmt = args[1]
         # It always returns NULL:
-        t_next = self.mktrans_assignment(stmt.lhs,
+        t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_Format()')
-        t_next.dest.exception_rvalue = v_exc
+        t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
     def impl_PyErr_NoMemory(self, stmt):
@@ -875,10 +780,10 @@ class MyState(State):
         # Defined in Python/errors.c
         #
         # It always returns NULL:
-        t_next = self.mktrans_assignment(stmt.lhs,
+        t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_NoMemory()')
-        t_next.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_next.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_next]
 
     def impl_PyErr_Occurred(self, stmt):
@@ -889,7 +794,7 @@ class MyState(State):
         #
         # http://docs.python.org/c-api/exceptions.html#PyErr_Occurred
         # Returns a borrowed reference; can't fail:
-        t_next = self.mktrans_assignment(stmt.lhs,
+        t_next = self.state.mktrans_assignment(stmt.lhs,
                                          self.exception_rvalue,
                                          'PyErr_Occurred()')
         return [t_next]
@@ -899,9 +804,9 @@ class MyState(State):
         #   PyAPI_FUNC(void) PyErr_Print(void);
         # Defined in pythonrun.c
 
-        t_next = self.mktrans_nop(stmt, 'PyErr_Print')
+        t_next = self.state.mktrans_nop(stmt, 'PyErr_Print')
         # Clear the error indicator:
-        t_next.dest.exception_rvalue = make_null_pyobject_ptr(stmt)
+        t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
         return [t_next]
 
     def impl_PyErr_PrintEx(self, stmt):
@@ -909,32 +814,32 @@ class MyState(State):
         #   PyAPI_FUNC(void) PyErr_PrintEx(int);
         # Defined in pythonrun.c
 
-        t_next = self.mktrans_nop(stmt, 'PyErr_PrintEx')
+        t_next = self.state.mktrans_nop(stmt, 'PyErr_PrintEx')
         # Clear the error indicator:
-        t_next.dest.exception_rvalue = make_null_pyobject_ptr(stmt)
+        t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
         return [t_next]
 
     def impl_PyErr_SetFromErrno(self, stmt):
         # API docs:
         #   http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno
         #
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_exc = args[0]
         # It always returns NULL:
-        t_next = self.mktrans_assignment(stmt.lhs,
+        t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_SetFromErrno()')
-        t_next.dest.exception_rvalue = v_exc
+        t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
     def impl_PyErr_SetFromErrnoWithFilename(self, stmt):
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_exc = args[0]
         # It always returns NULL:
-        t_next = self.mktrans_assignment(stmt.lhs,
+        t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_SetFromErrnoWithFilename()')
-        t_next.dest.exception_rvalue = v_exc
+        t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
     def impl_PyErr_SetString(self, stmt):
@@ -942,9 +847,9 @@ class MyState(State):
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
         # Defined in Python/errors.c
         #
-        v_exc, v_string = self.eval_stmt_args(stmt)
-        t_next = self.mktrans_nop(stmt, 'PyErr_SetString')
-        t_next.dest.exception_rvalue = v_exc
+        v_exc, v_string = self.state.eval_stmt_args(stmt)
+        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetString')
+        t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
     ########################################################################
@@ -953,7 +858,7 @@ class MyState(State):
     def impl_PyEval_InitThreads(self, stmt):
         # http://docs.python.org/c-api/init.html#PyEval_InitThreads
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'PyEval_InitThreads')]
+        return [self.state.mktrans_nop(stmt, 'PyEval_InitThreads')]
 
     ########################################################################
     # Py_Finalize()
@@ -961,7 +866,7 @@ class MyState(State):
     def impl_Py_Finalize(self, stmt):
         # http://docs.python.org/c-api/init.html#Py_Finalize
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'Py_Finalize')]
+        return [self.state.mktrans_nop(stmt, 'Py_Finalize')]
 
     ########################################################################
     # PyGILState_*
@@ -969,23 +874,23 @@ class MyState(State):
     def impl_PyGILState_Ensure(self, stmt):
         # http://docs.python.org/c-api/init.html#PyGILState_Ensure
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'PyGILState_Ensure')]
+        return [self.state.mktrans_nop(stmt, 'PyGILState_Ensure')]
 
     def impl_PyGILState_Release(self, stmt):
         # http://docs.python.org/c-api/init.html#PyGILState_Release
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'PyGILState_Release')]
+        return [self.state.mktrans_nop(stmt, 'PyGILState_Release')]
 
     ########################################################################
     # PyImport_*
     ########################################################################
     def impl_PyImport_AppendInittab(self, stmt):
         # http://docs.python.org/c-api/import.html#PyImport_AppendInittab
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (doesn't set an exception on failure, and Py_Initialize shouldn't
         # have been called yet, in any case)
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyImport_ImportModule(self, stmt):
         # http://docs.python.org/c-api/import.html#PyImport_ImportModule
@@ -999,7 +904,7 @@ class MyState(State):
     def impl_Py_Initialize(self, stmt):
         # http://docs.python.org/c-api/init.html#Py_Initialize
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'Py_Initialize')]
+        return [self.state.mktrans_nop(stmt, 'Py_Initialize')]
 
     ########################################################################
     # Py_InitModule*
@@ -1019,7 +924,7 @@ class MyState(State):
         #    #define Py_InitModule4 Py_InitModule4TraceRefs
         s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
         s_failure = self.mkstate_exception(stmt, 'Py_InitModule4')
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
     # Py_Int*
@@ -1033,7 +938,7 @@ class MyState(State):
 
         # Can fail (gracefully) with NULL, and with non-int objects
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_op = args[0]
 
         returntype = stmt.fn.type.dereference.type
@@ -1041,22 +946,22 @@ class MyState(State):
         if self.object_ptr_has_global_ob_type(v_op, 'PyInt_Type'):
             # We know it's a PyIntObject; the call will succeed:
             # FIXME: cast:
-            v_ob_ival = self.get_value_of_field_by_region(v_op.region,
+            v_ob_ival = self.state.get_value_of_field_by_region(v_op.region,
                                                           'ob_ival')
-            t_success = self.mktrans_assignment(stmt.lhs,
+            t_success = self.state.mktrans_assignment(stmt.lhs,
                                                 v_ob_ival,
                                                 'PyInt_AsLong() returns ob_ival')
             return [t_success]
 
         # We don't know if it's a PyIntObject (or subclass); the call could
         # fail:
-        t_success = self.mktrans_assignment(stmt.lhs,
+        t_success = self.state.mktrans_assignment(stmt.lhs,
                                             UnknownValue(returntype, stmt.loc),
                                             'PyInt_AsLong() succeeds')
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
                                             'PyInt_AsLong() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     def impl_PyInt_FromLong(self, stmt):
@@ -1070,7 +975,7 @@ class MyState(State):
         # by _PyInt_Init().  Thus, for these values, we know that the call
         # cannot fail
 
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_ival = args[0]
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
@@ -1099,31 +1004,31 @@ class MyState(State):
         #
         # If it succeeds, it adds a reference on the item
         #
-        op, newitem = self.eval_stmt_args(stmt)
+        op, newitem = self.state.eval_stmt_args(stmt)
 
         # On success, adds a ref on input:
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
-        s_success.add_ref(newitem, stmt.loc)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_success.cpython.add_ref(newitem, stmt.loc)
         #...and set the pointer value within ob_item array, so that we can
         # discount that refcount:
-        ob_item_region = self.make_field_region(op.region, 'ob_item')
-        ob_size_region = self.make_field_region(op.region, 'ob_size')
+        ob_item_region = self.state.make_field_region(op.region, 'ob_item')
+        ob_size_region = self.state.make_field_region(op.region, 'ob_size')
         check_isinstance(s_success.value_for_region[ob_size_region], ConcreteValue) # for now
         index = s_success.value_for_region[ob_size_region].value
         array_region = s_success._array_region(ob_item_region, index)
         s_success.value_for_region[array_region] = newitem
 
         # Can fail with memory error, overflow error:
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyList_New(self, stmt):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
-        lenarg = self.eval_rvalue(stmt.args[0], stmt.loc)
+        lenarg = self.state.eval_rvalue(stmt.args[0], stmt.loc)
         check_isinstance(lenarg, AbstractValue)
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
@@ -1154,34 +1059,34 @@ class MyState(State):
 
         result = []
 
-        arg_list, arg_index, arg_item = [self.eval_rvalue(arg, stmt.loc)
+        arg_list, arg_index, arg_item = [self.state.eval_rvalue(arg, stmt.loc)
                                          for arg in stmt.args]
 
         # Is it really a list?
         if 0: # FIXME: check
-            not_a_list = self.mkstate_concrete_return_of(stmt, -1)
-            result.append(Transition(self,
+            not_a_list = self.state.mkstate_concrete_return_of(stmt, -1)
+            result.append(Transition(self.state,
                            not_a_list,
                            '%s() fails (not a list)' % fnname))
 
         # Index out of range?
         if 0: # FIXME: check
-            out_of_range = self.mkstate_concrete_return_of(stmt, -1)
-            result.append(Transition(self,
+            out_of_range = self.state.mkstate_concrete_return_of(stmt, -1)
+            result.append(Transition(self.state,
                            out_of_range,
                            '%s() fails (index out of range)' % fnname))
 
         if 1:
-            s_success  = self.mkstate_concrete_return_of(stmt, 0)
+            s_success  = self.state.mkstate_concrete_return_of(stmt, 0)
             # FIXME: update refcounts
             # "Steal" a reference to item:
             if isinstance(arg_item, PointerToRegion):
                 check_isinstance(arg_item.region, Region)
-                s_success.steal_reference(arg_item.region)
+                s_success.cpython.steal_reference(arg_item.region)
 
             # and discards a
             # reference to an item already in the list at the affected position.
-            result.append(Transition(self,
+            result.append(Transition(self.state,
                                      s_success,
                                      '%s() succeeds' % fnname))
 
@@ -1215,13 +1120,13 @@ class MyState(State):
     def impl_PyMem_Free(self, stmt):
         # http://docs.python.org/c-api/memory.html#PyMem_Free
         fnname = 'PyMem_Free'
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_ptr, = args
 
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
 
-        s_new = self.copy()
-        s_new.loc = self.loc.next_loc()
+        s_new = self.state.copy()
+        s_new.loc = self.state.loc.next_loc()
         desc = None
 
         # It's safe to call on NULL
@@ -1251,21 +1156,21 @@ class MyState(State):
             s_new.region_for_var[region] = region
             s_new.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
 
-        return [Transition(self, s_new, desc)]
+        return [Transition(self.state, s_new, desc)]
 
     def impl_PyMem_Malloc(self, stmt):
         # http://docs.python.org/c-api/memory.html#PyMem_Malloc
         fnname = 'PyMem_Malloc'
         returntype = stmt.fn.type.dereference.type
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_size, = args
-        r_nonnull = self.make_heap_region('PyMem_Malloc', stmt)
+        r_nonnull = self.state.make_heap_region('PyMem_Malloc', stmt)
         v_nonnull = PointerToRegion(returntype, stmt.loc, r_nonnull)
         # FIXME: it hasn't been initialized
-        t_success = self.mktrans_assignment(stmt.lhs,
+        t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_nonnull,
                                             '%s() succeeds' % fnname)
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
                                             '%s() fails' % fnname)
         return [t_success, t_failure]
@@ -1277,41 +1182,41 @@ class MyState(State):
         # http://docs.python.org/c-api/module.html#PyModule_AddIntConstant
 
         # (No externally-visible refcount changes)
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
 
         # Can fail with memory error, overflow error:
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyModule_AddObject(self, stmt):
         # Steals a reference to the object if if succeeds:
         #   http://docs.python.org/c-api/module.html#PyModule_AddObject
         # Implemented in Python/modsupport.c
-        v_module, v_name, v_value = self.eval_stmt_args(stmt)
+        v_module, v_name, v_value = self.state.eval_stmt_args(stmt)
 
         # On success, steals a ref from v_value:
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
-        s_success.steal_reference(v_value.region)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_success.cpython.steal_reference(v_value.region)
 
         # Can fail with memory error, overflow error:
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyModule_AddStringConstant(self, stmt):
         # http://docs.python.org/c-api/module.html#PyModule_AddStringConstant
 
         # (No externally-visible refcount changes)
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
 
         # Can fail with memory error, overflow error:
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
     # PyObject_*
@@ -1320,36 +1225,36 @@ class MyState(State):
         # http://docs.python.org/c-api/object.html#PyObject_HasAttrString
 
         fnname = stmt.fn.operand.name
-        v_o, v_attr_name = self.eval_stmt_args(stmt)
+        v_o, v_attr_name = self.state.eval_stmt_args(stmt)
 
         # the object must be non-NULL: it is unconditionally
         # dereferenced to get the ob_type:
-        self.raise_any_null_ptr_func_arg(stmt, 0, v_o)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
 
         # attr_name must be non-NULL, this fn calls:
         #   PyObject_GetAttrString(PyObject *v, const char *name)
         # which can call:
         #   PyString_InternFromString(const char *cp)
         #     PyString_FromString(str) <-- must be non-NULL
-        self.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name)
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name)
 
-        s_true = self.mkstate_concrete_return_of(stmt, 1)
-        s_false = self.mkstate_concrete_return_of(stmt, 0)
+        s_true = self.state.mkstate_concrete_return_of(stmt, 1)
+        s_false = self.state.mkstate_concrete_return_of(stmt, 0)
 
-        return [Transition(self, s_true, '%s() returns 1 (true)' % fnname),
-                Transition(self, s_false, '%s() returns 0 (false)' % fnname)]
+        return [Transition(self.state, s_true, '%s() returns 1 (true)' % fnname),
+                Transition(self.state, s_false, '%s() returns 0 (false)' % fnname)]
 
     def impl_PyObject_IsTrue(self, stmt):
         #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
-        s_true = self.mkstate_concrete_return_of(stmt, 1)
-        s_false = self.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
+        s_true = self.state.mkstate_concrete_return_of(stmt, 1)
+        s_false = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
 
         fnname = stmt.fn.operand.name
-        return [Transition(self, s_true, '%s() returns 1 (true)' % fnname),
-                Transition(self, s_false, '%s() returns 0 (false)' % fnname),
-                Transition(self, s_failure, '%s() returns -1 (failure)' % fnname)]
+        return [Transition(self.state, s_true, '%s() returns 1 (true)' % fnname),
+                Transition(self.state, s_false, '%s() returns 0 (false)' % fnname),
+                Transition(self.state, s_failure, '%s() returns -1 (failure)' % fnname)]
 
     def impl__PyObject_New(self, stmt):
         # Declaration in objimpl.h:
@@ -1365,21 +1270,21 @@ class MyState(State):
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
 
-        tp_rvalue = self.eval_rvalue(stmt.args[0], stmt.loc)
+        tp_rvalue = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, '_PyObject_New')
         # ...and set up ob_type on the result object:
         ob_type = s_success.make_field_region(nonnull, 'ob_type')
         s_success.value_for_region[ob_type] = tp_rvalue
-        t_success = Transition(self,
+        t_success = Transition(self.state,
                              s_success,
                              '_PyObject_New() succeeds')
         # Failure case:
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        '_PyObject_New() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     def impl_PyObject_Repr(self, stmt):
@@ -1405,18 +1310,18 @@ class MyState(State):
     ########################################################################
     def impl_PyRun_SimpleFileExFlags(self, stmt):
         # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
         # (FIXME: handle the potential autoclosing of the FILE*)
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyRun_SimpleStringFlags(self, stmt):
         # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
     # PyString_*
@@ -1432,35 +1337,35 @@ class MyState(State):
         #    ((PyStringObject *)op) -> ob_sval
         # With other classes, this call can fail
 
-        v_op, = self.eval_stmt_args(stmt)
+        v_op, = self.state.eval_stmt_args(stmt)
 
         # It will segfault if called with NULL, since it uses PyString_Check,
         # which reads through the object's ob_type:
-        self.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
 
         returntype = stmt.fn.type.dereference.type
 
         if self.object_ptr_has_global_ob_type(v_op, 'PyString_Type'):
             # We know it's a PyStringObject; the call will succeed:
             # FIXME: cast:
-            r_ob_sval = self.make_field_region(v_op.region, 'ob_sval')
+            r_ob_sval = self.state.make_field_region(v_op.region, 'ob_sval')
             v_result = PointerToRegion(returntype, stmt.loc, r_ob_sval)
-            t_success = self.mktrans_assignment(stmt.lhs,
+            t_success = self.state.mktrans_assignment(stmt.lhs,
                                                 v_result,
                                                 'PyString_AsString() returns ob_sval')
             return [t_success]
 
         # We don't know if it's a PyStringObject (or subclass); the call could
         # fail:
-        r_nonnull = self.make_heap_region('buffer from PyString_AsString()', stmt)
+        r_nonnull = self.state.make_heap_region('buffer from PyString_AsString()', stmt)
         v_success = PointerToRegion(returntype, stmt.loc, r_nonnull)
-        t_success = self.mktrans_assignment(stmt.lhs,
+        t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_success,
                                             'PyString_AsString() succeeds')
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
                                             'PyString_AsString() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     def impl_PyString_FromFormat(self, stmt):
@@ -1482,10 +1387,10 @@ class MyState(State):
         #
         #   http://docs.python.org/c-api/string.html#PyString_FromString
         #
-        v_str, = self.eval_stmt_args(stmt)
+        v_str, = self.state.eval_stmt_args(stmt)
 
         # The input _must_ be non-NULL; it is not checked:
-        self.raise_any_null_ptr_func_arg(stmt, 0, v_str)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyStringObject', 'PyString_Type')
@@ -1501,7 +1406,7 @@ class MyState(State):
         #   # PyObject *
         #   PyString_FromStringAndSize(const char *str, Py_ssize_t size)
 
-        # v_str, v_size = self.eval_stmt_args(stmt)
+        # v_str, v_size = self.state.eval_stmt_args(stmt)
         # (the input can legitimately be NULL)
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
@@ -1516,7 +1421,7 @@ class MyState(State):
         #
         # Implemented in Objects/structseq.c
         # For now, treat it as a no-op:
-        return [self.mktrans_nop(stmt, 'PyStructSequence_InitType')]
+        return [self.state.mktrans_nop(stmt, 'PyStructSequence_InitType')]
 
     def impl_PyStructSequence_New(self, stmt):
         # Declared in structseq.h as:
@@ -1528,21 +1433,21 @@ class MyState(State):
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
 
-        tp_rvalue = self.eval_rvalue(stmt.args[0], stmt.loc)
+        tp_rvalue = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, 'PyStructSequence_New')
         # ...and set up ob_type on the result object:
         ob_type = s_success.make_field_region(nonnull, 'ob_type')
         s_success.value_for_region[ob_type] = tp_rvalue
-        t_success = Transition(self,
+        t_success = Transition(self.state,
                              s_success,
                              'PyStructSequence_New() succeeds')
         # Failure case:
-        t_failure = self.mktrans_assignment(stmt.lhs,
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
                                        'PyStructSequence_New() fails')
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1559,17 +1464,17 @@ class MyState(State):
         # on non-NULL, which adds a ref on it
         fnname = 'PySys_SetObject'
         returntype = stmt.fn.type.dereference.type
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_name, v_value = args
-        t_success = self.mktrans_assignment(stmt.lhs,
+        t_success = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
                                             '%s() succeeds' % fnname)
         if isinstance(v_value, PointerToRegion):
-            t_success.dest.add_external_ref(v_value, stmt.loc)
-        t_failure = self.mktrans_assignment(stmt.lhs,
+            t_success.dest.cpython.add_external_ref(v_value, stmt.loc)
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
                                             '%s() fails' % fnname)
-        t_failure.dest.set_exception('PyExc_MemoryError', stmt.loc)
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1577,7 +1482,7 @@ class MyState(State):
     ########################################################################
     def impl_PyTuple_New(self, stmt):
         # http://docs.python.org/c-api/tuple.html#PyTuple_New
-        v_len = self.eval_rvalue(stmt.args[0], stmt.loc)
+        v_len = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyTupleObject', 'PyTuple_Type')
@@ -1591,17 +1496,17 @@ class MyState(State):
         # Implemented in Objects/tupleobject.c
         fnname = 'PyTuple_Size'
         returntype = stmt.fn.type.dereference.type
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_op = args[0]
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
-        self.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
 
         # FIXME: cast:
-        v_ob_size = self.get_value_of_field_by_region(v_op.region,
+        v_ob_size = self.state.get_value_of_field_by_region(v_op.region,
                                                       'ob_size')
-        t_success = self.mktrans_assignment(stmt.lhs,
+        t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_ob_size,
                                             'PyTuple_Size() returns ob_size')
 
@@ -1612,9 +1517,9 @@ class MyState(State):
         # Can fail if not a tuple:
         # (For now, ignore the fact that it could be a tuple subclass)
 
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_SystemError', stmt.loc)
-        t_failure = Transition(self,
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_SystemError', stmt.loc)
+        t_failure = Transition(self.state,
                                s_failure,
                                '%s() fails (not a tuple)' % fnname)
         return [t_success, t_failure]
@@ -1624,482 +1529,34 @@ class MyState(State):
     ########################################################################
     def impl_PyType_IsSubtype(self, stmt):
         # http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_a, v_b = args
         returntype = stmt.fn.type.dereference.type
-        return [self.mktrans_assignment(stmt.lhs,
+        return [self.state.mktrans_assignment(stmt.lhs,
                                         UnknownValue(returntype, stmt.loc),
                                         None)]
 
     def impl_PyType_Ready(self, stmt):
         #  http://docs.python.org/dev/c-api/type.html#PyType_Ready
-        args = self.eval_stmt_args(stmt)
+        args = self.state.eval_stmt_args(stmt)
         v_type = args[0]
-        s_success = self.mkstate_concrete_return_of(stmt, 0)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
 
-        s_failure = self.mkstate_concrete_return_of(stmt, -1)
-        s_failure.set_exception('PyExc_MemoryError', stmt.loc) # various possible errors
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # various possible errors
 
-        return self.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
 
     ########################################################################
     # (end of Python API implementations)
     ########################################################################
 
-    def _get_transitions_for_GimpleCall(self, stmt):
-        log('stmt.lhs: %s %r', stmt.lhs, stmt.lhs)
-        log('stmt.fn: %s %r', stmt.fn, stmt.fn)
-        log('dir(stmt.fn): %s', dir(stmt.fn))
-        if hasattr(stmt.fn, 'operand'):
-            log('stmt.fn.operand: %s', stmt.fn.operand)
-        returntype = stmt.fn.type.dereference.type
-        log('returntype: %s', returntype)
-
-        if stmt.noreturn:
-            # The function being called does not return e.g. "exit(0);"
-            # Transition to a special noreturn state:
-            newstate = self.copy()
-            newstate.not_returning = True
-            return [Transition(self,
-                               newstate,
-                               'not returning from %s' % stmt.fn)]
-
-        if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl)):
-            # Calling through a function pointer:
-            val = self.eval_rvalue(stmt.fn, stmt.loc)
-            log('val: %s',  val)
-            check_isinstance(val, AbstractValue)
-            return val.get_transitions_for_function_call(self, stmt)
-
-        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-            log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
-            log('stmt.fn.operand.name: %r', stmt.fn.operand.name)
-            fnname = stmt.fn.operand.name
-
-            # Hand off to impl_* methods, where these exist:
-            methname = 'impl_%s' % fnname
-            if hasattr(self, methname):
-                meth = getattr(self, 'impl_%s' % fnname)
-                return meth(stmt)
-
-            #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
-
-            #if fnname in c_stdio_functions:
-            #    return handle_c_stdio_function(self, fnname, stmt)
-
-            if 0:
-                # For extending coverage of the Python API:
-                # Detect and complain about Python API entrypoints that
-                # weren't explicitly handled
-                if fnname.startswith('_Py') or fnname.startswith('Py'):
-                    raise NotImplementedError('not yet implemented: %s' % fnname)
-
-            # Unknown function returning (PyObject*):
-            if str(stmt.fn.operand.type.type) == 'struct PyObject *':
-                log('Invocation of unknown function returning PyObject *: %r' % fnname)
-                # Assume that all such functions either:
-                #   - return a new reference, or
-                #   - return NULL and set an exception (e.g. MemoryError)
-                return self.make_transitions_for_new_ref_or_fail(stmt,
-                                                                 'new ref from (unknown) %s' % fnname)
-
-            # Unknown function of other type:
-            log('Invocation of unknown function: %r', fnname)
-            return [self.mktrans_assignment(stmt.lhs,
-                                         UnknownValue(returntype, stmt.loc),
-                                         None)]
-
-        log('stmt.args: %s %r', stmt.args, stmt.args)
-        for i, arg in enumerate(stmt.args):
-            log('args[%i]: %s %r', i, arg, arg)
-
-    def _get_transitions_for_GimpleCond(self, stmt):
-        def make_transition_for_true(stmt):
-            e = true_edge(self.loc.bb)
-            assert e
-            nextstate = self.update_loc(Location.get_block_start(e.dest))
-            nextstate.prior_bool = True
-            return Transition(self, nextstate, 'taking True path')
-
-        def make_transition_for_false(stmt):
-            e = false_edge(self.loc.bb)
-            assert e
-            nextstate = self.update_loc(Location.get_block_start(e.dest))
-            nextstate.prior_bool = False
-            return Transition(self, nextstate, 'taking False path')
-
-        log('stmt.exprcode: %s', stmt.exprcode)
-        log('stmt.exprtype: %s', stmt.exprtype)
-        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
-        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
-        boolval = self.eval_condition(stmt, stmt.lhs, stmt.exprcode, stmt.rhs)
-        if boolval is True:
-            log('taking True edge')
-            nextstate = make_transition_for_true(stmt)
-            return [nextstate]
-        elif boolval is False:
-            log('taking False edge')
-            nextstate = make_transition_for_false(stmt)
-            return [nextstate]
-        else:
-            check_isinstance(boolval, UnknownValue)
-            # We don't have enough information; both branches are possible:
-            return [make_transition_for_true(stmt),
-                    make_transition_for_false(stmt)]
-
-    def eval_condition(self, stmt, expr_lhs, exprcode, expr_rhs):
-        """
-        Evaluate a comparison, returning one of True, False, or None
-        """
-        log('eval_condition: %s %s %s ', expr_lhs, exprcode, expr_rhs)
-        check_isinstance(expr_lhs, gcc.Tree)
-        check_isinstance(exprcode, type) # it's a type, rather than an instance
-        check_isinstance(expr_rhs, gcc.Tree)
-
-        lhs = self.eval_rvalue(expr_lhs, stmt.loc)
-        rhs = self.eval_rvalue(expr_rhs, stmt.loc)
-        check_isinstance(lhs, AbstractValue)
-        check_isinstance(rhs, AbstractValue)
-
-        def is_equal(lhs, rhs):
-            check_isinstance(lhs, AbstractValue)
-            check_isinstance(rhs, AbstractValue)
-            if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, PointerToRegion) and rhs.value == 0:
-                    log('ptr to region vs 0: %s is definitely not equal to %s', lhs, rhs)
-                    return False
-                if isinstance(lhs, ConcreteValue):
-                    log('comparing concrete values: %s %s', lhs, rhs)
-                    return lhs.value == rhs.value
-                if isinstance(lhs, RefcountValue):
-                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
-                    # The actual value of ob_refcnt >= lhs.relvalue
-                    if lhs.relvalue > rhs.value:
-                        # (Equality is thus not possible for this case)
-                        return False
-            if isinstance(rhs, PointerToRegion):
-                if isinstance(lhs, PointerToRegion):
-                    log('comparing regions: %s %s', lhs, rhs)
-                    return lhs.region == rhs.region
-            # We don't know:
-            return None
-
-        def is_lt(lhs, rhs):
-            # "less-than"
-            check_isinstance(lhs, AbstractValue)
-            check_isinstance(rhs, AbstractValue)
-            if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, ConcreteValue):
-                    log('comparing concrete values: %s %s', lhs, rhs)
-                    return lhs.value < rhs.value
-                if isinstance(lhs, RefcountValue):
-                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
-                    if lhs.get_min_value() >= rhs.value:
-                        return False
-            # We don't know:
-            return None
-
-        def is_le(lhs, rhs):
-            # "less-than-or-equal"
-            # Implement using is_equal and is_lt:
-            # First try "less-than":
-            lt_result = is_lt(lhs, rhs)
-            if lt_result is not None:
-                if lt_result:
-                    return True
-            # Either not less than, or we don't know
-            # Try equality:
-            eq_result = is_equal(lhs, rhs)
-            if eq_result is not None:
-                if eq_result:
-                    # Definitely equal:
-                    return eq_result
-                else:
-                    # Definitely not equal
-                    # If we have a definite result for less-than, use it:
-                    if lt_result is not None:
-                        return lt_result
-            # We don't know:
-            return None
-
-        if exprcode == gcc.EqExpr:
-            result = is_equal(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.NeExpr:
-            result = is_equal(lhs, rhs)
-            if result is not None:
-                return not result
-        elif exprcode == gcc.LtExpr:
-            result = is_lt(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.LeExpr:
-            result = is_le(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.GeExpr:
-            # Implement "A >= B" as "not(A < B)":
-            result = is_lt(lhs, rhs)
-            if result is not None:
-                return not result
-        elif exprcode == gcc.GtExpr:
-            # Implement "A > B " as "not(A <= B)":
-            result = is_le(lhs, rhs)
-            if result is not None:
-                return not result
-
-        # Specialcasing: comparison of unknown ptr with NULL:
-        if (isinstance(expr_lhs, gcc.VarDecl)
-            and isinstance(expr_rhs, gcc.IntegerCst)
-            and isinstance(expr_lhs.type, gcc.PointerType)):
-            # Split the ptr variable immediately into NULL and non-NULL
-            # versions, so that we can evaluate the true and false branch with
-            # explicitly data
-            log('splitting %s into non-NULL/NULL pointers', expr_lhs)
-            self.raise_split_value(lhs, stmt.loc)
-
-        log('unable to compare %r with %r', lhs, rhs)
-        #raise NotImplementedError("Don't know how to do %s comparison of %s with %s"
-        #                          % (exprcode, lhs, rhs))
-        return UnknownValue(stmt.lhs.type, stmt.loc)
-
-    def eval_binop_args(self, stmt):
-        rhs = stmt.rhs
-        a = self.eval_rvalue(rhs[0], stmt.loc)
-        b = self.eval_rvalue(rhs[1], stmt.loc)
-        log('a: %r', a)
-        log('b: %r', b)
-        return a, b
-
-    def eval_rhs(self, stmt):
-        log('eval_rhs(%s): %s', stmt, stmt.rhs)
-        rhs = stmt.rhs
-        # Handle arithmetic expressions:
-        if stmt.exprcode == gcc.PlusExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc, a.value + b.value)
-            if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
-                return RefcountValue(a.relvalue + b.value, a.min_external)
-
-            return UnknownValue(stmt.lhs.type, stmt.loc)
-
-            raise NotImplementedError("Don't know how to cope with addition of\n  %r\nand\n  %r\nat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.MinusExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value - b.value)
-            if isinstance(a, RefcountValue) and isinstance(b, ConcreteValue):
-                return RefcountValue(a.relvalue - b.value, a.min_external)
-            raise NotImplementedError("Don't know how to cope with subtraction of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.MultExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-               return ConcreteValue(stmt.lhs.type, stmt.loc, a.value * b.value)
-            raise NotImplementedError("Don't know how to cope with multiplication of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.TruncDivExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value // b.value)
-            raise NotImplementedError("Don't know how to cope with division of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.BitIorExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value | b.value)
-            raise NotImplementedError("Don't know how to cope with bitwise-or of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.BitAndExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value & b.value)
-            raise NotImplementedError("Don't know how to cope with bitwise-and of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.BitXorExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value ^ b.value)
-            raise NotImplementedError("Don't know how to cope with bitwise-xor of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.LshiftExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value << b.value)
-            raise NotImplementedError("Don't know how to cope with left shift of of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.RshiftExpr:
-            a, b = self.eval_binop_args(stmt)
-            if isinstance(a, UnknownValue) or isinstance(b, UnknownValue):
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-            if isinstance(a, ConcreteValue) and isinstance(b, ConcreteValue):
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     a.value >> b.value)
-            raise NotImplementedError("Don't know how to cope with right shift of of\n  %r\nand\n  %rat %s"
-                                      % (a, b, stmt.loc))
-        elif stmt.exprcode == gcc.ComponentRef:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.VarDecl:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.ParmDecl:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.IntegerCst:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.AddrExpr:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.NopExpr:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.ArrayRef:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.MemRef:
-            return self.eval_rvalue(rhs[0], stmt.loc)
-        elif stmt.exprcode == gcc.PointerPlusExpr:
-            try:
-                region = self.pointer_plus_region(stmt)
-                return PointerToRegion(stmt.lhs.type, stmt.loc, region)
-            except NotImplementedError:
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-        elif stmt.exprcode in (gcc.EqExpr, gcc.NeExpr, gcc.LtExpr,
-                               gcc.LeExpr, gcc.GeExpr, gcc.GtExpr):
-            # Comparisons
-            result = self.eval_condition(stmt, rhs[0], stmt.exprcode, rhs[1])
-            if result is not None:
-                return ConcreteValue(stmt.lhs.type, stmt.loc,
-                                     1 if result else 0)
-            else:
-                return UnknownValue(stmt.lhs.type, stmt.loc)
-        elif stmt.exprcode == gcc.ConvertExpr:
-            # Type-conversions (e.g. casts)
-            # Seems to just involve stmt.lhs.type and stmt.rhs[0].type
-            # (and the lvalue/rvalue)
-            rvalue = self.eval_rvalue(stmt.rhs[0], stmt.loc)
-            if isinstance(rvalue, UnknownValue):
-                # Update the type to that of the lhs:
-                return UnknownValue(stmt.lhs.type,
-                                    stmt.loc)
-            else:
-                raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
-                                          % (rvalue, rvalue, stmt.loc, stmt.lhs.type))
-        else:
-            raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
-                                      % (stmt.exprcode, stmt.exprcode, stmt.loc))
-
-    def _get_transitions_for_GimpleAssign(self, stmt):
-        log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
-        log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
-        log('stmt: %r %s', stmt, stmt)
-        log('stmt.exprcode: %r', stmt.exprcode)
-
-        value = self.eval_rhs(stmt)
-        log('value from eval_rhs: %r', value)
-        check_isinstance(value, AbstractValue)
-
-        if isinstance(value, DeallocatedMemory):
-            raise ReadFromDeallocatedMemory(stmt, value)
-
-        nextstate = self.use_next_loc()
-        return [self.mktrans_assignment(stmt.lhs,
-                                        value,
-                                        None)]
-
-    def _get_transitions_for_GimpleReturn(self, stmt):
-        #log('stmt.lhs: %r %s', stmt.lhs, stmt.lhs)
-        #log('stmt.rhs: %r %s', stmt.rhs, stmt.rhs)
-        log('stmt: %r %s', stmt, stmt)
-        log('stmt.retval: %r', stmt.retval)
-
-        nextstate = self.copy()
-
-        if stmt.retval:
-            rvalue = self.eval_rvalue(stmt.retval, stmt.loc)
-            log('rvalue from eval_rvalue: %r', rvalue)
-            nextstate.return_rvalue = rvalue
-        nextstate.has_returned = True
-        return [Transition(self, nextstate, 'returning')]
-
-    def _get_transitions_for_GimpleSwitch(self, stmt):
-        def get_labels_for_rvalue(self, stmt, rvalue):
-            # Gather all possible labels for the given rvalue
-            result = []
-            for label in stmt.labels:
-                # FIXME: for now, treat all labels as possible:
-                result.append(label)
-            return result
-        log('stmt.indexvar: %r', stmt.indexvar)
-        log('stmt.labels: %r', stmt.labels)
-        indexval = self.eval_rvalue(stmt.indexvar, stmt.loc)
-        log('indexval: %r', indexval)
-        labels = get_labels_for_rvalue(self, stmt, indexval)
-        log('labels: %r', labels)
-        result = []
-        for label in labels:
-            newstate = self.copy()
-            bb = self.fun.cfg.get_block_for_label(label.target)
-            newstate.loc = Location(bb, 0)
-            if label.low:
-                check_isinstance(label.low, gcc.IntegerCst)
-                if label.high:
-                    check_isinstance(label.high, gcc.IntegerCst)
-                    desc = 'following cases %i...%i' % (label.low.constant, label.high.constant)
-                else:
-                    desc = 'following case %i' % label.low.constant
-            else:
-                desc = 'following default'
-            result.append(Transition(self,
-                                     newstate,
-                                     desc))
-        return result
-
-    def get_persistent_refs_for_region(self, dst_region):
-        # Locate all regions containing pointers that point at the given region
-        # that are either on the heap or are globals (not locals)
-        check_isinstance(dst_region, Region)
-        result = []
-        for src_region in self.get_all_refs_for_region(dst_region):
-            if src_region.is_on_stack():
-                continue
-            result.append(src_region)
-        return result
-
-    def get_all_refs_for_region(self, dst_region):
-        # Locate all regions containing pointers that point at the given region
-        check_isinstance(dst_region, Region)
-        result = []
-        for src_region in self.value_for_region:
-            v = self.value_for_region[src_region]
-            if isinstance(v, PointerToRegion):
-                if v.region == dst_region:
-                    result.append(src_region)
-        return result
-
 def get_traces(fun):
-    return list(iter_traces(fun, MyState))
+    return list(iter_traces(fun,
+                            {'cpython':CPython},
+                            limits=Limits(maxtrans=1024)))
+
 
 def dump_traces_to_stdout(traces):
     """
@@ -2168,7 +1625,7 @@ def dump_traces_to_stdout(traces):
 
         # Exception state:
         print('  Exception:')
-        print('    %s' % endstate.exception_rvalue)
+        print('    %s' % endstate.cpython.exception_rvalue)
 
         if i + 1 < len(traces):
             sys.stdout.write('\n')
@@ -2285,10 +1742,10 @@ class ExceptionStateAnnotator(Annotator):
 
         result = []
 
-        if transition.dest.exception_rvalue != transition.src.exception_rvalue:
+        if transition.dest.cpython.exception_rvalue != transition.src.cpython.exception_rvalue:
             result.append(Note(loc,
                                ('thread-local exception state now has value: %s'
-                                % transition.dest.exception_rvalue)))
+                                % transition.dest.cpython.exception_rvalue)))
 
         return result
 
@@ -2322,7 +1779,9 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         invoke_dot(dot)
 
     try:
-        traces = iter_traces(fun, MyState, limits=Limits(maxtrans=1024))
+        traces = iter_traces(fun,
+                             {'cpython':CPython},
+                             limits=Limits(maxtrans=1024))
     except TooComplicated:
         gcc.inform(fun.start,
                    'this function is too complicated for the reference-count checker to analyze')
@@ -2495,9 +1954,9 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                 and return_value.value == 0
                 and str(return_value.gcctype)=='struct PyObject *'):
 
-                if (isinstance(endstate.exception_rvalue,
+                if (isinstance(endstate.cpython.exception_rvalue,
                               ConcreteValue)
-                    and endstate.exception_rvalue.value == 0):
+                    and endstate.cpython.exception_rvalue.value == 0):
                     err = rep.make_error(fun,
                                          endstate.get_gcc_loc(fun),
                                          'returning (PyObject*)NULL without setting an exception')
