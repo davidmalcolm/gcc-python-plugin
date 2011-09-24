@@ -1131,13 +1131,23 @@ class State:
             log('stmt.fn.operand.name: %r', stmt.fn.operand.name)
             fnname = stmt.fn.operand.name
 
-            # Hand off to impl_* methods of facets, where these methods exist:
+            # Hand off to impl_* methods of facets, where these methods exist
+            # In each case, the method should have the form:
+            #   def impl_foo(self, stmt, v_arg0, v_arg1, *args):
+            # for a C function named "foo" i.e. it takes "self", plus the
+            # gcc.GimpleCall statement, followed by the AbstractValue instances
+            # for the evaluated arguments (which for some functions will
+            # involve varargs, like above).
+            # They should return a list of Transition instances.
             methname = 'impl_%s' % fnname
             for key in self.facets:
                 facet = getattr(self, key)
                 if hasattr(facet, methname):
                     meth = getattr(facet, 'impl_%s' % fnname)
-                    return meth(stmt)
+                    # Evaluate the arguments:
+                    args = self.eval_stmt_args(stmt)
+                    # Call the facet's method:
+                    return meth(stmt, *args)
 
             #from libcpychecker.c_stdio import c_stdio_functions, handle_c_stdio_function
 

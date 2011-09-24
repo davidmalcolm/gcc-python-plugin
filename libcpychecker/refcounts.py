@@ -477,7 +477,7 @@ class CPython(Facet):
     # Treat calls to various function prefixed with __cpychecker as special,
     # to help with debugging, and when writing selftests:
 
-    def impl___cpychecker_log(self, stmt):
+    def impl___cpychecker_log(self, stmt, *args):
         """
         Assuming a C function with this declaration:
             extern void __cpychecker_log(const char *);
@@ -485,7 +485,6 @@ class CPython(Facet):
         within the trace.
         """
         returntype = stmt.fn.type.dereference.type
-        args = self.state.eval_stmt_args(stmt)
         desc = None
         if isinstance(args[0], PointerToRegion):
             if isinstance(args[0].region, RegionForStringConstant):
@@ -494,18 +493,17 @@ class CPython(Facet):
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
-    def impl___cpychecker_dump(self, stmt):
+    def impl___cpychecker_dump(self, stmt, *args):
         returntype = stmt.fn.type.dereference.type
         # Give the transition a description that embeds the argument values
         # This will show up in selftests (and in error reports that embed
         # traces)
-        args = self.state.eval_stmt_args(stmt)
         desc = '__dump(%s)' % (','.join([str(arg) for arg in args]))
         return [self.state.mktrans_assignment(stmt.lhs,
                                      UnknownValue(returntype, stmt.loc),
                                      desc)]
 
-    def impl___cpychecker_assert_equal(self, stmt):
+    def impl___cpychecker_assert_equal(self, stmt, *args):
         """
         Assuming a C function with this declaration:
             extern void __cpychecker_assert_equal(T, T);
@@ -516,7 +514,6 @@ class CPython(Facet):
         # Give the transition a description that embeds the argument values
         # This will show up in selftests (and in error reports that embed
         # traces)
-        args = self.state.eval_stmt_args(stmt)
         if args[0] != args[1]:
             raise AssertionError('%s != %s' % (args[0], args[1]))
         desc = '__cpychecker_assert_equal(%s)' % (','.join([str(arg) for arg in args]))
@@ -535,7 +532,7 @@ class CPython(Facet):
         Handle one of the various PyArg_Parse* functions
         """
         check_isinstance(v_fmt, AbstractValue)
-        check_isinstance(v_varargs, list) # of AbstractValue
+        check_isinstance(v_varargs, tuple) # of AbstractValue
         check_isinstance(with_size_t, bool)
 
         s_success = self.state.mkstate_concrete_return_of(stmt, 1)
@@ -602,31 +599,24 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyArg_ParseTuple(self, stmt):
+    def impl_PyArg_ParseTuple(self, stmt, v_args, v_fmt, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        args = self.state.eval_stmt_args(stmt)
-        v_args = args[0]
-        v_fmt = args[1]
-        v_varargs = args[2:]
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
-    def impl__PyArg_ParseTuple_SizeT(self, stmt):
+    def impl__PyArg_ParseTuple_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        args = self.state.eval_stmt_args(stmt)
-        v_args = args[0]
-        v_fmt = args[1]
-        v_varargs = args[2:]
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
 
-    def impl_PyArg_ParseTupleAndKeywords(self, stmt):
+    def impl_PyArg_ParseTupleAndKeywords(self, stmt, v_args, v_kwargs,
+                                         v_fmt, v_keywords, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
         #                                               const char *, char **, ...);
@@ -634,15 +624,10 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        args = self.state.eval_stmt_args(stmt)
-        v_args = args[0]
-        v_kwargs = args[1]
-        v_fmt = args[2]
-        v_keywords = args[3]
-        v_varargs = args[4:]
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
-    def impl_PyArg_ParseTupleAndKeywords_SizeT(self, stmt):
+    def impl_PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
+                                               v_fmt, v_keywords, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
         #                                               const char *, char **, ...);
@@ -650,18 +635,12 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        args = self.state.eval_stmt_args(stmt)
-        v_args = args[0]
-        v_kwargs = args[1]
-        v_fmt = args[2]
-        v_keywords = args[3]
-        v_varargs = args[4:]
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
 
     ########################################################################
     # PyBool_*
     ########################################################################
-    def impl_PyBool_FromLong(self, stmt):
+    def impl_PyBool_FromLong(self, stmt, v_long):
         # Declared in boolobject.h:
         #   PyAPI_FUNC(PyObject *) PyBool_FromLong(long);
         # Defined in Objects/boolobject.c
@@ -675,7 +654,7 @@ class CPython(Facet):
     ########################################################################
     # PyDict_*
     ########################################################################
-    def impl_PyDict_GetItem(self, stmt):
+    def impl_PyDict_GetItem(self, stmt, v_mp, v_key):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *mp, PyObject *key);
         # Defined in dictobject.c
@@ -689,7 +668,7 @@ class CPython(Facet):
         return [self.state.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
                 t_notfound]
 
-    def impl_PyDict_GetItemString(self, stmt):
+    def impl_PyDict_GetItemString(self, stmt, v_dp, v_key):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);
         # Defined in dictobject.c
@@ -713,7 +692,7 @@ class CPython(Facet):
                                                              'PyDictObject', 'PyDict_Type')
         return [t_success, t_failure]
 
-    def impl_PyDict_SetItem(self, stmt):
+    def impl_PyDict_SetItem(self, stmt, v_dp, v_key, v_item):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(int) PyDict_SetItem(PyObject *mp, PyObject *key, PyObject *item);
         # Defined in dictobject.c
@@ -722,8 +701,6 @@ class CPython(Facet):
         #   http://docs.python.org/c-api/dict.html#PyDict_SetItem
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
-        v_dp, v_key, v_item = self.state.eval_stmt_args(stmt)
-
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
 
@@ -738,7 +715,7 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyDict_SetItemString(self, stmt):
+    def impl_PyDict_SetItemString(self, stmt, v_dp, v_key, v_item):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);
         # Defined in dictobject.c
@@ -747,25 +724,23 @@ class CPython(Facet):
         #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
-        v_dp, v_key, v_item = self.state.eval_stmt_args(stmt)
 
         # This is implemented in terms of PyDict_SetItem and shows the same
         # success and failures:
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
-        return self.impl_PyDict_SetItem(stmt)
+        # (strictly speaking, v_key goes from being a char* to a PyObject*)
+        return self.impl_PyDict_SetItem(stmt, v_dp, v_key, v_item)
 
     ########################################################################
     # PyErr_*
     ########################################################################
-    def impl_PyErr_Format(self, stmt):
+    def impl_PyErr_Format(self, stmt, v_exc, v_fmt, *v_args):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
         # Defined in Python/errors.c
         #
-        args = self.state.eval_stmt_args(stmt)
-        v_exc = args[0]
-        v_fmt = args[1]
+
         # It always returns NULL:
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
@@ -809,7 +784,7 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
         return [t_next]
 
-    def impl_PyErr_PrintEx(self, stmt):
+    def impl_PyErr_PrintEx(self, stmt, v_int):
         # Declared in pythonrun.h:
         #   PyAPI_FUNC(void) PyErr_PrintEx(int);
         # Defined in pythonrun.c
@@ -819,12 +794,10 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
         return [t_next]
 
-    def impl_PyErr_SetFromErrno(self, stmt):
+    def impl_PyErr_SetFromErrno(self, stmt, v_exc):
         # API docs:
         #   http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno
         #
-        args = self.state.eval_stmt_args(stmt)
-        v_exc = args[0]
         # It always returns NULL:
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
@@ -832,9 +805,7 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
-    def impl_PyErr_SetFromErrnoWithFilename(self, stmt):
-        args = self.state.eval_stmt_args(stmt)
-        v_exc = args[0]
+    def impl_PyErr_SetFromErrnoWithFilename(self, stmt, v_exc):
         # It always returns NULL:
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
@@ -842,12 +813,11 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
-    def impl_PyErr_SetString(self, stmt):
+    def impl_PyErr_SetString(self, stmt, v_exc, v_string):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
         # Defined in Python/errors.c
         #
-        v_exc, v_string = self.state.eval_stmt_args(stmt)
         t_next = self.state.mktrans_nop(stmt, 'PyErr_SetString')
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
@@ -876,7 +846,7 @@ class CPython(Facet):
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyGILState_Ensure')]
 
-    def impl_PyGILState_Release(self, stmt):
+    def impl_PyGILState_Release(self, stmt, v_state):
         # http://docs.python.org/c-api/init.html#PyGILState_Release
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyGILState_Release')]
@@ -884,7 +854,7 @@ class CPython(Facet):
     ########################################################################
     # PyImport_*
     ########################################################################
-    def impl_PyImport_AppendInittab(self, stmt):
+    def impl_PyImport_AppendInittab(self, stmt, v_name, v_initfunc):
         # http://docs.python.org/c-api/import.html#PyImport_AppendInittab
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -892,7 +862,7 @@ class CPython(Facet):
         # have been called yet, in any case)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyImport_ImportModule(self, stmt):
+    def impl_PyImport_ImportModule(self, stmt, v_name):
         # http://docs.python.org/c-api/import.html#PyImport_ImportModule
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyModuleObject', 'PyModule_Type')
@@ -909,7 +879,8 @@ class CPython(Facet):
     ########################################################################
     # Py_InitModule*
     ########################################################################
-    def impl_Py_InitModule4_64(self, stmt):
+    def impl_Py_InitModule4_64(self, stmt, v_name, v_methods,
+                               v_doc, v_self, v_apiver):
         # Decl:
         #   PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,
         #                                         const char *doc, PyObject *self,
@@ -929,7 +900,7 @@ class CPython(Facet):
     ########################################################################
     # Py_Int*
     ########################################################################
-    def impl_PyInt_AsLong(self, stmt):
+    def impl_PyInt_AsLong(self, stmt, v_op):
         # Declared in intobject.h as:
         #   PyAPI_FUNC(long) PyInt_AsLong(PyObject *);
         # Defined in Objects/intobject.c
@@ -937,9 +908,6 @@ class CPython(Facet):
         # http://docs.python.org/c-api/int.html#PyInt_AsLong
 
         # Can fail (gracefully) with NULL, and with non-int objects
-
-        args = self.state.eval_stmt_args(stmt)
-        v_op = args[0]
 
         returntype = stmt.fn.type.dereference.type
 
@@ -964,7 +932,7 @@ class CPython(Facet):
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
-    def impl_PyInt_FromLong(self, stmt):
+    def impl_PyInt_FromLong(self, stmt, v_ival):
         # Declared in intobject.h as:
         #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
         # Defined in Objects/intobject.c
@@ -974,9 +942,6 @@ class CPython(Facet):
         # within intobject.c's "small_ints" array and these are preallocated
         # by _PyInt_Init().  Thus, for these values, we know that the call
         # cannot fail
-
-        args = self.state.eval_stmt_args(stmt)
-        v_ival = args[0]
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyIntObject', 'PyInt_Type')
@@ -994,7 +959,7 @@ class CPython(Facet):
     ########################################################################
     # PyList_*
     ########################################################################
-    def impl_PyList_Append(self, stmt):
+    def impl_PyList_Append(self, stmt, op, newitem):
         # Declared in listobject.h as:
         #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
         #
@@ -1004,7 +969,6 @@ class CPython(Facet):
         #
         # If it succeeds, it adds a reference on the item
         #
-        op, newitem = self.state.eval_stmt_args(stmt)
 
         # On success, adds a ref on input:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1024,11 +988,11 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyList_New(self, stmt):
+    def impl_PyList_New(self, stmt, lenarg):
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
-        lenarg = self.state.eval_rvalue(stmt.args[0], stmt.loc)
+
         check_isinstance(lenarg, AbstractValue)
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyListObject', 'PyList_Type')
@@ -1052,15 +1016,12 @@ class CPython(Facet):
 
         return [success, failure]
 
-    def impl_PyList_SetItem(self, stmt):
+    def impl_PyList_SetItem(self, stmt, arg_list, arg_index, arg_item):
         # Decl:
         #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
         fnname = stmt.fn.operand.name
 
         result = []
-
-        arg_list, arg_index, arg_item = [self.state.eval_rvalue(arg, stmt.loc)
-                                         for arg in stmt.args]
 
         # Is it really a list?
         if 0: # FIXME: check
@@ -1095,20 +1056,21 @@ class CPython(Facet):
     ########################################################################
     # PyLong_*
     ########################################################################
-    def impl_PyLong_FromLong(self, stmt):
+    def impl_PyLong_FromLong(self, stmt, v_long):
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
-    def impl_PyLong_FromString(self, stmt):
+    def impl_PyLong_FromString(self, stmt, v_str, v_pend, v_base):
         # Declared in longobject.h as:
         #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
         # Defined in longobject.c
+        # http://docs.python.org/c-api/long.html#PyLong_FromString
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
         return [success, failure]
 
-    def impl_PyLong_FromVoidPtr(self, stmt):
+    def impl_PyLong_FromVoidPtr(self, stmt, v_p):
         # http://docs.python.org/c-api/long.html#PyLong_FromVoidPtr
         newobj, success, failure = self.impl_object_ctor(stmt,
                                                          'PyLongObject', 'PyLong_Type')
@@ -1117,11 +1079,9 @@ class CPython(Facet):
     ########################################################################
     # PyMem_*
     ########################################################################
-    def impl_PyMem_Free(self, stmt):
+    def impl_PyMem_Free(self, stmt, v_ptr):
         # http://docs.python.org/c-api/memory.html#PyMem_Free
         fnname = 'PyMem_Free'
-        args = self.state.eval_stmt_args(stmt)
-        v_ptr, = args
 
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
 
@@ -1158,12 +1118,10 @@ class CPython(Facet):
 
         return [Transition(self.state, s_new, desc)]
 
-    def impl_PyMem_Malloc(self, stmt):
+    def impl_PyMem_Malloc(self, stmt, v_size):
         # http://docs.python.org/c-api/memory.html#PyMem_Malloc
         fnname = 'PyMem_Malloc'
         returntype = stmt.fn.type.dereference.type
-        args = self.state.eval_stmt_args(stmt)
-        v_size, = args
         r_nonnull = self.state.make_heap_region('PyMem_Malloc', stmt)
         v_nonnull = PointerToRegion(returntype, stmt.loc, r_nonnull)
         # FIXME: it hasn't been initialized
@@ -1178,7 +1136,7 @@ class CPython(Facet):
     ########################################################################
     # PyModule_*
     ########################################################################
-    def impl_PyModule_AddIntConstant(self, stmt):
+    def impl_PyModule_AddIntConstant(self, stmt, v_module, v_name, v_value):
         # http://docs.python.org/c-api/module.html#PyModule_AddIntConstant
 
         # (No externally-visible refcount changes)
@@ -1190,11 +1148,10 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyModule_AddObject(self, stmt):
+    def impl_PyModule_AddObject(self, stmt, v_module, v_name, v_value):
         # Steals a reference to the object if if succeeds:
         #   http://docs.python.org/c-api/module.html#PyModule_AddObject
         # Implemented in Python/modsupport.c
-        v_module, v_name, v_value = self.state.eval_stmt_args(stmt)
 
         # On success, steals a ref from v_value:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1206,7 +1163,7 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyModule_AddStringConstant(self, stmt):
+    def impl_PyModule_AddStringConstant(self, stmt, v_module, v_name, v_value):
         # http://docs.python.org/c-api/module.html#PyModule_AddStringConstant
 
         # (No externally-visible refcount changes)
@@ -1221,11 +1178,10 @@ class CPython(Facet):
     ########################################################################
     # PyObject_*
     ########################################################################
-    def impl_PyObject_HasAttrString(self, stmt):
+    def impl_PyObject_HasAttrString(self, stmt, v_o, v_attr_name):
         # http://docs.python.org/c-api/object.html#PyObject_HasAttrString
 
         fnname = stmt.fn.operand.name
-        v_o, v_attr_name = self.state.eval_stmt_args(stmt)
 
         # the object must be non-NULL: it is unconditionally
         # dereferenced to get the ob_type:
@@ -1244,7 +1200,7 @@ class CPython(Facet):
         return [Transition(self.state, s_true, '%s() returns 1 (true)' % fnname),
                 Transition(self.state, s_false, '%s() returns 0 (false)' % fnname)]
 
-    def impl_PyObject_IsTrue(self, stmt):
+    def impl_PyObject_IsTrue(self, stmt, v_o):
         #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
         s_true = self.state.mkstate_concrete_return_of(stmt, 1)
         s_false = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1256,7 +1212,7 @@ class CPython(Facet):
                 Transition(self.state, s_false, '%s() returns 0 (false)' % fnname),
                 Transition(self.state, s_failure, '%s() returns -1 (failure)' % fnname)]
 
-    def impl__PyObject_New(self, stmt):
+    def impl__PyObject_New(self, stmt, tp_rvalue):
         # Declaration in objimpl.h:
         #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
         #
@@ -1269,8 +1225,6 @@ class CPython(Facet):
         #   Return value: New reference.
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
-
-        tp_rvalue = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, '_PyObject_New')
@@ -1287,7 +1241,7 @@ class CPython(Facet):
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
-    def impl_PyObject_Repr(self, stmt):
+    def impl_PyObject_Repr(self, stmt, v_o):
         # Declared in object.h as:
         #  PyAPI_FUNC(PyObject *) PyObject_Repr(PyObject *);
         # Docs:
@@ -1296,7 +1250,7 @@ class CPython(Facet):
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
-    def impl_PyObject_Str(self, stmt):
+    def impl_PyObject_Str(self, stmt, v_o):
         # Declared in object.h as:
         #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
         # also with:
@@ -1308,7 +1262,8 @@ class CPython(Facet):
     ########################################################################
     # PyRun_*
     ########################################################################
-    def impl_PyRun_SimpleFileExFlags(self, stmt):
+    def impl_PyRun_SimpleFileExFlags(self, stmt, v_fp, v_filename,
+                                     v_closeit, v_flags):
         # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -1316,7 +1271,7 @@ class CPython(Facet):
         # (FIXME: handle the potential autoclosing of the FILE*)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def impl_PyRun_SimpleStringFlags(self, stmt):
+    def impl_PyRun_SimpleStringFlags(self, stmt, v_command, v_flags):
         # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -1326,7 +1281,7 @@ class CPython(Facet):
     ########################################################################
     # PyString_*
     ########################################################################
-    def impl_PyString_AsString(self, stmt):
+    def impl_PyString_AsString(self, stmt, v_op):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(char *) PyString_AsString(PyObject *);
         # Implemented in Objects/stringobject.c
@@ -1336,8 +1291,6 @@ class CPython(Facet):
         # With PyStringObject and their subclasses, it returns
         #    ((PyStringObject *)op) -> ob_sval
         # With other classes, this call can fail
-
-        v_op, = self.state.eval_stmt_args(stmt)
 
         # It will segfault if called with NULL, since it uses PyString_Check,
         # which reads through the object's ob_type:
@@ -1368,7 +1321,7 @@ class CPython(Facet):
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
-    def impl_PyString_FromFormat(self, stmt):
+    def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)
         #                             Py_GCC_ATTRIBUTE((format(printf, 1, 2)));
@@ -1381,13 +1334,12 @@ class CPython(Facet):
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
-    def impl_PyString_FromString(self, stmt):
+    def impl_PyString_FromString(self, stmt, v_str):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
         #
         #   http://docs.python.org/c-api/string.html#PyString_FromString
         #
-        v_str, = self.state.eval_stmt_args(stmt)
 
         # The input _must_ be non-NULL; it is not checked:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
@@ -1396,7 +1348,7 @@ class CPython(Facet):
                                                              'PyStringObject', 'PyString_Type')
         return [t_success, t_failure]
 
-    def impl_PyString_FromStringAndSize(self, stmt):
+    def impl_PyString_FromStringAndSize(self, stmt, v_str, v_size):
         # Declared in stringobject.h as:
         #   PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);
         #
@@ -1416,14 +1368,14 @@ class CPython(Facet):
     ########################################################################
     # PyStructSequence_*
     ########################################################################
-    def impl_PyStructSequence_InitType(self, stmt):
+    def impl_PyStructSequence_InitType(self, stmt, v_type, v_desc):
         # void PyStructSequence_InitType(PyTypeObject *type, PyStructSequence_Desc *desc)
         #
         # Implemented in Objects/structseq.c
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyStructSequence_InitType')]
 
-    def impl_PyStructSequence_New(self, stmt):
+    def impl_PyStructSequence_New(self, stmt, tp_rvalue):
         # Declared in structseq.h as:
         #   PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);
         #
@@ -1432,8 +1384,6 @@ class CPython(Facet):
         # From our perspective, this is very similar to _PyObject_New
         assert isinstance(stmt, gcc.GimpleCall)
         assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
-
-        tp_rvalue = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, 'PyStructSequence_New')
@@ -1453,7 +1403,7 @@ class CPython(Facet):
     ########################################################################
     # PySys_*
     ########################################################################
-    def impl_PySys_SetObject(self, stmt):
+    def impl_PySys_SetObject(self, stmt, v_name, v_value):
         # Declated in sysmodule.h
         # Defined in Python/sysmodule.c:
         #   int PySys_SetObject(char *name, PyObject *v)
@@ -1464,8 +1414,6 @@ class CPython(Facet):
         # on non-NULL, which adds a ref on it
         fnname = 'PySys_SetObject'
         returntype = stmt.fn.type.dereference.type
-        args = self.state.eval_stmt_args(stmt)
-        v_name, v_value = args
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
                                             '%s() succeeds' % fnname)
@@ -1480,9 +1428,8 @@ class CPython(Facet):
     ########################################################################
     # PyTuple_*
     ########################################################################
-    def impl_PyTuple_New(self, stmt):
+    def impl_PyTuple_New(self, stmt, v_len):
         # http://docs.python.org/c-api/tuple.html#PyTuple_New
-        v_len = self.state.eval_rvalue(stmt.args[0], stmt.loc)
 
         newobj, t_success, t_failure = self.impl_object_ctor(stmt,
                                                              'PyTupleObject', 'PyTuple_Type')
@@ -1491,13 +1438,11 @@ class CPython(Facet):
         t_success.dest.value_for_region[r_ob_size] = v_len
         return [t_success, t_failure]
 
-    def impl_PyTuple_Size(self, stmt):
+    def impl_PyTuple_Size(self, stmt, v_op):
         # http://docs.python.org/c-api/tuple.html#PyTuple_Size
         # Implemented in Objects/tupleobject.c
         fnname = 'PyTuple_Size'
         returntype = stmt.fn.type.dereference.type
-        args = self.state.eval_stmt_args(stmt)
-        v_op = args[0]
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
@@ -1527,19 +1472,15 @@ class CPython(Facet):
     ########################################################################
     # PyType_*
     ########################################################################
-    def impl_PyType_IsSubtype(self, stmt):
+    def impl_PyType_IsSubtype(self, stmt, v_a, v_b):
         # http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype
-        args = self.state.eval_stmt_args(stmt)
-        v_a, v_b = args
         returntype = stmt.fn.type.dereference.type
         return [self.state.mktrans_assignment(stmt.lhs,
                                         UnknownValue(returntype, stmt.loc),
                                         None)]
 
-    def impl_PyType_Ready(self, stmt):
+    def impl_PyType_Ready(self, stmt, v_type):
         #  http://docs.python.org/dev/c-api/type.html#PyType_Ready
-        args = self.state.eval_stmt_args(stmt)
-        v_type = args[0]
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
 
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
