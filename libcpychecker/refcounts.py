@@ -261,13 +261,13 @@ class CPython(Facet):
         check_isinstance(pyobjectptr, PointerToRegion)
         ob_refcnt = self.state.make_field_region(pyobjectptr.region,
                                                  'ob_refcnt')
-        assert isinstance(ob_refcnt, Region)
+        check_isinstance(ob_refcnt, Region)
         oldvalue = self.state.get_store(ob_refcnt, None, loc) # FIXME: gcctype
-        assert isinstance(oldvalue, AbstractValue)
+        check_isinstance(oldvalue, AbstractValue)
         log('oldvalue: %r', oldvalue)
         #if isinstance(oldvalue, UnknownValue):
         #    self.raise_split_value(oldvalue, loc)
-        assert isinstance(oldvalue, RefcountValue)
+        check_isinstance(oldvalue, RefcountValue)
         newvalue = fn(oldvalue)
         log('newvalue: %r', newvalue)
         self.state.value_for_region[ob_refcnt] = newvalue
@@ -1250,8 +1250,8 @@ class CPython(Facet):
         # Definition is in Objects/object.c
         #
         #   Return value: New reference.
-        assert isinstance(stmt, gcc.GimpleCall)
-        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(stmt.fn.operand, gcc.FunctionDecl)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, '_PyObject_New')
@@ -1414,8 +1414,8 @@ class CPython(Facet):
         # Implemented in Objects/structseq.c
 
         # From our perspective, this is very similar to _PyObject_New
-        assert isinstance(stmt, gcc.GimpleCall)
-        assert isinstance(stmt.fn.operand, gcc.FunctionDecl)
+        check_isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(stmt.fn.operand, gcc.FunctionDecl)
 
         # Success case: allocation and assignment:
         s_success, nonnull = self.mkstate_new_ref(stmt, 'PyStructSequence_New')

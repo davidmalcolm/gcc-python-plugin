@@ -1172,7 +1172,7 @@ class State:
                 Transition(self, s_failure, '%s() fails' % fnname)]
 
     def eval_stmt_args(self, stmt):
-        assert isinstance(stmt, gcc.GimpleCall)
+        check_isinstance(stmt, gcc.GimpleCall)
         return [self.eval_rvalue(arg, stmt.loc)
                 for arg in stmt.args]
 
