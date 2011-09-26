@@ -1741,6 +1741,9 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
 
+    if 0:
+        gcc.inform(fun.start, 'Analyzing reference-counting with %s' % fun.decl.name)
+
     check_isinstance(fun, gcc.Function)
 
     if show_traces:
