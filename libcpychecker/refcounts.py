@@ -1023,7 +1023,14 @@ class CPython(Facet):
     def impl_PyList_SetItem(self, stmt, v_list, v_index, v_item):
         # Decl:
         #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
+        # http://docs.python.org/c-api/list.html#PyList_SetItem
         fnname = stmt.fn.operand.name
+
+        # It uses Py_List_Check, a macro which uses Py_TYPE(op) without
+        # checking op; hence it will segfault will a NULL "list" pointer
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list)
+
+        # However, it appears to be robust in the face of NULL "item" pointers
 
         result = []
 
