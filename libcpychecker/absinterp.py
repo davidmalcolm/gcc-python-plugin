@@ -38,6 +38,10 @@ from libcpychecker.types import *
 #   the prefix "r_" means a Region
 #   the prefix "f_" means a Facet
 
+############################################################################
+# Various kinds of r-value:
+############################################################################
+
 class AbstractValue:
     def __init__(self, gcctype, loc):
         if gcctype:
@@ -81,6 +85,36 @@ class AbstractValue:
         """
         raise NotImplementedError("is_equal for %s" % self)
 
+    def is_lt(self, rhs):
+        """
+        "lt" = "less-than"
+        Return a boolean, or None (meaning we don't know)
+        """
+        # First try "less-than":
+        lt_result = self.impl_is_lt(rhs)
+        if lt_result is not None:
+            return lt_result
+        # We don't know; try the other way around:
+        ge_result = rhs.impl_is_ge(self)
+        if ge_result is not None:
+            return not ge_result
+        # We don't know:
+        return None
+
+    def impl_is_lt(self, rhs):
+        """
+        "lt" = "less-than"
+        Return a boolean, or None (meaning we don't know)
+        """
+        raise NotImplementedError("impl_is_lt for %s" % self)
+
+    def impl_is_ge(self, rhs):
+        """
+        "ge" = "greater-than-or-equal"
+        Return a boolean, or None (meaning we don't know)
+        """
+        raise NotImplementedError("impl_is_ge for %s" % self)
+
 class UnknownValue(AbstractValue):
     """
     A value that we know nothing about
@@ -101,6 +135,12 @@ class UnknownValue(AbstractValue):
         return UnknownValue(gcctype, loc)
 
     def is_equal(self, rhs):
+        return None
+
+    def impl_is_lt(self, rhs):
+        return None
+
+    def impl_is_ge(self, rhs):
         return None
 
 class ConcreteValue(AbstractValue):
@@ -161,6 +201,18 @@ class ConcreteValue(AbstractValue):
             return self.value == rhs.value
         return None
 
+    def impl_is_lt(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing concrete values: %s %s', self, rhs)
+            return self.value < rhs.value
+        return None
+
+    def impl_is_ge(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing concrete values: %s %s', self, rhs)
+            return self.value >= rhs.value
+        return None
+
 class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
     def __init__(self, gcctype, loc, region):
@@ -189,6 +241,12 @@ class PointerToRegion(AbstractValue):
         # We don't know:
         return None
 
+    def impl_is_lt(self, rhs):
+        return None
+
+    def impl_is_ge(self, rhs):
+        return None
+
 class DeallocatedMemory(AbstractValue):
     def __str__(self):
         if self.loc:
@@ -206,6 +264,16 @@ class UninitializedData(AbstractValue):
     def is_equal(self, rhs):
         # We don't know:
         return None
+
+    def impl_is_lt(self, rhs):
+        return None
+
+    def impl_is_ge(self, rhs):
+        return None
+
+############################################################################
+# Various kinds of predicted error:
+############################################################################
 
 class PredictedError(Exception):
     pass
@@ -1252,16 +1320,7 @@ class State:
             # "less-than"
             check_isinstance(lhs, AbstractValue)
             check_isinstance(rhs, AbstractValue)
-            if isinstance(rhs, ConcreteValue):
-                if isinstance(lhs, ConcreteValue):
-                    log('comparing concrete values: %s %s', lhs, rhs)
-                    return lhs.value < rhs.value
-                if isinstance(lhs, RefcountValue):
-                    log('comparing refcount value %s with concrete value: %s', lhs, rhs)
-                    if lhs.get_min_value() >= rhs.value:
-                        return False
-            # We don't know:
-            return None
+            return lhs.is_lt(rhs)
 
         def is_le(lhs, rhs):
             # "less-than-or-equal"

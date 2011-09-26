@@ -154,6 +154,19 @@ class RefcountValue(AbstractValue):
                 # (Equality is thus not possible for this case)
                 return False
 
+    def impl_is_lt(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+            if self.get_min_value() >= rhs.value:
+                return False
+
+    def impl_is_ge(self, rhs):
+        if isinstance(rhs, ConcreteValue):
+            log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+            if self.get_min_value() >= rhs.value:
+                return True
+
+
 class GenericTpDealloc(AbstractValue):
     """
     A function pointer that points to a "typical" tp_dealloc callback
