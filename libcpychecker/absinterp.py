@@ -79,7 +79,7 @@ class AbstractValue:
         """
         Return a boolean, or None (meaning we don't know)
         """
-        raise NotImplementedError
+        raise NotImplementedError("is_equal for %s" % self)
 
 class UnknownValue(AbstractValue):
     """
@@ -203,6 +203,10 @@ class UninitializedData(AbstractValue):
         else:
             return 'uninitialized data'
 
+    def is_equal(self, rhs):
+        # We don't know:
+        return None
+
 class PredictedError(Exception):
     pass
 
@@ -229,16 +233,18 @@ class PredictedValueError(PredictedError):
         self.value = value
         self.isdefinite = isdefinite
 
-class UninitializedPtrDereference(PredictedValueError):
-    def __init__(self, state, expr, ptr):
+class UsageOfUninitializedData(PredictedValueError):
+    def __init__(self, state, expr, value, desc):
         check_isinstance(state, State)
         check_isinstance(expr, gcc.Tree)
-        check_isinstance(ptr, AbstractValue)
-        PredictedValueError.__init__(self, state, expr, ptr, True)
+        check_isinstance(value, AbstractValue)
+        PredictedValueError.__init__(self, state, expr, value, True)
+        check_isinstance(desc, str)
+        self.desc = desc
 
     def __str__(self):
-        return ('dereferencing uninitialized pointer (%s) at %s'
-                    % (self.expr, self.state.loc.get_stmt().loc))
+        return ('%s: %s at %s'
+                    % (self.desc, self.expr, self.state.loc.get_stmt().loc))
 
 class NullPtrDereference(PredictedValueError):
     def __init__(self, state, expr, ptr, isdefinite):
@@ -964,7 +970,8 @@ class State:
         check_isinstance(ptr, AbstractValue)
 
         if isinstance(ptr, UninitializedData):
-            raise UninitializedPtrDereference(self, expr, ptr)
+            raise UsageOfUninitializedData(self, expr, ptr,
+                                           'dereferencing uninitialized pointer')
 
         if isinstance(ptr, ConcreteValue):
             if ptr.is_null_ptr():
@@ -1146,6 +1153,14 @@ class State:
                     meth = getattr(facet, 'impl_%s' % fnname)
                     # Evaluate the arguments:
                     args = self.eval_stmt_args(stmt)
+
+                    # Check for uninitialized data:
+                    for i, arg in enumerate(args):
+                        if isinstance(arg, UninitializedData):
+                            raise UsageOfUninitializedData(self, stmt.args[i],
+                                                           arg,
+                                                           'passing uninitialized data as argument %i to function' % (i + 1))
+
                     # Call the facet's method:
                     return meth(stmt, *args)
 
@@ -1297,6 +1312,14 @@ class State:
             result = is_le(lhs, rhs)
             if result is not None:
                 return not result
+
+        # Detect usage of uninitialized data:
+        if isinstance(lhs, UninitializedData):
+            raise UsageOfUninitializedData(self, expr_lhs, lhs,
+                                           'comparison against uninitialized data')
+        if isinstance(rhs, UninitializedData):
+            raise UsageOfUninitializedData(self, expr_rhs, rhs,
+                                           'comparison against uninitialized data')
 
         # Specialcasing: comparison of unknown ptr with NULL:
         if (isinstance(expr_lhs, gcc.VarDecl)

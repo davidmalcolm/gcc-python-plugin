@@ -1,0 +1,40 @@
+Trace 0:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'taking True path'
+  error: UsageOfUninitializedData()
+  error: passing uninitialized data as argument 3 to function: gcc.VarDecl('item') at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41
+  PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:29
+
+Trace 1:
+  Transitions:
+    'PyList_New() succeeds'
+    'taking False path'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34)))
+    str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34)) from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:29
+
+Trace 2:
+  Transitions:
+    'PyList_New() fails'
+    'taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=48), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:48
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34
