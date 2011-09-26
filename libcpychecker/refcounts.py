@@ -444,7 +444,7 @@ class CPython(Facet):
                             stmt.loc)
         return newstate
 
-    def mkstate_exception(self, stmt, fnname):
+    def mkstate_exception(self, stmt):
         """Make a new State, giving NULL and some exception"""
         if stmt.lhs:
             value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
@@ -465,11 +465,11 @@ class CPython(Facet):
         Optionally, a name for the new object can be supplied; otherwise
         a sane default will be used.
         """
-        fnname = stmt.fn.operand.name
         if objname is None:
+            fnname = stmt.fn.operand.name
             objname = 'new ref from call to %s' % fnname
         s_success, nonnull = self.mkstate_new_ref(stmt, objname)
-        s_failure = self.mkstate_exception(stmt, fnname)
+        s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def object_ptr_has_global_ob_type(self, v_object_ptr, vardecl_name):
@@ -909,7 +909,7 @@ class CPython(Facet):
         #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
         #    #define Py_InitModule4 Py_InitModule4TraceRefs
         s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
-        s_failure = self.mkstate_exception(stmt, 'Py_InitModule4')
+        s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################

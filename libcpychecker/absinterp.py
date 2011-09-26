@@ -72,6 +72,14 @@ class AbstractValue:
         check_isinstance(state, State)
         check_isinstance(stmt, gcc.GimpleCall)
         returntype = stmt.fn.type.dereference.type
+
+        if str(returntype) == 'struct PyObject *':
+            log('Invocation of function pointer returning PyObject *')
+            # Assume that all such functions either:
+            #   - return a new reference, or
+            #   - return NULL and set an exception (e.g. MemoryError)
+            return state.cpython.make_transitions_for_new_ref_or_fail(stmt,
+                                                                      'new ref from call through function pointer')
         return [state.mktrans_assignment(stmt.lhs,
                                       UnknownValue(returntype, stmt.loc),
                                       'calling %s' % self)]
@@ -1166,10 +1174,14 @@ class State:
         check_isinstance(s_success, State)
         check_isinstance(s_failure, State)
 
-        fnname = stmt.fn.operand.name
+        if hasattr(stmt.fn, 'operand'):
+            fnname = stmt.fn.operand.name
+            return [Transition(self, s_success, '%s() succeeds' % fnname),
+                    Transition(self, s_failure, '%s() fails' % fnname)]
+        else:
+            return [Transition(self, s_success, 'call succeeds'),
+                    Transition(self, s_failure, 'call fails')]
 
-        return [Transition(self, s_success, '%s() succeeds' % fnname),
-                Transition(self, s_failure, '%s() fails' % fnname)]
 
     def eval_stmt_args(self, stmt):
         check_isinstance(stmt, gcc.GimpleCall)
