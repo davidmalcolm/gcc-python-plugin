@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): UninitializedData(gcctype='struct foo', loc=gcc.Location(file='tests/cpychecker/absinterp/result-decl/input.c', line=41))
+    str(): uninitialized data at tests/cpychecker/absinterp/result-decl/input.c:41
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/result-decl/input.c:41

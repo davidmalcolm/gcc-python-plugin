@@ -688,7 +688,7 @@ class State:
         log('eval_lvalue: %r %s', expr, expr)
         if loc:
             check_isinstance(loc, gcc.Location)
-        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
+        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl)):
             region = self.var_region(expr)
             check_isinstance(region, Region)
             return region
@@ -732,7 +732,7 @@ class State:
             return expr
         if isinstance(expr, gcc.IntegerCst):
             return ConcreteValue(expr.type, loc, expr.constant)
-        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
+        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl)):
             region = self.var_region(expr)
             check_isinstance(region, Region)
             value = self.get_store(region, expr.type, loc)
@@ -795,7 +795,7 @@ class State:
         self.value_for_region[dest_region] = value
 
     def var_region(self, var):
-        check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+        check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl))
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
             log('adding region for global var: %r', var)
@@ -1000,6 +1000,12 @@ class State:
             region = RegionOnStack('region for %r' % local, stack)
             self.region_for_var[local] = region
             self.value_for_region[region] = UninitializedData(local.type, fun.start)
+        # Region for the gcc.ResultDecl, if any:
+        if fun.decl.result:
+            result = fun.decl.result
+            region = RegionOnStack('region for %s' % result, stack)
+            self.region_for_var[result] = region
+            self.value_for_region[region] = UninitializedData(result.type, fun.start)
         self.verify()
 
     def mktrans_assignment(self, lhs, rhs, desc):
