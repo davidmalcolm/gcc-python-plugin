@@ -312,6 +312,13 @@ class CPython(Facet):
         v_exception = PointerToRegion(get_PyObjectPtr(), loc, r_exception)
         self.exception_rvalue = v_exception
 
+    def bad_internal_call(self, loc):
+        """
+        Analogous to PyErr_BadInternalCall(), which is a macro to
+        _PyErr_BadInternalCall() at the source file/line location
+        """
+        self.set_exception('PyExc_SystemError', loc)
+
     def object_ctor(self, stmt, typename, typeobjname):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
@@ -1470,6 +1477,80 @@ class CPython(Facet):
         r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
         t_success.dest.value_for_region[r_ob_size] = v_len
         return [t_success, t_failure]
+
+    def impl_PyTuple_SetItem(self, stmt, v_op, v_i, v_newitem):
+        # http://docs.python.org/c-api/tuple.html#PyTuple_SetItem
+        # Implemented in Objects/tupleobject.c
+        fnname = 'PyTuple_SetItem'
+        returntype = stmt.fn.type.dereference.type
+
+        # The CPython implementation uses PyTuple_Check, which uses
+        # Py_TYPE(op), an unchecked read through the ptr:
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+
+        # i is range checked
+        # newitem can safely be NULL
+
+        result = []
+
+        # Check that it's a tuple:
+        if not self.object_ptr_has_global_ob_type(v_op, 'PyTuple_Type'):
+            # FIXME: Py_XDECREF on newitem
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.bad_internal_call(stmt.loc)
+            result.append(Transition(self.state,
+                                     s_failure,
+                                     'PyTuple_SetItem fails (not a tuple)'))
+
+        # Check that refcount is 1 (mutation during initial creation):
+        v_ob_refcnt = self.state.get_value_of_field_by_region(v_op.region,
+                                                              'ob_refcnt')
+        # Because of the way we store RefcountValue instances, we can't
+        # easily prove that the refcount == 1, so only follow this path
+        # if we can prove that refcount != 1
+        eq_one = v_ob_refcnt.is_equal(ConcreteValue.from_int(1))
+        if eq_one is False: # tri-state
+            # FIXME: Py_XDECREF on newitem
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.bad_internal_call(stmt.loc)
+            result.append(Transition(self.state,
+                                     s_failure,
+                                     'PyTuple_SetItem fails (refcount is not 1)'))
+            # It's known that no further outcomes are possible:
+            return result
+
+        # Range check:
+        v_ob_size = self.state.get_value_of_field_by_region(v_op.region,
+                                                            'ob_size')
+
+        lt_zero = v_i.is_lt(ConcreteValue.from_int(0))
+        lt_size = v_i.is_lt(v_ob_size)
+        # The above could be None: signifying that we don't know, and that
+        # False is possible.  Out-of-range is possible if either aren't known
+        # to be non-False:
+        if lt_zero is not False or lt_size is not True:
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.set_exception('PyExc_IndexError', stmt.loc)
+            result.append(Transition(self.state,
+                                     s_failure,
+                                     'PyTuple_SetItem fails (index out of range)'))
+
+        # Within range is only possible if both boundaries are known to not
+        # definitely be wrong:
+        if lt_zero is not True and lt_size is not False:
+            s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+            r_ob_item = s_success.make_field_region(v_op.region, 'ob_item')
+            r_indexed = s_success._array_region(r_ob_item, v_i)
+            # v_olditem = s_success.value_for_region[r_indexed]
+            # FIXME: it does an XDECREF on the olditem
+            s_success.value_for_region[r_indexed] = v_newitem
+
+            result.append(Transition(self.state,
+                                     s_success,
+                                     'PyTuple_SetItem succeeds'))
+
+        return result
+
 
     def impl_PyTuple_Size(self, stmt, v_op):
         # http://docs.python.org/c-api/tuple.html#PyTuple_Size

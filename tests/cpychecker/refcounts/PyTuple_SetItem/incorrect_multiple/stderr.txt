@@ -1,0 +1,26 @@
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c: In function 'handle_SetItem':
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: error: ob_refcnt of PyLongObject is 1 too high
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: due to object being referenced by: PyTupleObject.ob_item[2]
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: but final ob_refcnt is N + 2
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:50:31: note: PyLongObject allocated at:     items[2] = PyLong_FromLong(3000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:33:11: note: when PyTuple_New() succeeds at:     tuple = PyTuple_New(3);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:34:8: note: when taking False path at:     if (!tuple) {
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:39:31: note: reaching:     items[0] = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:39:31: note: when PyLong_FromLong() succeeds at:     items[0] = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:40:8: note: when taking False path at:     if (!items[0]) {
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:44:31: note: reaching:     items[1] = PyLong_FromLong(2000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:44:31: note: when PyLong_FromLong() succeeds at:     items[1] = PyLong_FromLong(2000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:45:8: note: when taking False path at:     if (!items[1]) {
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:50:31: note: reaching:     items[2] = PyLong_FromLong(3000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:50:31: note: when PyLong_FromLong() succeeds at:     items[2] = PyLong_FromLong(3000);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:50:31: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:51:8: note: when taking False path at:     if (!items[2]) {
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:64:20: note: reaching:     PyTuple_SetItem(tuple, 0, items[0]);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:64:20: note: when PyTuple_SetItem succeeds at:     PyTuple_SetItem(tuple, 0, items[0]);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:65:20: note: when PyTuple_SetItem succeeds at:     PyTuple_SetItem(tuple, 1, items[1]);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:66:20: note: when PyTuple_SetItem succeeds at:     PyTuple_SetItem(tuple, 2, items[2]);
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:66:20: note: PyLongObject is now referenced by 1 non-stack value(s): PyTupleObject.ob_item[2]
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:71:5: note: ob_refcnt is now refs: 2 + N where N >= 0
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: when returning
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:24:1: note: graphical error report for function 'handle_SetItem' written out to 'tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c.handle_SetItem-refcount-errors.html'

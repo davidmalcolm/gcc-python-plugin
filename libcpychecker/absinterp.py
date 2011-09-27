@@ -163,6 +163,10 @@ class ConcreteValue(AbstractValue):
         self.loc = loc
         self.value = value
 
+    @classmethod
+    def from_int(self, value):
+        return ConcreteValue(gcc.Type.int(), None, value)
+
     def __ne__(self, other):
         if isinstance(other, ConcreteValue):
             return self.value != other.value
@@ -850,7 +854,9 @@ class State:
     def _array_region(self, parent, index):
         # Used by element_region, and pointer_add_region
         check_isinstance(parent, Region)
-        check_isinstance(index, (int, long, UnknownValue))
+        check_isinstance(index, (int, long, UnknownValue, ConcreteValue))
+        if isinstance(index, ConcreteValue):
+            index = index.value
         if index in parent.fields:
             log('reusing')
             return parent.fields[index]
