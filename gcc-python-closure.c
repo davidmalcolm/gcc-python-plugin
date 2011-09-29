@@ -63,7 +63,7 @@ gcc_python_closure_new(PyObject *callback, PyObject *extraargs, PyObject *kwargs
 }
 
 PyObject *
-gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrapped_gcc_data)
+gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, PyObject *wrapped_gcc_data)
 {
     PyObject *args = NULL;
     PyObject *cfun_obj = NULL;
@@ -76,26 +76,32 @@ gcc_python_closure_make_args(struct callback_closure * closure, PyObject *wrappe
     
     if (wrapped_gcc_data) {
  	/* 
-	   Equivalent to:
+	   Equivalent to either:
 	     args = (gcc_data, cfun, ) + extraargs
+           or:
+	     args = (gcc_data, ) + extraargs
 	 */
-        args = PyTuple_New(2 + PyTuple_Size(closure->extraargs));
+        args = PyTuple_New((add_cfun ? 2 : 1) + PyTuple_Size(closure->extraargs));
 
 	if (!args) {
 	    goto error;
 	}
 
-	cfun_obj = gcc_python_make_wrapper_function(cfun);
-	if (!cfun_obj) {
-	    goto error;
-	}
+        if (add_cfun) {
+            cfun_obj = gcc_python_make_wrapper_function(cfun);
+            if (!cfun_obj) {
+                goto error;
+            }
+        }
 
 	PyTuple_SetItem(args, 0, wrapped_gcc_data);
-	PyTuple_SetItem(args, 1, cfun_obj);
+        if (add_cfun) {
+            PyTuple_SetItem(args, 1, cfun_obj);
+        }
 	Py_INCREF(wrapped_gcc_data);
 	for (i = 0; i < PyTuple_Size(closure->extraargs); i++) {
 	    PyObject *item = PyTuple_GetItem(closure->extraargs, i);
-	    PyTuple_SetItem(args, i + 2, item);
+	    PyTuple_SetItem(args, i + (add_cfun ? 2 : 1), item);
 	    Py_INCREF(item);
 	}
 	

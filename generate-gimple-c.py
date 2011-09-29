@@ -225,6 +225,14 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                           tp_repr = '(reprfunc)gcc_Gimple_repr',
                           tp_str = '(reprfunc)gcc_Gimple_str',
                           )
+    methods = PyMethodTable('gcc_Gimple_methods', [])
+    methods.add_method('walk_tree',
+                       '(PyCFunction)gcc_Gimple_walk_tree',
+                       'METH_VARARGS | METH_KEYWORDS',
+                       "Visit all gcc.Tree nodes associated with this statement")
+    cu.add_defn(methods.c_defn())
+    pytype.tp_methods = methods.identifier
+
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

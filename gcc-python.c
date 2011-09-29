@@ -172,7 +172,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
         input_location = cfun->function_start_locus;
     }
 
-    args = gcc_python_closure_make_args(closure, wrapped_gcc_data);
+    args = gcc_python_closure_make_args(closure, 1, wrapped_gcc_data);
     if (!args) {
         goto cleanup;
     }

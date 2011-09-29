@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
+#include "gcc-python-closure.h"
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
@@ -60,6 +61,83 @@ PyObject *
 gcc_Gimple_str(struct PyGccGimple * self)
 {
     return do_pretty_print(self, 0, 0);
+}
+
+static tree
+gimple_walk_tree_callback(tree *tree_ptr, int *walk_subtrees, void *data)
+{
+    struct walk_stmt_info *wi = (struct walk_stmt_info*)data;
+    struct callback_closure *closure = (struct callback_closure *)wi->info;
+    PyObject *tree_obj = NULL;
+    PyObject *args = NULL;
+    PyObject *result = NULL;
+
+    assert(closure);
+    assert(*tree_ptr);
+    tree_obj = gcc_python_make_wrapper_tree(*tree_ptr);
+    if (!tree_obj) {
+        goto error;
+    }
+
+    args = gcc_python_closure_make_args(closure, 0, tree_obj);
+    if (!args) {
+        goto error;
+    }
+
+    /* Invoke the python callback: */
+    result = PyObject_Call(closure->callback, args, closure->kwargs);
+    if (!result) {
+        goto error;
+    }
+
+    if (PyObject_IsTrue(result)) {
+        Py_DECREF(result);
+        return *tree_ptr;
+    } else {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+ error:
+    /* On an exception, terminate the traversal: */
+    *walk_subtrees = 0;
+    Py_XDECREF(tree_obj);
+    Py_XDECREF(args);
+    Py_XDECREF(result);
+    return NULL;
+}
+
+PyObject *
+gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *callback;
+    PyObject *extraargs = NULL;
+    struct callback_closure *closure;
+    tree result;
+    struct walk_stmt_info wi;
+
+    callback = PyTuple_GetItem(args, 0);
+    extraargs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
+
+    closure = gcc_python_closure_new(callback, extraargs, kwargs);
+    if (!closure) {
+        return NULL;
+    }
+
+    memset(&wi, 0, sizeof(wi));
+    wi.info = closure;
+
+    result = walk_gimple_op (self->stmt,
+                             gimple_walk_tree_callback,
+                             &wi);
+    Py_DECREF(closure);
+
+    /* Propagate exceptions: */
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    return gcc_python_make_wrapper_tree(result);
 }
 
 PyObject *

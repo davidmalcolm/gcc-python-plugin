@@ -68,6 +68,22 @@ TODO
 
       which won't arbitrarily change each time.
 
+   .. py:method:: walk_tree(callback, *args, **kwargs)
+
+      Visit all :py:class:`gcc.Tree` nodes associated with this
+      statement, potentially more than once each.  This will visit both the
+      left-hand-side and right-hand-side operands of the statement (if any),
+      and recursively visit any of their child nodes.
+
+      For each node, the callback is invoked, supplying the node, and any
+      extra positional and keyword arguments passed to `walk_tree`::
+
+         callback(node, *args, **kwargs)
+
+      If the callback returns a true value, the traversal stops, and that
+      `gcc.Tree` is the result of the call to `walk_tree`.  Otherwise, the
+      traversal continues, and `walk_tree` eventually returns `None`.
+
 .. py:class:: gcc.GimpleAssign
 
    Subclass of :py:class:`gcc.Gimple`: an assignment of an expression to an l-value

@@ -1,0 +1,16 @@
+tests/plugin/gimple-walk-tree/exceptions/input.c: In function 'main':
+tests/plugin/gimple-walk-tree/exceptions/input.c:35:1: error: Unhandled Python exception raised calling 'execute' method
+Traceback (most recent call last):
+  File "tests/plugin/gimple-walk-tree/exceptions/script.py", line 30, in execute
+    stmt.walk_tree(self.dump_node, stmt.loc)
+  File "tests/plugin/gimple-walk-tree/exceptions/script.py", line 33, in dump_node
+    raise RuntimeError('this is a test error')
+RuntimeError: this is a test error
+tests/plugin/gimple-walk-tree/exceptions/input.c: In function 'helper_function':
+tests/plugin/gimple-walk-tree/exceptions/input.c:28:1: error: Unhandled Python exception raised calling 'execute' method
+Traceback (most recent call last):
+  File "tests/plugin/gimple-walk-tree/exceptions/script.py", line 30, in execute
+    stmt.walk_tree(self.dump_node, stmt.loc)
+  File "tests/plugin/gimple-walk-tree/exceptions/script.py", line 33, in dump_node
+    raise RuntimeError('this is a test error')
+RuntimeError: this is a test error

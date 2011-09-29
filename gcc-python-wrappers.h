@@ -142,6 +142,9 @@ PyObject *
 gcc_Gimple_str(struct PyGccGimple * self);
 
 PyObject *
+gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs);
+
+PyObject *
 gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure);
 
 PyObject *

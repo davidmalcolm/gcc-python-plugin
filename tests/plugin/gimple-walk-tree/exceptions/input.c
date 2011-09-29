@@ -17,29 +17,39 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PYTHON_CLOSURE_H
-#define INCLUDED__GCC_PYTHON_CLOSURE_H
+/*
+  Trivial example code to be compiled, for testing purposes
+ */
 
-struct callback_closure
+#include <stdio.h>
+
+int
+helper_function(void)
 {
-    PyObject *callback;
-    PyObject *extraargs;
-    PyObject *kwargs;
-};
+    printf("I am a helper function\n");
+    return 42;
+}
 
-struct callback_closure *
-gcc_python_closure_new(PyObject *callback, PyObject *extraargs, PyObject *kwargs);
+int
+main(int argc, char **argv)
+{
+    int i;
 
-PyObject *
-gcc_python_closure_make_args(struct callback_closure * closure,
-                             int add_cfun, PyObject *wrapped_gcc_data);
+    printf("argc: %i\n", argc);
+
+    for (i = 0; i < argc; i++) {
+        printf("argv[%i]: %s\n", argv[i]);
+    }
+
+    helper_function();
+
+    return 0;
+}
 
 /*
-  PEP-7
+  PEP-7  
 Local variables:
 c-basic-offset: 4
 indent-tabs-mode: nil
 End:
 */
-
-#endif /* INCLUDED__GCC_PYTHON_CLOSURE_H */

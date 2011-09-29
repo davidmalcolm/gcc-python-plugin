@@ -1,0 +1,70 @@
+fun: gcc.Function('main')
+  stmt: D.3258 = (const char * restrict) &"argc: %i\n"[0];
+    node: <gcc.AddrExpr object at 0xdeadbeef> (&"argc: %i\n"[0])
+    node: <gcc.ArrayRef object at 0xdeadbeef> ("argc: %i\n"[0])
+    node: gcc.StringCst('argc: %i\n') ("argc: %i\n")
+    node: gcc.IntegerCst(0) (0)
+    node: gcc.VarDecl(3258) (gcc.VarDecl(3258))
+  stmt: printf (D.3258, argc);
+    node: <gcc.AddrExpr object at 0xdeadbeef> (printf)
+    node: gcc.FunctionDecl('printf') (gcc.FunctionDecl('printf'))
+    node: gcc.VarDecl(3258) (gcc.VarDecl(3258))
+    node: gcc.ParmDecl('argc') (gcc.ParmDecl('argc'))
+  stmt: i = 0;
+    node: gcc.IntegerCst(0) (0)
+    node: gcc.VarDecl('i') (gcc.VarDecl('i'))
+  stmt: D.3259 = (long unsigned int) i;
+    node: gcc.VarDecl('i') (gcc.VarDecl('i'))
+    node: gcc.VarDecl(3259) (gcc.VarDecl(3259))
+  stmt: D.3260 = D.3259 * 8;
+    node: gcc.VarDecl(3259) (gcc.VarDecl(3259))
+    node: gcc.IntegerCst(8) (8)
+    node: gcc.VarDecl(3260) (gcc.VarDecl(3260))
+  stmt: D.3261 = argv + D.3260;
+    node: gcc.ParmDecl('argv') (gcc.ParmDecl('argv'))
+    node: gcc.VarDecl(3260) (gcc.VarDecl(3260))
+    node: gcc.VarDecl(3261) (gcc.VarDecl(3261))
+  stmt: D.3262 = *D.3261;
+    node: <gcc.MemRef object at 0xdeadbeef> (*D.3261)
+    node: gcc.VarDecl(3261) (gcc.VarDecl(3261))
+    node: gcc.IntegerCst(0) (0B)
+    node: gcc.VarDecl(3262) (gcc.VarDecl(3262))
+  stmt: D.3263 = (const char * restrict) &"argv[%i]: %s\n"[0];
+    node: <gcc.AddrExpr object at 0xdeadbeef> (&"argv[%i]: %s\n"[0])
+    node: <gcc.ArrayRef object at 0xdeadbeef> ("argv[%i]: %s\n"[0])
+    node: gcc.StringCst('argv[%i]: %s\n') ("argv[%i]: %s\n")
+    node: gcc.IntegerCst(0) (0)
+    node: gcc.VarDecl(3263) (gcc.VarDecl(3263))
+  stmt: printf (D.3263, D.3262);
+    node: <gcc.AddrExpr object at 0xdeadbeef> (printf)
+    node: gcc.FunctionDecl('printf') (gcc.FunctionDecl('printf'))
+    node: gcc.VarDecl(3263) (gcc.VarDecl(3263))
+    node: gcc.VarDecl(3262) (gcc.VarDecl(3262))
+  stmt: i = i + 1;
+    node: gcc.VarDecl('i') (gcc.VarDecl('i'))
+    node: gcc.IntegerCst(1) (1)
+    node: gcc.VarDecl('i') (gcc.VarDecl('i'))
+  stmt: if (i < argc)
+    node: gcc.VarDecl('i') (gcc.VarDecl('i'))
+    node: gcc.ParmDecl('argc') (gcc.ParmDecl('argc'))
+  stmt: helper_function ();
+    node: <gcc.AddrExpr object at 0xdeadbeef> (helper_function)
+    node: gcc.FunctionDecl('helper_function') (gcc.FunctionDecl('helper_function'))
+  stmt: D.3264 = 0;
+    node: gcc.IntegerCst(0) (0)
+    node: gcc.VarDecl(3264) (gcc.VarDecl(3264))
+  stmt: return D.3264;
+    node: gcc.VarDecl(3264) (gcc.VarDecl(3264))
+fun: gcc.Function('helper_function')
+  stmt: __builtin_puts (&"I am a helper function"[0]);
+    node: <gcc.AddrExpr object at 0xdeadbeef> (__builtin_puts)
+    node: gcc.FunctionDecl('__builtin_puts') (gcc.FunctionDecl('__builtin_puts'))
+    node: <gcc.AddrExpr object at 0xdeadbeef> (&"I am a helper function"[0])
+    node: <gcc.ArrayRef object at 0xdeadbeef> ("I am a helper function"[0])
+    node: gcc.StringCst('I am a helper function') ("I am a helper function")
+    node: gcc.IntegerCst(0) (0)
+  stmt: D.3266 = 42;
+    node: gcc.IntegerCst(42) (42)
+    node: gcc.VarDecl(3266) (gcc.VarDecl(3266))
+  stmt: return D.3266;
+    node: gcc.VarDecl(3266) (gcc.VarDecl(3266))
