@@ -66,7 +66,7 @@ The Python code for this is:
 Given this sample C source file:
 
   .. literalinclude:: ../tests/examples/spelling-checker/input.c
-    :lines: 19-26
+    :lines: 19-29
     :language: c
 
 these warnings are emitted on stderr:
