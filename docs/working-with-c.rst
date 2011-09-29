@@ -65,7 +65,7 @@ The Python code for this is:
 
 Given this sample C source file:
 
-  .. literalinclude:: ../tests/examples/hello-world/input.c
+  .. literalinclude:: ../tests/examples/spelling-checker/input.c
     :lines: 19-26
     :language: c
 
