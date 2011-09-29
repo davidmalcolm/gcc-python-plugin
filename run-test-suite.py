@@ -189,6 +189,11 @@ def run_test(testdir):
         # don't treat the stderr output as leading to an expected failure:
         expsuccess = True
 
+    if testdir == 'tests/examples/spelling-checker':
+        # This test case emits warnings on stderr;
+        # don't treat the stderr output as leading to an expected failure:
+        expsuccess = True
+
     # Check exit code:
     if expsuccess:
         # Expect a successful exit:

@@ -1,0 +1,13 @@
+tests/examples/spelling-checker/input.c: In function 'main':
+tests/examples/spelling-checker/input.c:24:48: warning: Possibly misspelt word in string constant: 'korectly' [-Wall]
+tests/examples/spelling-checker/input.c:24:48: note: Suggested respellings: 'correctly'
+tests/examples/spelling-checker/input.c:24:48: warning: Possibly misspelt word in string constant: 'speled' [-Wall]
+tests/examples/spelling-checker/input.c:24:48: note: Suggested respellings: 'speed, spieled, spelled, spewed, speckled, peeled, sped'
+tests/examples/spelling-checker/input.c:28:11: warning: Possibly misspelt word in string constant: 'Ths' [-Wall]
+tests/examples/spelling-checker/input.c:28:11: note: Suggested respellings: "Th, Th's, Ohs, Thu, TVs, T's, Th s, Ts, This, Thus, The, Tho, Tbs, Thy, Goths"
+tests/examples/spelling-checker/input.c:28:11: warning: Possibly misspelt word in string constant: 'xmple' [-Wall]
+tests/examples/spelling-checker/input.c:28:11: note: Suggested respellings: 'ample'
+tests/examples/spelling-checker/input.c:28:11: warning: Possibly misspelt word in string constant: 'spllng' [-Wall]
+tests/examples/spelling-checker/input.c:28:11: note: Suggested respellings: 'spelling'
+tests/examples/spelling-checker/input.c:28:11: warning: Possibly misspelt word in string constant: 'mstke' [-Wall]
+tests/examples/spelling-checker/input.c:28:11: note: Suggested respellings: 'mistake'
