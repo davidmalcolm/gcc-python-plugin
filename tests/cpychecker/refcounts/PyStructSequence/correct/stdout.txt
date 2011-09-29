@@ -1,9 +1,9 @@
 Trace 0:
   Transitions:
-    'PyStructSequence_New() succeeds'
+    'when PyStructSequence_New() succeeds'
     'taking False path'
-    'PyInt_FromLong() succeeds'
-    'PyInt_FromLong() succeeds'
+    'when PyInt_FromLong() succeeds'
+    'when PyInt_FromLong() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyStructSequence/correct/input.c', line=50), region=RegionOnHeap('PyStructSequence_New', gcc.Location(file='tests/cpychecker/refcounts/PyStructSequence/correct/input.c', line=50)))
@@ -35,7 +35,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyStructSequence_New() fails'
+    'when PyStructSequence_New() fails'
     'taking True path'
     'returning'
   Return value:

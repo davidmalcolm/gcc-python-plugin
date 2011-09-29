@@ -7,7 +7,7 @@ tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: PyLongObject all
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() succeeds at:     tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: ob_refcnt is now refs: 1 + N where N >= 0
 tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: when returning at:     return tmp;
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: returning at:     return tmp;
 tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: error: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30
 tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() fails at:     tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/too_many_increfs/input.c:24:1: note: graphical error report for function 'too_many_increfs' written out to 'tests/cpychecker/refcounts/too_many_increfs/input.c.too_many_increfs-refcount-errors.html'

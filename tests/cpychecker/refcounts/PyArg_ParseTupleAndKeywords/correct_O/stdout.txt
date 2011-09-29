@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyArg_ParseTupleAndKeywords() succeeds'
+    'when PyArg_ParseTupleAndKeywords() succeeds'
     'taking False path'
     'returning'
   Return value:
@@ -28,7 +28,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyArg_ParseTupleAndKeywords() fails'
+    'when PyArg_ParseTupleAndKeywords() fails'
     'taking True path'
     'returning'
   Return value:

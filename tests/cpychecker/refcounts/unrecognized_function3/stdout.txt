@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'foo() succeeds'
+    'when foo() succeeds'
     'returning'
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'foo() fails'
+    'when foo() fails'
     'returning'
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")

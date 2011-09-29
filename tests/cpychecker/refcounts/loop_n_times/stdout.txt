@@ -1,13 +1,13 @@
 Trace 0:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyList_New() succeeds'
+    'when PyList_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking False path'
-    'taking True path'
+    'when taking False path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=38)))
@@ -34,14 +34,14 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyList_New() succeeds'
+    'when PyList_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking False path'
-    'taking False path'
+    'when taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:42'
     'returning'
   Return value:
@@ -69,13 +69,13 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyList_New() succeeds'
+    'when PyList_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loop_n_times/input.c', line=45), value=0)
@@ -100,13 +100,13 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyList_New() succeeds'
+    'when PyList_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/loop_n_times/input.c:38'
     'returning'
   Return value:
@@ -132,9 +132,9 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyList_New() fails'
+    'when PyList_New() fails'
     'taking True path'
     'returning'
   Return value:
@@ -155,7 +155,7 @@ Trace 4:
 
 Trace 5:
   Transitions:
-    'PyArg_ParseTuple() fails'
+    'when PyArg_ParseTuple() fails'
     'taking True path'
     'returning'
   Return value:

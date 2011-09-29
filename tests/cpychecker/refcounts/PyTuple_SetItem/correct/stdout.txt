@@ -1,10 +1,10 @@
 Trace 0:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyTuple_SetItem succeeds'
+    'when PyTuple_SetItem succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct/input.c', line=27), region=RegionOnHeap('PyTupleObject', gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct/input.c', line=27)))
@@ -31,11 +31,11 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct/input.c', line=35), value=0)
@@ -60,11 +60,11 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct/input.c:27'
     'returning'
   Return value:
@@ -90,7 +90,7 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyTuple_New() fails'
+    'when PyTuple_New() fails'
     'taking True path'
     'returning'
   Return value:

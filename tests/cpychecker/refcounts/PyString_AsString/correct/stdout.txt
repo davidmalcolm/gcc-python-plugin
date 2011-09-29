@@ -1,10 +1,10 @@
 Trace 0:
   Transitions:
-    'PyObject_Repr() succeeds'
+    'when PyObject_Repr() succeeds'
     'taking False path'
     'PyString_AsString() returns ob_sval'
-    'PyString_FromFormat() succeeds'
-    'taking True path'
+    'when PyString_FromFormat() succeeds'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/correct/input.c', line=36), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/correct/input.c', line=36)))
@@ -31,11 +31,11 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyObject_Repr() succeeds'
+    'when PyObject_Repr() succeeds'
     'taking False path'
     'PyString_AsString() returns ob_sval'
-    'PyString_FromFormat() succeeds'
-    'taking False path'
+    'when PyString_FromFormat() succeeds'
+    'when taking False path'
     'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/PyString_AsString/correct/input.c:31'
     'returning'
   Return value:
@@ -63,11 +63,11 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyObject_Repr() succeeds'
+    'when PyObject_Repr() succeeds'
     'taking False path'
     'PyString_AsString() returns ob_sval'
-    'PyString_FromFormat() fails'
-    'taking True path'
+    'when PyString_FromFormat() fails'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/correct/input.c', line=36), value=0)
@@ -92,11 +92,11 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyObject_Repr() succeeds'
+    'when PyObject_Repr() succeeds'
     'taking False path'
     'PyString_AsString() returns ob_sval'
-    'PyString_FromFormat() fails'
-    'taking False path'
+    'when PyString_FromFormat() fails'
+    'when taking False path'
     'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/PyString_AsString/correct/input.c:31'
     'returning'
   Return value:
@@ -122,7 +122,7 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'PyObject_Repr() fails'
+    'when PyObject_Repr() fails'
     'taking True path'
     'returning'
   Return value:

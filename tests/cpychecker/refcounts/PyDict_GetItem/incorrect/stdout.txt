@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyDict_GetItem() succeeds'
+    'when PyDict_GetItem() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), region=RegionOnHeap('result from PyDict_GetItem', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35)))
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyDict_GetItem does not find item'
+    'when PyDict_GetItem does not find item'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), value=0)

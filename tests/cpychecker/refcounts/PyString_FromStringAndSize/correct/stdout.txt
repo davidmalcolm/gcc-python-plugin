@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyString_FromStringAndSize() succeeds'
+    'when PyString_FromStringAndSize() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_FromStringAndSize/correct/input.c', line=29), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_FromStringAndSize/correct/input.c', line=29)))
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyString_FromStringAndSize() fails'
+    'when PyString_FromStringAndSize() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_FromStringAndSize/correct/input.c', line=29), value=0)

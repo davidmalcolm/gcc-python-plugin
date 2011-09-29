@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
     'returning'
   Return value:
@@ -23,7 +23,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyDict_New() fails'
+    'when PyDict_New() fails'
     'taking True path'
     'returning'
   Return value:

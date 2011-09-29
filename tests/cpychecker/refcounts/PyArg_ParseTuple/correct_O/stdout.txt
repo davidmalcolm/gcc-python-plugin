@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
     'returning'
   Return value:
@@ -23,7 +23,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyArg_ParseTuple() fails'
+    'when PyArg_ParseTuple() fails'
     'taking True path'
     'returning'
   Return value:

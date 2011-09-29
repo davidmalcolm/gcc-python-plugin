@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=28), region=RegionForStringConstant('Hello'))
@@ -12,7 +12,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'taking False path'
+    'when taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[8] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=30), region=RegionForStringConstant('Goodbye'))

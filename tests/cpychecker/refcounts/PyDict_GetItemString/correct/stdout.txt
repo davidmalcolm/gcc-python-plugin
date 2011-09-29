@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyDict_GetItemString() succeeds'
+    'when PyDict_GetItemString() succeeds'
     'taking True path'
     'returning'
   Return value:

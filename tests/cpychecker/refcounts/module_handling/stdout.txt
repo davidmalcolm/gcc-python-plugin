@@ -1,15 +1,15 @@
 Trace 0:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -26,16 +26,16 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -52,16 +52,16 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -78,16 +78,16 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -104,16 +104,16 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -130,16 +130,16 @@ Trace 4:
 
 Trace 5:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -156,16 +156,16 @@ Trace 5:
 
 Trace 6:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -182,16 +182,16 @@ Trace 6:
 
 Trace 7:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -208,16 +208,16 @@ Trace 7:
 
 Trace 8:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -234,16 +234,16 @@ Trace 8:
 
 Trace 9:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -260,16 +260,16 @@ Trace 9:
 
 Trace 10:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -286,16 +286,16 @@ Trace 10:
 
 Trace 11:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -312,16 +312,16 @@ Trace 11:
 
 Trace 12:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -338,16 +338,16 @@ Trace 12:
 
 Trace 13:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() succeeds'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() succeeds'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -364,16 +364,16 @@ Trace 13:
 
 Trace 14:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() succeeds'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() succeeds'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -390,16 +390,16 @@ Trace 14:
 
 Trace 15:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() succeeds'
+    'when PyModule_AddObject() succeeds'
     'taking False path'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
-    'PyModule_AddIntConstant() fails'
-    'PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
+    'when PyModule_AddIntConstant() fails'
+    'when PyModule_AddStringConstant() fails'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -416,13 +416,13 @@ Trace 15:
 
 Trace 16:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() fails'
+    'when PyModule_AddObject() fails'
     'taking True path'
-    'taking True path'
+    'when taking True path'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
     repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
@@ -439,13 +439,13 @@ Trace 16:
 
 Trace 17:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyModule_AddObject() fails'
+    'when PyModule_AddObject() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
@@ -463,9 +463,9 @@ Trace 17:
 
 Trace 18:
   Transitions:
-    'Py_InitModule4_64() succeeds'
+    'when Py_InitModule4_64() succeeds'
     'taking False path'
-    'PyDict_New() fails'
+    'when PyDict_New() fails'
     'taking True path'
     'returning'
   output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
@@ -478,7 +478,7 @@ Trace 18:
 
 Trace 19:
   Transitions:
-    'Py_InitModule4_64() fails'
+    'when Py_InitModule4_64() fails'
     'taking True path'
     'returning'
   Exception:

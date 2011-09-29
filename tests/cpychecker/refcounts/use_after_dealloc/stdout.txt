@@ -1,8 +1,8 @@
 Trace 0:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/use_after_dealloc/input.c', line=30), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/use_after_dealloc/input.c', line=30)))
@@ -24,9 +24,9 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/use_after_dealloc/input.c:30'
   error: ReadFromDeallocatedMemory()
   error: reading from deallocated memory at tests/cpychecker/refcounts/use_after_dealloc/input.c:42: memory deallocated at tests/cpychecker/refcounts/use_after_dealloc/input.c:41
@@ -50,7 +50,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
     'returning'
   Return value:

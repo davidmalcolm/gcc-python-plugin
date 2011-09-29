@@ -1,9 +1,9 @@
 Trace 0:
   Transitions:
-    "treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45"
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
     'taking False path'
-    "treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as (const char *)&Region('heap-region-1')"
-    'taking False path'
+    'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as non-NULL'
+    'when taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=45), region=Region('heap-region-0'))
@@ -15,9 +15,9 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    "treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45"
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
     'taking False path'
-    'treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as (const char *)0'
+    'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as NULL'
   error: NullPtrDereference()
   error: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50
   Exception:
@@ -25,7 +25,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as (void *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:45'
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as NULL'
     'taking True path'
     'returning'
   Return value:

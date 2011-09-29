@@ -1,13 +1,13 @@
 Trace 0:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() succeeds'
     'taking False path'
-    'taking True path'
-    'taking True path'
+    'when taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=33)))
@@ -39,14 +39,14 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() succeeds'
     'taking False path'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -79,15 +79,15 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=33)))
@@ -119,15 +119,15 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -160,18 +160,18 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=63), value=0)
@@ -206,18 +206,18 @@ Trace 4:
 
 Trace 5:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -253,19 +253,19 @@ Trace 5:
 
 Trace 6:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=63), value=0)
@@ -300,19 +300,19 @@ Trace 6:
 
 Trace 7:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -348,19 +348,19 @@ Trace 7:
 
 Trace 8:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=63), value=0)
@@ -395,19 +395,19 @@ Trace 8:
 
 Trace 9:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -443,20 +443,20 @@ Trace 9:
 
 Trace 10:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c', line=63), value=0)
@@ -491,20 +491,20 @@ Trace 10:
 
 Trace 11:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() succeeds'
-    'PyDict_SetItem() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
+    'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39'
     'returning'
   Return value:
@@ -540,10 +540,10 @@ Trace 11:
 
 Trace 12:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() fails'
   error: NullPtrArgument()
   error: calling PyDict_SetItem with NULL (gcc.VarDecl('value')) as argument 2 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
@@ -571,10 +571,10 @@ Trace 12:
 
 Trace 13:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() fails'
+    'when PyLong_FromLong() succeeds'
   error: NullPtrArgument()
   error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 1 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
@@ -602,10 +602,10 @@ Trace 13:
 
 Trace 14:
   Transitions:
-    'PyDict_New() succeeds'
+    'when PyDict_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
   error: NullPtrArgument()
   error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 1 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
@@ -628,7 +628,7 @@ Trace 14:
 
 Trace 15:
   Transitions:
-    'PyDict_New() fails'
+    'when PyDict_New() fails'
     'taking True path'
     'taking True path'
     'taking True path'

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyList_New() succeeds'
+    'when PyList_New() succeeds'
     'taking False path'
     'taking False path'
     'taking True path'
@@ -25,7 +25,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyList_New() fails'
+    'when PyList_New() fails'
     'taking True path'
     'returning'
   Return value:

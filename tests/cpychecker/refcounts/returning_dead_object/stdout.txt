@@ -1,8 +1,8 @@
 Trace 0:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/returning_dead_object/input.c', line=29)))
@@ -24,9 +24,9 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/returning_dead_object/input.c:29'
     'returning'
   Return value:
@@ -49,7 +49,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
     'returning'
   Return value:

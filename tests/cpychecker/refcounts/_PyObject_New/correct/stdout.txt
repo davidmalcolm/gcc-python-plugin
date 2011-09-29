@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    '_PyObject_New() succeeds'
+    'when _PyObject_New() succeeds'
     'taking False path'
     'returning'
   Return value:
@@ -23,7 +23,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    '_PyObject_New() fails'
+    'when _PyObject_New() fails'
     'taking True path'
     'returning'
   Return value:

@@ -1,8 +1,8 @@
 Trace 0:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyString_FromString() succeeds'
+    'when PyString_FromString() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=52), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=52)))
@@ -24,9 +24,9 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyArg_ParseTuple() succeeds'
+    'when PyArg_ParseTuple() succeeds'
     'taking False path'
-    'PyString_FromString() fails'
+    'when PyString_FromString() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=52), value=0)
@@ -46,7 +46,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyArg_ParseTuple() fails'
+    'when PyArg_ParseTuple() fails'
     'taking True path'
     'returning'
   Return value:

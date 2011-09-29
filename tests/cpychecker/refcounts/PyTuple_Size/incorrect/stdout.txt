@@ -1,7 +1,7 @@
 Trace 0:
   Transitions:
-    'PyDict_New() succeeds'
-    'PyTuple_Size() returns ob_size'
+    'when PyDict_New() succeeds'
+    'when PyTuple_Size() returns ob_size'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c', line=30), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c', line=30)))
@@ -23,8 +23,8 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyDict_New() succeeds'
-    'PyTuple_Size() fails (not a tuple)'
+    'when PyDict_New() succeeds'
+    'when PyTuple_Size() fails (not a tuple)'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c', line=30), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c', line=30)))
@@ -46,7 +46,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyDict_New() fails'
+    'when PyDict_New() fails'
   error: NullPtrArgument()
   error: calling PyTuple_Size with NULL (gcc.VarDecl('dict')) as argument 0 at tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:37
   Region("region-for-arg-gcc.ParmDecl('self')"):

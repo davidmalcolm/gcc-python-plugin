@@ -1,9 +1,9 @@
 Trace 0:
   Transitions:
-    'foo() succeeds'
+    'when foo() succeeds'
     'taking False path'
-    'taking True path'
-    'foo() succeeds'
+    'when taking True path'
+    'when foo() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43), region=RegionOnHeap('new ref from (unknown) foo', gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43)))
@@ -30,10 +30,10 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'foo() succeeds'
+    'when foo() succeeds'
     'taking False path'
-    'taking True path'
-    'foo() fails'
+    'when taking True path'
+    'when foo() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43), value=0)
@@ -58,11 +58,11 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'foo() succeeds'
+    'when foo() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on new ref from (unknown) foo allocated at tests/cpychecker/refcounts/unrecognized_function2/input.c:34'
-    'foo() succeeds'
+    'when foo() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43), region=RegionOnHeap('new ref from (unknown) foo', gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43)))
@@ -89,11 +89,11 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'foo() succeeds'
+    'when foo() succeeds'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on new ref from (unknown) foo allocated at tests/cpychecker/refcounts/unrecognized_function2/input.c:34'
-    'foo() fails'
+    'when foo() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/unrecognized_function2/input.c', line=43), value=0)
@@ -118,7 +118,7 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'foo() fails'
+    'when foo() fails'
     'taking True path'
     'returning'
   Return value:

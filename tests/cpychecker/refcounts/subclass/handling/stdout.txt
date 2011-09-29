@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyString_FromFormat() succeeds'
+    'when PyString_FromFormat() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39)))
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyString_FromFormat() fails'
+    'when PyString_FromFormat() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/subclass/handling/input.c', line=39), value=0)

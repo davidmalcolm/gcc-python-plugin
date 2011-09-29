@@ -349,11 +349,11 @@ class CPython(Facet):
         s_success, nonnull = self.mkstate_new_ref(stmt, typename, typeobjregion)
         t_success = Transition(self.state,
                                s_success,
-                               '%s() succeeds' % fnname)
+                               'when %s() succeeds' % fnname)
         # The "failure" case:
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(returntype, stmt.loc, 0),
-                                       '%s() fails' % fnname)
+                                       'when %s() fails' % fnname)
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return (nonnull, t_success, t_failure)
 
@@ -669,7 +669,8 @@ class CPython(Facet):
         # booleans
         # v_ok = self.state.eval_stmt_args(stmt)[0]
         s_success, r_nonnull = self.mkstate_new_ref(stmt, 'PyBool_FromLong')
-        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'returns')]
+        return [self.state.mktrans_from_fncall_state(stmt, s_success,
+                                                     'returns', False)]
 
     ########################################################################
     # PyDict_*
@@ -684,8 +685,9 @@ class CPython(Facet):
         s_success = self.mkstate_borrowed_ref(stmt, 'result from PyDict_GetItem')
         t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
-                                             'PyDict_GetItem does not find item')
-        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+                                             'when PyDict_GetItem does not find item')
+        return [self.state.mktrans_from_fncall_state(stmt, s_success,
+                                                     'succeeds', True),
                 t_notfound]
 
     def impl_PyDict_GetItemString(self, stmt, v_dp, v_key):
@@ -703,7 +705,8 @@ class CPython(Facet):
             t_memoryexc = self.state.mktrans_assignment(stmt.lhs,
                                                   make_null_pyobject_ptr(stmt),
                                                   'OOM allocating string') # FIXME: set exception
-        return [self.state.mktrans_from_fncall_state(stmt, s_success, 'succeeds'),
+        return [self.state.mktrans_from_fncall_state(stmt, s_success,
+                                                     'succeeds', True),
                 t_notfound]
                 #t_memoryexc]
 
@@ -1161,10 +1164,10 @@ class CPython(Facet):
         # FIXME: it hasn't been initialized
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_nonnull,
-                                            '%s() succeeds' % fnname)
+                                            'when %s() succeeds' % fnname)
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
-                                            '%s() fails' % fnname)
+                                            'when %s() fails' % fnname)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1231,8 +1234,8 @@ class CPython(Facet):
         s_true = self.state.mkstate_concrete_return_of(stmt, 1)
         s_false = self.state.mkstate_concrete_return_of(stmt, 0)
 
-        return [Transition(self.state, s_true, '%s() returns 1 (true)' % fnname),
-                Transition(self.state, s_false, '%s() returns 0 (false)' % fnname)]
+        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnname),
+                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnname)]
 
     def impl_PyObject_IsTrue(self, stmt, v_o):
         #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
@@ -1242,9 +1245,9 @@ class CPython(Facet):
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
 
         fnname = stmt.fn.operand.name
-        return [Transition(self.state, s_true, '%s() returns 1 (true)' % fnname),
-                Transition(self.state, s_false, '%s() returns 0 (false)' % fnname),
-                Transition(self.state, s_failure, '%s() returns -1 (failure)' % fnname)]
+        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnname),
+                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnname),
+                Transition(self.state, s_failure, 'when %s() returns -1 (failure)' % fnname)]
 
     def impl__PyObject_New(self, stmt, v_typeptr):
         # Declaration in objimpl.h:
@@ -1267,11 +1270,11 @@ class CPython(Facet):
         s_success.value_for_region[ob_type] = v_typeptr
         t_success = Transition(self.state,
                              s_success,
-                             '_PyObject_New() succeeds')
+                             'when _PyObject_New() succeeds')
         # Failure case:
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
-                                       '_PyObject_New() fails')
+                                       'when _PyObject_New() fails')
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
@@ -1350,10 +1353,10 @@ class CPython(Facet):
         v_success = PointerToRegion(returntype, stmt.loc, r_nonnull)
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_success,
-                                            'PyString_AsString() succeeds')
+                                            'when PyString_AsString() succeeds')
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
-                                            'PyString_AsString() fails')
+                                            'when PyString_AsString() fails')
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
@@ -1431,11 +1434,11 @@ class CPython(Facet):
         s_success.value_for_region[ob_type] = v_typeptr
         t_success = Transition(self.state,
                              s_success,
-                             'PyStructSequence_New() succeeds')
+                             'when PyStructSequence_New() succeeds')
         # Failure case:
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                        ConcreteValue(stmt.lhs.type, stmt.loc, 0),
-                                       'PyStructSequence_New() fails')
+                                       'when PyStructSequence_New() fails')
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
@@ -1455,12 +1458,12 @@ class CPython(Facet):
         returntype = stmt.fn.type.dereference.type
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
-                                            '%s() succeeds' % fnname)
+                                            'when %s() succeeds' % fnname)
         if isinstance(v_value, PointerToRegion):
             t_success.dest.cpython.add_external_ref(v_value, stmt.loc)
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
-                                            '%s() fails' % fnname)
+                                            'when %s() fails' % fnname)
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
@@ -1500,7 +1503,7 @@ class CPython(Facet):
             s_failure.cpython.bad_internal_call(stmt.loc)
             result.append(Transition(self.state,
                                      s_failure,
-                                     'PyTuple_SetItem fails (not a tuple)'))
+                                     'when PyTuple_SetItem fails (not a tuple)'))
 
         # Check that refcount is 1 (mutation during initial creation):
         v_ob_refcnt = self.state.get_value_of_field_by_region(v_op.region,
@@ -1515,7 +1518,7 @@ class CPython(Facet):
             s_failure.cpython.bad_internal_call(stmt.loc)
             result.append(Transition(self.state,
                                      s_failure,
-                                     'PyTuple_SetItem fails (refcount is not 1)'))
+                                     'when PyTuple_SetItem fails (refcount is not 1)'))
             # It's known that no further outcomes are possible:
             return result
 
@@ -1533,7 +1536,7 @@ class CPython(Facet):
             s_failure.cpython.set_exception('PyExc_IndexError', stmt.loc)
             result.append(Transition(self.state,
                                      s_failure,
-                                     'PyTuple_SetItem fails (index out of range)'))
+                                     'when PyTuple_SetItem fails (index out of range)'))
 
         # Within range is only possible if both boundaries are known to not
         # definitely be wrong:
@@ -1547,7 +1550,7 @@ class CPython(Facet):
 
             result.append(Transition(self.state,
                                      s_success,
-                                     'PyTuple_SetItem succeeds'))
+                                     'when PyTuple_SetItem succeeds'))
 
         return result
 
@@ -1567,7 +1570,7 @@ class CPython(Facet):
                                                       'ob_size')
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_ob_size,
-                                            'PyTuple_Size() returns ob_size')
+                                            'when PyTuple_Size() returns ob_size')
 
         if self.object_ptr_has_global_ob_type(v_op, 'PyTuple_Type'):
             # We know it's a PyTupleObject; the call will succeed:
@@ -1580,7 +1583,7 @@ class CPython(Facet):
         s_failure.cpython.set_exception('PyExc_SystemError', stmt.loc)
         t_failure = Transition(self.state,
                                s_failure,
-                               '%s() fails (not a tuple)' % fnname)
+                               'when %s() fails (not a tuple)' % fnname)
         return [t_success, t_failure]
 
     ########################################################################

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as (struct coord *)&Region('heap-region-0') from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:35"
+    'when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as non-NULL'
     'taking True path'
     'returning'
   Return value:
@@ -11,7 +11,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as (struct coord *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:35'
+    'when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:31 as NULL'
     'taking False path'
     'returning'
   Return value:

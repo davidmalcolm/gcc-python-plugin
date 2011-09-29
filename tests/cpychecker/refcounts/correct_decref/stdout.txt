@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
     'taking True path'
     'returning'
@@ -24,7 +24,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
     'returning'
   Return value:

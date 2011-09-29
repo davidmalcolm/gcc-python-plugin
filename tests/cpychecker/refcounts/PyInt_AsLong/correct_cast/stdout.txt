@@ -1,7 +1,7 @@
 Trace 0:
   Transitions:
     'PyInt_AsLong() succeeds'
-    'taking True path'
+    'when taking True path'
     'PyErr_Occurred()'
     'taking False path'
     '__dump(unknown long int from tests/cpychecker/refcounts/PyInt_AsLong/correct_cast/input.c:34)'
@@ -27,7 +27,7 @@ Trace 0:
 Trace 1:
   Transitions:
     'PyInt_AsLong() succeeds'
-    'taking False path'
+    'when taking False path'
     '__dump(unknown long int from tests/cpychecker/refcounts/PyInt_AsLong/correct_cast/input.c:34)'
     'returning'
   Return value:

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    "treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)&Region('heap-region-0')"
+    'when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as non-NULL'
     'returning'
   Return value:
     repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c', line=35))
@@ -10,7 +10,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as (struct coord *)0'
+    'when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as NULL'
   error: NullPtrDereference()
   error: possibly dereferencing NULL (coord_ptr.0->x) at tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35
   Exception:

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyInt_FromLong() succeeds'
+    'when PyInt_FromLong() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyInt_FromLong/correct_large_int/input.c', line=34), region=RegionOnHeap('PyIntObject', gcc.Location(file='tests/cpychecker/refcounts/PyInt_FromLong/correct_large_int/input.c', line=34)))
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyInt_FromLong() fails'
+    'when PyInt_FromLong() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyInt_FromLong/correct_large_int/input.c', line=34), value=0)

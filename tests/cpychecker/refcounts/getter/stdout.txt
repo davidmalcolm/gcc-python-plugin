@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'make_wrapper() succeeds'
+    'when make_wrapper() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42), region=RegionOnHeap('new ref from (unknown) make_wrapper', gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42)))
@@ -17,7 +17,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'make_wrapper() fails'
+    'when make_wrapper() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/getter/input.c', line=42), value=0)

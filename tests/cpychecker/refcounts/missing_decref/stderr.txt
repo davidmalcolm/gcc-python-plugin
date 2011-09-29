@@ -5,10 +5,10 @@ tests/cpychecker/refcounts/missing_decref/input.c:38:1: note: but final ob_refcn
 tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: PyListObject allocated at:     list = PyList_New(1);
 tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: when PyList_New() succeeds at:     list = PyList_New(1);
 tests/cpychecker/refcounts/missing_decref/input.c:27:10: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/missing_decref/input.c:28:8: note: when taking False path at:     if (!list)
+tests/cpychecker/refcounts/missing_decref/input.c:28:8: note: taking False path at:     if (!list)
 tests/cpychecker/refcounts/missing_decref/input.c:30:10: note: reaching:     item = PyLong_FromLong(42);
 tests/cpychecker/refcounts/missing_decref/input.c:30:10: note: when PyLong_FromLong() fails at:     item = PyLong_FromLong(42);
-tests/cpychecker/refcounts/missing_decref/input.c:33:8: note: when taking True path at:     if (!item)
+tests/cpychecker/refcounts/missing_decref/input.c:33:8: note: taking True path at:     if (!item)
 tests/cpychecker/refcounts/missing_decref/input.c:34:9: note: reaching:         return NULL;
-tests/cpychecker/refcounts/missing_decref/input.c:38:1: note: when returning
+tests/cpychecker/refcounts/missing_decref/input.c:38:1: note: returning
 tests/cpychecker/refcounts/missing_decref/input.c:24:1: note: graphical error report for function 'missing_decref' written out to 'tests/cpychecker/refcounts/missing_decref/input.c.missing_decref-refcount-errors.html'

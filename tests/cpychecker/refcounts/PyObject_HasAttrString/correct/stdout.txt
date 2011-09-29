@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyObject_HasAttrString() returns 1 (true)'
+    'when PyObject_HasAttrString() returns 1 (true)'
     'PyBool_FromLong() returns'
     'returning'
   Return value:
@@ -23,7 +23,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyObject_HasAttrString() returns 0 (false)'
+    'when PyObject_HasAttrString() returns 0 (false)'
     'PyBool_FromLong() returns'
     'returning'
   Return value:

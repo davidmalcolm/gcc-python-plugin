@@ -1,8 +1,8 @@
 Trace 0:
   Transitions:
-    "treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:48"
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as non-NULL'
     'taking False path'
-    'taking False path'
+    'when taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup-with-attr/input.c', line=48), region=Region('heap-region-0'))
@@ -14,7 +14,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as (void *)0 from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:48'
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as NULL'
     'taking True path'
     'returning'
   Return value:

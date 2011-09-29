@@ -1,12 +1,12 @@
 Trace 0:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
     'returning'
   Return value:
@@ -44,17 +44,17 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking True path'
-    'taking True path'
+    'when taking True path'
+    'when taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=55), value=0)
@@ -89,17 +89,17 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -135,18 +135,18 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=55), value=0)
@@ -181,18 +181,18 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -228,18 +228,18 @@ Trace 4:
 
 Trace 5:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:44'
-    'taking True path'
-    'taking True path'
+    'when taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=55), value=0)
@@ -274,18 +274,18 @@ Trace 5:
 
 Trace 6:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:44'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -321,19 +321,19 @@ Trace 6:
 
 Trace 7:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:44'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=55), value=0)
@@ -368,19 +368,19 @@ Trace 7:
 
 Trace 8:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:44'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -416,14 +416,14 @@ Trace 8:
 
 Trace 9:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking True path'
+    'when taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=48), value=0)
@@ -453,14 +453,14 @@ Trace 9:
 
 Trace 10:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
-    'taking False path'
+    'when taking True path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -491,15 +491,15 @@ Trace 10:
 
 Trace 11:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=48), value=0)
@@ -529,15 +529,15 @@ Trace 11:
 
 Trace 12:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:39'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -568,11 +568,11 @@ Trace 12:
 
 Trace 13:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking True path'
+    'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c', line=42), value=0)
@@ -597,11 +597,11 @@ Trace 13:
 
 Trace 14:
   Transitions:
-    'PyTuple_New() succeeds'
+    'when PyTuple_New() succeeds'
     'taking False path'
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
     'taking True path'
-    'taking False path'
+    'when taking False path'
     'calling tp_dealloc on PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple/input.c:33'
     'returning'
   Return value:
@@ -627,7 +627,7 @@ Trace 14:
 
 Trace 15:
   Transitions:
-    'PyTuple_New() fails'
+    'when PyTuple_New() fails'
     'taking True path'
     'returning'
   Return value:

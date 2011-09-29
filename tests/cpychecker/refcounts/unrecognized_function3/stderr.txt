@@ -5,5 +5,5 @@ tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: note: but final 
 tests/cpychecker/refcounts/unrecognized_function3/input.c:32:8: note: new ref from (unknown) foo allocated at:     foo(42);
 tests/cpychecker/refcounts/unrecognized_function3/input.c:32:8: note: when foo() succeeds at:     foo(42);
 tests/cpychecker/refcounts/unrecognized_function3/input.c:32:8: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: note: when returning at: }
+tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: note: returning at: }
 tests/cpychecker/refcounts/unrecognized_function3/input.c:30:1: note: graphical error report for function 'call_to_unrecognized_function' written out to 'tests/cpychecker/refcounts/unrecognized_function3/input.c.call_to_unrecognized_function-refcount-errors.html'

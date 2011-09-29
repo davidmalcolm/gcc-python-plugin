@@ -1,7 +1,7 @@
 Trace 0:
   Transitions:
-    'PyString_AsString() succeeds'
-    'PyString_FromFormat() succeeds'
+    'when PyString_AsString() succeeds'
+    'when PyString_FromFormat() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33)))
@@ -23,8 +23,8 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyString_AsString() succeeds'
-    'PyString_FromFormat() fails'
+    'when PyString_AsString() succeeds'
+    'when PyString_FromFormat() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33), value=0)
@@ -44,8 +44,8 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyString_AsString() fails'
-    'PyString_FromFormat() succeeds'
+    'when PyString_AsString() fails'
+    'when PyString_FromFormat() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33), region=RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33)))
@@ -67,8 +67,8 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyString_AsString() fails'
-    'PyString_FromFormat() fails'
+    'when PyString_AsString() fails'
+    'when PyString_FromFormat() fails'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_AsString/unknown/input.c', line=33), value=0)

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyMem_Malloc() succeeds'
+    'when PyMem_Malloc() succeeds'
     'taking False path'
     'calling PyMem_Free on PyMem_Malloc allocated at tests/cpychecker/refcounts/PyMem_Malloc/correct/alloc-and-free/input.c:31'
     'returning'
@@ -24,7 +24,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyMem_Malloc() fails'
+    'when PyMem_Malloc() fails'
     'taking True path'
     'PyErr_NoMemory()'
     'returning'

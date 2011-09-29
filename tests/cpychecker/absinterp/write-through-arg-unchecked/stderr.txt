@@ -1,4 +1,4 @@
 tests/cpychecker/absinterp/write-through-arg-unchecked/input.c: In function 'test':
 tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:29:12: error: possibly dereferencing NULL (*out) at tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:30
-tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:29:12: note: when treating unknown char * from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:27 as (char *)0 at:     out[0] = '\0';
+tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:29:12: note: when treating unknown char * from tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:27 as NULL at:     out[0] = '\0';
 tests/cpychecker/absinterp/write-through-arg-unchecked/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/write-through-arg-unchecked/input.c.test-refcount-errors.html'

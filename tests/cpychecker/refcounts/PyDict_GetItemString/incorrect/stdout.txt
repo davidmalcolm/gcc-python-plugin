@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyDict_GetItemString() succeeds'
+    'when PyDict_GetItemString() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c', line=35), region=RegionOnHeap('PyDict_GetItemString', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c', line=35)))

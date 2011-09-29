@@ -519,9 +519,10 @@ class SplitValue(Exception):
     Backtrack the analysis, splitting it into multiple possible worlds
     with alternate abstract values for said value
     """
-    def __init__(self, value, altvalues):
+    def __init__(self, value, altvalues, descriptions):
         self.value = value
         self.altvalues = altvalues
+        self.descriptions = descriptions
 
     def __str__(self):
         return ('Splitting:\n%r\ninto\n%s'
@@ -531,7 +532,7 @@ class SplitValue(Exception):
     def split(self, state):
         log('creating states for split of %s into %s', self.value, self.altvalues)
         result = []
-        for altvalue in self.altvalues:
+        for altvalue, desc in zip(self.altvalues, self.descriptions):
             log(' creating state for split where %s is %s', self.value, altvalue)
             altvalue.fromsplit = True
 
@@ -544,7 +545,7 @@ class SplitValue(Exception):
                     newstate.value_for_region[r] = altvalue
             result.append(Transition(state,
                                      newstate,
-                                     "treating %s as %s" % (self.value, altvalue)))
+                                     desc))
         return result
 
 
@@ -1103,7 +1104,10 @@ class State:
         self.region_for_var[region] = region
         non_null_ptr = PointerToRegion(ptr_rvalue.gcctype, loc, region)
         null_ptr = ConcreteValue(ptr_rvalue.gcctype, loc, 0)
-        raise SplitValue(ptr_rvalue, [non_null_ptr, null_ptr])
+        raise SplitValue(ptr_rvalue,
+                         [non_null_ptr, null_ptr],
+                         [("when treating %s as non-NULL" % ptr_rvalue),
+                          ("when treating %s as NULL" % ptr_rvalue)])
 
     def get_transitions(self):
         # Return a list of Transition instances, based on input State
@@ -1165,7 +1169,7 @@ class State:
         newstate.loc = self.loc.next_loc()
         return Transition(self, newstate, 'calling %s()' % fnname)
 
-    def mktrans_from_fncall_state(self, stmt, state, partialdesc):
+    def mktrans_from_fncall_state(self, stmt, state, partialdesc, has_siblings):
         """
         Given a function call here, convert a State instance into a Transition
         instance, marking it.
@@ -1174,7 +1178,11 @@ class State:
         check_isinstance(state, State)
         check_isinstance(partialdesc, str)
         fnname = stmt.fn.operand.name
-        return Transition(self, state, '%s() %s' % (fnname, partialdesc))
+        if has_siblings:
+            desc = 'when %s() %s' % (fnname, partialdesc)
+        else:
+            desc = '%s() %s' % (fnname, partialdesc)
+        return Transition(self, state, desc)
 
     def make_transitions_for_fncall(self, stmt, s_success, s_failure):
         """
@@ -1188,11 +1196,11 @@ class State:
 
         if hasattr(stmt.fn, 'operand'):
             fnname = stmt.fn.operand.name
-            return [Transition(self, s_success, '%s() succeeds' % fnname),
-                    Transition(self, s_failure, '%s() fails' % fnname)]
+            return [Transition(self, s_success, 'when %s() succeeds' % fnname),
+                    Transition(self, s_failure, 'when %s() fails' % fnname)]
         else:
-            return [Transition(self, s_success, 'call succeeds'),
-                    Transition(self, s_failure, 'call fails')]
+            return [Transition(self, s_success, 'when call succeeds'),
+                    Transition(self, s_failure, 'when call fails')]
 
 
     def eval_stmt_args(self, stmt):
@@ -1288,19 +1296,27 @@ class State:
             log('args[%i]: %s %r', i, arg, arg)
 
     def _get_transitions_for_GimpleCond(self, stmt):
-        def make_transition_for_true(stmt):
+        def make_transition_for_true(stmt, has_siblings):
             e = true_edge(self.loc.bb)
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = True
-            return Transition(self, nextstate, 'taking True path')
+            if has_siblings:
+                desc = 'when taking True path'
+            else:
+                desc = 'taking True path'
+            return Transition(self, nextstate, desc)
 
-        def make_transition_for_false(stmt):
+        def make_transition_for_false(stmt, has_siblings):
             e = false_edge(self.loc.bb)
             assert e
             nextstate = self.update_loc(Location.get_block_start(e.dest))
             nextstate.prior_bool = False
-            return Transition(self, nextstate, 'taking False path')
+            if has_siblings:
+                desc = 'when taking False path'
+            else:
+                desc = 'taking False path'
+            return Transition(self, nextstate, desc)
 
         log('stmt.exprcode: %s', stmt.exprcode)
         log('stmt.exprtype: %s', stmt.exprtype)
@@ -1309,17 +1325,17 @@ class State:
         boolval = self.eval_condition(stmt, stmt.lhs, stmt.exprcode, stmt.rhs)
         if boolval is True:
             log('taking True edge')
-            nextstate = make_transition_for_true(stmt)
+            nextstate = make_transition_for_true(stmt, False)
             return [nextstate]
         elif boolval is False:
             log('taking False edge')
-            nextstate = make_transition_for_false(stmt)
+            nextstate = make_transition_for_false(stmt, False)
             return [nextstate]
         else:
             check_isinstance(boolval, UnknownValue)
             # We don't have enough information; both branches are possible:
-            return [make_transition_for_true(stmt),
-                    make_transition_for_false(stmt)]
+            return [make_transition_for_true(stmt, True),
+                    make_transition_for_false(stmt, True)]
 
     def eval_condition(self, stmt, expr_lhs, exprcode, expr_rhs):
         """
@@ -1544,11 +1560,11 @@ class State:
                 check_isinstance(label.low, gcc.IntegerCst)
                 if label.high:
                     check_isinstance(label.high, gcc.IntegerCst)
-                    desc = 'following cases %i...%i' % (label.low.constant, label.high.constant)
+                    desc = 'when following cases %i...%i' % (label.low.constant, label.high.constant)
                 else:
-                    desc = 'following case %i' % label.low.constant
+                    desc = 'when following case %i' % label.low.constant
             else:
-                desc = 'following default'
+                desc = 'when following default'
             result.append(Transition(self,
                                      newstate,
                                      desc))
@@ -1582,6 +1598,8 @@ class Transition:
     def __init__(self, src, dest, desc):
         check_isinstance(src, State)
         check_isinstance(dest, State)
+        if desc:
+            check_isinstance(desc, str)
         self.src = src
         self.dest = dest
         self.desc = desc

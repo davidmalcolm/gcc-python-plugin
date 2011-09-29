@@ -6,8 +6,8 @@ tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: bu
 tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: PyDict_GetItemString allocated at:     return PyDict_GetItemString(some_dict, "item");
 tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: when PyDict_GetItemString() succeeds at:     return PyDict_GetItemString(some_dict, "item");
 tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: ob_refcnt is now refs: 0 + N where N >= 1
-tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: when returning at:     return PyDict_GetItemString(some_dict, "item");
+tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: returning at:     return PyDict_GetItemString(some_dict, "item");
 tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: error: returning (PyObject*)NULL without setting an exception
-tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: when PyDict_GetItemString does not find string at:     return PyDict_GetItemString(some_dict, "item");
-tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: when returning at:     return PyDict_GetItemString(some_dict, "item");
+tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: PyDict_GetItemString does not find string at:     return PyDict_GetItemString(some_dict, "item");
+tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:35:5: note: returning at:     return PyDict_GetItemString(some_dict, "item");
 tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c:30:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyDict_GetItemString/incorrect/input.c.test-refcount-errors.html'

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyInt_FromLong() succeeds'
+    'when PyInt_FromLong() succeeds'
     'PyInt_AsLong() returns ob_ival'
     '__dump((long int)42 from tests/cpychecker/refcounts/PyInt_AsLong/correct_PyIntObject/input.c:35)'
     'returning'

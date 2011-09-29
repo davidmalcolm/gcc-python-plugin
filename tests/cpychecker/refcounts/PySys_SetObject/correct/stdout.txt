@@ -1,9 +1,9 @@
 Trace 0:
   Transitions:
-    'PyString_FromString() succeeds'
+    'when PyString_FromString() succeeds'
     'taking False path'
-    'PySys_SetObject() succeeds'
-    'taking True path'
+    'when PySys_SetObject() succeeds'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=40), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
@@ -30,10 +30,10 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyString_FromString() succeeds'
+    'when PyString_FromString() succeeds'
     'taking False path'
-    'PySys_SetObject() succeeds'
-    'taking False path'
+    'when PySys_SetObject() succeeds'
+    'when taking False path'
     'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31'
     'returning'
   Return value:
@@ -61,10 +61,10 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'PyString_FromString() succeeds'
+    'when PyString_FromString() succeeds'
     'taking False path'
-    'PySys_SetObject() fails'
-    'taking True path'
+    'when PySys_SetObject() fails'
+    'when taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=40), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
@@ -91,10 +91,10 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'PyString_FromString() succeeds'
+    'when PyString_FromString() succeeds'
     'taking False path'
-    'PySys_SetObject() fails'
-    'taking False path'
+    'when PySys_SetObject() fails'
+    'when taking False path'
     'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31'
     'returning'
   Return value:
@@ -122,7 +122,7 @@ Trace 3:
 
 Trace 4:
   Transitions:
-    'PyString_FromString() fails'
+    'when PyString_FromString() fails'
     'taking True path'
     'returning'
   Return value:

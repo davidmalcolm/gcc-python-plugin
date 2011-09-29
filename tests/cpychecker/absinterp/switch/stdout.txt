@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'following default'
+    'when following default'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=32), region=RegionForStringConstant('Green'))
@@ -12,7 +12,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'following case 0'
+    'when following case 0'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[4] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=29), region=RegionForStringConstant('Red'))
@@ -24,7 +24,7 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'following case 2'
+    'when following case 2'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[5] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=34), region=RegionForStringConstant('Blue'))
@@ -36,7 +36,7 @@ Trace 2:
 
 Trace 3:
   Transitions:
-    'following cases 3...5'
+    'when following cases 3...5'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='const char *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=39), value=0)

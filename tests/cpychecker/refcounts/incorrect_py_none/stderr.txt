@@ -3,6 +3,6 @@ tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: error: ob_refcnt of r
 tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: due to object being referenced by: return value
 tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: but final ob_refcnt is N + 0
-tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: when returning at:     return Py_None;
+tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: returning at:     return Py_None;
 tests/cpychecker/refcounts/incorrect_py_none/input.c:26:5: note: consider using "Py_RETURN_NONE;"
 tests/cpychecker/refcounts/incorrect_py_none/input.c:24:1: note: graphical error report for function 'losing_refcnt_of_none' written out to 'tests/cpychecker/refcounts/incorrect_py_none/input.c.losing_refcnt_of_none-refcount-errors.html'

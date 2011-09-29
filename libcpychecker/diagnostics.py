@@ -68,11 +68,11 @@ def describe_trace(trace, fun, annotator):
         if t.desc:
             if srcloc:
                 gcc.inform(t.src.get_gcc_loc(fun),
-                           ('when %s at: %s'
+                           ('%s at: %s'
                             % (t.desc, get_src_for_loc(srcloc))))
             else:
                 gcc.inform(t.src.get_gcc_loc(fun),
-                           'when %s' % t.desc)
+                           '%s' % t.desc)
 
             if t.src.loc.bb != t.dest.loc.bb:
                 # Tell the user where conditionals reach:

@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyLong_FromLong() succeeds'
+    'when PyLong_FromLong() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/too_many_increfs/input.c', line=26), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/too_many_increfs/input.c', line=26)))
@@ -22,7 +22,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'PyLong_FromLong() fails'
+    'when PyLong_FromLong() fails'
   error: NullPtrDereference()
   error: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30
   Region("region-for-arg-gcc.ParmDecl('self')"):
