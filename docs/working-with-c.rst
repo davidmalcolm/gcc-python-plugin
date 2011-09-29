@@ -46,3 +46,29 @@ Here's the expected output:
 
 Notice how the call to `printf` has already been optimized into a call
 to `__builtin_puts`.
+
+
+Spell-checking string constants within source code
+--------------------------------------------------
+
+This example add a spell-checker pass to GCC: all string constants are run through the "enchant" spelling-checker:
+
+   .. code-block:: bash
+
+     $ ./gcc-with-python tests/examples/spelling-checker/script.py input.c
+
+The Python code for this is:
+
+   .. literalinclude:: ../tests/examples/spelling-checker/script.py
+    :lines: 18-
+    :language: python
+
+Given this sample C source file:
+
+  .. literalinclude:: ../tests/examples/hello-world/input.c
+    :lines: 19-26
+    :language: c
+
+these warnings are emitted on stderr:
+
+  .. literalinclude:: ../tests/examples/spelling-checker/stderr.txt
