@@ -1735,9 +1735,11 @@ class RefcountAnnotator(Annotator):
     Annotate a trace with information on the reference count of a particular
     object
     """
-    def __init__(self, region):
+    def __init__(self, region, desc):
         check_isinstance(region, Region)
+        check_isinstance(desc, str)
         self.region = region
+        self.desc = desc
 
     def get_notes(self, transition):
         """
@@ -1769,7 +1771,7 @@ class RefcountAnnotator(Annotator):
         if src_refs != dest_refs:
             result.append(Note(loc,
                                ('%s is now referenced by %i non-stack value(s): %s'
-                                % (self.region.name,
+                                % (self.desc,
                                    len(dest_refs),
                                    ', '.join([ref.name for ref in dest_refs])))))
 
@@ -1967,7 +1969,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
                 # Summarize the control flow we followed through the function:
                 if 1:
-                    annotator = RefcountAnnotator(region)
+                    annotator = RefcountAnnotator(region, desc)
                 else:
                     # Debug help:
                     from libcpychecker.diagnostics import TestAnnotator
