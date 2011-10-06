@@ -91,6 +91,13 @@ class TestStream:
             line = re.sub(' object at (0x[0-9a-f]*)>',
                           ' object at 0xdeadbeef>',
                           line)
+
+            # Remove exact numbers from declarations
+            # (e.g. from "D.12021->fieldA" to "D.nnnnn->fieldA"):
+            line = re.sub('D.([0-9]+)', 'D.nnnnn', line)
+            line = re.sub('VarDecl\(([0-9]+)\)', 'VarDecl(nnnn)', line)
+            line = re.sub('LabelDecl\(([0-9]+)\)', 'LabelDecl(nnnn)', line)
+
             result += line + '\n'
         return result
 
