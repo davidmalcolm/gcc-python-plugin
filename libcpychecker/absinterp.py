@@ -475,6 +475,11 @@ class RegionOnStack(Region):
     def __str__(self):
         return '%s on stack' % self.name
 
+class RegionForLocal(RegionOnStack):
+    def __init__(self, vardecl, stack):
+        RegionOnStack.__init__(self, 'region for %r' % vardecl, stack)
+        self.vardecl = vardecl
+
 class RegionOnHeap(Region):
     """
     Represents an area of memory allocated on the heap
@@ -988,23 +993,23 @@ class State:
 
         nonnull_args = get_nonnull_arguments(fun.decl.type)
         for idx, parm in enumerate(fun.decl.arguments):
-            region = RegionOnStack('region for %r' % parm, stack)
+            region = RegionForLocal(parm, stack)
             self.region_for_var[parm] = region
             if idx in nonnull_args:
                 # Make a non-NULL ptr:
-                other = RegionOnStack('region-for-arg-%s' % parm, None)
+                other = Region('region-for-arg-%s' % parm, None)
                 self.region_for_var[other] = other
                 self.value_for_region[region] = PointerToRegion(parm.type, parm.location, other)
             else:
                 self.value_for_region[region] = UnknownValue(parm.type, parm.location)
         for local in fun.local_decls:
-            region = RegionOnStack('region for %r' % local, stack)
+            region = RegionForLocal(local, stack)
             self.region_for_var[local] = region
             self.value_for_region[region] = UninitializedData(local.type, fun.start)
         # Region for the gcc.ResultDecl, if any:
         if fun.decl.result:
             result = fun.decl.result
-            region = RegionOnStack('region for %s' % result, stack)
+            region = RegionForLocal(result, stack)
             self.region_for_var[result] = region
             self.value_for_region[region] = UninitializedData(result.type, fun.start)
         self.verify()
