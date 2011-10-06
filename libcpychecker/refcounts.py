@@ -1931,10 +1931,9 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                 desc = 'return value'
                 exp_refs = ['return value']
             else:
-                desc = 'PyObject'
-                # We may have a more descriptive name within the region:
-                if isinstance(region, RegionOnHeap):
-                    desc = region.name
+                # Try to get a descriptive name for the region:
+                desc = trace.get_description_for_region(region)
+                # print('desc: %r' % desc)
                 exp_refs = []
 
             # The reference count should also reflect any non-stack pointers

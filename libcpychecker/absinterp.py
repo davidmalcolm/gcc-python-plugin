@@ -1672,6 +1672,78 @@ class Trace:
             if state.loc == endstate.loc:
                 return True
 
+    def get_all_var_region_pairs(self):
+        """
+        Get the list of all (LHS,region) pairs in region_for_var within all of
+        the states in this trace, without duplicates
+        """
+        result = []
+        for s_iter in self.states:
+            for var_iter, r_iter in s_iter.region_for_var.iteritems():
+                pair = (var_iter, r_iter)
+                if pair not in result:
+                    result.append(pair)
+        return result
+
+    def var_points_unambiguously_to(self, r_srcptr, r_dstptr):
+        """
+        Does the source region (a pointer variable) always point to the
+        destination region (or be NULL, or uninitialized) throughout all of
+        the states in this trace?
+        """
+        ever_had_value = False
+        #print('r_srcptr, r_dstptr: %r, %r' % (r_srcptr, r_dstptr))
+        for s_iter in self.states:
+            if r_srcptr not in s_iter.value_for_region:
+                continue
+
+            v_srcptr = s_iter.value_for_region[r_srcptr]
+            #print ('v_srcptr: %s' % v_srcptr)
+
+            # It doesn't matter if it's uninitialized, or NULL:
+            if isinstance(v_srcptr, UninitializedData):
+                continue
+            if isinstance(v_srcptr, ConcreteValue):
+                if v_srcptr.is_null_ptr():
+                    continue
+            if isinstance(v_srcptr, PointerToRegion):
+                if v_srcptr.region == r_dstptr:
+                    ever_had_value = True
+                    continue
+                else:
+                    # This variable is pointing at another region at
+                    # this point within the trace:
+                    return False
+
+            # Some kind of value we weren't expecting:
+            return False
+
+        # If we get here, there was no state in which the var pointed to
+        # anything else.
+        #
+        # If it ever pointed to the region in question, then it's a good way
+        # of referring to the region:
+        return ever_had_value
+
+    def get_description_for_region(self, r_in):
+        """
+        Try to come up with a human-readable description of the input region
+        """
+        check_isinstance(r_in, Region)
+
+        # If a local pointer variable has just the given region as a value (as
+        # well as its initial "uninitialized" or NULL states), then that's a
+        # good name for this region:
+        for var_iter, r_iter in self.get_all_var_region_pairs():
+            if self.var_points_unambiguously_to(r_iter, r_in):
+                if isinstance(r_iter, (RegionForLocal, RegionForGlobal)):
+                    # Only do it for variables with names, not for temporaries:
+                    if r_iter.vardecl.name:
+                        return "'*%s'" % r_iter.vardecl.name
+
+        # Otherwise, just use the name of the region
+        return r_in.name
+
 def true_edge(bb):
     for e in bb.succs:
         if e.true_value:

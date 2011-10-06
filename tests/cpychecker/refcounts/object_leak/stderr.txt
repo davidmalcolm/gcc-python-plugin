@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/object_leak/input.c: In function 'object_leak':
-tests/cpychecker/refcounts/object_leak/input.c:29:5: error: ob_refcnt of PyLongObject is 1 too high
+tests/cpychecker/refcounts/object_leak/input.c:29:5: error: ob_refcnt of '*tmp' is 1 too high
 tests/cpychecker/refcounts/object_leak/input.c:29:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
 tests/cpychecker/refcounts/object_leak/input.c:29:5: note: but final ob_refcnt is N + 1
 tests/cpychecker/refcounts/object_leak/input.c:26:15: note: PyLongObject allocated at:     PyObject *tmp = PyLong_FromLong(0x1000);
