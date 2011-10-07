@@ -29,6 +29,8 @@ from libcpychecker.absinterp import *
 from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
     TypeCheckCheckerType, TypeCheckResultType
+from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \
+    CodeSO
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
 from libcpychecker.utils import log
 
@@ -205,6 +207,11 @@ class GenericTpDealloc(AbstractValue):
         s_new.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
 
         return [Transition(state, s_new, desc)]
+
+def _get_format_string(v_fmt):
+    if isinstance(v_fmt, PointerToRegion):
+        if isinstance(v_fmt.region, RegionForStringConstant):
+            return v_fmt.region.text
 
 class CPython(Facet):
     def __init__(self, state, exception_rvalue=None, fun=None):
@@ -565,11 +572,6 @@ class CPython(Facet):
         # Parse the format string, and figure out what the effects of a
         # successful parsing are:
 
-        def _get_format_string(v_fmt):
-            if isinstance(v_fmt, PointerToRegion):
-                if isinstance(v_fmt.region, RegionForStringConstant):
-                    return v_fmt.region.text
-
         def _get_new_value_for_vararg(unit, exptype):
             if unit.code == 'O':
                 # non-NULL sane PyObject*:
@@ -671,6 +673,91 @@ class CPython(Facet):
         s_success, r_nonnull = self.mkstate_new_ref(stmt, 'PyBool_FromLong')
         return [self.state.mktrans_from_fncall_state(stmt, s_success,
                                                      'returns', False)]
+
+    ########################################################################
+    # Py_BuildValue*
+    ########################################################################
+    def _handle_Py_BuildValue(self, stmt, v_fmt, v_varargs, with_size_t):
+        """
+        Handle one of the various Py_BuildValue functions
+
+        http://docs.python.org/c-api/arg.html#Py_BuildValue
+
+        We don't try to model the resulting object, just the success/failure
+        and the impact on the refcounts of any inputs
+        """
+        check_isinstance(v_fmt, AbstractValue)
+        check_isinstance(v_varargs, tuple) # of AbstractValue
+        check_isinstance(with_size_t, bool)
+
+        # The function can succeed or fail
+        # If any of the PyObject* inputs are NULL, it is doomed to failure
+        def _handle_successful_parse(fmt):
+            """
+            Returns a boolean: is success of the function possible?
+            """
+            exptypes = fmt.iter_exp_types()
+            for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
+                if 0:
+                    print('v_vararg: %r' % v_vararg)
+                    print('  unit: %r' % unit)
+                    print('  exptype: %r %s' % (exptype, exptype))
+                if isinstance(unit, ObjectFormatUnit):
+                    # NULL inputs ptrs guarantee failure:
+                    if isinstance(v_vararg, ConcreteValue):
+                        if v_vararg.is_null_ptr():
+                            # The call will fail:
+                            return False
+
+                    # non-NULL input ptrs receive "external" references on
+                    # success for codes "S" and "O":
+                    if isinstance(v_vararg, PointerToRegion):
+                        if isinstance(unit, CodeSO):
+                            t_success.dest.cpython.add_external_ref(v_vararg, stmt.loc)
+                        else:
+                            t_success.dest.cpython.steal_reference(v_vararg.region)
+            return True
+
+        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
+
+        fmt_string = _get_format_string(v_fmt)
+        if fmt_string:
+            try:
+                fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
+                if not _handle_successful_parse(fmt):
+                    return [t_failure]
+            except FormatStringError:
+                pass
+
+        return [t_success, t_failure]
+
+    def impl_Py_BuildValue(self, stmt, v_fmt, *args):
+        # http://docs.python.org/c-api/arg.html#Py_BuildValue
+        #
+        # Declared in modsupport.h:
+        #   PyAPI_FUNC(PyObject *) Py_BuildValue(const char *, ...);
+        #
+        # Defined in Python/modsupport.c:
+        #   PyObject *
+        #   Py_BuildValue(const char *format, ...)
+        #
+        return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=False)
+
+    def impl__Py_BuildValue_SizeT(self, stmt, v_fmt, *args):
+        # http://docs.python.org/c-api/arg.html#Py_BuildValue
+        #
+        # Declared in modsupport.h:
+        #   #ifdef PY_SSIZE_T_CLEAN
+        #   #define Py_BuildValue   _Py_BuildValue_SizeT
+        #   #endif
+        #
+        #   PyAPI_FUNC(PyObject *) _Py_BuildValue_SizeT(const char *, ...);
+        #
+        # Defined in Python/modsupport.c:
+        #   PyObject *
+        #   _Py_BuildValue_SizeT(const char *format, ...)
+        #
+        return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=True)
 
     ########################################################################
     # PyDict_*
@@ -1706,7 +1793,8 @@ class DebugAnnotator(Annotator):
             check_isinstance(region, Region)
             if 'ob_refcnt' not in region.fields:
                 continue
-            ra = RefcountAnnotator(region)
+            ra = RefcountAnnotator(region,
+                                   region.name)
             result += ra.get_notes(transition)
 
         # Show all new/changing regions:

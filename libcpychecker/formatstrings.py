@@ -269,7 +269,7 @@ def compatible_type(exp_type, actual_type, actualarg=None):
 
     # Dereference for pointers (and ptrs to ptrs etc):
     if isinstance(actual_type, gcc.PointerType) and isinstance(exp_type, gcc.PointerType):
-        if compatible_type(actual_type.dereference, exp_type.dereference):
+        if compatible_type(exp_type.dereference, actual_type.dereference):
             return True
 
     # Don't be too fussy about typedefs to integer types
@@ -288,10 +288,17 @@ def compatible_type(exp_type, actual_type, actualarg=None):
         if compare_int_types():
             return True
 
+    # Support character arrays vs const char*:
+    if str(exp_type) == 'const char *':
+        if isinstance(actual_type, gcc.ArrayType):
+            if actual_type.dereference == gcc.Type.char():
+                return True
+
     return False
 
 def check_pyargs(fun):
     from libcpychecker.PyArg_ParseTuple import PyArgParseFmt
+    from libcpychecker.Py_BuildValue import PyBuildValueFmt
 
     def get_format_string(stmt, format_idx):
         fmt_code = stmt.args[format_idx]
@@ -422,6 +429,16 @@ def check_pyargs(fun):
                                PyArgParseFmt,
                                'PyArg_ParseTupleAndKeywords',
                                2, 4, True)
+            elif stmt.fndecl.name == 'Py_BuildValue':
+                check_callsite(stmt,
+                               PyBuildValueFmt,
+                               'Py_BuildValue',
+                               0, 1, False)
+            elif stmt.fndecl.name == 'Py_BuildValue_SizeT':
+                check_callsite(stmt,
+                               PyBuildValueFmt,
+                               'Py_BuildValue',
+                               0, 1, True)
 
     if fun.cfg:
         for bb in fun.cfg.basic_blocks:
