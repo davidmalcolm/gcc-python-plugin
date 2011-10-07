@@ -355,7 +355,7 @@ def check_pyargs(fun):
         #   args[1]: char * format
         #   args[2...]: output pointers
 
-        if len(stmt.args) > 1:
+        if len(stmt.args) >= format_idx:
             fmt_string = get_format_string(stmt, format_idx)
             if fmt_string:
                 log('fmt_string: %r', fmt_string)

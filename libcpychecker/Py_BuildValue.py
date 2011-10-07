@@ -18,7 +18,7 @@
 # Domain-specific warning:
 #  Detecting errors in usage of the Py_BuildValue API
 #  
-#  See http://docs.python.org/c-api/arg.html
+#  See http://docs.python.org/c-api/arg.html#Py_BuildValue
 #
 # FIXME:
 #  Note that all of the "#" codes are affected by the presence of the
@@ -39,6 +39,7 @@
 #    http://hg.python.org/cpython/rev/5d4a5655575f/
 
 import gcc
+import sys
 
 from libcpychecker.formatstrings import *
 from libcpychecker.types import *
@@ -50,27 +51,30 @@ def _type_of_simple_arg(arg):
     # Analogous to Python/modsupport.c:do_mkvalue, this is the same order as
     # that function's "switch" statement:
     simple = {
-        # FIXME: all of these just use "int":
-        'b': gcc.Type.unsigned_char,
+        # all of these actually just use "int":
+        'b': gcc.Type.char,
         'B': gcc.Type.unsigned_char,
         'h': gcc.Type.short,
         'i': gcc.Type.int,
-
-        # FIXME: code just uses an unsigned int:
-        # 'H': gcc.Type.unsigned_short_int,
-
-        # FIXME:
-        # 'I': gcc.Type.unsigned_int,
-        # 'n'
-        # 'l'
-        # 'k'
-        # 'L'
-        # 'K'
+        'H': gcc.Type.unsigned_short,
+        'I': gcc.Type.unsigned_int,
+        # 'n' covered below
+        'l': gcc.Type.long,
+        'k': gcc.Type.unsigned_long,
+        # 'L' covered below
+        # 'K' covered below
         }
     if arg in simple:
         # FIXME: ideally this shouldn't need calling; it should just be an
         # attribute:
         return simple[arg]()
+
+    if arg == 'n':
+        return get_Py_ssize_t()
+    elif arg == 'L':
+        return get_PY_LONG_LONG()
+    elif arg == 'K':
+        return get_PY_LONG_LONG().unsigned_equivalent
 
     """
         case 'u':
@@ -151,6 +155,11 @@ class PyBuildValueFmt(ParsedFormatString):
         ParsedFormatString.__init__(self, fmt_string)
         self.arg_stack = [self.args]
 
+    def num_expected(self):
+        from pprint import pformat
+        #sys.stderr.write('%s\n' % pformat(list(self.iter_exp_types())))
+        return len(list(self.iter_exp_types()))
+
     def iter_exp_types(self):
         """
         Yield a sequence of (FormatUnit, gcc.Type) pairs, representing
@@ -203,14 +212,15 @@ class PyBuildValueFmt(ParsedFormatString):
                 next = fmt_string[i]
             else:
                 next = None
-            # print '(%r, %r)' % (c, None)
+            #sys.stderr.write('(%r, %r)\n' % (c, None))
 
-            simple_type = _type_of_simple_arg(c)
-            if simple_type:
-                result.add_argument(c, [simple_type.pointer])
-                
             # Analogous to Python/modsupport.c:do_mkvalue, this is in the same
             # order as that function's "switch" statement:
+            simple_type = _type_of_simple_arg(c)
+            if simple_type:
+                result.add_argument(c, [simple_type])
+                continue
+                
             if c == '(':
                 result._do_open_compound_fmt('(', ')')
                 continue

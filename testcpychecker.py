@@ -474,5 +474,62 @@ class PyArg_ParseTupleAndKeywordsTests(PyArg_ParseTupleTests):
                '}\n') % locals()
         return src, function_name
 
+class Py_BuildValueTests(AnalyzerTests):
+    def test_bogus_format_string(self):
+        src = ('PyObject *\n'
+               'bogus_format_string(PyObject *self, PyObject *args)\n'
+               '{\n'
+               '    return Py_BuildValue("this is not a valid format string");\n'
+               '}\n')
+        experr = ("$(SRCFILE): In function 'bogus_format_string':\n"
+                  '$(SRCFILE):12:5: error: unknown format char in "this is not a valid format string": \'t\' [-fpermissive]\n')
+        self.assertFindsError(src, experr)
+
+    def test_not_enough_varargs(self):
+        src = """
+PyObject *
+not_enough_varargs(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("i");
+}
+"""
+        self.assertFindsError(src,
+                              "$(SRCFILE): In function 'not_enough_varargs':\n"
+                              '$(SRCFILE):13:5: error: Not enough arguments in call to Py_BuildValue with format string "i"\n'
+                              '  expected 1 extra arguments:\n'
+                              '    "int"\n'
+                              '  but got none\n'
+                              ' [-fpermissive]\n')
+
+    def test_too_many_varargs(self):
+        src = """
+PyObject *
+too_many_varargs(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("i", 0, 1);
+}
+"""
+        self.assertFindsError(src,
+                              "$(SRCFILE): In function 'too_many_varargs':\n"
+                              '$(SRCFILE):13:5: error: Too many arguments in call to Py_BuildValue with format string "i"\n'
+                              '  expected 1 extra arguments:\n'
+                              '    "int"\n'
+                              '  but got 2:\n'
+                              '    "int"\n'
+                              '    "int"\n'
+                              ' [-fpermissive]\n')
+
+    def test_correct_usage(self):
+        src = """
+PyObject *
+correct_usage(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("ii", 0, 1);
+}
+"""
+        self.assertNoErrors(src)
+
+
+
 if __name__ == '__main__':
     unittest.main()
