@@ -1,0 +1,26 @@
+fn: gcc.Function('helper_function')
+fn.decl.name: 'helper_function'
+CFG:
+  BLOCK 0
+  BLOCK 1
+  BLOCK 2
+  gimple[0]:
+    str(stmt): 'if (a < b)'
+    repr(stmt): 'gcc.GimpleCond()'
+    stmt.lhs: gcc.ParmDecl('a')
+    stmt.exprcode: <type 'gcc.LtExpr'>
+    stmt.rhs: gcc.ParmDecl('b')
+    stmt.true_label: None
+    stmt.false_label: None
+  BLOCK 3
+  gimple[0]:
+    str(stmt): 'D.nnnnn = 42;'
+    repr(stmt): 'gcc.GimpleAssign()'
+  BLOCK 4
+  gimple[0]:
+    str(stmt): 'D.nnnnn = a - b;'
+    repr(stmt): 'gcc.GimpleAssign()'
+  BLOCK 5
+  gimple[0]:
+    str(stmt): 'return D.nnnnn;'
+    repr(stmt): 'gcc.GimpleReturn()'

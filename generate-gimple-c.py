@@ -325,6 +325,14 @@ def generate_gimple_subclasses():
                                       'rhs',
                                       'gcc_python_make_wrapper_tree(gimple_cond_rhs(self->stmt))',
                                       None)
+        getsettable.add_simple_getter(cu,
+                                      'true_label',
+                                      'gcc_python_make_wrapper_tree(gimple_cond_true_label(self->stmt))',
+                                      None)
+        getsettable.add_simple_getter(cu,
+                                      'false_label',
+                                      'gcc_python_make_wrapper_tree(gimple_cond_false_label(self->stmt))',
+                                      None)
         return getsettable
 
     def make_getset_Phi():

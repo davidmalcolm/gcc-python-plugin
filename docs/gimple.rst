@@ -142,21 +142,48 @@ TODO
 
 .. py:class:: gcc.GimpleCond
 
-   Subclass of gcc.Gimple: an "if" statement, signifying the end of a `gcc.BasicBlock`
+   Subclass of gcc.Gimple: a conditional jump, of the form::
+
+     if (LHS EXPRCODE RHS) goto TRUE_LABEL else goto FALSE_LABEL
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a gcc.Tree
-
-   .. py:attribute:: rhs
-
-      The operands on the right-hand-side of the expression, as a list of
-      gcc.Tree instances
+      Left-hand-side of the comparison, as a gcc.Tree
 
    .. py:attribute:: exprcode
 
-      The kind of the expression, as an gcc.Tree subclass (the type itself, not
-      an instance)
+      The comparison predicate, as a :py:class:`gcc.Comparison` subclass (the
+      type itself, not an instance).  For example, the gcc.GimpleCond statement
+      for this fragment of C code::
+
+         if (a == b)
+
+      would have stmt.exprcode == gcc.EqExpr
+
+   .. py:attribute:: rhs
+
+      The right-hand-side of the comparison, as a gcc.Tree
+
+   .. py:attribute:: true_label
+
+      The :py:class:`gcc.LabelDecl` node used as the jump target for when the
+      comparison is true
+
+   .. py:attribute:: false_label
+
+      The :py:class:`gcc.LabelDecl` node used as the jump target for when the
+      comparison is false
+
+   Note that a C conditional of the form::
+
+     if (some_int) {suiteA} else {suiteB}
+
+   is implicitly expanded to::
+
+     if (some_int != 0) {suiteA} else {suiteB}
+
+   and this becomes a gcc.GimpleCond with `lhs` as the integer, `exprcode` as
+   `<type 'gcc.NeExpr'>`, and `rhs` as `gcc.IntegerCst(0)`.
 
 .. py:class:: gcc.GimplePhi
 
