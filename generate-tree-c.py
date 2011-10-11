@@ -30,7 +30,7 @@ cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
 cu.add_include("function.h")
 cu.add_include("basic-block.h")
-cu.add_include("c-common.h")
+cu.add_include("c-family/c-common.h")
 
 modinit_preinit = ''
 modinit_postinit = ''

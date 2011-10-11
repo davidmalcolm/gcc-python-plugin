@@ -20,7 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#include "c-common.h" /* for warn_format */
+#include "c-family/c-common.h" /* for warn_format */
 #include "diagnostic.h"
 
 
