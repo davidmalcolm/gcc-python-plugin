@@ -30,7 +30,7 @@ from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
     TypeCheckCheckerType, TypeCheckResultType
 from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \
-    CodeSO
+    CodeSO, CodeN
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
 from libcpychecker.utils import log
 
@@ -278,6 +278,7 @@ class CPython(Facet):
         newvalue = fn(oldvalue)
         log('newvalue: %r', newvalue)
         self.state.value_for_region[ob_refcnt] = newvalue
+        return newvalue
 
     def add_ref(self, pyobjectptr, loc):
         """
@@ -302,6 +303,20 @@ class CPython(Facet):
         self.change_refcount(pyobjectptr,
                              loc,
                              _incref_external)
+
+    def dec_ref(self, pyobjectptr, loc):
+        """
+        Remove a "visible" reference to pyobjectptr's ob_refcnt i.e. a
+        reference being held by a PyObject* that we are directly tracking.
+        """
+        def _decref_internal(oldvalue):
+            return RefcountValue(oldvalue.relvalue - 1,
+                                 oldvalue.min_external)
+        check_isinstance(pyobjectptr, PointerToRegion)
+        v_ob_refcnt = self.change_refcount(pyobjectptr,
+                                           loc,
+                                           _decref_internal)
+        # FIXME: potentially this destroys the object
 
     def set_exception(self, exc_name, loc):
         """
@@ -1302,6 +1317,76 @@ class CPython(Facet):
     ########################################################################
     # PyObject_*
     ########################################################################
+    def _handle_PyObject_CallMethod(self, stmt, v_o, v_name, v_fmt, v_varargs, with_size_t):
+        check_isinstance(v_o, AbstractValue)
+        check_isinstance(v_name, AbstractValue)
+        check_isinstance(v_fmt, AbstractValue)
+        check_isinstance(v_varargs, tuple) # of AbstractValue
+        check_isinstance(with_size_t, bool)
+
+        # The function can succeed or fail
+        # If any of the PyObject* inputs are NULL, it is doomed to failure
+        def _handle_successful_parse(fmt):
+            """
+            Returns a boolean: is success of the function possible?
+            """
+            exptypes = fmt.iter_exp_types()
+            for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
+                if 0:
+                    print('v_vararg: %r' % v_vararg)
+                    print('  unit: %r' % unit)
+                    print('  exptype: %r %s' % (exptype, exptype))
+                if isinstance(unit, ObjectFormatUnit):
+                    # NULL inputs ptrs guarantee failure:
+                    if isinstance(v_vararg, ConcreteValue):
+                        if v_vararg.is_null_ptr():
+                            # The call will fail:
+                            return False
+
+                    # non-NULL input ptrs receive "external" references on
+                    # success for codes "S" and "O", but code "N" steals a
+                    # reference for the args.  The args are then decref-ed
+                    # by the call.  Hence args with code "N" lose a ref:
+                    if isinstance(v_vararg, PointerToRegion):
+                        if isinstance(unit, CodeN):
+                            t_success.dest.cpython.dec_ref(v_vararg, stmt.loc)
+                            t_failure.dest.cpython.dec_ref(v_vararg, stmt.loc)
+            return True
+
+        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
+
+        fmt_string = _get_format_string(v_fmt)
+        if fmt_string:
+            try:
+                fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
+                if not _handle_successful_parse(fmt):
+                    return [t_failure]
+            except FormatStringError:
+                pass
+
+        return [t_success, t_failure]
+
+    def impl_PyObject_CallMethod(self, stmt, v_o, v_name, v_format, *args):
+        # http://docs.python.org/c-api/object.html#PyObject_CallMethod
+        #
+        # Implemented in Objects/abstract.c:
+        #   PyObject *
+        #   PyObject_CallMethod(PyObject *o, char *name, char *format, ...)
+        return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
+                                                args, with_size_t=False)
+
+    def _PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
+        # abstract.h has:
+        #   #ifdef PY_SSIZE_T_CLEAN
+        #   #define PyObject_CallMethod _PyObject_CallMethod_SizeT
+        #   #endif
+        #
+        # Implemented in Objects/abstract.c:
+        #   PyObject *
+        #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
+        return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
+                                                args, with_size_t=True)
+
     def impl_PyObject_HasAttrString(self, stmt, v_o, v_attr_name):
         # http://docs.python.org/c-api/object.html#PyObject_HasAttrString
 

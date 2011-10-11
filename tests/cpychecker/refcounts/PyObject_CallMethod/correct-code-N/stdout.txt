@@ -1,0 +1,74 @@
+Trace 0:
+  Transitions:
+    'when PyLong_FromLong() succeeds'
+    'when PyObject_CallMethod() succeeds'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), region=RegionOnHeap('new ref from call to PyObject_CallMethod', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from call to PyObject_CallMethod', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30)) from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), region=Region('PyTypeObject for new ref from call to PyObject_CallMethod'))
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:29
+
+Trace 1:
+  Transitions:
+    'when PyLong_FromLong() succeeds'
+    'when PyObject_CallMethod() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+
+Trace 2:
+  Transitions:
+    'when PyLong_FromLong() fails'
+    'when PyObject_CallMethod() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
