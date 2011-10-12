@@ -1976,10 +1976,11 @@ class ExceptionStateAnnotator(Annotator):
 
         result = []
 
-        if transition.dest.cpython.exception_rvalue != transition.src.cpython.exception_rvalue:
-            result.append(Note(loc,
-                               ('thread-local exception state now has value: %s'
-                                % transition.dest.cpython.exception_rvalue)))
+        if hasattr(transition.dest, 'cpython'):
+            if transition.dest.cpython.exception_rvalue != transition.src.cpython.exception_rvalue:
+                result.append(Note(loc,
+                                   ('thread-local exception state now has value: %s'
+                                    % transition.dest.cpython.exception_rvalue)))
 
         return result
 
