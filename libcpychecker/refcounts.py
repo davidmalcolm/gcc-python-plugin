@@ -1854,8 +1854,9 @@ def dump_traces_to_stdout(traces):
             dump_region(region, str(region))
 
         # Exception state:
-        print('  Exception:')
-        print('    %s' % endstate.cpython.exception_rvalue)
+        if hasattr(endstate, 'cpython'):
+            print('  Exception:')
+            print('    %s' % endstate.cpython.exception_rvalue)
 
         if i + 1 < len(traces):
             sys.stdout.write('\n')
@@ -2005,6 +2006,15 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     check_isinstance(fun, gcc.Function)
 
+    # Generate a mapping from facet names to facet classes, so that we know
+    # what additional attributes each State instance will have.
+    #
+    # For now, we just have an optional CPython instance per state, but only
+    # for code that's included Python's headers:
+    facets = {}
+    if get_PyObject():
+        facets['cpython'] = CPython
+
     if show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
         sg = StateGraph(fun, log, MyState)
@@ -2016,7 +2026,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     try:
         traces = iter_traces(fun,
-                             {'cpython':CPython},
+                             facets,
                              limits=Limits(maxtrans=1024))
     except TooComplicated:
         gcc.inform(fun.start,

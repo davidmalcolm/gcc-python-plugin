@@ -1,0 +1,15 @@
+Trace 0:
+  Transitions:
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/without-python-headers/input.c', line=29), value=42)
+    str(): (int)42 from tests/cpychecker/refcounts/without-python-headers/input.c:29
+
+Trace 1:
+  Transitions:
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/without-python-headers/input.c', line=31), value=43)
+    str(): (int)43 from tests/cpychecker/refcounts/without-python-headers/input.c:31
