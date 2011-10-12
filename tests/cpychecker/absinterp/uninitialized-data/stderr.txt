@@ -1,0 +1,5 @@
+tests/cpychecker/absinterp/uninitialized-data/input.c: In function 'test_void':
+tests/cpychecker/absinterp/uninitialized-data/input.c:35:12: error: comparison against uninitialized data: gcc.VarDecl('j.0') at tests/cpychecker/absinterp/uninitialized-data/input.c:35
+tests/cpychecker/absinterp/uninitialized-data/input.c:30:8: note: when taking True path at:     if (i == 0) {
+tests/cpychecker/absinterp/uninitialized-data/input.c:35:15: note: reaching:         if (i < j) {
+tests/cpychecker/absinterp/uninitialized-data/input.c:27:1: note: graphical error report for function 'test_void' written out to 'tests/cpychecker/absinterp/uninitialized-data/input.c.test_void-refcount-errors.html'

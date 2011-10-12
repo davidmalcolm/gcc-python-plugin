@@ -80,9 +80,11 @@ class AbstractValue:
             #   - return NULL and set an exception (e.g. MemoryError)
             return state.cpython.make_transitions_for_new_ref_or_fail(stmt,
                                                                       'new ref from call through function pointer')
-        return [state.mktrans_assignment(stmt.lhs,
+        return state.apply_fncall_side_effects(
+            [state.mktrans_assignment(stmt.lhs,
                                       UnknownValue(returntype, stmt.loc),
-                                      'calling %s' % self)]
+                                      'calling %s' % self)],
+            stmt)
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         raise NotImplementedError
@@ -1339,13 +1341,36 @@ class State:
 
             # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
-            return [self.mktrans_assignment(stmt.lhs,
+            return self.apply_fncall_side_effects(
+                [self.mktrans_assignment(stmt.lhs,
                                          UnknownValue(returntype, stmt.loc),
-                                         None)]
+                                         None)],
+                stmt)
 
         log('stmt.args: %s %r', stmt.args, stmt.args)
         for i, arg in enumerate(stmt.args):
             log('args[%i]: %s %r', i, arg, arg)
+
+    def apply_fncall_side_effects(self, transitions, stmt):
+        """
+        Given a list of Transition instances for a call to a function with
+        unknown side-effects, modify all of the destination states.
+
+        Specifically: any pointer arguments to the function are modified in
+        the destination states to be an UnknownValue, given that the function
+        could have written an arbitrary r-value back into the input
+        """
+        check_isinstance(transitions, list)
+        check_isinstance(stmt, gcc.GimpleCall)
+
+        args = self.eval_stmt_args(stmt)
+        for t_iter in transitions:
+            check_isinstance(t_iter, Transition)
+            for v_arg in args:
+                if isinstance(v_arg, PointerToRegion):
+                    v_newval = UnknownValue(v_arg.gcctype, stmt.loc)
+                    t_iter.dest.value_for_region[v_arg.region] = v_newval
+        return transitions
 
     def _get_transitions_for_GimpleCond(self, stmt):
         def make_transition_for_true(stmt, has_siblings):
