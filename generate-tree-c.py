@@ -418,6 +418,9 @@ def generate_tree_code_classes():
             add_simple_getter('initial',
                               'gcc_python_make_wrapper_tree(DECL_INITIAL(self->t))',
                               "The initial value for this variable as a gcc.Constructor, or None")
+            add_simple_getter('static',
+                              'PyBool_FromLong(TREE_STATIC(self->t))',
+                              "Boolean: is this variable to be allocated with static storage")
 
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',

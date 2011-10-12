@@ -222,6 +222,21 @@ Declarations
       The :py:class:`gcc.CallgraphNode` for this function declaration, or
       `None`
 
+.. py:class:: gcc.VarDecl
+
+   A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
+   variable (e.g. a global or a local).
+
+   .. py:attribute:: initial
+
+      The initial value for this variable as a :py:class:`gcc.Constructor`,
+      or None
+
+   .. py:attribute:: static
+
+      (boolean) Is this variable to be allocated with static storage?
+
+
   ..        Declaration
   ..            ClassMethodDecl
   ..            ConstDecl

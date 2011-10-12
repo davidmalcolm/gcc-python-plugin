@@ -1042,7 +1042,17 @@ class State:
         for local in fun.local_decls:
             region = RegionForLocal(local, stack)
             self.region_for_var[local] = region
-            self.value_for_region[region] = UninitializedData(local.type, fun.start)
+            if local.static:
+                # Statically-allocated locals are zero-initialized before the
+                # function is called for the first time, and then preserve
+                # state between function calls
+                # For now, don't try to track all possible values a static var
+                # can take; simply treat it as an UnknownValue
+                v_local = UnknownValue(local.type, fun.start)
+            else:
+                v_local = UninitializedData(local.type, fun.start)
+            self.value_for_region[region] = v_local
+
         # Region for the gcc.ResultDecl, if any:
         if fun.decl.result:
             result = fun.decl.result
