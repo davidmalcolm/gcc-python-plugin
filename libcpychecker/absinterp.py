@@ -185,6 +185,26 @@ class ConcreteValue(AbstractValue):
         if isinstance(self.gcctype, gcc.PointerType):
             return self.value == 0
 
+    def get_transitions_for_function_call(self, state, stmt):
+        check_isinstance(state, State)
+        check_isinstance(stmt, gcc.GimpleCall)
+
+        class CallOfNullFunctionPtr(PredictedError):
+            def __init__(self, stmt, value):
+                check_isinstance(stmt, gcc.Gimple)
+                check_isinstance(value, AbstractValue)
+                self.stmt = stmt
+                self.value = value
+
+            def __str__(self):
+                return ('call of NULL function pointer at %s: %s'
+                        % (self.stmt.loc, self.value))
+
+        if self.is_null_ptr():
+            raise CallOfNullFunctionPtr(stmt, self)
+
+        return AbstractValue.get_transitions_for_function_call(self, state, stmt)
+
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
@@ -282,6 +302,23 @@ class UninitializedData(AbstractValue):
 
     def impl_is_ge(self, rhs):
         return None
+
+    def get_transitions_for_function_call(self, state, stmt):
+        check_isinstance(state, State)
+        check_isinstance(stmt, gcc.GimpleCall)
+
+        class CallOfUninitializedFunctionPtr(PredictedError):
+            def __init__(self, stmt, value):
+                check_isinstance(stmt, gcc.Gimple)
+                check_isinstance(value, AbstractValue)
+                self.stmt = stmt
+                self.value = value
+
+            def __str__(self):
+                return ('call of uninitialized function pointer at %s: %s'
+                        % (self.stmt.loc, self.value))
+
+        raise CallOfUninitializedFunctionPtr(stmt, self)
 
 ############################################################################
 # Various kinds of predicted error:
@@ -461,7 +498,7 @@ class RegionForGlobal(Region):
     used to store a particular globa
     """
     def __init__(self, vardecl):
-        check_isinstance(vardecl, gcc.VarDecl)
+        check_isinstance(vardecl, (gcc.VarDecl, gcc.FunctionDecl))
         Region.__init__(self, vardecl.name, None)
         self.vardecl = vardecl
 
@@ -694,7 +731,7 @@ class State:
         log('eval_lvalue: %r %s', expr, expr)
         if loc:
             check_isinstance(loc, gcc.Location)
-        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl)):
+        if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl, gcc.FunctionDecl)):
             region = self.var_region(expr)
             check_isinstance(region, Region)
             return region
@@ -801,7 +838,7 @@ class State:
         self.value_for_region[dest_region] = value
 
     def var_region(self, var):
-        check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl))
+        check_isinstance(var, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl, gcc.FunctionDecl))
         if var not in self.region_for_var:
             # Presumably a reference to a global variable:
             log('adding region for global var: %r', var)

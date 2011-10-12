@@ -1,0 +1,12 @@
+tests/cpychecker/absinterp/function-pointers/input.c: In function 'test':
+tests/cpychecker/absinterp/function-pointers/input.c:45:5: error: call of NULL function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: (int (*<T513>) (int))0 from tests/cpychecker/absinterp/function-pointers/input.c:39
+tests/cpychecker/absinterp/function-pointers/input.c:31:8: note: when taking False path at:     if (i) {
+tests/cpychecker/absinterp/function-pointers/input.c:34:12: note: reaching:         if (j) {
+tests/cpychecker/absinterp/function-pointers/input.c:34:12: note: when taking True path at:         if (j) {
+tests/cpychecker/absinterp/function-pointers/input.c:39:20: note: reaching:             fn_ptr = NULL;
+tests/cpychecker/absinterp/function-pointers/input.c:45:5: error: call of uninitialized function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: uninitialized data at tests/cpychecker/absinterp/function-pointers/input.c:28
+tests/cpychecker/absinterp/function-pointers/input.c:31:8: note: when taking False path at:     if (i) {
+tests/cpychecker/absinterp/function-pointers/input.c:34:12: note: reaching:         if (j) {
+tests/cpychecker/absinterp/function-pointers/input.c:34:12: note: when taking False path at:         if (j) {
+tests/cpychecker/absinterp/function-pointers/input.c:45:5: note: reaching:     return fn_ptr(i);
+tests/cpychecker/absinterp/function-pointers/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/function-pointers/input.c.test-refcount-errors.html'

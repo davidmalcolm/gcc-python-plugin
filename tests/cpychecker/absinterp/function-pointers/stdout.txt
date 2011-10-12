@@ -1,0 +1,22 @@
+Trace 0:
+  Transitions:
+    'when taking True path'
+    "calling (int (*<T513>) (int))&RegionForGlobal(gcc.FunctionDecl('foo')) from tests/cpychecker/absinterp/function-pointers/input.c:32"
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/function-pointers/input.c', line=45))
+    str(): unknown int from tests/cpychecker/absinterp/function-pointers/input.c:45
+
+Trace 1:
+  Transitions:
+    'when taking False path'
+    'when taking True path'
+  error: CallOfNullFunctionPtr()
+  error: call of NULL function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: (int (*<T513>) (int))0 from tests/cpychecker/absinterp/function-pointers/input.c:39
+
+Trace 2:
+  Transitions:
+    'when taking False path'
+    'when taking False path'
+  error: CallOfUninitializedFunctionPtr()
+  error: call of uninitialized function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: uninitialized data at tests/cpychecker/absinterp/function-pointers/input.c:28
