@@ -227,6 +227,12 @@ class ConcreteValue(AbstractValue):
                 return ConcreteValue(gcctype, loc, self.value << rhs.value)
             elif exprcode == gcc.RshiftExpr:
                 return ConcreteValue(gcctype, loc, self.value >> rhs.value)
+
+            elif exprcode == gcc.TruthAndExpr:
+                return ConcreteValue(gcctype, loc, self.value and rhs.value)
+            elif exprcode == gcc.TruthOrExpr:
+                return ConcreteValue(gcctype, loc, self.value or rhs.value)
+
         return UnknownValue(gcctype, loc)
 
     def is_equal(self, rhs):
@@ -1523,10 +1529,13 @@ class State:
     def eval_rhs(self, stmt):
         log('eval_rhs(%s): %s', stmt, stmt.rhs)
         rhs = stmt.rhs
-        # Handle arithmetic expressions:
+        # Handle arithmetic and boolean expressions:
         if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
                              gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
-                             gcc.LshiftExpr, gcc.RshiftExpr):
+                             gcc.LshiftExpr, gcc.RshiftExpr,
+
+                             gcc.TruthAndExpr, gcc.TruthOrExpr
+                             ):
             a, b = self.eval_binop_args(stmt)
             try:
                 c = a.eval_binop(stmt.exprcode, b, stmt.lhs.type, stmt.loc)
