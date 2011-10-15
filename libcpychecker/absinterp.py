@@ -89,10 +89,10 @@ class AbstractValue:
     def eval_unary_op(self, exprcode, gcctype, loc):
         if exprcode == gcc.ConvertExpr:
             raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
-                                      % (self, self, stmt.loc, stmt.lhs.type))
+                                      % (self, self, loc, gcctype))
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
-                                      % (stmt.exprcode, stmt.exprcode, self, stmt.loc))
+                                      % (exprcode, exprcode, self, loc))
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         raise NotImplementedError
