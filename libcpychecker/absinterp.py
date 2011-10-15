@@ -164,6 +164,46 @@ class UnknownValue(AbstractValue):
     def impl_is_ge(self, rhs):
         return None
 
+def eval_binop(exprcode, a, b):
+    """
+    Evaluate a gcc exprcode on a pair of Python values (as opposed to
+    AbstractValue instances)
+    """
+    assert isinstance(a, (int, long, float))
+    assert isinstance(b, (int, long, float))
+
+    if exprcode == gcc.PlusExpr:
+        return a + b
+    elif exprcode == gcc.MinusExpr:
+        return a - b
+    elif exprcode == gcc.MultExpr:
+        return a * b
+    elif exprcode == gcc.TruncDivExpr:
+        return a // b
+    elif exprcode == gcc.TruncModExpr:
+        return a % b
+    elif exprcode == gcc.MaxExpr:
+        return max(a, b)
+    elif exprcode == gcc.MinExpr:
+        return min(a, b)
+    elif exprcode == gcc.BitIorExpr:
+        return a | b
+    elif exprcode == gcc.BitAndExpr:
+        return a & b
+    elif exprcode == gcc.BitXorExpr:
+        return a ^ b
+    elif exprcode == gcc.LshiftExpr:
+        return a << b
+    elif exprcode == gcc.RshiftExpr:
+        return a >> b
+    elif exprcode == gcc.TruthAndExpr:
+        return a and b
+    elif exprcode == gcc.TruthOrExpr:
+        return a or b
+
+    # (an implicit return of None means "did not know how to handle this
+    # expression")
+
 class ConcreteValue(AbstractValue):
     """
     A known, specific value (e.g. 0)
@@ -233,36 +273,9 @@ class ConcreteValue(AbstractValue):
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
-            if exprcode == gcc.PlusExpr:
-                return ConcreteValue(gcctype, loc, self.value + rhs.value)
-            elif exprcode == gcc.MinusExpr:
-                return ConcreteValue(gcctype, loc, self.value - rhs.value)
-            elif exprcode == gcc.MultExpr:
-                return ConcreteValue(gcctype, loc, self.value * rhs.value)
-            elif exprcode == gcc.TruncDivExpr:
-                return ConcreteValue(gcctype, loc, self.value // rhs.value)
-            elif exprcode == gcc.TruncModExpr:
-                return ConcreteValue(gcctype, loc, self.value % rhs.value)
-            elif exprcode == gcc.MaxExpr:
-                return ConcreteValue(gcctype, loc, max(self.value, rhs.value))
-            elif exprcode == gcc.MinExpr:
-                return ConcreteValue(gcctype, loc, min(self.value, rhs.value))
-            elif exprcode == gcc.BitIorExpr:
-                return ConcreteValue(gcctype, loc, self.value | rhs.value)
-            elif exprcode == gcc.BitAndExpr:
-                return ConcreteValue(gcctype, loc, self.value & rhs.value)
-            elif exprcode == gcc.BitXorExpr:
-                return ConcreteValue(gcctype, loc, self.value ^ rhs.value)
-            elif exprcode == gcc.LshiftExpr:
-                return ConcreteValue(gcctype, loc, self.value << rhs.value)
-            elif exprcode == gcc.RshiftExpr:
-                return ConcreteValue(gcctype, loc, self.value >> rhs.value)
-
-            elif exprcode == gcc.TruthAndExpr:
-                return ConcreteValue(gcctype, loc, self.value and rhs.value)
-            elif exprcode == gcc.TruthOrExpr:
-                return ConcreteValue(gcctype, loc, self.value or rhs.value)
-
+            newvalue = eval_binop(exprcode, self.value, rhs.value)
+            if newvalue is not None:
+                return ConcreteValue(gcctype, loc, newvalue)
         return UnknownValue(gcctype, loc)
 
     def is_equal(self, rhs):
