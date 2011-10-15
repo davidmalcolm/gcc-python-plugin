@@ -2219,7 +2219,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     % (fun.decl.name, filename)))
 
     if 0:
-        dot = cfg_to_dot(fun.cfg)
+        dot = cfg_to_dot(fun.cfg, fun.decl.name)
         invoke_dot(dot)
 
 
