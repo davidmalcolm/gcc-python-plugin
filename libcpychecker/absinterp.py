@@ -243,6 +243,10 @@ class ConcreteValue(AbstractValue):
                 return ConcreteValue(gcctype, loc, self.value // rhs.value)
             elif exprcode == gcc.TruncModExpr:
                 return ConcreteValue(gcctype, loc, self.value % rhs.value)
+            elif exprcode == gcc.MaxExpr:
+                return ConcreteValue(gcctype, loc, max(self.value, rhs.value))
+            elif exprcode == gcc.MinExpr:
+                return ConcreteValue(gcctype, loc, min(self.value, rhs.value))
             elif exprcode == gcc.BitIorExpr:
                 return ConcreteValue(gcctype, loc, self.value | rhs.value)
             elif exprcode == gcc.BitAndExpr:
@@ -1558,6 +1562,7 @@ class State:
         # Handle arithmetic and boolean expressions:
         if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
                              gcc.TruncModExpr,
+                             gcc.MaxExpr, gcc.MinExpr,
                              gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
                              gcc.LshiftExpr, gcc.RshiftExpr,
 
