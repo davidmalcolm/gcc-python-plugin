@@ -23,23 +23,33 @@
   Test of various arithmetic operations
 */
 
-extern void foo(int);
+extern void __cpychecker_dump(int);
 
 int
 test(void)
 {
     int i = 0;
 
-    foo(i++);
-    foo(i++);
-    foo(i--);
-    foo(i * 2);
-    foo(i / 2);
+    __cpychecker_dump(i++);
+    __cpychecker_dump(i++);
+    __cpychecker_dump(i--);
+    __cpychecker_dump(i * 2);
+    __cpychecker_dump(i / 2);
+    __cpychecker_dump(i % 2);
+    __cpychecker_dump(-i);
+
+    __cpychecker_dump(abs(i));
+    __cpychecker_dump(abs(-i));
 
     /* Bitwise: */
     i |= 0xf0f0;
     i &= 0xaaaa;
     i ^= 0xaaaa;
+    __cpychecker_dump(i);
+
+
+    i = ~i;
+    __cpychecker_dump(i);
 
     /* Bit shifting */
     i <<= 2;

@@ -86,6 +86,14 @@ class AbstractValue:
                                       'calling %s' % self)],
             stmt)
 
+    def eval_unary_op(self, exprcode, gcctype, loc):
+        if exprcode == gcc.ConvertExpr:
+            raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
+                                      % (self, self, stmt.loc, stmt.lhs.type))
+        else:
+            raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
+                                      % (stmt.exprcode, stmt.exprcode, self, stmt.loc))
+
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         raise NotImplementedError
 
@@ -140,6 +148,9 @@ class UnknownValue(AbstractValue):
 
     def __repr__(self):
         return 'UnknownValue(gcctype=%r, loc=%r)' % (self.gcctype, self.loc)
+
+    def eval_unary_op(self, exprcode, gcctype, loc):
+        return UnknownValue(gcctype, loc)
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         return UnknownValue(gcctype, loc)
@@ -207,6 +218,19 @@ class ConcreteValue(AbstractValue):
 
         return AbstractValue.get_transitions_for_function_call(self, state, stmt)
 
+    def eval_unary_op(self, exprcode, gcctype, loc):
+        if exprcode == gcc.AbsExpr:
+            return ConcreteValue(gcctype, loc, abs(self.value))
+        elif exprcode == gcc.BitNotExpr:
+            # FIXME: bitwise-complement, with the correct width
+            #   self.gcctype.precision
+            return ConcreteValue(gcctype, loc, ~self.value)
+        elif exprcode == gcc.NegateExpr:
+            return ConcreteValue(gcctype, loc, -self.value)
+        else:
+            raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
+                                      % (exprcode, exprcode, self, loc))
+
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
@@ -217,6 +241,8 @@ class ConcreteValue(AbstractValue):
                 return ConcreteValue(gcctype, loc, self.value * rhs.value)
             elif exprcode == gcc.TruncDivExpr:
                 return ConcreteValue(gcctype, loc, self.value // rhs.value)
+            elif exprcode == gcc.TruncModExpr:
+                return ConcreteValue(gcctype, loc, self.value % rhs.value)
             elif exprcode == gcc.BitIorExpr:
                 return ConcreteValue(gcctype, loc, self.value | rhs.value)
             elif exprcode == gcc.BitAndExpr:
@@ -1531,6 +1557,7 @@ class State:
         rhs = stmt.rhs
         # Handle arithmetic and boolean expressions:
         if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
+                             gcc.TruncModExpr,
                              gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
                              gcc.LshiftExpr, gcc.RshiftExpr,
 
@@ -1574,18 +1601,11 @@ class State:
                                      1 if result else 0)
             else:
                 return UnknownValue(stmt.lhs.type, stmt.loc)
-        elif stmt.exprcode == gcc.ConvertExpr:
-            # Type-conversions (e.g. casts)
-            # Seems to just involve stmt.lhs.type and stmt.rhs[0].type
-            # (and the lvalue/rvalue)
-            rvalue = self.eval_rvalue(stmt.rhs[0], stmt.loc)
-            if isinstance(rvalue, UnknownValue):
-                # Update the type to that of the lhs:
-                return UnknownValue(stmt.lhs.type,
-                                    stmt.loc)
-            else:
-                raise NotImplementedError("Don't know how to cope with type conversion of: %r (%s) at %s to type %s"
-                                          % (rvalue, rvalue, stmt.loc, stmt.lhs.type))
+        # Unary expressions:
+        elif stmt.exprcode in (gcc.AbsExpr, gcc.BitNotExpr, gcc.ConvertExpr,
+                               gcc.NegateExpr):
+            v_rhs = self.eval_rvalue(stmt.rhs[0], stmt.loc)
+            return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))

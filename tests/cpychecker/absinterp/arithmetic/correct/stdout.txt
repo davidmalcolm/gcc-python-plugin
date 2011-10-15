@@ -1,8 +1,19 @@
 Trace 0:
   Transitions:
+    '__dump((int)0 from tests/cpychecker/absinterp/arithmetic/correct/input.c:31)'
+    '__dump((int)1 from tests/cpychecker/absinterp/arithmetic/correct/input.c:33)'
+    '__dump((int)2 from tests/cpychecker/absinterp/arithmetic/correct/input.c:34)'
+    '__dump((int)2 from tests/cpychecker/absinterp/arithmetic/correct/input.c:36)'
+    '__dump((int)0 from tests/cpychecker/absinterp/arithmetic/correct/input.c:37)'
+    '__dump((int)1 from tests/cpychecker/absinterp/arithmetic/correct/input.c:38)'
+    '__dump((int)-1 from tests/cpychecker/absinterp/arithmetic/correct/input.c:39)'
+    '__dump((int)1 from tests/cpychecker/absinterp/arithmetic/correct/input.c:41)'
+    '__dump((int)1 from tests/cpychecker/absinterp/arithmetic/correct/input.c:42)'
+    '__dump((int)2570 from tests/cpychecker/absinterp/arithmetic/correct/input.c:47)'
+    '__dump((int)-2571 from tests/cpychecker/absinterp/arithmetic/correct/input.c:51)'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arithmetic/correct/input.c', line=46), value=5140)
-    str(): (int)5140 from tests/cpychecker/absinterp/arithmetic/correct/input.c:46
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arithmetic/correct/input.c', line=56), value=-5142)
+    str(): (int)-5142 from tests/cpychecker/absinterp/arithmetic/correct/input.c:56
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/correct/input.c:30
