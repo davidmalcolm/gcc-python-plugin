@@ -1220,7 +1220,8 @@ class State:
             gcc.set_location(stmt.loc)
         if isinstance(stmt, gcc.GimpleCall):
             return self._get_transitions_for_GimpleCall(stmt)
-        elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel)):
+        elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel,
+                               gcc.GimplePredict)):
             return [Transition(self,
                                self.use_next_loc(),
                                None)]
