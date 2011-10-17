@@ -12,6 +12,6 @@ Trace 1:
   Transitions:
     'when treating unknown struct Foo * from tests/cpychecker/absinterp/arrays3/input.c:37 as NULL'
   error: NullPtrDereference()
-  error: possibly dereferencing NULL (D.12021->fieldA) at tests/cpychecker/absinterp/arrays3/input.c:37
+  error: possibly dereferencing NULL (D.nnnnn->fieldA) at tests/cpychecker/absinterp/arrays3/input.c:37
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arrays3/input.c:36

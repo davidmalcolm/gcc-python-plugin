@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/unchecked/input.c:32)'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/unchecked/input.c', line=37), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/array-range/unchecked/input.c:37
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/unchecked/input.c:33
+
+Trace 1:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/unchecked/input.c:32)'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/unchecked/input.c', line=39), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/array-range/unchecked/input.c:39
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/unchecked/input.c:33

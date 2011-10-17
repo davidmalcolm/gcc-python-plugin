@@ -1,22 +1,22 @@
 fun: gcc.Function('main')
-  stmt: D.3258 = (const char * restrict) &"argc: %i\n"[0];
+  stmt: D.nnnnn = (const char * restrict) &"argc: %i\n"[0];
     node: gcc.StringCst('argc: %i\n') ("argc: %i\n")
-  stmt: printf (D.3258, argc);
+  stmt: printf (D.nnnnn, argc);
   stmt: i = 0;
-  stmt: D.3259 = (long unsigned int) i;
-  stmt: D.3260 = D.3259 * 8;
-  stmt: D.3261 = argv + D.3260;
-  stmt: D.3262 = *D.3261;
-  stmt: D.3263 = (const char * restrict) &"argv[%i]: %s\n"[0];
+  stmt: D.nnnnn = (long unsigned int) i;
+  stmt: D.nnnnn = D.nnnnn * 8;
+  stmt: D.nnnnn = argv + D.nnnnn;
+  stmt: D.nnnnn = *D.nnnnn;
+  stmt: D.nnnnn = (const char * restrict) &"argv[%i]: %s\n"[0];
     node: gcc.StringCst('argv[%i]: %s\n') ("argv[%i]: %s\n")
-  stmt: printf (D.3263, D.3262);
+  stmt: printf (D.nnnnn, D.nnnnn);
   stmt: i = i + 1;
   stmt: if (i < argc)
   stmt: helper_function ();
-  stmt: D.3264 = 0;
-  stmt: return D.3264;
+  stmt: D.nnnnn = 0;
+  stmt: return D.nnnnn;
 fun: gcc.Function('helper_function')
   stmt: __builtin_puts (&"I am a helper function"[0]);
     node: gcc.StringCst('I am a helper function') ("I am a helper function")
-  stmt: D.3266 = 42;
-  stmt: return D.3266;
+  stmt: D.nnnnn = 42;
+  stmt: return D.nnnnn;

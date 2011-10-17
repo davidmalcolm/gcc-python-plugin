@@ -7,28 +7,28 @@ gimple[0]:
     stmt.labels: [<gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>, <gcc.CaseLabelExpr object at 0xdeadbeef>]
       label[0].low: None
       label[0].high: None
-      label[0].target: gcc.LabelDecl(1591)
+      label[0].target: gcc.LabelDecl(nnnn)
       label[1].low: gcc.IntegerCst(1)
       label[1].high: gcc.IntegerCst(2)
-      label[1].target: gcc.LabelDecl(1587)
+      label[1].target: gcc.LabelDecl(nnnn)
       label[2].low: gcc.IntegerCst(4)
       label[2].high: None
-      label[2].target: gcc.LabelDecl(1587)
+      label[2].target: gcc.LabelDecl(nnnn)
       label[3].low: gcc.IntegerCst(8)
       label[3].high: None
-      label[3].target: gcc.LabelDecl(1587)
+      label[3].target: gcc.LabelDecl(nnnn)
 gimple[0]:
   str(stmt): '<L0>:'
   repr(stmt): 'gcc.GimpleLabel()'
 gimple[1]:
-  str(stmt): 'D.2688 = 1;'
+  str(stmt): 'D.nnnnn = 1;'
   repr(stmt): 'gcc.GimpleAssign()'
 gimple[0]:
   str(stmt): '<L4>:'
   repr(stmt): 'gcc.GimpleLabel()'
 gimple[1]:
-  str(stmt): 'D.2688 = 0;'
+  str(stmt): 'D.nnnnn = 0;'
   repr(stmt): 'gcc.GimpleAssign()'
 gimple[0]:
-  str(stmt): 'return D.2688;'
+  str(stmt): 'return D.nnnnn;'
   repr(stmt): 'gcc.GimpleReturn()'

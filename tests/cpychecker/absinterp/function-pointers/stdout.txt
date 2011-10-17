@@ -4,8 +4,8 @@ Trace 0:
     "calling (int (*<T513>) (int))&RegionForGlobal(gcc.FunctionDecl('foo')) from tests/cpychecker/absinterp/function-pointers/input.c:32"
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/function-pointers/input.c', line=45))
-    str(): unknown int from tests/cpychecker/absinterp/function-pointers/input.c:45
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/function-pointers/input.c', line=45), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/function-pointers/input.c:45
 
 Trace 1:
   Transitions:

@@ -1,0 +1,40 @@
+Trace 0:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'when considering range: -0x80000000 <= value <= 12'
+    'taking True path'
+    '__dump((int)val [-0x80000000 <= val <= 12] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/off-by-one/input.c', line=49), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:49
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:33
+
+Trace 1:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'when considering range: -0x80000000 <= value <= 12'
+    'taking True path'
+    '__dump((int)val [-0x80000000 <= val <= 12] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/off-by-one/input.c', line=51), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:51
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:33
+
+Trace 2:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'when considering range: 13 <= value <= 0x7fffffff'
+    'taking False path'
+    '__dump((int)val [13 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/off-by-one/input.c:32)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/off-by-one/input.c', line=56), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:56
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/off-by-one/input.c:33

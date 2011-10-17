@@ -4,8 +4,8 @@ Trace 0:
     'taking True path'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=36))
-    str(): unknown int from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:36
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c', line=36), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:36
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-checked/input.c:34
 

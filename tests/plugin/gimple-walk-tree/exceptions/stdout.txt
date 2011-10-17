@@ -1,4 +1,4 @@
 fun: gcc.Function('main')
-  stmt: D.3258 = (const char * restrict) &"argc: %i\n"[0];
+  stmt: D.nnnnn = (const char * restrict) &"argc: %i\n"[0];
 fun: gcc.Function('helper_function')
   stmt: __builtin_puts (&"I am a helper function"[0]);

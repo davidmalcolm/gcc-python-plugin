@@ -3,8 +3,8 @@ Trace 0:
     'when treating unknown struct coord * from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:31 as non-NULL'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.IntegerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c', line=35))
-    str(): unknown int from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c', line=35), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:35
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/read-through-global-ptr-unchecked/input.c:34
 

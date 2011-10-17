@@ -146,7 +146,7 @@ class RefcountValue(AbstractValue):
                 return RefcountValue(self.relvalue + rhs.value, self.min_external)
             elif exprcode == gcc.MinusExpr:
                 return RefcountValue(self.relvalue - rhs.value, self.min_external)
-        return UnknownValue(gcctype, loc)
+        return UnknownValue.make(gcctype, loc)
 
     def is_equal(self, rhs):
         if isinstance(rhs, ConcreteValue):
@@ -189,7 +189,7 @@ class GenericTpDealloc(AbstractValue):
         # Get the description of the region before trashing it:
         desc = 'calling tp_dealloc on %s' % region
         result = state.mktrans_assignment(stmt.lhs,
-                                       UnknownValue(returntype, stmt.loc),
+                                       UnknownValue.make(returntype, stmt.loc),
                                        'calling tp_dealloc on %s' % region)
         s_new = state.copy()
         s_new.loc = state.loc.next_loc()
@@ -532,7 +532,7 @@ class CPython(Facet):
             if isinstance(args[0].region, RegionForStringConstant):
                 desc = args[0].region.text
         return [self.state.mktrans_assignment(stmt.lhs,
-                                     UnknownValue(returntype, stmt.loc),
+                                     UnknownValue.make(returntype, stmt.loc),
                                      desc)]
 
     def impl___cpychecker_dump(self, stmt, *args):
@@ -542,7 +542,7 @@ class CPython(Facet):
         # traces)
         desc = '__dump(%s)' % (','.join([str(arg) for arg in args]))
         return [self.state.mktrans_assignment(stmt.lhs,
-                                     UnknownValue(returntype, stmt.loc),
+                                     UnknownValue.make(returntype, stmt.loc),
                                      desc)]
 
     def impl___cpychecker_assert_equal(self, stmt, *args):
@@ -560,7 +560,7 @@ class CPython(Facet):
             raise AssertionError('%s != %s' % (args[0], args[1]))
         desc = '__cpychecker_assert_equal(%s)' % (','.join([str(arg) for arg in args]))
         return [self.state.mktrans_assignment(stmt.lhs,
-                                     UnknownValue(returntype, stmt.loc),
+                                     UnknownValue.make(returntype, stmt.loc),
                                      desc)]
 
     # Specific Python API function implementations
@@ -611,7 +611,7 @@ class CPython(Facet):
 
             # Unknown value:
             check_isinstance(exptype, gcc.PointerType)
-            return UnknownValue(exptype.dereference, stmt.loc)
+            return UnknownValue.make(exptype.dereference, stmt.loc)
 
         def _handle_successful_parse(fmt):
             exptypes = fmt.iter_exp_types()
@@ -1051,7 +1051,7 @@ class CPython(Facet):
         # We don't know if it's a PyIntObject (or subclass); the call could
         # fail:
         t_success = self.state.mktrans_assignment(stmt.lhs,
-                                            UnknownValue(returntype, stmt.loc),
+                                            UnknownValue.make(returntype, stmt.loc),
                                             'PyInt_AsLong() succeeds')
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
@@ -1240,7 +1240,7 @@ class CPython(Facet):
             # Get the description of the region before trashing it:
             desc = 'calling PyMem_Free on %s' % region
             #t_temp = state.mktrans_assignment(stmt.lhs,
-            #                                  UnknownValue(None, stmt.loc),
+            #                                  UnknownValue.make(None, stmt.loc),
             #                                  'calling tp_dealloc on %s' % region)
 
             # Mark the region as deallocated
@@ -1765,7 +1765,7 @@ class CPython(Facet):
         # http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype
         returntype = stmt.fn.type.dereference.type
         return [self.state.mktrans_assignment(stmt.lhs,
-                                        UnknownValue(returntype, stmt.loc),
+                                        UnknownValue.make(returntype, stmt.loc),
                                         None)]
 
     def impl_PyType_Ready(self, stmt, v_type):

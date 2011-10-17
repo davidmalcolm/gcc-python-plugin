@@ -6,7 +6,7 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=32), region=RegionOnHeap('object from arg "O"', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=32)))
     str(): (struct PyObject *)&RegionOnHeap('object from arg "O"', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=32)) from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:32
-    r->ob_refcnt: unknown Py_ssize_t from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:42
+    r->ob_refcnt: (Py_ssize_t)val [-0x7fffffffffffffff <= val <= 0x8000000000000000L] from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:42
     r->ob_type: None
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
