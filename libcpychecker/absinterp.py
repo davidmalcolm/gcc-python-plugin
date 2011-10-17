@@ -1578,6 +1578,16 @@ class State:
             check_isinstance(val, AbstractValue)
             return val.get_transitions_for_function_call(self, stmt)
 
+        # Evaluate the arguments:
+        args = self.eval_stmt_args(stmt)
+
+        # Check for uninitialized data:
+        for i, arg in enumerate(args):
+            if isinstance(arg, UninitializedData):
+                raise UsageOfUninitializedData(self, stmt.args[i],
+                                               arg,
+                                               'passing uninitialized data as argument %i to function' % (i + 1))
+
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
             log('stmt.fn.operand.name: %r', stmt.fn.operand.name)
@@ -1596,15 +1606,6 @@ class State:
                 facet = getattr(self, key)
                 if hasattr(facet, methname):
                     meth = getattr(facet, 'impl_%s' % fnname)
-                    # Evaluate the arguments:
-                    args = self.eval_stmt_args(stmt)
-
-                    # Check for uninitialized data:
-                    for i, arg in enumerate(args):
-                        if isinstance(arg, UninitializedData):
-                            raise UsageOfUninitializedData(self, stmt.args[i],
-                                                           arg,
-                                                           'passing uninitialized data as argument %i to function' % (i + 1))
 
                     # Call the facet's method:
                     return meth(stmt, *args)
