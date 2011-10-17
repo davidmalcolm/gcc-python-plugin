@@ -212,40 +212,48 @@ def eval_binop(exprcode, a, b):
     Evaluate a gcc exprcode on a pair of Python values (as opposed to
     AbstractValue instances)
     """
+    log('eval_binop(%s, %s, %s)', exprcode, a, b)
     assert isinstance(a, (int, long, float))
     assert isinstance(b, (int, long, float))
 
-    if exprcode == gcc.PlusExpr:
-        return a + b
-    elif exprcode == gcc.MinusExpr:
-        return a - b
-    elif exprcode == gcc.MultExpr:
-        return a * b
-    elif exprcode == gcc.TruncDivExpr:
-        return a // b
-    elif exprcode == gcc.TruncModExpr:
-        return a % b
-    elif exprcode == gcc.MaxExpr:
-        return max(a, b)
-    elif exprcode == gcc.MinExpr:
-        return min(a, b)
-    elif exprcode == gcc.BitIorExpr:
-        return a | b
-    elif exprcode == gcc.BitAndExpr:
-        return a & b
-    elif exprcode == gcc.BitXorExpr:
-        return a ^ b
-    elif exprcode == gcc.LshiftExpr:
-        return a << b
-    elif exprcode == gcc.RshiftExpr:
-        return a >> b
-    elif exprcode == gcc.TruthAndExpr:
-        return a and b
-    elif exprcode == gcc.TruthOrExpr:
-        return a or b
+    def inner():
+        if exprcode == gcc.PlusExpr:
+            return a + b
+        elif exprcode == gcc.MinusExpr:
+            return a - b
+        elif exprcode == gcc.MultExpr:
+            return a * b
+        elif exprcode == gcc.TruncDivExpr:
+            return a // b
+        elif exprcode == gcc.TruncModExpr:
+            return a % b
+        elif exprcode == gcc.MaxExpr:
+            return max(a, b)
+        elif exprcode == gcc.MinExpr:
+            return min(a, b)
+        elif exprcode == gcc.BitIorExpr:
+            return a | b
+        elif exprcode == gcc.BitAndExpr:
+            return a & b
+        elif exprcode == gcc.BitXorExpr:
+            return a ^ b
+        elif exprcode == gcc.LshiftExpr:
+            return a << b
+        elif exprcode == gcc.RshiftExpr:
+            return a >> b
+        elif exprcode == gcc.TruthAndExpr:
+            return a and b
+        elif exprcode == gcc.TruthOrExpr:
+            return a or b
 
-    # (an implicit return of None means "did not know how to handle this
-    # expression")
+        # (an implicit return of None means "did not know how to handle this
+        # expression")
+
+    result = inner()
+    log('result: %s', result)
+    assert isinstance(result, (int, long, float))
+    return result
+
 
 class ConcreteValue(AbstractValue):
     """
