@@ -663,8 +663,8 @@ class CPython(Facet):
 
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
-    def impl_PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
-                                               v_fmt, v_keywords, *v_varargs):
+    def impl__PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
+                                                v_fmt, v_keywords, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
         #                                               const char *, char **, ...);
@@ -1375,7 +1375,7 @@ class CPython(Facet):
         return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
                                                 args, with_size_t=False)
 
-    def _PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
+    def impl__PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
         # abstract.h has:
         #   #ifdef PY_SSIZE_T_CLEAN
         #   #define PyObject_CallMethod _PyObject_CallMethod_SizeT
