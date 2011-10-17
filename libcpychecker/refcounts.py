@@ -939,6 +939,25 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
+    def impl_PyErr_SetObject(self, stmt, v_exc, v_value):
+        # http://docs.python.org/c-api/exceptions.html#PyErr_SetObject
+        #
+        # Declared in pyerrors.h:
+        #   PyAPI_FUNC(void) PyErr_SetObject(PyObject *, PyObject *);
+        #
+        # Defined in Python/errors.c
+        #   void
+        #   PyErr_SetObject(PyObject *exception, PyObject *value)
+        #
+        # It's acceptable for each of v_exc and v_value to be NULL
+        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetObject')
+        t_next.dest.cpython.exception_rvalue = v_exc
+        if isinstance(v_exc, PointerToRegion):
+            t_next.dest.cpython.add_external_ref(v_exc, stmt.loc)
+        if isinstance(v_value, PointerToRegion):
+            t_next.dest.cpython.add_external_ref(v_value, stmt.loc)
+        return [t_next]
+
     def impl_PyErr_SetString(self, stmt, v_exc, v_string):
         # Declared in pyerrors.h:
         #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
