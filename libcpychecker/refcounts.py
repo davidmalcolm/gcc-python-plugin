@@ -1570,6 +1570,29 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     ########################################################################
+    # PySequence_*
+    ########################################################################
+    def impl_PySequence_GetItem(self, stmt, v_o, v_i):
+        # http://docs.python.org/c-api/sequence.html#PySequence_GetItem
+        # Declared in abstract.h:
+        #   PyAPI_FUNC(PyObject *) PySequence_GetItem(PyObject *o, Py_ssize_t i);
+        #
+        # Defined in Objects/abstract.c:
+        #   PyObject *
+        #   PySequence_GetItem(PyObject *s, Py_ssize_t i)
+        #   {
+        #      [... setup and error handling ...]
+        #      return m->sq_item(s, i);
+        #   }
+        #
+        # When it succeeds, it returns a new reference; see e.g.
+        # Objects/listobject.c: list_item (the sq_item callback for
+        # PyList_Type): it Py_INCREFs the returned item.
+        fnname = 'PySequence_GetItem'
+        return self.make_transitions_for_new_ref_or_fail(stmt,
+                                                         'new ref from %s' % fnname)
+
+    ########################################################################
     # PyString_*
     ########################################################################
     def impl_PyString_AsString(self, stmt, v_op):
