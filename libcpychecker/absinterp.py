@@ -402,6 +402,17 @@ class WithinRange(AbstractValue):
             return UnknownValue.make(gcctype, loc)
         elif exprcode == gcc.NegateExpr:
             return WithinRange(gcctype, loc, -self.maxvalue, -self.minvalue)
+        elif exprcode == gcc.ConvertExpr:
+            # Is the whole of this range fully expressible within the new type?
+            # If not, we might lose information
+            if isinstance(self.gcctype, gcc.IntegerType):
+                if (self.minvalue >= gcctype.min_value.constant
+                    and self.maxvalue <= gcctype.max_value.constant):
+                    # The old range will convert OK to the new type:
+                    return WithinRange(gcctype, loc,
+                                       self.minvalue, self.maxvalue)
+            # We might lose information e.g. truncation; be pessimistic for now:
+            return UnknownValue.make(gcctype, loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))

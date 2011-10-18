@@ -1,0 +1,9 @@
+Trace 0:
+  Transitions:
+    '__dump((char)val [-128 <= val <= 127] from tests/cpychecker/absinterp/casts/int-to-char-with-implicit-truncation/input.c:36)'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='char', loc=gcc.Location(file='tests/cpychecker/absinterp/casts/int-to-char-with-implicit-truncation/input.c', line=36), minvalue=-128, maxvalue=127)
+    str(): (char)val [-128 <= val <= 127] from tests/cpychecker/absinterp/casts/int-to-char-with-implicit-truncation/input.c:36
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/casts/int-to-char-with-implicit-truncation/input.c:32

@@ -1,0 +1,11 @@
+Trace 0:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c:31)'
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c:38)'
+    '__dump((int)val [0 <= val <= 15] from tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c:42)'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='char', loc=gcc.Location(file='tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c', line=50), minvalue=0, maxvalue=15)
+    str(): (char)val [0 <= val <= 15] from tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c:50
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/casts/int-to-char-within-range/input.c:32
