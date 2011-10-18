@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+  error: WrongNumberOfVarargs()
+  error: expected 3 vararg pointer(s); got 2
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/wrong-number-of-varargs/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/wrong-number-of-varargs/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')):
+    repr(): RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+    str(): RegionForGlobal(gcc.VarDecl('_Py_NoneStruct'))
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyArg_UnpackTuple/wrong-number-of-varargs/input.c:29

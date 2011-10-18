@@ -674,6 +674,67 @@ class CPython(Facet):
 
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
 
+    def impl_PyArg_UnpackTuple(self, stmt, v_args, v_name, v_min, v_max,
+                               *v_varargs):
+        # http://docs.python.org/c-api/arg.html#PyArg_UnpackTuple
+        # Declared in modsupport.h:
+        #   PyAPI_FUNC(int) PyArg_UnpackTuple(PyObject *, const char *,
+        #                                     Py_ssize_t, Py_ssize_t, ...);
+        # Defined in Python/getargs.c:
+        #   int
+        #   PyArg_UnpackTuple(PyObject *args, const char *name,
+        #                     Py_ssize_t min, Py_ssize_t max, ...)
+        #
+        # Will only write betweeen v_min..v_max values back
+
+        # For now, assume that we can figure out min and max during the
+        # analysis:
+        check_isinstance(v_min, ConcreteValue)
+        check_isinstance(v_max, ConcreteValue)
+
+        # for arg in v_varargs:
+        #     print arg
+
+        # Detect wrong number of arguments:
+        if len(v_varargs) != v_max.value:
+            class WrongNumberOfVarargs(PredictedError):
+                def __init__(self, v_max, v_varargs):
+                    self.v_max = v_max
+                    self.v_varargs = v_varargs
+                def __str__(self):
+                    return ('expected %i vararg pointer(s); got %i' %
+                            (v_max.value, len(v_varargs)))
+            raise WrongNumberOfVarargs(v_max, v_varargs)
+
+        s_failure = self.state.mkstate_concrete_return_of(stmt, 0)
+        # Various errors are possible, but a TypeError is always possible
+        # e.g. for the case of the wrong number of arguments:
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc)
+        result = [self.state.mktrans_from_fncall_state(stmt,
+                        s_failure, 'fails', has_siblings=True)]
+
+        # Enumerate all possible successes, to detect the case where an
+        # optional argument doesn't get initialized
+        for numargs in range(v_min.value, v_max.value + 1):
+            s_success = self.state.mkstate_concrete_return_of(stmt, 1)
+            result.append(self.state.mktrans_from_fncall_state(
+                    stmt, s_success, 'successfully unpacks %i argument(s)' % numargs,
+                    has_siblings=True))
+            # Write sane objects to each location that gets written to,
+            # given this number of arguments:
+            for i in range(numargs):
+                vararg = v_varargs[i]
+                if isinstance(vararg, PointerToRegion):
+                    # Write back a sane object:
+                    v_obj = PointerToRegion(get_PyObjectPtr(),
+                                            stmt.loc,
+                                            s_success.cpython.make_sane_object(stmt,
+                                                                               'argument %i' % (i + 1),
+                                                                               RefcountValue.borrowed_ref()))
+                    s_success.value_for_region[vararg.region] = v_obj
+
+        return result
+
     ########################################################################
     # PyBool_*
     ########################################################################
