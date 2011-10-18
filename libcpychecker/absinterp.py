@@ -319,6 +319,16 @@ class ConcreteValue(AbstractValue):
             return ConcreteValue(gcctype, loc, ~self.value)
         elif exprcode == gcc.NegateExpr:
             return ConcreteValue(gcctype, loc, -self.value)
+        elif exprcode == gcc.ConvertExpr:
+            # Is this value expressible within the new type?
+            # If not, we might lose information
+            if isinstance(self.gcctype, gcc.IntegerType):
+                if (self.value >= gcctype.min_value.constant
+                    and self.value <= gcctype.max_value.constant):
+                    # The old range will convert OK to the new type:
+                    return ConcreteValue(gcctype, loc, self.value)
+            # We might lose information e.g. truncation; be pessimistic for now:
+            return UnknownValue.make(gcctype, loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
