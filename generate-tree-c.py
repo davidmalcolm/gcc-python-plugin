@@ -403,6 +403,17 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
                               "The gcc.Tree that for the pointer expression'")
 
+        if tree_type.SYM == 'BIT_FIELD_REF':
+            add_simple_getter('operand',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              "The gcc.Tree for the structure or union expression")
+            add_simple_getter('num_bits',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              "The number of bits being referenced, as a gcc.IntegerCst")
+            add_simple_getter('position',
+                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 2))',
+                              "The position of the first referenced bit, as a gcc.IntegerCst")
+
         if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
             add_simple_getter('fields',
                               'gcc_tree_list_from_chain(TYPE_FIELDS(self->t))',
