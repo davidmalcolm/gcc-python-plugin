@@ -396,7 +396,8 @@ class WithinRange(AbstractValue):
 
     def eval_unary_op(self, exprcode, gcctype, loc):
         if exprcode == gcc.AbsExpr:
-            values = (abs(self.minvalue, self.maxvalue))
+            values = [abs(val)
+                      for val in (self.minvalue, self.maxvalue)]
             return WithinRange(gcctype, loc, min(values), max(values))
         elif exprcode == gcc.BitNotExpr:
             return UnknownValue.make(gcctype, loc)
@@ -419,9 +420,9 @@ class WithinRange(AbstractValue):
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
-            return WithinRange(gcctype, loc,
-                               eval_binop(exprcode, self.minvalue, rhs.value),
-                               eval_binop(exprcode, self.maxvalue, rhs.value))
+            values = [eval_binop(exprcode, val, rhs.value)
+                      for val in (self.minvalue, self.maxvalue)]
+            return WithinRange(gcctype, loc, min(values), max(values))
         elif isinstance(rhs, WithinRange):
             # Assume that the operations are "concave" in that the resulting
             # range is within that found by trying all four corners:
