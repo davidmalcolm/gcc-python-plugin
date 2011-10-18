@@ -1125,6 +1125,11 @@ class State:
             rvalue = self.get_store(opvalue.region, expr.type, loc)
             check_isinstance(rvalue, AbstractValue)
             return rvalue
+        if isinstance(expr, gcc.BitFieldRef):
+            # e.g. in 'D.2694 = BIT_FIELD_REF <*foo, 8, 0>;'
+            # for now, pessimistically assume nothing:
+            return UnknownValue.make(expr.type, loc)
+
         raise NotImplementedError('eval_rvalue: %r %s' % (expr, expr))
         return UnknownValue.make(expr.type, loc) # FIXME
 
@@ -1863,6 +1868,8 @@ class State:
                                gcc.NegateExpr):
             v_rhs = self.eval_rvalue(stmt.rhs[0], stmt.loc)
             return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
+        elif stmt.exprcode == gcc.BitFieldRef:
+            return self.eval_rvalue(rhs[0], stmt.loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))
