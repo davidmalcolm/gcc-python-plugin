@@ -405,17 +405,24 @@ class WithinRange(AbstractValue):
     """
     A value known to be within a given range e.g. -3 <= val <= +4
     """
-    def __init__(self, gcctype, loc, minvalue, maxvalue):
+    def __init__(self, gcctype, loc, *values):
+        """
+        The constructor can take one or more values; the resulting set
+        is the minimal range covering all of the input values,
+        For example,
+           WithinRange(gcctype, loc, 7, 4, -4, -2)
+        will give the range -2 <= val < 7
+        """
         check_isinstance(gcctype, gcc.Type)
         if loc:
             check_isinstance(loc, gcc.Location)
-        check_isinstance(minvalue, (int, long, float))
-        check_isinstance(maxvalue, (int, long, float))
-        assert minvalue <= maxvalue
+        assert len(values) >= 1
+        for value in values:
+            check_isinstance(value, (int, long, float))
         self.gcctype = gcctype
         self.loc = loc
-        self.minvalue = minvalue
-        self.maxvalue = maxvalue
+        self.minvalue = min(values)
+        self.maxvalue = max(values)
 
     def __str__(self):
         if self.loc:
