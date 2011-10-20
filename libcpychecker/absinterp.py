@@ -587,6 +587,9 @@ class WithinRange(AbstractValue):
             return None
         return None
 
+    def extract_from_parent(self, region, gcctype, loc):
+        return WithinRange(gcctype, self.loc, self.minvalue, self.maxvalue)
+
 class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
     def __init__(self, gcctype, loc, region):
