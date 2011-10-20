@@ -43,6 +43,10 @@ from libcpychecker.types import *
 ############################################################################
 
 class AbstractValue:
+    """
+    Base class, representing some subset of possible values out of the full
+    set of values that this r-value could hold.
+    """
     def __init__(self, gcctype, loc):
         if gcctype:
             check_isinstance(gcctype, gcc.Type)
@@ -183,11 +187,23 @@ class AbstractValue:
                     return self.region.parent.text[self.region.index:]
         # Otherwise, not a string constant, return None
 
+    def union(self, v_other):
+        check_isinstance(v_other, AbstractValue)
+        raise NotImplementedError('%s.union(%s, %s)'
+                                  % (self.__class__.__name__, v_other))
+
+class EmptySet(AbstractValue):
+    """
+    The empty set: there are no possible values for this variable (yet).
+    """
+    def union(self, v_other):
+        check_isinstance(v_other, AbstractValue)
+        return v_other
+
 class UnknownValue(AbstractValue):
     """
-    A value that we know nothing about
+    A value that we know nothing about: it could be any of the possible values
     """
-
     @classmethod
     def make(cls, gcctype, loc):
         """
@@ -234,6 +250,10 @@ class UnknownValue(AbstractValue):
 
     def extract_from_parent(self, region, gcctype, loc):
         return UnknownValue.make(gcctype, loc)
+
+    def union(self, v_other):
+        check_isinstance(v_other, AbstractValue)
+        return self
 
 def eval_binop(exprcode, a, b):
     """
@@ -385,6 +405,19 @@ class ConcreteValue(AbstractValue):
             log('comparing concrete values: %s %s', self, rhs)
             return self.value >= rhs.value
         return None
+
+    def union(self, v_other):
+        check_isinstance(v_other, AbstractValue)
+        if isinstance(v_other, ConcreteValue):
+            if self.value == v_other.value:
+                return self
+            return WithinRange(self.gcctype, self.loc,
+                               self.value, v_other.value)
+        if isinstance(v_other, WithinRange):
+            return WithinRange(self.gcctype, self.loc,
+                               *(self.value, v_other.minvalue, v_other.maxvalue))
+        raise NotImplementedError('%s.union(%s)'
+                                  % (self.__class__.__name__, v_other))
 
 def value_to_str(value):
     """
@@ -597,6 +630,18 @@ class WithinRange(AbstractValue):
     def extract_from_parent(self, region, gcctype, loc):
         return WithinRange(gcctype, self.loc, self.minvalue, self.maxvalue)
 
+    def union(self, v_other):
+        check_isinstance(v_other, AbstractValue)
+        if isinstance(v_other, ConcreteValue):
+            return WithinRange(self.gcctype, self.loc,
+                               *(self.minvalue, self.maxvalue, v_other.value))
+        if isinstance(v_other, WithinRange):
+            return WithinRange(self.gcctype, self.loc,
+                               *(self.minvalue, self.maxvalue,
+                                 v_other.minvalue, v_other.maxvalue))
+        raise NotImplementedError('%s.union(%s)'
+                                  % (self.__class__.__name__, v_other))
+
 class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
     def __init__(self, gcctype, loc, region):
@@ -632,6 +677,10 @@ class PointerToRegion(AbstractValue):
         return None
 
 class DeallocatedMemory(AbstractValue):
+    """
+    A 'poisoned' r-value: this memory has been deallocated, so the r-value
+    is meaningless.
+    """
     def __str__(self):
         if self.loc:
             return 'memory deallocated at %s' % self.loc
@@ -642,6 +691,10 @@ class DeallocatedMemory(AbstractValue):
         return DeallocatedMemory(gcctype, self.loc)
 
 class UninitializedData(AbstractValue):
+    """
+    A 'poisoned' r-value: this memory has not yet been written to, so the
+    r-value is meaningless.
+    """
     def __str__(self):
         if self.loc:
             return 'uninitialized data at %s' % self.loc
@@ -1341,6 +1394,38 @@ class State:
             # OK: no value known:
             return UnknownValue.make(gcctype, loc)
 
+    def summarize_array(self, r_array, v_range, gcctype, loc):
+        """
+        Determine if the region r_array is fully populated with values
+        in the range of indices covered by v_range
+
+        If it is, return a representative value
+        """
+        check_isinstance(r_array, Region)
+        check_isinstance(v_range, WithinRange)
+
+        v_result = EmptySet(gcctype, loc)
+
+        # (This loop should rapidly fail when the range is large and/or outside
+        # the bounds of the array)
+        for index in range(v_range.minvalue,
+                           v_range.maxvalue + 1):
+            # print 'index: %i' % index
+            if index not in r_array.fields:
+                # We have an uninitialized element:
+                return None
+            r_at_index = r_array.fields[index]
+            # print 'r_at_index: %s' % r_at_index
+            check_isinstance(r_at_index, Region)
+            v_at_index = self.value_for_region[r_at_index]
+            # print 'v_at_index: %s' % v_at_index
+            check_isinstance(v_at_index, AbstractValue)
+            v_result = v_result.union(v_at_index)
+            # print 'v_result: %s' % v_result
+
+        # Every subregion within the given range is initialized:
+        return v_result
+
     def _get_store_recursive(self, region, gcctype, loc):
         check_isinstance(region, Region)
         log('_get_store_recursive(%s, %s, %s)', region, gcctype, loc)
@@ -1351,6 +1436,20 @@ class State:
         if region.parent:
             try:
                 parent_value = self._get_store_recursive(region.parent, gcctype, loc)
+
+                # If we're looking up within an array on the stack that has
+                # been fully initialized, then the default value from the
+                # parent is UninitializedData(), but every actual value that
+                # could be looked up is some sane value.  If we're indexing
+                # to an unknown location, don't falsely say it's unitialized:
+                if isinstance(parent_value, UninitializedData):
+                    if isinstance(region, ArrayElementRegion):
+                        if isinstance(region.index, WithinRange):
+                            v_lookup = self.summarize_array(region.parent,
+                                                            region.index,
+                                                            gcctype, loc)
+                            if v_lookup:
+                                return v_lookup
                 return parent_value.extract_from_parent(region, gcctype, loc)
             except MissingValue:
                 raise MissingValue(region)
