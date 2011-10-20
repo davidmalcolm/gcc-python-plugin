@@ -537,6 +537,17 @@ class CPython(Facet):
                                      UnknownValue.make(returntype, stmt.loc),
                                      desc)]
 
+    def impl___cpychecker_dump_all(self, stmt, *args):
+        """
+        Dump all of our state to stdout, to help with debugging
+        """
+        print(str(stmt.loc))
+        print(self.state.as_str_table())
+        returntype = stmt.fn.type.dereference.type
+        return [self.state.mktrans_assignment(stmt.lhs,
+                                     UnknownValue.make(returntype, stmt.loc),
+                                              None)]
+
     def impl___cpychecker_assert_equal(self, stmt, *args):
         """
         Assuming a C function with this declaration:

@@ -1037,10 +1037,8 @@ class State:
                    self.region_for_var,
                    self.value_for_region))
 
-    def log(self, logger):
-        if not logging_enabled:
-            return
-        # Display data in tabular form:
+    def as_str_table(self):
+        # Generate a string, displaying the data in tabular form:
         from gccutils import Table
         t = Table(['Expression', 'Region', 'Value'])
         for k in self.region_for_var:
@@ -1049,7 +1047,13 @@ class State:
             t.add_row((k, region, value),)
         s = StringIO()
         t.write(s)
-        logger('%s', s.getvalue())
+        return s.getvalue()
+
+    def log(self, logger):
+        if not logging_enabled:
+            return
+        # Display data in tabular form:
+        logger('%s', self.as_str_table())
 
         #logger('extra: %s' % (self._extra(), ), indent)
 
