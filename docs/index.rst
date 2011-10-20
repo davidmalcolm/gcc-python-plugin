@@ -37,6 +37,7 @@ Contents:
    gimple.rst
    passes.rst
    cpychecker.rst
+   success.rst
    misc.rst
 
 This document describes the Python plugin I've written for GCC.  In theory the
