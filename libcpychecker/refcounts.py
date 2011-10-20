@@ -208,11 +208,6 @@ class GenericTpDealloc(AbstractValue):
 
         return [Transition(state, s_new, desc)]
 
-def _get_format_string(v_fmt):
-    if isinstance(v_fmt, PointerToRegion):
-        if isinstance(v_fmt.region, RegionForStringConstant):
-            return v_fmt.region.text
-
 class CPython(Facet):
     def __init__(self, state, exception_rvalue=None, fun=None):
         Facet.__init__(self, state)
@@ -527,10 +522,7 @@ class CPython(Facet):
         within the trace.
         """
         returntype = stmt.fn.type.dereference.type
-        desc = None
-        if isinstance(args[0], PointerToRegion):
-            if isinstance(args[0].region, RegionForStringConstant):
-                desc = args[0].region.text
+        desc =  args[0].as_string_constant()
         return [self.state.mktrans_assignment(stmt.lhs,
                                      UnknownValue.make(returntype, stmt.loc),
                                      desc)]
@@ -626,7 +618,7 @@ class CPython(Facet):
                         check_isinstance(v_new, AbstractValue)
                         s_success.value_for_region[v_vararg.region] = v_new
 
-        fmt_string = _get_format_string(v_fmt)
+        fmt_string = v_fmt.as_string_constant()
         if fmt_string:
             try:
                 fmt = PyArgParseFmt.from_string(fmt_string, with_size_t)
@@ -796,7 +788,7 @@ class CPython(Facet):
 
         t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
 
-        fmt_string = _get_format_string(v_fmt)
+        fmt_string = v_fmt.as_string_constant()
         if fmt_string:
             try:
                 fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
@@ -1435,7 +1427,7 @@ class CPython(Facet):
 
         t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
 
-        fmt_string = _get_format_string(v_fmt)
+        fmt_string = v_fmt.as_string_constant()
         if fmt_string:
             try:
                 fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)

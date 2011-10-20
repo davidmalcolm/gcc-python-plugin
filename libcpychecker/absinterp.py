@@ -158,6 +158,31 @@ class AbstractValue:
         """
         raise NotImplementedError("impl_is_ge for %s (with %s" % (self, rhs))
 
+    def extract_from_parent(self, region, gcctype, loc):
+        """
+        Called on a parent when inheriting a value from it for a child region,
+        for example, when a whole struct has "UnknownValue", we can extract
+        a particular field, giving an UnknownValue of the appropriate type
+        """
+        raise NotImplementedError('%s.extract_from_parent(%s, %s, %s)'
+                                  % (self.__class__.__name__, region, gcctype, loc))
+
+    def as_string_constant(self):
+        """
+        If this is a pointer to a string constant, return the underlying
+        string, otherwise return None
+        """
+        if isinstance(self, PointerToRegion):
+            if isinstance(self.region, RegionForStringConstant):
+                return self.region.text
+            # We could be dealing with e.g. char *ptr = "hello world";
+            # where "hello world" is a 'char[12]', and thus ptr has been
+            # assigned a char* pointing to '"hello world"[0]'
+            if isinstance(self.region, ArrayElementRegion):
+                if isinstance(self.region.parent, RegionForStringConstant):
+                    return self.region.parent.text[self.region.index:]
+        # Otherwise, not a string constant, return None
+
 class UnknownValue(AbstractValue):
     """
     A value that we know nothing about
@@ -206,6 +231,9 @@ class UnknownValue(AbstractValue):
 
     def impl_is_ge(self, rhs):
         return None
+
+    def extract_from_parent(self, region, gcctype, loc):
+        return UnknownValue.make(gcctype, loc)
 
 def eval_binop(exprcode, a, b):
     """
@@ -600,6 +628,9 @@ class DeallocatedMemory(AbstractValue):
         else:
             return 'deallocated memory'
 
+    def extract_from_parent(self, region, gcctype, loc):
+        return DeallocatedMemory(gcctype, self.loc)
+
 class UninitializedData(AbstractValue):
     def __str__(self):
         if self.loc:
@@ -633,6 +664,9 @@ class UninitializedData(AbstractValue):
                         % (self.stmt.loc, self.value))
 
         raise CallOfUninitializedFunctionPtr(stmt, self)
+
+    def extract_from_parent(self, region, gcctype, loc):
+        return UninitializedData(gcctype, self.loc)
 
 ############################################################################
 # Various kinds of predicted error:
@@ -855,6 +889,11 @@ class RegionForStringConstant(Region):
     def __init__(self, text):
         Region.__init__(self, text, None)
         self.text = text
+
+class ArrayElementRegion(Region):
+    def __init__(self, name, parent, index):
+        Region.__init__(self, name, parent)
+        self.index = index
 
 class MissingValue(Exception):
     """
@@ -1113,7 +1152,11 @@ class State:
             log('expr.operand: %r', expr.operand)
             lvalue = self.eval_lvalue(expr.operand, loc)
             check_isinstance(lvalue, Region)
-            return PointerToRegion(expr.type, loc, lvalue)
+            if isinstance(expr.operand.type, gcc.ArrayType):
+                index0_lvalue = self._array_region(lvalue, 0)
+                return PointerToRegion(expr.type, loc, index0_lvalue)
+            else:
+                return PointerToRegion(expr.type, loc, lvalue)
         if isinstance(expr, gcc.ArrayRef):
             log('expr.array: %r', expr.array)
             log('expr.index: %r', expr.index)
@@ -1208,6 +1251,9 @@ class State:
             sizeof = rhs[0].type.dereference.sizeof
             log('%s', sizeof)
             index = b.value / sizeof
+            # Are we offsetting within an array?
+            if isinstance(parent, ArrayElementRegion):
+                return self._array_region(parent.parent, parent.index + index)
             return self._array_region(parent, index)
         else:
             raise NotImplementedError("Don't know how to cope with pointer addition of\n  %r\nand\n  %rat %s"
@@ -1215,6 +1261,7 @@ class State:
 
     def _array_region(self, parent, index):
         # Used by element_region, and pointer_add_region
+        log('_array_region(%s, %s)', parent, index)
         check_isinstance(parent, Region)
         check_isinstance(index, (int, long, UnknownValue, ConcreteValue, WithinRange))
         if isinstance(index, ConcreteValue):
@@ -1223,7 +1270,7 @@ class State:
             log('reusing')
             return parent.fields[index]
         log('not reusing')
-        region = Region('%s[%s]' % (parent.name, index), parent)
+        region = ArrayElementRegion('%s[%s]' % (parent.name, index), parent, index)
         parent.fields[index] = region
         # it is its own region:
         self.region_for_var[region] = region
@@ -1282,14 +1329,15 @@ class State:
 
     def _get_store_recursive(self, region, gcctype, loc):
         check_isinstance(region, Region)
-        # self.log(log)
+        log('_get_store_recursive(%s, %s, %s)', region, gcctype, loc)
         if region in self.value_for_region:
             return self.value_for_region[region]
 
         # Not found; try default value from parent region:
         if region.parent:
             try:
-                return self._get_store_recursive(region.parent, gcctype, loc)
+                parent_value = self._get_store_recursive(region.parent, gcctype, loc)
+                return parent_value.extract_from_parent(region, gcctype, loc)
             except MissingValue:
                 raise MissingValue(region)
 
@@ -1836,6 +1884,13 @@ class State:
                              gcc.TruthAndExpr, gcc.TruthOrExpr
                              ):
             a, b = self.eval_binop_args(stmt)
+            if isinstance(a, UninitializedData):
+                raise UsageOfUninitializedData(self, stmt.rhs[0], a,
+                                               'usage of uninitialized data in left-hand side of %s' % stmt.exprcode)
+            if isinstance(b, UninitializedData):
+                raise UsageOfUninitializedData(self, stmt.rhs[1], b,
+                                               'usage of uninitialized data in right-hand side of %s' % stmt.exprcode)
+
             try:
                 c = a.eval_binop(stmt.exprcode, b, stmt.lhs.type, stmt.loc)
                 check_isinstance(c, AbstractValue)

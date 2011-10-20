@@ -3,8 +3,8 @@ Trace 0:
     'when following default'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=32), region=RegionForStringConstant('Green'))
-    str(): (char[6] *)&RegionForStringConstant('Green') from tests/cpychecker/absinterp/switch/input.c:32
+    repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=32), region=ArrayElementRegion('Green[0]'))
+    str(): (char[6] *)&ArrayElementRegion('Green[0]') from tests/cpychecker/absinterp/switch/input.c:32
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
@@ -15,8 +15,8 @@ Trace 1:
     'when following case 0'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='char[4] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=29), region=RegionForStringConstant('Red'))
-    str(): (char[4] *)&RegionForStringConstant('Red') from tests/cpychecker/absinterp/switch/input.c:29
+    repr(): PointerToRegion(gcctype='char[4] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=29), region=ArrayElementRegion('Red[0]'))
+    str(): (char[4] *)&ArrayElementRegion('Red[0]') from tests/cpychecker/absinterp/switch/input.c:29
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
@@ -27,8 +27,8 @@ Trace 2:
     'when following case 2'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='char[5] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=34), region=RegionForStringConstant('Blue'))
-    str(): (char[5] *)&RegionForStringConstant('Blue') from tests/cpychecker/absinterp/switch/input.c:34
+    repr(): PointerToRegion(gcctype='char[5] *', loc=gcc.Location(file='tests/cpychecker/absinterp/switch/input.c', line=34), region=ArrayElementRegion('Blue[0]'))
+    str(): (char[5] *)&ArrayElementRegion('Blue[0]') from tests/cpychecker/absinterp/switch/input.c:34
     r->ob_refcnt: None
     r->ob_type: None
   Exception:

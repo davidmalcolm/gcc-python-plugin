@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+  error: UsageOfUninitializedData()
+  error: dereferencing uninitialized pointer: D.nnnnn->field at tests/cpychecker/absinterp/nested-fields3/input.c:42
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/nested-fields3/input.c:34

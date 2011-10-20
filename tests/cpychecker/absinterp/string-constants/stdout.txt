@@ -3,8 +3,8 @@ Trace 0:
     'when taking True path'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=28), region=RegionForStringConstant('Hello'))
-    str(): (char[6] *)&RegionForStringConstant('Hello') from tests/cpychecker/absinterp/string-constants/input.c:28
+    repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=28), region=ArrayElementRegion('Hello[0]'))
+    str(): (char[6] *)&ArrayElementRegion('Hello[0]') from tests/cpychecker/absinterp/string-constants/input.c:28
     r->ob_refcnt: None
     r->ob_type: None
   Exception:
@@ -15,8 +15,8 @@ Trace 1:
     'when taking False path'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='char[8] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=30), region=RegionForStringConstant('Goodbye'))
-    str(): (char[8] *)&RegionForStringConstant('Goodbye') from tests/cpychecker/absinterp/string-constants/input.c:30
+    repr(): PointerToRegion(gcctype='char[8] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=30), region=ArrayElementRegion('Goodbye[0]'))
+    str(): (char[8] *)&ArrayElementRegion('Goodbye[0]') from tests/cpychecker/absinterp/string-constants/input.c:30
     r->ob_refcnt: None
     r->ob_type: None
   Exception:

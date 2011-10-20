@@ -1,0 +1,17 @@
+Trace 0:
+  Transitions:
+    'when treating unknown struct FooType * from tests/cpychecker/absinterp/nested-fields2/input.c:41 as non-NULL'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/nested-fields2/input.c', line=41), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/nested-fields2/input.c:41
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/nested-fields2/input.c:34
+
+Trace 1:
+  Transitions:
+    'when treating unknown struct FooType * from tests/cpychecker/absinterp/nested-fields2/input.c:41 as NULL'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (D.nnnnn->field) at tests/cpychecker/absinterp/nested-fields2/input.c:41
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/nested-fields2/input.c:34

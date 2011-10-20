@@ -1,0 +1,3 @@
+tests/cpychecker/absinterp/nested-fields3/input.c: In function 'test_nested':
+tests/cpychecker/absinterp/nested-fields3/input.c:42:5: error: dereferencing uninitialized pointer: D.nnnnn->field at tests/cpychecker/absinterp/nested-fields3/input.c:42
+tests/cpychecker/absinterp/nested-fields3/input.c:34:1: note: graphical error report for function 'test_nested' written out to 'tests/cpychecker/absinterp/nested-fields3/input.c.test_nested-refcount-errors.html'
