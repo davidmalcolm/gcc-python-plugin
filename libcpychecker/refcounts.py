@@ -2080,7 +2080,8 @@ class ExceptionStateAnnotator(Annotator):
         return result
 
 def check_refcounts(fun, dump_traces=False, show_traces=False,
-                    show_possible_null_derefs=False):
+                    show_possible_null_derefs=False,
+                    show_timings=False):
     """
     The top-level function of the refcount checker, checking the refcounting
     behavior of a function
@@ -2091,14 +2092,20 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
     the function to stdout (for self tests)
 
     show_traces: bool: if True, display a diagram of the state transition graph
+
+    show_timings: bool: if True, add timing information to stderr
     """
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
 
     log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
 
-    if 0:
-        gcc.inform(fun.start, 'Analyzing reference-counting with %s' % fun.decl.name)
+    # show_timings = 1
+
+    if show_timings:
+        import time
+        start_cpusecs = time.clock()
+        gcc.inform(fun.start, 'Analyzing reference-counting within %s' % fun.decl.name)
 
     check_isinstance(fun, gcc.Function)
 
@@ -2120,10 +2127,12 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         # print(dot)
         invoke_dot(dot)
 
+    limits=Limits(maxtrans=1024)
+
     try:
         traces = iter_traces(fun,
                              facets,
-                             limits=Limits(maxtrans=1024))
+                             limits=limits)
     except TooComplicated:
         gcc.inform(fun.start,
                    'this function is too complicated for the reference-count checker to analyze')
@@ -2312,6 +2321,13 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         gcc.inform(fun.start,
                    ('graphical error report for function %r written out to %r'
                     % (fun.decl.name, filename)))
+
+    if show_timings:
+        end_cpusecs = time.clock()
+        gcc.inform(fun.start, 'Finished analyzing reference-counting within %s' % fun.decl.name)
+        gcc.inform(fun.start,
+                   ('%i transitions, %fs CPU'
+                    % (limits.trans_seen, end_cpusecs - start_cpusecs)))
 
     if 0:
         dot = cfg_to_dot(fun.cfg, fun.decl.name)
