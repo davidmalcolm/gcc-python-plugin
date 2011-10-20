@@ -33,3 +33,8 @@ Bugs found in gdb by running the cpychecker script when compiling it:
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13316
    * http://sourceware.org/ml/gdb-patches/2011-06/msg00376.html
    * http://sourceware.org/ml/gdb-patches/2011-10/msg00391.html
+
+Tom Tromey also wrote a specialized Python script to analyze gdb's
+resource-management code, which found some resource leaks and a possible
+crasher:
+   * http://sourceware.org/ml/gdb-patches/2011-06/msg00408.html
