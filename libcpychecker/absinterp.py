@@ -1182,6 +1182,10 @@ class State(object):
         log('eval_lvalue: %r %s', expr, expr)
         if loc:
             check_isinstance(loc, gcc.Location)
+        if isinstance(expr, gcc.SsaName):
+            region = self.var_region(expr.var)
+            check_isinstance(region, Region)
+            return region
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl, gcc.FunctionDecl)):
             region = self.var_region(expr)
             check_isinstance(region, Region)
@@ -1226,6 +1230,12 @@ class State(object):
             return expr
         if isinstance(expr, gcc.IntegerCst):
             return ConcreteValue(expr.type, loc, expr.constant)
+        if isinstance(expr, gcc.SsaName):
+            region = self.var_region(expr.var)
+            check_isinstance(region, Region)
+            value = self.get_store(region, expr.type, loc)
+            check_isinstance(value, AbstractValue)
+            return value
         if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl, gcc.ResultDecl)):
             region = self.var_region(expr)
             check_isinstance(region, Region)
@@ -1794,7 +1804,7 @@ class State(object):
                                newstate,
                                'not returning from %s' % stmt.fn)]
 
-        if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl)):
+        if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl, gcc.SsaName)):
             # Calling through a function pointer:
             val = self.eval_rvalue(stmt.fn, stmt.loc)
             log('val: %s',  val)

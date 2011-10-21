@@ -86,4 +86,10 @@ def get_all_PyMethodDef_methods():
 def main(**kwargs):
     # Register our GCC pass:
     ps = CpyChecker(**kwargs)
-    ps.register_before('*warn_function_return')
+
+    if 1:
+        # non-SSA version:
+        ps.register_before('*warn_function_return')
+    else:
+        # SSA version:
+        ps.register_after('ssa')
