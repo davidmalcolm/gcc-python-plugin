@@ -117,6 +117,8 @@ class RefcountValue(AbstractValue):
       - a newly constructed object gets (1, 0): we own a reference on it,
       and we don't know if there are any external refs on it.
     """
+    __slots__ = ('relvalue', 'min_external')
+
     def __init__(self, relvalue, min_external):
         self.relvalue = relvalue
         self.min_external = min_external
@@ -209,6 +211,8 @@ class GenericTpDealloc(AbstractValue):
         return [Transition(state, s_new, desc)]
 
 class CPython(Facet):
+    __slots__ = ('exception_rvalue', )
+
     def __init__(self, state, exception_rvalue=None, fun=None):
         Facet.__init__(self, state)
         if exception_rvalue:

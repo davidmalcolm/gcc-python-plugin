@@ -42,11 +42,13 @@ from libcpychecker.types import *
 # Various kinds of r-value:
 ############################################################################
 
-class AbstractValue:
+class AbstractValue(object):
     """
     Base class, representing some subset of possible values out of the full
     set of values that this r-value could hold.
     """
+    __slots__ = ('gcctype', 'loc', 'fromsplit')
+
     def __init__(self, gcctype, loc):
         if gcctype:
             check_isinstance(gcctype, gcc.Type)
@@ -307,6 +309,8 @@ class ConcreteValue(AbstractValue):
     """
     A known, specific value (e.g. 0)
     """
+    __slots__ = ('value', )
+
     def __init__(self, gcctype, loc, value):
         check_isinstance(gcctype, gcc.Type)
         if loc:
@@ -441,6 +445,8 @@ class WithinRange(AbstractValue):
     """
     A value known to be within a given range e.g. -3 <= val <= +4
     """
+    __slots__ = ('minvalue', 'maxvalue', )
+
     def __init__(self, gcctype, loc, *values):
         """
         The constructor can take one or more values; the resulting set
@@ -647,6 +653,8 @@ class WithinRange(AbstractValue):
 
 class PointerToRegion(AbstractValue):
     """A non-NULL pointer value, pointing at a specific Region"""
+    __slots__ = ('region', )
+
     def __init__(self, gcctype, loc, region):
         AbstractValue.__init__(self, gcctype, loc)
         check_isinstance(region, Region)
@@ -833,9 +841,11 @@ def describe_stmt(stmt):
     else:
         return str(stmt.loc)
 
-class Location:
+class Location(object):
     """A location within a CFG: a gcc.BasicBlock together with an index into
     the gimple list.  (We don't support SSA passes)"""
+    __slots__ = ('bb', 'idx', )
+
     def __init__(self, bb, idx):
         check_isinstance(bb, gcc.BasicBlock)
         check_isinstance(idx, int)
@@ -887,7 +897,9 @@ class Location:
         else:
             return None
 
-class Region:
+class Region(object):
+    __slots__ = ('name', 'parent', 'children', 'fields', )
+
     def __init__(self, name, parent):
         self.name = name
         self.parent = parent
@@ -911,6 +923,8 @@ class RegionForGlobal(Region):
     Represents the area of memory (e.g. in .data or .bss section)
     used to store a particular globa
     """
+    __slots__ = ('vardecl', )
+
     def __init__(self, vardecl):
         check_isinstance(vardecl, (gcc.VarDecl, gcc.FunctionDecl))
         Region.__init__(self, vardecl.name, None)
@@ -927,6 +941,8 @@ class RegionOnStack(Region):
         return '%s on stack' % self.name
 
 class RegionForLocal(RegionOnStack):
+    __slots__ = ('vardecl', )
+
     def __init__(self, vardecl, stack):
         RegionOnStack.__init__(self, 'region for %r' % vardecl, stack)
         self.vardecl = vardecl
@@ -935,6 +951,8 @@ class RegionOnHeap(Region):
     """
     Represents an area of memory allocated on the heap
     """
+    __slots__ = ('alloc_stmt', )
+
     def __init__(self, name, alloc_stmt):
         check_isinstance(alloc_stmt, gcc.Gimple)
         Region.__init__(self, name, None)
@@ -952,11 +970,15 @@ class RegionForStringConstant(Region):
     Represents an area of memory used for string constants
     typically allocated in the .data segment
     """
+    __slots__ = ('text', )
+
     def __init__(self, text):
         Region.__init__(self, text, None)
         self.text = text
 
 class ArrayElementRegion(Region):
+    __slots__ = ('index', )
+
     def __init__(self, name, parent, index):
         Region.__init__(self, name, parent)
         self.index = index
@@ -1010,7 +1032,7 @@ class SplitValue(Exception):
         return result
 
 
-class Facet:
+class Facet(object):
     """
     A facet of state, relating to a particular API (e.g. libc, cpython, etc)
 
@@ -1022,6 +1044,8 @@ class Facet:
     current state to new states (e.g. success, failure, etc), creating
     appropriate new States with appropriate new Facet subclass instances.
     """
+    __slots__ = ('state', )
+
     def __init__(self, state):
         check_isinstance(state, State)
         self.state = state
@@ -1030,7 +1054,7 @@ class Facet:
         # Concrete subclasses should implement this.
         raise NotImplementedError
 
-class State:
+class State(object):
     """
     A Location with memory state, and zero or more additional "facets" of
     state, one per API that we care about.
@@ -1054,6 +1078,10 @@ class State:
     Hopefully this will allow checking of additional APIs to be slotted into
     the checker, whilst keeping each API's special-case rules isolated.
     """
+
+    # We can't use the __slots__ optimization here, as we're adding additional
+    # per-facet attributes
+
     def __init__(self, fun, loc, facets, region_for_var=None, value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
         check_isinstance(fun, gcc.Function)
@@ -2153,7 +2181,12 @@ class State:
 
 region_id = 0
 
-class Transition:
+class Transition(object):
+    __slots__ = ('src', # State
+                 'dest', # State
+                 'desc', # str
+                 )
+
     def __init__(self, src, dest, desc):
         check_isinstance(src, State)
         check_isinstance(dest, State)
@@ -2171,7 +2204,9 @@ class Transition:
         logger('dest:')
         self.dest.log(logger)
 
-class Trace:
+class Trace(object):
+    __slots__ = ('states', 'transitions', 'err', )
+
     """A sequence of States and Transitions"""
     def __init__(self):
         self.states = []
