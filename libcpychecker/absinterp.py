@@ -406,6 +406,9 @@ class ConcreteValue(AbstractValue):
             return self.value >= rhs.value
         return None
 
+    def extract_from_parent(self, region, gcctype, loc):
+        return ConcreteValue(gcctype, loc, self.value)
+
     def union(self, v_other):
         check_isinstance(v_other, AbstractValue)
         if isinstance(v_other, ConcreteValue):
@@ -2048,6 +2051,10 @@ class State:
             return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
         elif stmt.exprcode == gcc.BitFieldRef:
             return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.Constructor:
+            # Default value for whole array becomes 0:
+            return ConcreteValue(stmt.lhs.type,
+                                 stmt.loc, 0)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) at %s"
                                       % (stmt.exprcode, stmt.exprcode, stmt.loc))

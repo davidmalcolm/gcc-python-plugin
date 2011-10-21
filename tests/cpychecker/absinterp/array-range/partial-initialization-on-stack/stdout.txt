@@ -1,0 +1,10 @@
+Trace 0:
+  Transitions:
+    '__dump((short int)42 from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:39)'
+    '__dump((short int)0 from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:42)'
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:33)'
+    '__dump((int)val [1 <= val <= 8] from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:46)'
+    '__dump((short int)0 from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:51)'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/partial-initialization-on-stack/input.c:34
