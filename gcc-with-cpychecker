@@ -52,7 +52,13 @@ if 0:
     print(ns)
     print(other_args)
 
-cmd = 'from libcpychecker import main; main()'
+# Enable the refcount-checker when running via this script
+#
+# We would use the regular keyword argument syntax:
+#   verify_refcounting=True
+# but unfortunately gcc's option parser seems to not be able to cope with '='
+# within an option's value.  So we do it using dictionary syntax instead:
+cmd = 'from libcpychecker import main; main(**{"verify_refcounting":True})'
 
 args = ['gcc',
         ('-fplugin=%s' % PLUGIN),
