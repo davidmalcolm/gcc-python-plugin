@@ -1318,9 +1318,13 @@ class State:
             parent = a.region
             log('%s', rhs[0].type)
             log('%s', rhs[0].type.dereference)
-            sizeof = rhs[0].type.dereference.sizeof
-            log('%s', sizeof)
-            index = b.value / sizeof
+            t = rhs[0].type.dereference
+            if isinstance(t, gcc.VoidType):
+                index = b.value
+            else:
+                sizeof = t.sizeof
+                log('%s', sizeof)
+                index = b.value / sizeof
             # Are we offsetting within an array?
             if isinstance(parent, ArrayElementRegion):
                 return self._array_region(parent.parent, parent.index + index)
