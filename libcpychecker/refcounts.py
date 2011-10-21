@@ -1056,8 +1056,11 @@ class CPython(Facet):
     ########################################################################
     def impl_PyGILState_Ensure(self, stmt):
         # http://docs.python.org/c-api/init.html#PyGILState_Ensure
-        # For now, treat it as a no-op:
-        return [self.state.mktrans_nop(stmt, 'PyGILState_Ensure')]
+        # Return some opaque handle:
+        returntype = stmt.fn.type.dereference.type
+        return [self.state.mktrans_assignment(stmt.lhs,
+                                              UnknownValue.make(returntype, stmt.loc),
+                                              'PyGILState_Ensure')]
 
     def impl_PyGILState_Release(self, stmt, v_state):
         # http://docs.python.org/c-api/init.html#PyGILState_Release
