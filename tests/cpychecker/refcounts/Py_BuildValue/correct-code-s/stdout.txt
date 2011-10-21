@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    'when Py_BuildValue() succeeds'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29), region=RegionOnHeap('new ref from call to Py_BuildValue', gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from call to Py_BuildValue', gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29)) from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:29
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29), region=Region('PyTypeObject for new ref from call to Py_BuildValue'))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:28
+
+Trace 1:
+  Transitions:
+    'when Py_BuildValue() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:29
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:29

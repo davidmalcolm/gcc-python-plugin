@@ -290,9 +290,10 @@ def compatible_type(exp_type, actual_type, actualarg=None):
 
     # Support character arrays vs const char*:
     if str(exp_type) == 'const char *':
-        if isinstance(actual_type, gcc.ArrayType):
-            if actual_type.dereference == gcc.Type.char():
-                return True
+        if isinstance(actual_type, gcc.PointerType):
+            if isinstance(actual_type.dereference, gcc.ArrayType):
+                if actual_type.dereference.dereference == gcc.Type.char():
+                    return True
 
     return False
 
