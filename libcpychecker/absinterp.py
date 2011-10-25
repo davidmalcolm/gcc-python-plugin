@@ -1861,6 +1861,12 @@ class State(object):
                 # Assume that all such functions either:
                 #   - return a new reference, or
                 #   - return NULL and set an exception (e.g. MemoryError)
+                from libcpychecker.attributes import fnnames_returning_borrowed_refs
+                if fnname in fnnames_returning_borrowed_refs:
+                    # The function being called was marked as returning a
+                    # borrowed ref, rather than a new ref:
+                    return self.cpython.make_transitions_for_borrowed_ref_or_fail(stmt,
+                                                     'borrowed ref from %s()' % fnname)
                 return self.cpython.make_transitions_for_new_ref_or_fail(stmt,
                                                                  'new ref from (unknown) %s' % fnname)
 

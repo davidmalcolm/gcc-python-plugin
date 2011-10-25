@@ -1,0 +1,9 @@
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c: In function 'test':
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: error: ob_refcnt of return value is 1 too high
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: but final ob_refcnt is N + 1
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: PyLongObject allocated at:     return PyLong_FromLong(42);
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: when PyLong_FromLong() succeeds at:     return PyLong_FromLong(42);
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:45:5: note: returning at:     return PyLong_FromLong(42);
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c:40:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-marking/input.c.test-refcount-errors.html'

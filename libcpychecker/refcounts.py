@@ -26,6 +26,7 @@ import gcc
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
+from libcpychecker.attributes import fnnames_returning_borrowed_refs
 from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
     TypeCheckCheckerType, TypeCheckResultType
@@ -497,6 +498,22 @@ class CPython(Facet):
             fnname = stmt.fn.operand.name
             objname = 'new ref from call to %s' % fnname
         s_success, nonnull = self.mkstate_new_ref(stmt, objname)
+        s_failure = self.mkstate_exception(stmt)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+
+    def make_transitions_for_borrowed_ref_or_fail(self, stmt, objname=None):
+        """
+        Generate the appropriate list of 2 transitions for a call to a
+        function that either:
+          - returns either a borrowed ref, or
+          - fails with NULL and sets an exception
+        Optionally, a name for the new object can be supplied; otherwise
+        a sane default will be used.
+        """
+        if objname is None:
+            fnname = stmt.fn.operand.name
+            objname = 'borrowed ref from call to %s' % fnname
+        s_success = self.mkstate_borrowed_ref(stmt, objname)
         s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -2235,7 +2252,12 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # 1; all other PyObject should have a net delta of 0:
             if isinstance(return_value, PointerToRegion) and region == return_value.region:
                 desc = 'return value'
-                exp_refs = ['return value']
+                if fun.decl.name in fnnames_returning_borrowed_refs:
+                    # ...then this function has been marked as returning a
+                    # borrowed reference, rather than a new one:
+                    exp_refs = []
+                else:
+                    exp_refs = ['return value']
             else:
                 # Try to get a descriptive name for the region:
                 desc = trace.get_description_for_region(region)

@@ -19,6 +19,7 @@ import gcc
 from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
+from libcpychecker.attributes import register_our_attributes
 
 class CpyChecker(gcc.GimplePass):
     """
@@ -84,6 +85,10 @@ def get_all_PyMethodDef_methods():
     return result
 
 def main(**kwargs):
+    # Register our custom attributes:
+    gcc.register_callback(gcc.PLUGIN_ATTRIBUTES,
+                          register_our_attributes)
+
     # Register our GCC pass:
     ps = CpyChecker(**kwargs)
 
