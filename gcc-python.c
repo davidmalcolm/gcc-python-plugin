@@ -149,6 +149,21 @@ static void trace_callback_for_##NAME(void *gcc_data, void *user_data) \
 # undef DEFEVENT
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
+static enum plugin_event current_event = GCC_PYTHON_PLUGIN_BAD_EVENT;
+
+int gcc_python_is_within_event(enum plugin_event *out_event)
+{
+    if (current_event != GCC_PYTHON_PLUGIN_BAD_EVENT) {
+        if (out_event) {
+            *out_event = current_event;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
 static void
 gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
                                     int expect_wrapped_data, PyObject *wrapped_gcc_data,
@@ -158,6 +173,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     PyObject *args = NULL;
     PyObject *result = NULL;
     location_t saved_loc = input_location;
+    enum plugin_event saved_event;
 
     assert(closure);
     /* We take ownership of wrapped_gcc_data.
@@ -176,7 +192,13 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     if (!args) {
         goto cleanup;
     }
+
+    saved_event = current_event;
+    current_event = closure->event;
+
     result = PyObject_Call(closure->callback, args, closure->kwargs);
+
+    current_event = saved_event;
 
     if (!result) {
         /* Treat an unhandled Python error as a compilation error: */
@@ -277,7 +299,8 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 
     //printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
 
-    closure = gcc_python_closure_new(callback, extraargs, kwargs);
+    closure = gcc_python_closure_new_for_plugin_event(callback, extraargs, kwargs,
+                                                      (enum plugin_event)event);
     if (!closure) {
         return PyErr_NoMemory();
     }

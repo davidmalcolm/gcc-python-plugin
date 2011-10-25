@@ -119,7 +119,7 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
     callback = PyTuple_GetItem(args, 0);
     extraargs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
 
-    closure = gcc_python_closure_new(callback, extraargs, kwargs);
+    closure = gcc_python_closure_new_generic(callback, extraargs, kwargs);
     if (!closure) {
         return NULL;
     }

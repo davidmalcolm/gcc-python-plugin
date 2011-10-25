@@ -25,6 +25,9 @@
 #include "gimple.h"
 #include "params.h"
 
+/* GCC doesn't seem to give us an ID for "invalid event", so invent one: */
+#define GCC_PYTHON_PLUGIN_BAD_EVENT (0xffff)
+
 /*
   Macro DECLARE_SIMPLE_WRAPPER():
     ARG_structname:
@@ -217,6 +220,8 @@ gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
 
 
 /* gcc-python.c */
+int gcc_python_is_within_event(enum plugin_event *out_event);
+
 char * gcc_python_strdup(const char *str);
 
 void gcc_python_print_exception(const char *msg);
