@@ -1,4 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
+/*
+   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
    Copyright 2011 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
@@ -14,20 +15,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
+*/
 
-Miscellanea
-===========
+/* Test of adding custom preprocessor macros */
 
-The following odds and ends cover the more esoteric aspects of GCC, and are
-documented here for completeness.  They may or may not be useful when writing
-scripts.
+#ifndef FOO
+  /* We should not get here: */
+  #error FOO is not defined
+#endif
 
-.. toctree::
+#ifndef BAR
+  /* We should not get here: */
+  #error BAR is not defined
+#endif
 
-   callgraph.rst
-   options.rst
-   parameters.rst
-   preprocessor.rst
-   versions.rst
-   tables-of-passes.rst
-   rtl.rst
+#if BAR != 42
+  /* We should not get here: */
+  #error BAR is not 42
+#endif
+
+int main(int argc, char *argv[])
+{
+    return BAR;
+}
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

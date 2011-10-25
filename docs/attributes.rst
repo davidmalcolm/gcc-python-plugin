@@ -100,3 +100,29 @@ leads to this output from the script:
 
    .. literalinclude:: ../tests/examples/attributes/stdout.txt
     :language: bash
+
+Using the preprocessor to guard attribute usage
+-----------------------------------------------
+
+Unfortunately, the above C code will only work when it is compiled with the
+Python script that adds the custom attributes.
+
+You can avoid this by using :py:func:`gcc.define_macro()` to pre-define a
+preprocessor name (e.g. "WITH_ATTRIBUTE_CLAIMS_MUTEX") at the same time as when
+you define the attribute:
+
+   .. literalinclude:: ../tests/examples/attributes-with-macros/script.py
+    :lines: 18-
+    :language: python
+
+This way the user can write this C code instead, and have it work both with
+and without the Python script:
+
+   .. literalinclude:: ../tests/examples/attributes-with-macros/input.c
+    :lines: 22-45
+    :language: c
+
+giving this output from the script:
+
+   .. literalinclude:: ../tests/examples/attributes-with-macros/stdout.txt
+    :language: bash

@@ -34,6 +34,8 @@ int plugin_is_GPL_compatible;
 #include "cgraph.h"
 #include "opts.h"
 
+#include "c-family/c-pragma.h" /* for parse_in */
+
 #if 0
 #define LOG(msg) \
     (void)fprintf(stderr, "%s:%i:%s\n", __FILE__, __LINE__, (msg))
@@ -346,6 +348,41 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 	return NULL;
     }
     
+    Py_RETURN_NONE;
+}
+
+static PyObject*
+gcc_python_define_macro(PyObject *self,
+                        PyObject *args, PyObject *kwargs)
+{
+    const char *macro;
+    char *keywords[] = {"macro",
+                        NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "s:define_preprocessor_name", keywords,
+                                     &macro)) {
+        return NULL;
+    }
+
+    if (0) {
+        fprintf(stderr, "gcc.define_macro(\"%s\")\n", macro);
+    }
+
+    if (!parse_in) {
+        return PyErr_Format(PyExc_ValueError,
+                            "gcc.define_macro(\"%s\") called without a compilation unit",
+                            macro);
+    }
+
+    if (!gcc_python_is_within_event(NULL)) {
+        return PyErr_Format(PyExc_ValueError,
+                            "gcc.define_macro(\"%s\") called from outside an event callback",
+                            macro);
+    }
+
+    cpp_define (parse_in, macro);
+
     Py_RETURN_NONE;
 }
 
@@ -793,6 +830,11 @@ static PyMethodDef GccMethods[] = {
      (PyCFunction)gcc_python_register_callback,
      (METH_VARARGS | METH_KEYWORDS),
      "Register a callback, to be called when various GCC events occur."},
+
+    {"define_macro",
+     (PyCFunction)gcc_python_define_macro,
+     (METH_VARARGS | METH_KEYWORDS),
+     "Pre-define a named value in the preprocessor."},
 
     /* Diagnostics: */
     {"permerror", gcc_python_permerror, METH_VARARGS,

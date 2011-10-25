@@ -1,0 +1,5 @@
+attribute_callback_for_claims_mutex called: args: (gcc.FunctionDecl('some_function'), gcc.StringCst('io'))
+attribute_callback_for_releases_mutex called: args: (gcc.FunctionDecl('some_other_function'), gcc.StringCst('io'))
+attribute_callback_for_claims_mutex called: args: (gcc.FunctionDecl('yet_another_function'), gcc.StringCst('db'))
+attribute_callback_for_claims_mutex called: args: (gcc.FunctionDecl('yet_another_function'), gcc.StringCst('io'))
+attribute_callback_for_releases_mutex called: args: (gcc.FunctionDecl('yet_another_function'), gcc.StringCst('io'))
