@@ -18,7 +18,7 @@
 Creating custom GCC attributes
 ==============================
 
-GNU C supports a non-standard `__attribute__() syntax
+GNU C supports a non-standard `__attribute__(()) syntax
 <http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html>`_ for marking
 declarations with additional information that may be of interest to the
 optimizer, and for checking the correctness of the code.
@@ -30,13 +30,16 @@ describing the interaction of a function on mutex objects:
 
 .. code-block:: c
 
-    extern some_function(void) __attribute__(claims_mutex("io"));
-    extern some_other_function(void) __attribute__(releases_mutex("io"));
+    extern void some_function(void)
+      __attribute__((claims_mutex("io")));
+
+    extern void some_other_function(void)
+      __attribute__((releases_mutex("io")));
 
 and use this in a custom code-checker.
 
 Custom attributes can take string and integer parameters.  For example, the
-above custom attribute takes a single string parameter.  A custom attribute can
+above custom attributes take a single string parameter.  A custom attribute can
 take more than one parameter, or none at all.
 
 To create custom attributes from Python, you need to wire up a callback
@@ -56,7 +59,7 @@ attribute is encountered in C code.
                                         callable)
 
    Registers a new GCC attribute with the given *name* , usable in C source
-   code via ``__attribute__()``.
+   code via ``__attribute__(())``.
 
    :param name: the name of the new attribute
    :type name: str
