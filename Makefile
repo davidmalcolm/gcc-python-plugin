@@ -19,6 +19,7 @@ GCC=gcc
 
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
+  gcc-python-attribute.c \
   gcc-python-callgraph.c \
   gcc-python-cfg.c \
   gcc-python-closure.c \

@@ -36,6 +36,7 @@ Contents:
    tree.rst
    gimple.rst
    passes.rst
+   attributes.rst
    cpychecker.rst
    success.rst
    misc.rst

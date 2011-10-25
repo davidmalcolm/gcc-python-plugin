@@ -27,6 +27,10 @@
 
 PyMODINIT_FUNC initoptpass(void);
 
+/* gcc-python-attribute.c: */
+PyObject*
+gcc_python_register_attribute(PyObject *self, PyObject *args, PyObject *kwargs);
+
 /* gcc-python-callgraph.c: */
 PyObject *
 gcc_CallgraphEdge_repr(struct PyGccCallgraphEdge * self);

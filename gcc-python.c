@@ -194,6 +194,14 @@ cleanup:
     input_location = saved_loc;
 }
 
+/*
+  C-level callbacks for each event ID follow, thunking into the registered
+  Python callable.
+
+  There's some repetition here, but it can be easier to debug if you have
+  separate breakpoint locations for each event ID.
+ */
+
 static void
 gcc_python_callback_for_tree(void *gcc_data, void *user_data)
 {
@@ -205,6 +213,22 @@ gcc_python_callback_for_tree(void *gcc_data, void *user_data)
     gcc_python_finish_invoking_callback(gstate, 
 					1, gcc_python_make_wrapper_tree(t),
 					user_data);
+}
+
+
+static void
+gcc_python_callback_for_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
+    assert(pass);
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+                                        0, NULL,
+                                        user_data);
 }
 
 static void
@@ -259,6 +283,13 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     switch ((enum plugin_event)event) {
+    case PLUGIN_ATTRIBUTES:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_PLUGIN_ATTRIBUTES,
+			  closure);
+	break;
+
     case PLUGIN_PRE_GENERICIZE:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
@@ -730,6 +761,11 @@ gcc_python_get_dump_base_name(PyObject *self, PyObject *noargs)
 }
 
 static PyMethodDef GccMethods[] = {
+    {"register_attribute",
+     (PyCFunction)gcc_python_register_attribute,
+     (METH_VARARGS | METH_KEYWORDS),
+     "Register an attribute."},
+
     {"register_callback",
      (PyCFunction)gcc_python_register_callback,
      (METH_VARARGS | METH_KEYWORDS),
