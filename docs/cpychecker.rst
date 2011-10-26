@@ -64,9 +64,10 @@ reference count ought to be at the end of the function, issuing an error report
 for any that are incorrect.
 
 The error report is in two forms: the classic textual output to GCC's standard
-error stream.
+error stream, together with an HTML report indicating the flow through the
+function, in graphical form.
 
-For example, given:
+For example, given this buggy C code:
 
 .. code-block:: c
 
@@ -105,8 +106,7 @@ the checker emits these messages to stderr::
    input.c:38:1: note: returning
    input.c:24:1: note: graphical error report for function 'test' written out to 'input.c.test-refcount-errors.html'
 
-and also an HTML report indicating the flow through the function, in graphical
-form:
+along with this HTML report (as referred to by the final line on stderr):
 
    .. figure:: sample-html-error-report.png
       :alt: screenshot of the HTML report
