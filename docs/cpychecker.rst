@@ -112,8 +112,8 @@ along with this HTML report (as referred to by the final line on stderr):
       :alt: screenshot of the HTML report
 
 The HTML report is intended to be relatively self-contained, and thus easy to
-attached to bug tracking systems: it embeds its own CSS inline, and references
-the JavaScript it uses via URLs to the web.
+attach to bug tracking systems (it embeds its own CSS inline, and references
+the JavaScript it uses via URLs to the web).
 
 .. note:: The arrow graphics in the HTML form of the report are added by using
    the JSPlumb JavaScript library to generate HTML 5 <canvas> elements.  You
@@ -190,8 +190,8 @@ The checker will emit errors for various events:
   * if it detects a dereferencing of a ``NULL`` value
 
   * if a ``NULL`` value is erroneously passed to various CPython API
-    entrypoints which implicitly deference those arguments (which would lead
-    to a segmentation fault if that code path were executed).
+    entrypoints which are known to implicitly dereference those arguments
+    (which would lead to a segmentation fault if that code path were executed).
 
   * if it detects that an uninitialized local variable has been used
 
