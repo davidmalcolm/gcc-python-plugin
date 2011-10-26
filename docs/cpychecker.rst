@@ -18,10 +18,13 @@
 Usage example: a static analysis tool for CPython extension code
 ================================================================
 
+.. note:: This code is under heavy development, and still contains bugs.  It
+   is not unusual to see Python tracebacks when running the checker.  You
+   should verify what the checker reports before acting on it: it could be
+   wrong.
+
 An example of using the plugin is a static analysis tool I'm working on which
 checks the C source of CPython extension modules for common coding errors.
-
-This code is under heavy development, and is not yet ready to be used.
 
 This was one of my main motivations for writing the GCC plugin, and I often
 need to extend the plugin to support this use case.
@@ -29,48 +32,301 @@ need to extend the plugin to support this use case.
 For this reason, the checker is embedded within the gcc-python source tree
 itself for now:
 
-   * `cpychecker.py` is a short top-level script, which will eventually be
-     invoked like this::
-
-      gcc -fplugin=python.so -fplugin-arg-python-script=cpychecker.py OTHER_ARGS
+   * `gcc-with-cpychecker` is a harness script, which invokes GCC, adding
+     the arguments necessary to use the Python plugin, using the
+     `libcpychecker` Python code
 
    * the `libcpychecker` subdirectory contains the code that does the actual
      work
 
-   * various test cases
+   * various test cases (in the source tree, below `tests/cpychecker`)
 
-Here's a list of C coding bugs I intend for the tool to detect (each one
-followed by its current status):
+So it should be possible to use the checker on arbitrary CPython extension
+code by replacing "gcc" with "gcc-with-cpychecker" in your build with
+something like::
 
-  * lack of error handling (i.e. assuming that calls to the Python API
-    succeed) [AT EARLY, BUGGY, STAGE]
+   make CC=/path/to/built/plugin/gcc-with-cpychecker
 
-  * reference-counting errors: [AT EARLY, BUGGY, STAGE]
+You may need to supply an absolute path, especially if the "make" recursively
+invokes "make" within subdirectories (thus having a different working
+directory).
 
-    * missing Py_INCREF/Py_DECREF
+(TODO: some way of integrating the checker with `distutils
+<http://docs.python.org/library/distutils.html>`_)
 
-    * leaking references to objects, not having enough references to an object
+Reference-count checking
+------------------------
+The checker attempts to analyze all possible paths through each function,
+tracking the various PyObject* objects encountered.
 
-    * using an object after a point where it might have been deleted
+For each path through the function and PyObject*, it determines what the
+reference count ought to be at the end of the function, issuing an error report
+for any that are incorrect.
+
+The error report is in two forms: the classic textual output to GCC's standard
+error stream.
+
+For example, given:
+
+.. code-block:: c
+
+   PyObject *
+   test(PyObject *self, PyObject *args)
+   {
+       PyObject *list;
+       PyObject *item;
+       list = PyList_New(1);
+       if (!list)
+           return NULL;
+       item = PyLong_FromLong(42);
+       /* This error handling is incorrect: it's missing an
+          invocation of Py_DECREF(list): */
+       if (!item)
+           return NULL;
+       /* This steals a reference to item; item is not leaked when we get here: */
+       PyList_SetItem(list, 0, item);
+       return list;
+   }
+
+the checker emits these messages to stderr::
+
+   input.c: In function 'test':
+   input.c:38:1: error: ob_refcnt of '*list' is 1 too high
+   input.c:38:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+   input.c:38:1: note: but final ob_refcnt is N + 1
+   input.c:27:10: note: PyListObject allocated at:     list = PyList_New(1);
+   input.c:27:10: note: when PyList_New() succeeds at:     list = PyList_New(1);
+   input.c:27:10: note: ob_refcnt is now refs: 1 + N where N >= 0
+   input.c:28:8: note: taking False path at:     if (!list)
+   input.c:30:10: note: reaching:     item = PyLong_FromLong(42);
+   input.c:30:10: note: when PyLong_FromLong() fails at:     item = PyLong_FromLong(42);
+   input.c:33:8: note: taking True path at:     if (!item)
+   input.c:34:9: note: reaching:         return NULL;
+   input.c:38:1: note: returning
+   input.c:24:1: note: graphical error report for function 'test' written out to 'input.c.test-refcount-errors.html'
+
+and also an HTML report indicating the flow through the function, in graphical
+form:
+
+   .. figure:: sample-html-error-report.png
+      :alt: screenshot of the HTML report
+
+The HTML report is intended to be relatively self-contained, and thus easy to
+attached to bug tracking systems: it embeds its own CSS inline, and references
+the JavaScript it uses via URLs to the web.
+
+.. note:: The arrow graphics in the HTML form of the report are added by using
+   the JSPlumb JavaScript library to generate HTML 5 <canvas> elements.  You
+   may need a relatively modern browser to see them.
+
+.. note:: The checker tracks reference counts in an abstract way, in two parts:
+   a part of the reference count that it knows about within the context of the
+   function, along with a second part: all of the other references held by the
+   rest of the program.
+
+   For example, in a call to PyInt_FromLong(0), it is assumed that if the call
+   succeeds, the object has a reference count of 1 + N, where N is some unknown
+   amount of other references held by the rest of the program.   The checker
+   knows that N >= 0.
+
+   If the object is then stored in an opaque container which is known to
+   increment the reference count, the checker can say that the reference count
+   is then 1 + (N+1).
+
+   If the function then decrements the reference count (to finish transferring
+   the reference to the opaque container), the checker now treats the object as
+   having a reference count of 0 + (N+1): it no longer owns any references on
+   the object, but the reference count is actually unchanged relative to the
+   original 1 + N amount.  It also knows, given that N >= 0 that the actual
+   reference count is >= 1, and thus the object won't (yet) be deallocated.
+
+Assumptions and configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+For any function returning a PyObject*, it assumes that the PyObject* should be
+either a new reference to an object, or NULL (with an exception set) - the
+function's caller should "own" a reference to that object.  For all
+other PyObject*, it assumes that there should be no references owned by the
+function when the function terminates.
+
+It will assume this behavior for any function (or call through a function
+pointer) that returns a PyObject*.
+
+It is possible to override this behavior using custom compiler attributes:
+
+.. code-block:: c
+
+  /* The checker automatically defines this preprocessor name when creating
+     the custom attribute: */
+  #if defined(WITH_CPYCHECKER_RETURNS_BORROWED_REF_ATTRIBUTE)
+    #define CPYCHECKER_RETURNS_BORROWED_REF \
+      __attribute__((cpychecker_returns_borrowed_ref))
+  #else
+    #define CPYCHECKER_RETURNS_BORROWED_REF
+  #endif
+
+  PyObject *foo(void)
+    CPYCHECKER_RETURNS_BORROWED_REF;
+
+Given the above, the checker will assume that invocations of ``foo()`` are
+returning a borrowed reference (or NULL), rather than a new reference, and
+will apply the same policy when verifying the implementation of ``foo()``
+itself.
+
+Error-handling checking
+-----------------------
+The checker has knowledge of much of the CPython C API, and will generate
+a trace tree containing many of the possible error paths.   It will issue
+error reports for code that appears to not gracefully handle an error.
+
+(TODO: show example)
+
+As noted above, it assumes that any function that returns a PyObject* can
+return can either NULL (setting an exception), or a new reference.  It knows
+about much of the other parts of the CPython C API, including many other
+functions that can fail.
+
+The checker will emit errors for various events:
+
+  * if it detects a dereferencing of a ``NULL`` value
+
+  * if a ``NULL`` value is erroneously passed to various CPython API
+    entrypoints which implicitly deference those arguments (which would lead
+    to a segmentation fault if that code path were executed).
+
+  * if it detects that an uninitialized local variable has been used
+
+  * if it detects access to an object that has been deallocated, or such an
+    object being returned::
+
+       input.c: In function 'test':
+       input.c:43:1: error: returning pointer to deallocated memory
+       input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
+       input.c:31:8: note: taking False path at:     if (!tmp) {
+       input.c:39:5: note: reaching:     Py_DECREF(tmp);
+       input.c:39:5: note: when taking False path at:     Py_DECREF(tmp);
+       input.c:39:5: note: reaching:     Py_DECREF(tmp);
+       input.c:39:5: note: calling tp_dealloc on PyLongObject allocated at input.c:29 at:     Py_DECREF(tmp);
+       input.c:42:5: note: reaching:     return tmp;
+       input.c:43:1: note: returning
+       input.c:39:5: note: memory deallocated here
+       input.c:27:1: note: graphical error report for function 'returning_dead_object' written out to 'input.c.test.html'
+
+Errors in exception-handling
+----------------------------
+The checker keeps track of the per-thread exception state.  It will issue a
+warning about any paths through functions returning a PyObject* that return
+NULL for which the per-thread exception state has not been set::
+
+   input.c: In function 'test':
+   input.c:32:5: error: returning (PyObject*)NULL without setting an exception
+
+(TODO: provide a way to mark a function as setting this state)
+
+
+Format string checking
+----------------------
+
+The checker will analyze some `Python APIs that take format strings
+<http://docs.python.org/c-api/arg.html>`_  and detect mismatches between the
+number and types of arguments that are passed in, as compared with those
+described by the format string.
+
+It currently verifies the arguments to the following API entrypoints:
+
+  * `PyArg_ParseTuple
+    <http://docs.python.org/c-api/arg.html#PyArg_ParseTuple>`_
+
+  * `PyArg_ParseTupleAndKeywords
+    <http://docs.python.org/c-api/arg.html#PyArg_ParseTupleAndKeywords>`_
+
+  * `Py_BuildValue
+    <http://docs.python.org/c-api/arg.html#Py_BuildValue>`_
+
+along with the variants that occur if you define `PY_SSIZE_T_CLEAN` before
+`#include <Python.h>`.
+
+For example, type mismatches between ``int`` vs ``long`` can lead to flaws
+when the code is compiled on big-endian 64-bit architectures, where
+``sizeof(int) != sizeof(long)`` and the in-memory layout of those types differs
+from what you might expect.
+
+The checker will also issue a warning if the list of keyword arguments in a
+call to PyArg_ParseTupleAndKeywords is not NULL-terminated.
+
+.. note:: All of the various "#" codes in these format strings are affected by
+   the presence of the macro `PY_SSIZE_T_CLEAN`. If the macro was defined
+   before including Python.h, the various lengths for these format codes are of
+   C type `Py_ssize_t` rather than `int`.
+
+   This behavior was clarified in the Python 3 version of the C API
+   documentation, though the Python 2 version of the API docs leave the matter
+   of which codes are affected somewhat ambiguous.
+
+   Nevertheless, the API *does* work this way in Python 2: all format codes
+   with a "#" do work this way.
+
+   Internally, the C preprocessor converts such function calls into invocations
+   of:
+
+      * `_PyArg_ParseTuple_SizeT`
+      * `_PyArg_ParseTupleAndKeywords_SizeT`
+
+   The checker handles this behavior correctly, by checking "#" codes in the
+   regular functions against `int` and those in the modified functions against
+   `Py_ssize_t`.
+
+
+Limitations and caveats
+-----------------------
+
+Compiling with the checker is significantly slower than with "vanilla" gcc.
+I have been focussing on correctness and features, rather than optimization.
+I hope that it will be possible to greatly speed up the checker via
+ahead-of-time compilation of the Python code (e.g. using Cython).
+
+The checker does not yet fully implement all of C: expect to see Python
+tracebacks when it encounters less common parts of the language.  (We'll fix
+those bugs as we come to them)
+
+The checker has a rather simplistic way of tracking the flow through a
+function: it builds a tree of all possible traces of execution through a
+function.  This brings with it some shortcomings:
+
+  * In order to guarantee that the analysis terminates, the checker will only
+    track the first time through any loop, and stop analysing that trace for
+    subsequent iterations.  This appears to be good enough for detecting many
+    kinds of reference leaks, especially in simple wrapper code, but is clearly
+    suboptimal.
+
+  * In order to avoid combinatorial explosion, the checker will stop analyzing
+    a function once the trace tree gets sufficiently large.  When it reaches
+    this cutoff, a warning is issued::
+
+      input.c: In function 'add_module_objects':
+      input.c:31:1: note: this function is too complicated for the reference-count checker to analyze
+
+  * The checker doesn't yet match up similar traces, and so a single bug that
+    affects multiple traces in the trace tree can lead to duplicate error
+    reports.
+
+Only a subset of the CPython API has been modelled so far.
+
+
+Ideas for future tests
+----------------------
+
+Here's a list of some other C coding bugs I intend for the tool to detect:
+
+  * type-checking for PyMethodDef tables: the callbacks are typically cast
+    to PyCFunction, but the exact type needs to correspond to the flags
+    given (e.g. ``(METH_VARARGS | METH_KEYWORDS)`` implies a different function
+    signature to the default, and the C compiler has currently no way of
+    verifying that these agree with each other).
 
   * tp_traverse errors (which can mess up the garbage collector); missing it
-    altogether, or omitting fields [NOT IMPLEMENTED YET]
+    altogether, or omitting fields
 
-  * errors in PyArg_ParseTuple and friends:
-
-     * type mismatches e.g. `int` vs `long` (often leads to flaws on big-endian
-       64-bit architectures, where sizeof(int) != sizeof(long))
-       [MOSTLY IMPLEMENTED FOR PyArg_Parse*, NOT IMPLEMENTED FOR Py_BuildValue]
-
-     * reference-counting errors, for the cases where objects are returned with
-       either new or borrowed references (depending on the format codes).
-       [NOT IMPLEMENTED YET]
-
-  * errors in exception handling, so that we can issue errors about e.g. not
-    returning NULL if an exception is set, or returning NULL if an exception is
-    not set [NOT IMPLEMENTED YET]
-
-  * errors in GIL-handling [NOT IMPLEMENTED YET]
+  * errors in GIL-handling
 
     * lock/release mismatches
 
@@ -82,3 +338,11 @@ Ideas for other tests are most welcome (patches even more so!)
 We will probably need various fallbacks and suppression modes for turning off
 individual tests (perhaps pragmas, perhaps compile-line flags, etc)
 
+
+Reusing this code for other projects
+------------------------------------
+It may be possible to reuse the analysis engine from cpychecker for other
+kinds of analysis - hopefully the python-specific parts are relatively
+self-contained.  Email the `gcc-python-plugin's mailing list
+<https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_ if you're
+interested in adding verifiers for other kinds of code.
