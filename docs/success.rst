@@ -37,4 +37,13 @@ Bugs found in gdb by running the cpychecker script when compiling it:
 Tom Tromey also wrote a specialized Python script to analyze gdb's
 resource-management code, which found some resource leaks and a possible
 crasher:
+
    * http://sourceware.org/ml/gdb-patches/2011-06/msg00408.html
+
+
+Bugs found in itself
+--------------------
+Bugs found in the gcc Python plugin itself, by running the cpychecker script
+when compiling another copy:
+
+   * bad format string: https://fedorahosted.org/pipermail/gcc-python-plugin/2011-August/000065.html
