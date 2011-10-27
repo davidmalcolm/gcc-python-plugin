@@ -29,6 +29,25 @@
 #define GCC_PYTHON_PLUGIN_BAD_EVENT (0xffff)
 
 /*
+  Define some macros to allow us to use cpychecker's custom attributes when
+  compiling the plugin using itself (gcc-with-cpychecker), but also to turn
+  them off when compiling with vanilla gcc (and other compilers).
+*/
+#if defined(WITH_CPYCHECKER_RETURNS_BORROWED_REF_ATTRIBUTE)
+  #define CPYCHECKER_RETURNS_BORROWED_REF \
+    __attribute__((cpychecker_returns_borrowed_ref))
+#else
+  #define CPYCHECKER_RETURNS_BORROWED_REF
+#endif
+
+#if defined(WITH_CPYCHECKER_STEALS_REFERENCE_TO_ARG_ATTRIBUTE)
+  #define CPYCHECKER_STEALS_REFERENCE_TO_ARG(n) \
+    __attribute__((cpychecker_steals_reference_to_arg(n)))
+#else
+  #define CPYCHECKER_STEALS_REFERENCE_TO_ARG(n)
+#endif
+
+/*
   Macro DECLARE_SIMPLE_WRAPPER():
     ARG_structname:
       the struct tag for the resulting python wrapper class,

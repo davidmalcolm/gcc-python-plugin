@@ -170,6 +170,12 @@ static void
 gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
                                     int expect_wrapped_data, PyObject *wrapped_gcc_data,
                                     void *user_data)
+    CPYCHECKER_STEALS_REFERENCE_TO_ARG(3) /* wrapped_gcc_data */ ;
+
+static void
+gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
+                                    int expect_wrapped_data, PyObject *wrapped_gcc_data,
+                                    void *user_data)
 {
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
