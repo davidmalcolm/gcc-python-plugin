@@ -151,7 +151,19 @@ function when the function terminates.
 It will assume this behavior for any function (or call through a function
 pointer) that returns a PyObject*.
 
-It is possible to override this behavior using custom compiler attributes:
+It is possible to override this behavior using custom compiler attributes as
+follows:
+
+Marking functions that return borrowed references
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The checker provides a custom GCC attribute:
+
+.. code-block:: c
+
+   __attribute__((cpychecker_returns_borrowed_ref))
+
+which can be used to mark function declarations:
 
 .. code-block:: c
 
@@ -168,9 +180,55 @@ It is possible to override this behavior using custom compiler attributes:
     CPYCHECKER_RETURNS_BORROWED_REF;
 
 Given the above, the checker will assume that invocations of ``foo()`` are
-returning a borrowed reference (or NULL), rather than a new reference, and
-will apply the same policy when verifying the implementation of ``foo()``
-itself.
+returning a borrowed reference (or NULL), rather than a new reference.  It
+will also check that this is that case when verifying the implementation of
+``foo()`` itself.
+
+Marking functions that steal references to their arguments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The checker provides a custom GCC attribute:
+
+.. code-block:: c
+
+     __attribute__((cpychecker_steals_reference_to_arg(n)))
+
+which can be used to mark function declarations:
+
+.. code-block:: c
+
+  /* The checker automatically defines this preprocessor name when creating
+     the custom attribute: */
+  #if defined(WITH_CPYCHECKER_STEALS_REFERENCE_TO_ARG_ATTRIBUTE)
+    #define CPYCHECKER_STEALS_REFERENCE_TO_ARG(n) \
+     __attribute__((cpychecker_steals_reference_to_arg(n)))
+  #else
+   #define CPYCHECKER_STEALS_REFERENCE_TO_ARG(n)
+  #endif
+
+  extern void foo(PyObject *obj)
+    CPYCHECKER_STEALS_REFERENCE_TO_ARG(1);
+
+Given the above, the checker will assume that invocations of ``foo()`` steal
+a reference to the first argument (``obj``).  It will also verify that this is
+the case when analyzing the implementation of ``foo()`` itself.
+
+More then one argument can be marked:
+
+.. code-block:: c
+
+  extern void bar(int i, PyObject *obj, int j, PyObject *other)
+    CPYCHECKER_STEALS_REFERENCE_TO_ARG(2)
+    CPYCHECKER_STEALS_REFERENCE_TO_ARG(4);
+
+The argument indices are 1-based (the above example is thus referring to
+``obj`` and to ``other``).
+
+All such arguments to the attribute should be ``PyObject*`` (or a pointer to a
+derived structure type).
+
+It is assumed that such references are stolen for all possible outcomes of the
+function - if a function can either succeed or fail, the reference is stolen in
+both possible worlds.
 
 Error-handling checking
 -----------------------

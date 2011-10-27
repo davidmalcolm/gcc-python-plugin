@@ -1,0 +1,43 @@
+Trace 0:
+  Transitions:
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=44), region=RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=44)))
+    str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=44)) from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:44
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=44), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=40), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=40), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:41
+
+Trace 1:
+  Transitions:
+    'when PyLong_FromLong() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=46), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:46
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=40), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c', line=40), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:44

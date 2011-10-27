@@ -1865,10 +1865,14 @@ class State(object):
                 if fnname in fnnames_returning_borrowed_refs:
                     # The function being called was marked as returning a
                     # borrowed ref, rather than a new ref:
-                    return self.cpython.make_transitions_for_borrowed_ref_or_fail(stmt,
-                                                     'borrowed ref from %s()' % fnname)
-                return self.cpython.make_transitions_for_new_ref_or_fail(stmt,
-                                                                 'new ref from (unknown) %s' % fnname)
+                    return self.apply_fncall_side_effects(
+                        self.cpython.make_transitions_for_borrowed_ref_or_fail(stmt,
+                                                                               'borrowed ref from %s()' % fnname),
+                        stmt)
+                return self.apply_fncall_side_effects(
+                    self.cpython.make_transitions_for_new_ref_or_fail(stmt,
+                                                                 'new ref from (unknown) %s' % fnname),
+                    stmt)
 
             # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
@@ -1881,6 +1885,25 @@ class State(object):
         log('stmt.args: %s %r', stmt.args, stmt.args)
         for i, arg in enumerate(stmt.args):
             log('args[%i]: %s %r', i, arg, arg)
+
+    def get_function_name(self, stmt):
+        """
+        Try to get the function name for a gcc.GimpleCall statement as a
+        string, or None if we're unable to determine it.
+
+        For a simple function invocation this is easy, but if we're
+        calling through a function pointer we may or may not know.
+        """
+        check_isinstance(stmt, gcc.GimpleCall)
+
+        v_fn = self.eval_rvalue(stmt.fn, stmt.loc)
+        if isinstance(v_fn, PointerToRegion):
+            if isinstance(v_fn.region, RegionForGlobal):
+                if isinstance(v_fn.region.vardecl, gcc.FunctionDecl):
+                    return v_fn.region.vardecl.name
+
+        # Unable to determine it:
+        return None
 
     def apply_fncall_side_effects(self, transitions, stmt):
         """
@@ -1895,6 +1918,20 @@ class State(object):
         check_isinstance(stmt, gcc.GimpleCall)
 
         args = self.eval_stmt_args(stmt)
+
+        fnname = self.get_function_name(stmt)
+
+        # cpython: handle functions marked as stealing references to their
+        # arguments:
+        from libcpychecker.attributes import stolen_refs_by_fnname
+        if fnname in stolen_refs_by_fnname:
+            for t_iter in transitions:
+                check_isinstance(t_iter, Transition)
+                for argindex in stolen_refs_by_fnname[stmt.fn.operand.name]:
+                    v_arg = args[argindex-1]
+                    if isinstance(v_arg, PointerToRegion):
+                        t_iter.dest.cpython.steal_reference(v_arg.region)
+
         for t_iter in transitions:
             check_isinstance(t_iter, Transition)
             for v_arg in args:

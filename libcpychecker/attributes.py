@@ -21,18 +21,44 @@ from gccutils import check_isinstance
 # Recorded attribute data:
 fnnames_returning_borrowed_refs = set()
 
-def attribute_callback_for_returns_borrowed_ref(*args):
-    if 0:
-        print('attribute_callback_for_returns_borrowed_ref(%r)' % args)
-    check_isinstance(args[0], gcc.FunctionDecl)
-    fnname = args[0].name
-    fnnames_returning_borrowed_refs.add(fnname)
+# A dictionary mapping from fnname to set of argument indices:
+stolen_refs_by_fnname = {}
 
 def register_our_attributes():
     # Callback, called by the gcc.PLUGIN_ATTRIBUTES event
+
+    # Handler for __attribute__((cpychecker_returns_borrowed_ref))
+    # and #ifdef WITH_CPYCHECKER_RETURNS_BORROWED_REF_ATTRIBUTE
+    def attribute_callback_for_returns_borrowed_ref(*args):
+        if 0:
+            print('attribute_callback_for_returns_borrowed_ref(%r)' % args)
+        check_isinstance(args[0], gcc.FunctionDecl)
+        fnname = args[0].name
+        fnnames_returning_borrowed_refs.add(fnname)
+
     gcc.register_attribute('cpychecker_returns_borrowed_ref',
                            0, 0,
                            False, False, False,
                            attribute_callback_for_returns_borrowed_ref)
     gcc.define_macro('WITH_CPYCHECKER_RETURNS_BORROWED_REF_ATTRIBUTE')
 
+    # Handler for __attribute__((cpychecker_steals_reference_to_arg(n)))
+    # and #ifdef WITH_CPYCHECKER_STEALS_REFERENCE_TO_ARG_ATTRIBUTE
+    def attribute_callback_for_steals_reference_to_arg(*args):
+        if 0:
+            print('attribute_callback_for_steals_reference_to_arg(%r)' % (args, ))
+        check_isinstance(args[0], gcc.FunctionDecl)
+        check_isinstance(args[1], gcc.IntegerCst)
+        fnname = args[0].name
+        argindex = int(args[1].constant)
+
+        if fnname in stolen_refs_by_fnname:
+            stolen_refs_by_fnname[fnname].add(argindex)
+        else:
+            stolen_refs_by_fnname[fnname] = set([argindex])
+
+    gcc.register_attribute('cpychecker_steals_reference_to_arg',
+                           1, 1,
+                           False, False, False,
+                           attribute_callback_for_steals_reference_to_arg)
+    gcc.define_macro('WITH_CPYCHECKER_STEALS_REFERENCE_TO_ARG_ATTRIBUTE')

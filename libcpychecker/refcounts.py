@@ -26,7 +26,8 @@ import gcc
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
 
 from libcpychecker.absinterp import *
-from libcpychecker.attributes import fnnames_returning_borrowed_refs
+from libcpychecker.attributes import fnnames_returning_borrowed_refs, \
+    stolen_refs_by_fnname
 from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
     TypeCheckCheckerType, TypeCheckResultType
@@ -2270,6 +2271,17 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                          for ref in endstate.get_persistent_refs_for_region(region)]
             exp_refcnt = len(exp_refs)
             log('exp_refs: %r', exp_refs)
+
+            if fun.decl.name in stolen_refs_by_fnname:
+                # Then this function is marked as stealing references to one or
+                # more of its arguments:
+                for argindex in stolen_refs_by_fnname[fun.decl.name]:
+                    # Get argument's value (in initial state of trace):
+                    parm = fun.decl.arguments[argindex - 1]
+                    v_parm = trace.states[0].eval_rvalue(parm, None)
+                    if isinstance(v_parm, PointerToRegion):
+                        if region == v_parm.region:
+                            exp_refcnt -= 1
 
             # Helper function for when ob_refcnt is wrong:
             def emit_refcount_error(msg):
