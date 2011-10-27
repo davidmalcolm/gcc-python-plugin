@@ -1017,7 +1017,14 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
-    def impl_PyErr_SetFromErrnoWithFilename(self, stmt, v_exc):
+    def impl_PyErr_SetFromErrnoWithFilename(self, stmt, v_exc, v_filename):
+        # http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrnoWithFilename
+        # Defined in Python/errors.c:
+        #   PyObject *
+        #   PyErr_SetFromErrnoWithFilename(PyObject *exc, const char *filename)
+        #
+        # "filename" can be NULL.
+        #
         # It always returns NULL:
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
