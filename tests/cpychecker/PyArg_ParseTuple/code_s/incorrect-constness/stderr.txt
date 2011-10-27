@@ -1,0 +1,7 @@
+tests/cpychecker/PyArg_ParseTuple/code_s/incorrect-constness/input.c: In function 'test':
+tests/cpychecker/PyArg_ParseTuple/code_s/incorrect-constness/input.c:34:26: error: Mismatching type in call to PyArg_ParseTuple with format code "s" [-fpermissive]
+  argument 3 ("&str") had type
+    "char * *"
+  but was expecting
+    "const char * *"
+  for format code "s"

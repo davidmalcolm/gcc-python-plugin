@@ -24,6 +24,9 @@ from libcpychecker.utils import log
 
 const_correctness = True
 
+def get_char_ptr():
+    return gcc.Type.char().pointer
+
 def get_const_char_ptr():
     return gcc.Type.char().const_equivalent.pointer
 
@@ -272,6 +275,16 @@ def compatible_type(exp_type, actual_type, actualarg=None):
         if compatible_type(exp_type.dereference, actual_type.dereference):
             return True
 
+    # Support (const char*) vs (char*)
+    # Somewhat counter-intuitively, the APIs that expect a char* are those that
+    # read the string data (Py_BuildValue); those that expect a const char* are
+    # those that write back a const char* value (PyArg_ParseTuple)
+    #
+    # Hence it's OK to accept a (const char*) when a (char*) was expected:
+    if str(exp_type) == 'char *':
+        if str(actual_type) == 'const char *':
+            return True
+
     # Don't be too fussy about typedefs to integer types
     # For instance:
     #   typedef unsigned PY_LONG_LONG gdb_py_ulongest;
@@ -288,8 +301,8 @@ def compatible_type(exp_type, actual_type, actualarg=None):
         if compare_int_types():
             return True
 
-    # Support character arrays vs const char*:
-    if str(exp_type) == 'const char *':
+    # Support character arrays vs char*:
+    if str(exp_type) == 'char *':
         if isinstance(actual_type, gcc.PointerType):
             if isinstance(actual_type.dereference, gcc.ArrayType):
                 if actual_type.dereference.dereference == gcc.Type.char():

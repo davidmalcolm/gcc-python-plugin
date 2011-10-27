@@ -205,12 +205,12 @@ class PyBuildValueFmt(ParsedFormatString):
             if c in 'sz':
                 if next == '#':
                     result.add_argument(c + '#',
-                                        [get_const_char_ptr(),
+                                        [get_char_ptr(),
                                          get_hash_size_type(with_size_t).pointer])
                     i += 1
                 else:
                     result.add_argument(c,
-                                        [get_const_char_ptr()])
+                                        [get_char_ptr()])
                 continue
 
             if c in 'NSO':

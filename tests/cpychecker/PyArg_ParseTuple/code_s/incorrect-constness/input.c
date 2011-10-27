@@ -17,17 +17,26 @@
    <http://www.gnu.org/licenses/>.
 */
 
+/*
+  Verify that the checker emits a warning for code "s" with a non-const
+  char*
+
+  Code "s" writes a pointer back to the insides of an object's representation,
+  so it really should be a (const char*), not just a (char*)
+*/
 #include <Python.h>
 
-/*
-  Test of type-checking in a correct call to Py_BuildValue with code "s"
-*/
-
 PyObject *
-test(const char *foo, char *bar)
+test(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("(s, s)",
-                         foo, bar);
+    char *str;
+
+    if (!PyArg_ParseTuple(args, "s",
+                          &str)) {
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
 }
 
 /*
