@@ -852,6 +852,10 @@ class Location(object):
         self.bb = bb
         self.idx = idx
 
+    def __repr__(self):
+        return ('Location(bb=%i, idx=%i)'
+                % (self.bb.index, self.idx))
+
     def __str__(self):
         stmt = self.get_stmt()
         return ('block %i stmt:%i : %20r : %s'
@@ -2258,7 +2262,7 @@ class Transition(object):
         self.dest.log(logger)
 
 class Trace(object):
-    __slots__ = ('states', 'transitions', 'err', )
+    __slots__ = ('states', 'transitions', 'err', 'paths_taken')
 
     """A sequence of States and Transitions"""
     def __init__(self):
@@ -2266,10 +2270,15 @@ class Trace(object):
         self.transitions = []
         self.err = None
 
+        # A list of (src Location, dest Location) pairs
+        self.paths_taken = []
+
     def add(self, transition):
         check_isinstance(transition, Transition)
         self.states.append(transition.dest)
         self.transitions.append(transition)
+        self.paths_taken.append( (transition.src.loc,
+                                  transition.dest.loc) )
         return self
 
     def add_error(self, err):
@@ -2280,6 +2289,7 @@ class Trace(object):
         t.states = self.states[:]
         t.transitions = self.transitions[:]
         t.err = self.err # FIXME: should this be a copy?
+        t.paths_taken = self.paths_taken[:]
         return t
 
     def log(self, logger, name):
@@ -2298,7 +2308,7 @@ class Trace(object):
 
     def has_looped(self):
         """
-        Is the tail state of the Trace at a location where it's been before?
+        Is the tail transition a path we've followed before?
         """
         endstate = self.states[-1]
         if hasattr(endstate, 'fromsplit'):
@@ -2310,9 +2320,18 @@ class Trace(object):
             # The handler not "exit" etc leads to a transition that has a
             # repeated location:
             return False
-        for state in self.states[0:-1]:
-            if state.loc == endstate.loc:
-                return True
+
+        endtransition = self.transitions[-1]
+        if 0:
+            gcc.inform(endstate.get_gcc_loc(endstate.fun),
+                       ('paths_taken: %s'
+                        % (self.paths_taken,)))
+            gcc.inform(endstate.get_gcc_loc(endstate.fun),
+                       'src, loc: %s' % ((endtransition.src.loc, endtransition.dest.loc),))
+
+        # Is this a path we've followed before?
+        if (endtransition.src.loc, endtransition.dest.loc) in self.paths_taken[0:-1]:
+            return True
 
     def get_all_var_region_pairs(self):
         """
@@ -2479,10 +2498,13 @@ def iter_traces(fun, facets, prefix=None, limits=None):
         # Stop interpreting when you see a loop, to ensure termination:
         if prefix.has_looped():
             log('loop detected; stopping iteration')
+            if 0:
+                gcc.inform(curstate.get_gcc_loc(fun),
+                           'loop detected; stopping iteration')
             # Don't return the prefix so far: it is not a complete trace
             return []
 
-    # We need the prevstate to handle Phi nodes
+    # We need the prevstate in order to handle Phi nodes
     if len(prefix.states) > 1:
         prevstate = prefix.states[-2]
     else:

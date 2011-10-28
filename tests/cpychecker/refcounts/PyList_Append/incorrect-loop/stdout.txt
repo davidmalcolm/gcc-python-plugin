@@ -1,0 +1,205 @@
+Trace 0:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() succeeds'
+    'taking False path'
+    'when PyList_Append() succeeds'
+    'taking False path'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34)))
+    str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34)) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:
+    repr(): RegionOnHeap('new ref from (unknown) item_ctor', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41))
+    str(): new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+    r->ob_refcnt: refs: 2 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41), region=Region('PyTypeObject for new ref from (unknown) item_ctor'))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:30
+
+Trace 1:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() succeeds'
+    'taking False path'
+    'when PyList_Append() fails'
+    'taking True path'
+    'when taking True path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=50), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:50
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:
+    repr(): RegionOnHeap('new ref from (unknown) item_ctor', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41))
+    str(): new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41), region=Region('PyTypeObject for new ref from (unknown) item_ctor'))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47
+
+Trace 2:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() succeeds'
+    'taking False path'
+    'when PyList_Append() fails'
+    'taking True path'
+    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=50), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:50
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:
+    repr(): RegionOnHeap('new ref from (unknown) item_ctor', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41))
+    str(): new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47
+
+Trace 3:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() succeeds'
+    'taking False path'
+    'when PyList_Append() fails'
+    'taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=50), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:50
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: None
+    r->ob_type: None
+  new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:
+    repr(): RegionOnHeap('new ref from (unknown) item_ctor', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41))
+    str(): new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41), region=Region('PyTypeObject for new ref from (unknown) item_ctor'))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47
+
+Trace 4:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() succeeds'
+    'taking False path'
+    'when PyList_Append() fails'
+    'taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34'
+    'when taking False path'
+    'calling tp_dealloc on new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=50), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:50
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: None
+    r->ob_type: None
+  new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:
+    repr(): RegionOnHeap('new ref from (unknown) item_ctor', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=41))
+    str(): new ref from (unknown) item_ctor allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47
+
+Trace 5:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() fails'
+    'taking True path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=44), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:44
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+
+Trace 6:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'when item_ctor() fails'
+    'taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=44), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:44
+  PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41
+
+Trace 7:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34)))
+    str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34)) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:30
+
+Trace 8:
+  Transitions:
+    'when PyList_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c', line=36), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:36
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34
