@@ -39,6 +39,7 @@ gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject
     }
     
     closure->callback = callback;
+    Py_INCREF(callback);
 
     // FIXME: we may want to pass in the event enum as well as the user-supplied extraargs
 
