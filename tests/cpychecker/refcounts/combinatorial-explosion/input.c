@@ -29,7 +29,7 @@
 PyObject *
 test_adding_module_objects(PyObject *m)
 {
-    PyObject *item = PyString_FromString("foo");
+    PyObject *item = PyLong_FromLong(4096);
     if (!item) {
         return NULL;
     }
