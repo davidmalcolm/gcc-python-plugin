@@ -98,6 +98,29 @@ class TestStream:
             line = re.sub('VarDecl\(([0-9]+)\)', 'VarDecl(nnnn)', line)
             line = re.sub('LabelDecl\(([0-9]+)\)', 'LabelDecl(nnnn)', line)
 
+            # Remove exact path to Python header file and line number
+            # e.g.
+            #   unknown struct PyObject * from /usr/include/python2.7/pyerrors.h:135
+            #   unknown struct PyObject * from /usr/include/python3.2mu/pyerrors.h:132
+            # should both become:
+            #   unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
+            line = re.sub('/usr/include/python(.*)/(.*).h:[0-9]+',
+                          r'/usr/include/python?.?/\2.h:nn',
+                          line)
+
+            # Convert to the Python 3 format for the repr() of a frozenset:
+            # e.g. from:
+            #   frozenset([0, 1, 2])
+            # to:
+            #   frozenset({0, 1, 2})
+            # and from:
+            #   frozenset([])
+            # to:
+            #   frozenset()
+            line = re.sub(r'frozenset\(\[\]\)', 'frozenset()', line)
+            line = re.sub(r'frozenset\(\[(.*)\]\)',
+                          r'frozenset({\1})',
+                          line)
             result += line + '\n'
         return result
 
