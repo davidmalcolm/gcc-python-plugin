@@ -1142,67 +1142,62 @@ class CPython(Facet):
     ########################################################################
     # Py_Int*
     ########################################################################
-    if is_py3k():
-        # If we're compiling Python 3 code, the PyInt_ entrypoints no longer
-        # exist:
-        pass
-    else:
-        def impl_PyInt_AsLong(self, stmt, v_op):
-            # Declared in intobject.h as:
-            #   PyAPI_FUNC(long) PyInt_AsLong(PyObject *);
-            # Defined in Objects/intobject.c
-            #
-            # http://docs.python.org/c-api/int.html#PyInt_AsLong
+    def impl_PyInt_AsLong(self, stmt, v_op):
+        # Declared in intobject.h as:
+        #   PyAPI_FUNC(long) PyInt_AsLong(PyObject *);
+        # Defined in Objects/intobject.c
+        #
+        # http://docs.python.org/c-api/int.html#PyInt_AsLong
 
-            # Can fail (gracefully) with NULL, and with non-int objects
+        # Can fail (gracefully) with NULL, and with non-int objects
 
-            returntype = stmt.fn.type.dereference.type
+        returntype = stmt.fn.type.dereference.type
 
-            if self.object_ptr_has_global_ob_type(v_op, 'PyInt_Type'):
-                # We know it's a PyIntObject; the call will succeed:
-                # FIXME: cast:
-                v_ob_ival = self.state.get_value_of_field_by_region(v_op.region,
-                                                              'ob_ival')
-                t_success = self.state.mktrans_assignment(stmt.lhs,
-                                                    v_ob_ival,
-                                                    'PyInt_AsLong() returns ob_ival')
+        if self.object_ptr_has_global_ob_type(v_op, 'PyInt_Type'):
+            # We know it's a PyIntObject; the call will succeed:
+            # FIXME: cast:
+            v_ob_ival = self.state.get_value_of_field_by_region(v_op.region,
+                                                          'ob_ival')
+            t_success = self.state.mktrans_assignment(stmt.lhs,
+                                                v_ob_ival,
+                                                'PyInt_AsLong() returns ob_ival')
+            return [t_success]
+
+        # We don't know if it's a PyIntObject (or subclass); the call could
+        # fail:
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                                            UnknownValue.make(returntype, stmt.loc),
+                                            'PyInt_AsLong() succeeds')
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, -1),
+                                            'PyInt_AsLong() fails')
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        return [t_success, t_failure]
+
+    def impl_PyInt_FromLong(self, stmt, v_ival):
+        # Declared in intobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
+        # Defined in Objects/intobject.c
+        #
+        # CPython2 shares objects for integers in the range:
+        #   -5 <= ival < 257
+        # within intobject.c's "small_ints" array and these are preallocated
+        # by _PyInt_Init().  Thus, for these values, we know that the call
+        # cannot fail
+
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyIntObject',
+                                                          'PyInt_Type')
+        # Set ob_size:
+        r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_ival')
+        t_success.dest.value_for_region[r_ob_size] = v_ival
+
+        if isinstance(v_ival, ConcreteValue):
+            if v_ival.value >= -5 and v_ival.value < 257:
+                # We know that failure isn't possible:
                 return [t_success]
 
-            # We don't know if it's a PyIntObject (or subclass); the call could
-            # fail:
-            t_success = self.state.mktrans_assignment(stmt.lhs,
-                                                UnknownValue.make(returntype, stmt.loc),
-                                                'PyInt_AsLong() succeeds')
-            t_failure = self.state.mktrans_assignment(stmt.lhs,
-                                                ConcreteValue(returntype, stmt.loc, -1),
-                                                'PyInt_AsLong() fails')
-            t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
-            return [t_success, t_failure]
-
-        def impl_PyInt_FromLong(self, stmt, v_ival):
-            # Declared in intobject.h as:
-            #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
-            # Defined in Objects/intobject.c
-            #
-            # CPython2 shares objects for integers in the range:
-            #   -5 <= ival < 257
-            # within intobject.c's "small_ints" array and these are preallocated
-            # by _PyInt_Init().  Thus, for these values, we know that the call
-            # cannot fail
-
-            r_newobj, t_success, t_failure = self.object_ctor(stmt,
-                                                              'PyIntObject',
-                                                              'PyInt_Type')
-            # Set ob_size:
-            r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_ival')
-            t_success.dest.value_for_region[r_ob_size] = v_ival
-
-            if isinstance(v_ival, ConcreteValue):
-                if v_ival.value >= -5 and v_ival.value < 257:
-                    # We know that failure isn't possible:
-                    return [t_success]
-
-            return [t_success, t_failure]
+        return [t_success, t_failure]
 
     ########################################################################
     # PyList_*
@@ -1635,97 +1630,92 @@ class CPython(Facet):
     ########################################################################
     # PyString_*
     ########################################################################
-    if is_py3k():
-        # If we're compiling Python 3 code, the PyString_ entrypoints no longer
-        # exist:
-        pass
-    else:
-        def impl_PyString_AsString(self, stmt, v_op):
-            # Declared in stringobject.h as:
-            #   PyAPI_FUNC(char *) PyString_AsString(PyObject *);
-            # Implemented in Objects/stringobject.c
-            #
-            #  http://docs.python.org/c-api/string.html#PyString_AsString
-            #
-            # With PyStringObject and their subclasses, it returns
-            #    ((PyStringObject *)op) -> ob_sval
-            # With other classes, this call can fail
+    def impl_PyString_AsString(self, stmt, v_op):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(char *) PyString_AsString(PyObject *);
+        # Implemented in Objects/stringobject.c
+        #
+        #  http://docs.python.org/c-api/string.html#PyString_AsString
+        #
+        # With PyStringObject and their subclasses, it returns
+        #    ((PyStringObject *)op) -> ob_sval
+        # With other classes, this call can fail
 
-            # It will segfault if called with NULL, since it uses PyString_Check,
-            # which reads through the object's ob_type:
-            self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        # It will segfault if called with NULL, since it uses PyString_Check,
+        # which reads through the object's ob_type:
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
 
-            returntype = stmt.fn.type.dereference.type
+        returntype = stmt.fn.type.dereference.type
 
-            if self.object_ptr_has_global_ob_type(v_op, 'PyString_Type'):
-                # We know it's a PyStringObject; the call will succeed:
-                # FIXME: cast:
-                r_ob_sval = self.state.make_field_region(v_op.region, 'ob_sval')
-                v_result = PointerToRegion(returntype, stmt.loc, r_ob_sval)
-                t_success = self.state.mktrans_assignment(stmt.lhs,
-                                                    v_result,
-                                                    'PyString_AsString() returns ob_sval')
-                return [t_success]
-
-            # We don't know if it's a PyStringObject (or subclass); the call could
-            # fail:
-            r_nonnull = self.state.make_heap_region('buffer from PyString_AsString()', stmt)
-            v_success = PointerToRegion(returntype, stmt.loc, r_nonnull)
+        if self.object_ptr_has_global_ob_type(v_op, 'PyString_Type'):
+            # We know it's a PyStringObject; the call will succeed:
+            # FIXME: cast:
+            r_ob_sval = self.state.make_field_region(v_op.region, 'ob_sval')
+            v_result = PointerToRegion(returntype, stmt.loc, r_ob_sval)
             t_success = self.state.mktrans_assignment(stmt.lhs,
-                                                v_success,
-                                                'when PyString_AsString() succeeds')
-            t_failure = self.state.mktrans_assignment(stmt.lhs,
-                                                ConcreteValue(returntype, stmt.loc, 0),
-                                                'when PyString_AsString() fails')
-            t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
-            return [t_success, t_failure]
+                                                v_result,
+                                                'PyString_AsString() returns ob_sval')
+            return [t_success]
 
-        def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
-            # Declared in stringobject.h as:
-            #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)
-            #                             Py_GCC_ATTRIBUTE((format(printf, 1, 2)));
-            # Returns a new reference
-            #   http://docs.python.org/c-api/string.html#PyString_FromFormat
-            #
-            # (We do not yet check that the format string matches the types of the
-            # varargs)
-            r_newobj, t_success, t_failure = self.object_ctor(stmt,
-                                                              'PyStringObject',
-                                                              'PyString_Type')
-            return [t_success, t_failure]
+        # We don't know if it's a PyStringObject (or subclass); the call could
+        # fail:
+        r_nonnull = self.state.make_heap_region('buffer from PyString_AsString()', stmt)
+        v_success = PointerToRegion(returntype, stmt.loc, r_nonnull)
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                                            v_success,
+                                            'when PyString_AsString() succeeds')
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, 0),
+                                            'when PyString_AsString() fails')
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        return [t_success, t_failure]
 
-        def impl_PyString_FromString(self, stmt, v_str):
-            # Declared in stringobject.h as:
-            #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
-            #
-            #   http://docs.python.org/c-api/string.html#PyString_FromString
-            #
+    def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)
+        #                             Py_GCC_ATTRIBUTE((format(printf, 1, 2)));
+        # Returns a new reference
+        #   http://docs.python.org/c-api/string.html#PyString_FromFormat
+        #
+        # (We do not yet check that the format string matches the types of the
+        # varargs)
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyStringObject',
+                                                          'PyString_Type')
+        return [t_success, t_failure]
 
-            # The input _must_ be non-NULL; it is not checked:
-            self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
+    def impl_PyString_FromString(self, stmt, v_str):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
+        #
+        #   http://docs.python.org/c-api/string.html#PyString_FromString
+        #
 
-            r_newobj, t_success, t_failure = self.object_ctor(stmt,
-                                                              'PyStringObject',
-                                                              'PyString_Type')
-            return [t_success, t_failure]
+        # The input _must_ be non-NULL; it is not checked:
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
 
-        def impl_PyString_FromStringAndSize(self, stmt, v_str, v_size):
-            # Declared in stringobject.h as:
-            #   PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);
-            #
-            # http://docs.python.org/c-api/string.html#PyString_FromStringAndSize
-            #
-            # Defined in Objects/stringobject.c:
-            #   # PyObject *
-            #   PyString_FromStringAndSize(const char *str, Py_ssize_t size)
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyStringObject',
+                                                          'PyString_Type')
+        return [t_success, t_failure]
 
-            # v_str, v_size = self.state.eval_stmt_args(stmt)
-            # (the input can legitimately be NULL)
+    def impl_PyString_FromStringAndSize(self, stmt, v_str, v_size):
+        # Declared in stringobject.h as:
+        #   PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);
+        #
+        # http://docs.python.org/c-api/string.html#PyString_FromStringAndSize
+        #
+        # Defined in Objects/stringobject.c:
+        #   # PyObject *
+        #   PyString_FromStringAndSize(const char *str, Py_ssize_t size)
 
-            r_newobj, t_success, t_failure = self.object_ctor(stmt,
-                                                              'PyStringObject',
-                                                              'PyString_Type')
-            return [t_success, t_failure]
+        # v_str, v_size = self.state.eval_stmt_args(stmt)
+        # (the input can legitimately be NULL)
+
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyStringObject',
+                                                          'PyString_Type')
+        return [t_success, t_failure]
 
     ########################################################################
     # PyStructSequence_*
