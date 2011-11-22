@@ -2342,7 +2342,7 @@ class Trace(object):
         """
         result = []
         for s_iter in self.states:
-            for var_iter, r_iter in s_iter.region_for_var.iteritems():
+            for var_iter, r_iter in s_iter.region_for_var.items():
                 pair = (var_iter, r_iter)
                 if pair not in result:
                     result.append(pair)
