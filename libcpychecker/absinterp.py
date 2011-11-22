@@ -18,11 +18,13 @@
 import gcc
 import gccutils
 import sys
-from six import StringIO
+from six import StringIO, integer_types
 from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
+
+numeric_types = integer_types + (float, )
 
 # I found myself regularly getting State and Transition instances confused.  To
 # ameliorate that, here are some naming conventions and abbreviations:
@@ -263,8 +265,8 @@ def eval_binop(exprcode, a, b):
     AbstractValue instances)
     """
     log('eval_binop(%s, %s, %s)', exprcode, a, b)
-    assert isinstance(a, (int, long, float))
-    assert isinstance(b, (int, long, float))
+    assert isinstance(a, numeric_types)
+    assert isinstance(b, numeric_types)
 
     def inner():
         if exprcode == gcc.PlusExpr:
@@ -301,7 +303,7 @@ def eval_binop(exprcode, a, b):
 
     result = inner()
     log('result: %s', result)
-    assert isinstance(result, (int, long, float))
+    assert isinstance(result, numeric_types)
     return result
 
 
@@ -315,7 +317,7 @@ class ConcreteValue(AbstractValue):
         check_isinstance(gcctype, gcc.Type)
         if loc:
             check_isinstance(loc, gcc.Location)
-        check_isinstance(value, (int, long, float))
+        check_isinstance(value, numeric_types)
         self.gcctype = gcctype
         self.loc = loc
         self.value = value
@@ -434,9 +436,9 @@ def value_to_str(value):
     than
        -9223372036854775808
     """
-    check_isinstance(value, (int, long, float))
+    check_isinstance(value, numeric_types)
 
-    if isinstance(value, (int, long)):
+    if isinstance(value, integer_types):
         if abs(value) > 0x100000:
             return hex(value)
     return str(value)
@@ -460,7 +462,7 @@ class WithinRange(AbstractValue):
             check_isinstance(loc, gcc.Location)
         assert len(values) >= 1
         for value in values:
-            check_isinstance(value, (int, long, float))
+            check_isinstance(value, numeric_types)
         self.gcctype = gcctype
         self.loc = loc
         self.minvalue = min(values)
@@ -1379,7 +1381,7 @@ class State(object):
         # Used by element_region, and pointer_add_region
         log('_array_region(%s, %s)', parent, index)
         check_isinstance(parent, Region)
-        check_isinstance(index, (int, long, UnknownValue, ConcreteValue, WithinRange))
+        check_isinstance(index, (integer_types, UnknownValue, ConcreteValue, WithinRange))
         if isinstance(index, ConcreteValue):
             index = index.value
         if index in parent.fields:
