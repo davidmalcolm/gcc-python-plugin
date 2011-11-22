@@ -273,11 +273,14 @@ def exclude_test(test):
     if test in testdirs:
         testdirs.remove(test)
 
+def exclude_tests_below(path):
+    for test in find_tests_below(path):
+        exclude_test(test)
+
 # Handle exclusions:
 if options.excluded_dirs:
     for path in options.excluded_dirs:
-        for test in find_tests_below(path):
-            exclude_test(test)
+        exclude_tests_below(path)
 
 # Certain tests don't work on 32-bit
 if six.MAXSIZE == 0x7fffffff:
@@ -289,6 +292,28 @@ if six.MAXSIZE == 0x7fffffff:
     # One part of the expected output for this test assumes int vs Py_ssize_t
     # mismatch:
     exclude_test('tests/cpychecker/PyArg_ParseTuple/incorrect_converters')
+
+# Certain tests don't work for Python 3:
+if six.PY3:
+    # The PyInt_ API doesn't exist anymore in Python 3:
+    exclude_tests_below('tests/cpychecker/refcounts/PyInt_AsLong/')
+    exclude_tests_below('tests/cpychecker/refcounts/PyInt_FromLong/')
+
+    # Similarly for the PyString_ API:
+    exclude_tests_below('tests/cpychecker/refcounts/PyString_AsString')
+    exclude_tests_below('tests/cpychecker/refcounts/PyString_FromStringAndSize')
+
+    # The following tests happen to use PyInt or PyString APIs and thus we
+    # exclude them for now:
+    exclude_test('tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang') # PyString
+    exclude_test('tests/cpychecker/refcounts/PyStructSequence/correct') # PyInt
+    exclude_test('tests/cpychecker/refcounts/PySys_SetObject/correct') # PyString
+    exclude_test('tests/cpychecker/refcounts/subclass/handling') # PyString
+
+    # Module handling is very different in Python 2 vs 3.  For now, only run
+    # this test for Python 2:
+    exclude_test('tests/cpychecker/refcounts/module_handling')
+
 
 num_passes = 0
 failed_tests = []
