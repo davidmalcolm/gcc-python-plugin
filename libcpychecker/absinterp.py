@@ -1368,7 +1368,7 @@ class State(object):
             else:
                 sizeof = t.sizeof
                 log('%s', sizeof)
-                index = b.value / sizeof
+                index = b.value // sizeof
             # Are we offsetting within an array?
             if isinstance(parent, ArrayElementRegion):
                 return self._array_region(parent.parent, parent.index + index)
