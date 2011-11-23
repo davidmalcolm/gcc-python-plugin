@@ -60,8 +60,21 @@ extern PyTypeObject *unknown_type_obj_ptr;
   Example of an extension type, where cpychecker has no way to associate
   the PyTypeObject with, say, "struct ExtensionObject"
 */
+PyTypeObject UnknownExtension_Type = {};
 
-PyTypeObject Extension_Type = {};
+/*
+  Example of a PyTypeObject where the user supplies the value at compile time:
+*/
+typedef struct UserDefinedObject UserDefinedObject;
+#if WITH_CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF_ATTRIBUTE
+  #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename) \
+     __attribute__((cpychecker_type_object_for_typedef(typename)))
+#else
+  #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename)
+#endif
+PyTypeObject UserDefinedExtension_Type
+    CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF("UserDefinedObject")
+  = {};
 
 PyObject *
 handle_subclasses(PyObject *self, PyObject *args)
@@ -72,8 +85,9 @@ handle_subclasses(PyObject *self, PyObject *args)
     PyLongObject *long_obj;
     struct UnknownObject *unknown_obj;
     struct ExtensionObject *extension_obj;
+    UserDefinedObject *user_defined_obj;
 
-    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!",
+    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!",
                           /* This is correct, PyCode_Type -> PyCodeObject */
                           &PyCode_Type, &code_obj,
 
@@ -94,7 +108,12 @@ handle_subclasses(PyObject *self, PyObject *args)
                           /* This must report a warning: we don't know about
                              the association between Extension_Type and
                              struct ExtensionObject: */
-                          &Extension_Type, &extension_obj)) {
+                          &UnknownExtension_Type, &extension_obj,
+
+                          /* This is correct, the user has explicitly
+                             associated the typeobj with the struct: */
+                          &UserDefinedExtension_Type, &user_defined_obj
+                          )) {
         return NULL;
     }
 

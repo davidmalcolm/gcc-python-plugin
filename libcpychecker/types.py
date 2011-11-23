@@ -107,3 +107,7 @@ def get_type_for_typeobject(typeobject):
 
     type_name = type_dict[typeobject.name]
     return get_global_typedef(type_name)
+
+def register_type_object(typeobject, typedef):
+    check_isinstance(typeobject, gcc.VarDecl)
+    type_dict[typeobject.name] = typedef

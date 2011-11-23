@@ -17,6 +17,7 @@
 
 import gcc
 from gccutils import check_isinstance
+from libcpychecker.types import register_type_object
 
 # Recorded attribute data:
 fnnames_returning_borrowed_refs = set()
@@ -62,3 +63,19 @@ def register_our_attributes():
                            False, False, False,
                            attribute_callback_for_steals_reference_to_arg)
     gcc.define_macro('WITH_CPYCHECKER_STEALS_REFERENCE_TO_ARG_ATTRIBUTE')
+
+    # Handler for __attribute__((cpychecker_type_object_for_struct(type)))
+    # and #ifdef WITH_CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF_ATTRIBUTE
+    def attribute_callback_type_object_for_typedef(*args):
+        if 0:
+            print('attribute_callback_type_object_for_typedef(%r)' % (args, ))
+        check_isinstance(args[0], gcc.VarDecl)
+        check_isinstance(args[1], gcc.StringCst)
+        typedef_name = args[1].constant
+        register_type_object(args[0], typedef_name)
+
+    gcc.register_attribute('cpychecker_type_object_for_typedef',
+                           1, 1,
+                           False, False, False,
+                           attribute_callback_type_object_for_typedef)
+    gcc.define_macro('WITH_CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF_ATTRIBUTE')

@@ -333,6 +333,79 @@ call to PyArg_ParseTupleAndKeywords is not NULL-terminated.
    regular functions against `int` and those in the modified functions against
    `Py_ssize_t`.
 
+Associating PyTypeObject instances with compile-time types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The "O!" format code to ``PyArg_ParseTuple`` takes a ``PyTypeObject`` followed
+by the address of an object.  This second argument can point to a
+``PyObject*``, but it can also point to a pointer to a derived class.
+
+For example, CPython's own implementation contains code like this:
+
+.. code-block:: c
+
+  static PyObject *
+  unicodedata_decomposition(PyObject *self, PyObject *args)
+  {
+      PyUnicodeObject *v;
+
+      /* ...snip... */
+
+      if (!PyArg_ParseTuple(args, "O!:decomposition",
+                            &PyUnicode_Type, &v))
+
+      /* ...etc... */
+
+in which the input argument is written out into the ``PyUnicodeObject*``,
+provided that it is indeed a unicode instance.
+
+When the cpychecker verifies the types in this format string it verifies that
+the run-time type of the ``PyTypeObject`` matches the compile-time type
+(``PyUnicodeObject *``).   It is able to do this since it contains hard-coded
+associations between these worlds for all of Python's built-in types: for the
+above case, it "knows" that ``PyUnicode_Type`` is associated with
+``PyUnicodeObject``.
+
+If you need to provide a similar association for an extension type, the checker
+provides a custom GCC attribute:
+
+.. code-block:: c
+
+     __attribute__((cpychecker_type_object_for_typedef(typename)))
+
+which can be used to mark PyTypeObject instance, giving the name of the typedef
+that PyObject instances of that type can be safely cast to.
+
+.. code-block:: c
+
+  /* The checker automatically defines this preprocessor name when creating
+     the custom attribute: */
+  #if defined(WITH_CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF_ATTRIBUTE)
+    #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename) \
+       __attribute__((cpychecker_type_object_for_typedef(typename)))
+  #else
+    /* This handles the case where we're compiling with a "vanilla"
+       compiler that doesn't supply this attribute: */
+    #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename)
+  #endif
+
+  /* Define some PyObject subclass, as both a struct and a typedef */
+  struct OurObjectStruct {
+      PyObject_HEAD
+      /* other fields */
+  };
+  typedef struct OurObjectStruct OurExtensionObject;
+
+  /*
+    Declare the PyTypeObject, using the custom attribute to associate it with
+    the typedef above:
+  */
+  extern PyTypeObject UserDefinedExtension_Type
+    CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF("OurExtensionObject");
+
+Given the above, the checker will associate the given ``PyTypeObject`` with the
+given typedef.
+
 
 Limitations and caveats
 -----------------------

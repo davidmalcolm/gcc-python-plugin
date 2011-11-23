@@ -162,7 +162,7 @@ class TypeCheckResultType(AwkwardType):
         other_type = self.typecheck.get_other_type()
         if other_type:
             return ('%s (based on PyTypeObject: %r) or %s'
-                    % (describe_type(other_type.pointer),
+                    % (describe_type(other_type.pointer.pointer),
                        self.typecheck.typeobject.name,
                        describe_type(self.base_type)))
         else:
