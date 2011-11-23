@@ -47,6 +47,13 @@
   #define CPYCHECKER_STEALS_REFERENCE_TO_ARG(n)
 #endif
 
+#if defined(WITH_CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF_ATTRIBUTE)
+  #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename) \
+     __attribute__((cpychecker_type_object_for_typedef(typename)))
+#else
+  #define CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(typename)
+#endif
+
 /*
   Macro DECLARE_SIMPLE_WRAPPER():
     ARG_structname:
@@ -79,7 +86,8 @@
   extern PyObject *                                                      \
   gcc_python_make_wrapper_##ARG_typename(ARG_wrappedtype ARG_fieldname); \
                                                                          \
-  extern PyTypeObject ARG_typeobj;                                       \
+  extern PyTypeObject ARG_typeobj                                        \
+    CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(#ARG_structname);                 \
                                                                          \
   /* end of macro */
 
