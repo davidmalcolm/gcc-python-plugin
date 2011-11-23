@@ -57,9 +57,9 @@ directory).
 Reference-count checking
 ------------------------
 The checker attempts to analyze all possible paths through each function,
-tracking the various PyObject* objects encountered.
+tracking the various ``PyObject*`` objects encountered.
 
-For each path through the function and PyObject*, it determines what the
+For each path through the function and ``PyObject*``, it determines what the
 reference count ought to be at the end of the function, issuing an error report
 for any that are incorrect.
 
@@ -142,14 +142,14 @@ the JavaScript it uses via URLs to the web).
 
 Assumptions and configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For any function returning a PyObject*, it assumes that the PyObject* should be
-either a new reference to an object, or NULL (with an exception set) - the
-function's caller should "own" a reference to that object.  For all
-other PyObject*, it assumes that there should be no references owned by the
+For any function returning a ``PyObject*``, it assumes that the ``PyObject*``
+should be either a new reference to an object, or NULL (with an exception set)
+- the function's caller should "own" a reference to that object.  For all
+other ``PyObject*``, it assumes that there should be no references owned by the
 function when the function terminates.
 
 It will assume this behavior for any function (or call through a function
-pointer) that returns a PyObject*.
+pointer) that returns a ``PyObject*``.
 
 It is possible to override this behavior using custom compiler attributes as
 follows:
@@ -238,7 +238,7 @@ error reports for code that appears to not gracefully handle an error.
 
 (TODO: show example)
 
-As noted above, it assumes that any function that returns a PyObject* can
+As noted above, it assumes that any function that returns a ``PyObject*`` can
 return can either NULL (setting an exception), or a new reference.  It knows
 about much of the other parts of the CPython C API, including many other
 functions that can fail.
@@ -272,7 +272,7 @@ The checker will emit errors for various events:
 Errors in exception-handling
 ----------------------------
 The checker keeps track of the per-thread exception state.  It will issue a
-warning about any paths through functions returning a PyObject* that return
+warning about any paths through functions returning a ``PyObject*`` that return
 NULL for which the per-thread exception state has not been set::
 
    input.c: In function 'test':
