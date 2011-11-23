@@ -811,16 +811,18 @@ class NullPtrArgument(PredictedValueError):
         PredictedValueError.__init__(self, state, stmt.args[idx], ptr, isdefinite)
         self.stmt = stmt
         self.idx = idx
+        # this is a 0-based index; it is changed to a 1-based index when
+        # printed
 
     def __str__(self):
         if self.isdefinite:
             return ('calling %s with NULL (%s) as argument %i at %s'
                     % (self.stmt.fn, self.expr,
-                       self.idx, self.state.loc.get_stmt().loc))
+                       self.idx + 1, self.state.loc.get_stmt().loc))
         else:
             return ('possibly calling %s with NULL (%s) as argument %i at %s'
                     % (self.stmt.fn, self.expr,
-                       self.idx, self.state.loc.get_stmt().loc))
+                       self.idx + 1, self.state.loc.get_stmt().loc))
 
 
 
@@ -1656,6 +1658,8 @@ class State(object):
                 raise NullPtrDereference(self, expr, ptr, isdefinite)
 
     def raise_any_null_ptr_func_arg(self, stmt, idx, ptr):
+        # idx is the 0-based index of the argument
+
         check_isinstance(stmt, gcc.Gimple)
         check_isinstance(idx, int)
         check_isinstance(ptr, AbstractValue)

@@ -545,7 +545,7 @@ Trace 12:
     'when PyLong_FromLong() succeeds'
     'when PyLong_FromLong() fails'
   error: NullPtrArgument()
-  error: calling PyDict_SetItem with NULL (gcc.VarDecl('value')) as argument 2 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
+  error: calling PyDict_SetItem with NULL (gcc.VarDecl('value')) as argument 3 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -576,7 +576,7 @@ Trace 13:
     'when PyLong_FromLong() fails'
     'when PyLong_FromLong() succeeds'
   error: NullPtrArgument()
-  error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 1 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
+  error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 2 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -607,7 +607,7 @@ Trace 14:
     'when PyLong_FromLong() fails'
     'when PyLong_FromLong() fails'
   error: NullPtrArgument()
-  error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 1 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
+  error: calling PyDict_SetItem with NULL (gcc.VarDecl('key')) as argument 2 at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

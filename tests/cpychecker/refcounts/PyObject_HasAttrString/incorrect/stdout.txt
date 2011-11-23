@@ -1,7 +1,7 @@
 Trace 0:
   Transitions:
   error: NullPtrArgument()
-  error: calling PyObject_HasAttrString with NULL (0B) as argument 1 at tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29
+  error: calling PyObject_HasAttrString with NULL (0B) as argument 2 at tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
