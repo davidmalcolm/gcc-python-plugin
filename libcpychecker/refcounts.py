@@ -1481,6 +1481,16 @@ class CPython(Facet):
 
         return [t_success, t_failure]
 
+    def impl_PyObject_Call(self, stmt, v_o, v_args, v_kw):
+        # http://docs.python.org/c-api/object.html#PyObject_Call
+        # Implemented in Objects/abstract.c:
+        #   PyObject *
+        #   PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw)
+        # "func" and "args" must not be NULL, but "kw" can be:
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_args)
+        return self.make_transitions_for_new_ref_or_fail(stmt)
+
     def impl_PyObject_CallMethod(self, stmt, v_o, v_name, v_format, *args):
         # http://docs.python.org/c-api/object.html#PyObject_CallMethod
         #
