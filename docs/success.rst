@@ -35,11 +35,21 @@ Bugs found in gdb by running the cpychecker script when compiling it:
    * http://sourceware.org/ml/gdb-patches/2011-10/msg00391.html
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13331
 
-Tom Tromey also wrote a specialized Python script to analyze gdb's
-resource-management code, which found some resource leaks and a possible
-crasher:
+Tom Tromey also wrote specialized Python scripts to use the GCC plugin to
+locate bugs within GDB.
+
+One of his scripts analyzes gdb's resource-management code, which found some
+resource leaks and a possible crasher:
 
    * http://sourceware.org/ml/gdb-patches/2011-06/msg00408.html
+
+The other generates a whole-program call-graph, annotated with information
+on gdb's own exception-handling mechanism.  A script then finds places where
+these exceptions were not properly integrated with gdb's embedded Python
+support:
+
+   * http://sourceware.org/ml/gdb/2011-11/msg00002.html
+   * http://sourceware.org/bugzilla/show_bug.cgi?id=13369
 
 
 Bugs found in itself
