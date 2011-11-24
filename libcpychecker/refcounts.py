@@ -2207,6 +2207,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                                     'Debug dump of trace %i' % i)
             r.add_trace(trace, DebugAnnotator())
         rep.dump_html(fun, filename)
+        rep.flush()
         gcc.inform(fun.start,
                    ('graphical debug report for function %r written out to %r'
                     % (fun.decl.name, filename)))
@@ -2382,6 +2383,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     err.add_trace(trace, ExceptionStateAnnotator())
 
     # (all traces analysed)
+
+    # Flush the reporter's messages, which will actually emit gcc errors and
+    # warnings (if any):
+    rep.flush()
 
     if rep.got_errors():
         filename = ('%s.%s-refcount-errors.html'

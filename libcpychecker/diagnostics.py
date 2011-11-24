@@ -56,10 +56,10 @@ class TestAnnotator(Annotator):
                                        transition.dest.loc.get_stmt()))))
         return result
 
-def describe_trace(trace, fun, annotator):
+def describe_trace(trace, report, annotator):
     """
-    Print more details about the path through the function that
-    leads to the error, using gcc.inform()
+    Buffer up more details about the path through the function that
+    leads to the error, using report.add_inform()
     """
     awaiting_target = None
     for t in trace.transitions:
@@ -67,25 +67,25 @@ def describe_trace(trace, fun, annotator):
         srcloc = t.src.get_gcc_loc_or_none()
         if t.desc:
             if srcloc:
-                gcc.inform(t.src.get_gcc_loc(fun),
-                           ('%s at: %s'
-                            % (t.desc, get_src_for_loc(srcloc))))
+                report.add_inform(t.src.get_gcc_loc(report.fun),
+                                  ('%s at: %s'
+                                   % (t.desc, get_src_for_loc(srcloc))))
             else:
-                gcc.inform(t.src.get_gcc_loc(fun),
-                           '%s' % t.desc)
+                report.add_inform(t.src.get_gcc_loc(report.fun),
+                                  '%s' % t.desc)
 
             if t.src.loc.bb != t.dest.loc.bb:
                 # Tell the user where conditionals reach:
                 destloc = t.dest.get_gcc_loc_or_none()
                 if destloc:
-                    gcc.inform(destloc,
-                               'reaching: %s' % get_src_for_loc(destloc))
+                    report.add_inform(destloc,
+                                      'reaching: %s' % get_src_for_loc(destloc))
 
         if annotator:
             notes = annotator.get_notes(t)
             for note in notes:
                 if note.loc and note.loc == srcloc:
-                    gcc.inform(note.loc, note.msg)
+                    report.add_inform(note.loc, note.msg)
 
 class Reporter:
     """
@@ -99,12 +99,14 @@ class Reporter:
     def make_error(self, fun, loc, msg):
         assert isinstance(fun, gcc.Function)
         assert isinstance(loc, gcc.Location)
-        gcc.error(loc, msg)
 
         self._got_errors = True
 
         err = Report(fun, loc, msg)
         self.reports.append(err)
+
+        err.add_error(loc, msg)
+
         return err
 
     def make_debug_dump(self, fun, loc, msg):
@@ -131,6 +133,28 @@ class Reporter:
         with open(filename, 'w') as f:
             f.write(html)
 
+    def flush(self):
+        for r in self.reports:
+            r.flush()
+
+class SavedDiagnostic:
+    """
+    A saved GCC diagnostic, which we can choose to emit or suppress at a later
+    date
+    """
+    def __init__(self, loc, msg):
+        assert isinstance(loc, gcc.Location)
+        assert isinstance(msg, str)
+        self.loc = loc
+        self.msg = msg
+
+class SavedError(SavedDiagnostic):
+    def flush(self):
+        gcc.error(self.loc, self.msg)
+
+class SavedInform(SavedDiagnostic):
+    def flush(self):
+        gcc.inform(self.loc, self.msg)
 
 class Report:
     """
@@ -143,14 +167,33 @@ class Report:
         self.trace = None
         self._annotators = {}
         self.notes = []
+        self._saved_diagnostics = [] # list of SavedDiagnostic
+
+    def add_error(self, loc, msg):
+        # Add a gcc.error() to the buffer of GCC diagnostics
+        self._saved_diagnostics.append(SavedError(loc, msg))
+
+    def add_inform(self, loc, msg):
+        # Add a gcc.inform() to the buffer of GCC diagnostics
+        self._saved_diagnostics.append(SavedInform(loc, msg))
+
+    def flush(self):
+        # Flush the buffer of GCC diagnostics
+        for d in self._saved_diagnostics:
+            d.flush()
 
     def add_trace(self, trace, annotator=None):
         self.trace = trace
         self._annotators[trace] = annotator
-        describe_trace(trace, self.fun, annotator)
+        describe_trace(trace, self, annotator)
 
     def add_note(self, loc, msg):
-        gcc.inform(loc, msg)
+        """
+        Add a note at the given location.  This is added both to
+        the buffer of GCC diagnostics, and also to a saved list that's
+        available to the HTML renderer.
+        """
+        self.add_inform(loc, msg)
         note = Note(loc, msg)
         self.notes.append(note)
         return note
