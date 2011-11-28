@@ -40,6 +40,40 @@ The plugin has the following requirements:
 
        http://pygments.org/
 
+  * graphviz: many of the interesting examples use "dot" to draw diagrams
+    (e.g. control-flow graphs), so it's worth having graphviz installed.
+
+Various distributions ship with pre-built copies of the plugin.  If you're
+using Fedora, you can install the plugin via RPM on Fedora 16 onwards using:
+
+.. code-block:: bash
+
+   yum install gcc-python2-plugin
+
+as root for the Python 2 build of the plugin, or:
+
+.. code-block:: bash
+
+   yum install gcc-python3-plugin
+
+for the Python 3 build of the plugin.
+
+If you plan to build the plugin from scratch, you can install the dependencies
+you need on Fedora by running the following as root:
+
+.. code-block:: bash
+
+   yum install gcc-plugin-devel python-devel python-six python-pygments graphviz
+
+for building against Python 2, or:
+
+.. code-block:: bash
+
+   yum install gcc-plugin-devel python3-devel python3-six python3-pygments graphviz
+
+when building for Python 3.
+
+
 Basic usage of the plugin
 =========================
 
@@ -60,6 +94,16 @@ You can also use::
    make demo
 
 to demonstrate the new compiler errors.
+
+By default, the `Makefile` builds the plugin using the first ``python-config``
+tool found in `$PATH` (e.g. `/usr/bin/python-config`), which is typically the
+system copy of Python 2.  You can override this (e.g. to build against
+Python 3) by overriding the `PYTHON` and `PYTHON_CONFIG` Makefile variables
+with:
+
+.. code-block:: bash
+
+   make PYTHON=python3 PYTHON_CONFIG=python3-config
 
 There isn't a well-defined process yet for installing the plugin (though the
 rpm specfile in the source tree contains some work-in-progress towards this).
