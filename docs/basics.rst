@@ -58,8 +58,13 @@ as root for the Python 2 build of the plugin, or:
 
 for the Python 3 build of the plugin.
 
-If you plan to build the plugin from scratch, you can install the dependencies
-you need on Fedora by running the following as root:
+Building the plugin from source
+===============================
+
+If you plan to build the plugin from scratch, you'll need the build-time
+dependencides.
+
+On a Fedora box you can install them by running the following as root:
 
 .. code-block:: bash
 
@@ -72,10 +77,6 @@ for building against Python 2, or:
    yum install gcc-plugin-devel python3-devel python3-six python3-pygments graphviz
 
 when building for Python 3.
-
-
-Basic usage of the plugin
-=========================
 
 To build the plugin, run:
 
@@ -110,6 +111,30 @@ rpm specfile in the source tree contains some work-in-progress towards this).
 
 Some notes on GCC plugins can be seen at http://gcc.gnu.org/wiki/plugins and
 http://gcc.gnu.org/onlinedocs/gccint/Plugins.html
+
+.. note:: Unfortunately, the layout of the header files for GCC plugin
+   development has changed somewhat between different GCC releases.  In
+   particular, older builds of GCC flattened the "c-family" directory in the
+   installed plugin headers.
+
+   This was fixed in this GCC commit:
+
+      http://gcc.gnu.org/viewcvs?view=revision&revision=176741
+
+   So if you're using an earlier build of GCC using the old layout you'll need
+   to apply the following patch (reversed with "-R") to the plugin's source
+   tree to get it to compile:
+
+   .. code-block:: bash
+
+      $ git show 215730cbec40a6fe482fabb7f1ecc3d747f1b5d2 | patch -p1 -R
+
+   If you have a way to make the plugin's source work with either layout,
+   please email the plugin's `mailing list
+   <https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_
+
+Basic usage of the plugin
+=========================
 
 Once you've built the plugin, you can invoke a Python script like this:
 
