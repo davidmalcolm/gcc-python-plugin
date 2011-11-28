@@ -17,11 +17,14 @@
 
 """
 Error reporting interface, supporting regular GCC messages plus higher-level
-HTML visualizations
+HTML visualizations, with de-duplication.
+
+GCC diagnostic messages are buffered up within Report instances and eventually
+flushed, allowing us to de-duplicate error reports.
 """
 
 import gcc
-from gccutils import get_src_for_loc
+from gccutils import get_src_for_loc, check_isinstance
 from libcpychecker.visualizations import HtmlRenderer
 from libcpychecker.utils import log
 
@@ -91,6 +94,10 @@ class Reporter:
     """
     Error-reporting interface.  Gathers information, sending it to GCC's
     regular diagnostic interface, but also storing it for e.g. HTML dumps
+
+    Error reports can be de-duplicated by finding sufficiently similar Report
+    instances, and only fully flushing one of them within each equivalence
+    class
     """
     def __init__(self):
         self.reports = []
@@ -133,6 +140,28 @@ class Reporter:
         with open(filename, 'w') as f:
             f.write(html)
 
+    def remove_duplicates(self):
+        """
+        Try to organize Report instances into equivalence classes, and only
+        keep the first Report within each class
+        """
+        for report in self.reports[:]:
+            # The report might have been removed during the iteration:
+            if report.is_duplicate:
+                continue
+            for candidate in self.reports[:]:
+                if report != candidate and not report.is_duplicate:
+                    if candidate.is_duplicate_of(report):
+                        report.add_duplicate(candidate)
+                        self.reports.remove(candidate)
+
+        # Add a note to each report that survived about any duplicates:
+        for report in self.reports:
+            if report.duplicates:
+                report.add_note(report.loc,
+                                ('found %i similar trace(s) to this'
+                                 % len(report.duplicates)))
+
     def flush(self):
         for r in self.reports:
             r.flush()
@@ -169,6 +198,10 @@ class Report:
         self.notes = []
         self._saved_diagnostics = [] # list of SavedDiagnostic
 
+        # De-duplication handling:
+        self.is_duplicate = False
+        self.duplicates = [] # list of Report
+
     def add_error(self, loc, msg):
         # Add a gcc.error() to the buffer of GCC diagnostics
         self._saved_diagnostics.append(SavedError(loc, msg))
@@ -201,7 +234,25 @@ class Report:
     def get_annotator_for_trace(self, trace):
         return self._annotators.get(trace)
 
+    def is_duplicate_of(self, other):
+        check_isinstance(other, Report)
 
+        # Simplistic equivalence classes for now:
+        # the same function, source location, and message; everything
+        # else can be different
+        if self.fun != other.fun:
+            return False
+        if self.loc != other.loc:
+            return False
+        if self.msg != other.msg:
+            return False
+
+        return True
+
+    def add_duplicate(self, other):
+        assert not self.is_duplicate
+        self.duplicates.append(other)
+        other.is_duplicate = True
 
 class Note:
     """

@@ -2384,8 +2384,13 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     # (all traces analysed)
 
+    # Organize the Report instances into equivalence classes, simplifying
+    # the list of reports:
+    rep.remove_duplicates()
+
     # Flush the reporter's messages, which will actually emit gcc errors and
-    # warnings (if any):
+    # warnings (if any), for those Report instances that survived
+    # de-duplication
     rep.flush()
 
     if rep.got_errors():
