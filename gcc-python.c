@@ -252,7 +252,6 @@ gcc_python_callback_for_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
     PyGILState_STATE gstate;
 
     //printf("%s:%i:(%p, %p)\n", __FILE__, __LINE__, gcc_data, user_data);
-    assert(pass);
 
     gstate = PyGILState_Ensure();
 
