@@ -90,6 +90,9 @@ gimple_walk_tree_callback(tree *tree_ptr, int *walk_subtrees, void *data)
         goto error;
     }
 
+    Py_DECREF(tree_obj);
+    Py_DECREF(args);
+
     if (PyObject_IsTrue(result)) {
         Py_DECREF(result);
         return *tree_ptr;

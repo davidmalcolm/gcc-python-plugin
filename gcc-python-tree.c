@@ -203,8 +203,10 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
         }
 
         if (-1 == PyDict_SetItemString(result, attrname, values)) {
+            Py_DECREF(values);
             goto error;
         }
+        Py_DECREF(values);
     }
 
     return result;
@@ -282,7 +284,10 @@ gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 	if (!item) {
 	    goto error;
 	}
-	PyTuple_SetItem(result, i, item);
+        if (0 != PyTuple_SetItem(result, i, item)) {
+            Py_DECREF(item);
+            goto error;
+        }
     }
 
     return result;
@@ -533,9 +538,10 @@ gcc_tree_list_from_chain(tree t)
 	    goto error;
 	}
 	if (-1 == PyList_Append(result, item)) {
-	    Py_DECREF(item);
+            Py_DECREF(item);
 	    goto error;
 	}
+        Py_DECREF(item);
 	t = TREE_CHAIN(t);
     }
 
@@ -574,6 +580,7 @@ gcc_python_tree_make_list_from_tree_list_chain(tree t)
            Py_DECREF(item);
            goto error;
        }
+       Py_DECREF(item);
        t = TREE_CHAIN(t);
     }
 
@@ -616,15 +623,16 @@ gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
            goto error;
        }
        pair = Py_BuildValue("OO", purpose, value);
+       Py_DECREF(purpose);
+       Py_DECREF(value);
        if (!pair) {
-           Py_DECREF(purpose);
-           Py_DECREF(value);
            goto error;
        }
        if (-1 == PyList_Append(result, pair)) {
            Py_DECREF(pair);
            goto error;
        }
+       Py_DECREF(pair);
        t = TREE_CHAIN(t);
     }
 
