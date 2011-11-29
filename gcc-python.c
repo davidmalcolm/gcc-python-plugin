@@ -411,7 +411,7 @@ static PyObject*
 gcc_python_permerror(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj = NULL;
-    char *msgid = NULL;
+    const char *msgid = NULL;
     PyObject *result_obj = NULL;
     bool result_b;
 
