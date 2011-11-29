@@ -98,6 +98,10 @@ class TestStream:
             line = re.sub('VarDecl\(([0-9]+)\)', 'VarDecl(nnnn)', line)
             line = re.sub('LabelDecl\(([0-9]+)\)', 'LabelDecl(nnnn)', line)
 
+            # Remove exact numbers from types
+            # (e.g. from "int (*<T513>) (int)" to "int (*<Tnnn>) (int)"):
+            line = re.sub('<T([0-9]+)>', '<Tnnn>', line)
+
             # Remove exact path to Python header file and line number
             # e.g.
             #   unknown struct PyObject * from /usr/include/python2.7/pyerrors.h:135
