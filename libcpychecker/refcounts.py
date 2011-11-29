@@ -162,13 +162,13 @@ class RefcountValue(AbstractValue):
 
     def impl_is_lt(self, rhs):
         if isinstance(rhs, ConcreteValue):
-            log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+            log('comparing refcount value %s with concrete value: %s', self, rhs)
             if self.get_min_value() >= rhs.value:
                 return False
 
     def impl_is_ge(self, rhs):
         if isinstance(rhs, ConcreteValue):
-            log('comparing refcount value %s with concrete value: %s', lhs, rhs)
+            log('comparing refcount value %s with concrete value: %s', self, rhs)
             if self.get_min_value() >= rhs.value:
                 return True
 
