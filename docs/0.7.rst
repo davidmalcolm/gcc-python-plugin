@@ -1,0 +1,278 @@
+0.7
+~~~
+
+This is a major update to the GCC Python plugin.
+
+The main example script, cpychecker, has seen numerous improvements, and has
+now detected many reference-counting bugs in real-world CPython extension code.
+The usability and signal:noise ratio is greatly improved over previous releases.
+
+Changes to the GCC Python Plugin
+================================
+
+It's now possible to create custom GCC attributes from Python, allowing you to
+add custom high-level annotation to a C API, and to write scripts that will
+verify these properties.  It's also possible to inject preprocessor macros
+from Python.  Taken together, this allows code like this:
+
+   .. literalinclude:: ../tests/examples/attributes-with-macros/input.c
+      :lines: 22-45
+      :language: c
+
+Other improvements:
+
+   * gcc's debug dump facilities are now exposed via a Python API
+
+   * it's now possible to run Python commands in GCC (rather than scripts) using
+     -fplugin-arg-python-command
+
+   * improvements to the "source location" when reporting on an unhandled
+     Python exception.  Amongst other tweaks, it's now possible for a script to
+     override this, which the cpychecker uses, so that if it can't handle a
+     particular line of C code, the GCC error report gives that location before
+     reporting the Python traceback (making debugging much easier).
+
+   * "switch" statements are now properly wrapped at the Python level
+     (gcc.GimpleSwitch)
+
+   * C bitfields are now wrapped at the Python level
+
+   * gcc.Type instances now have a "sizeof" attribute, and an "attributes"
+     attribute.
+
+   * added a gcc.Gimple.walk_tree method, to make it easy to visit all nodes
+     relating to a statement
+
+   * added a new example: spell-checking all string literals in code
+
+Improvements to "cpychecker"
+============================
+
+The "libcpychecker" Python code is a large example of using the plugin: it
+extends GCC with code that tries to detect various bugs in CPython extension
+modules.
+
+The cpychecker analyzes the paths that can be followed through a C function,
+and verifies various properties, including reference-count handling.
+
+As of this release, the pass has found many reference-counting bugs in
+real-world code.  You can see a list of the bugs that it has detected at:
+
+http://gcc-python-plugin.readthedocs.org/en/latest/success.html
+
+The checker is now *almost* capable of fully handling the C code within the
+gcc python plugin itself.
+
+The checker has also been reorganized to (I hope) make it easy to add checking
+for other libraries and APIs.
+
+Major rewrite of reference-count tracking
+-----------------------------------------
+
+I've rewritten the internals of how reference counts are tracked: the code now
+makes a distinction betweeen all of the reference that can be analysed within a
+single function, versus all of the other references that may exist in the rest
+of the program.
+
+This allows us to know for an object e.g. that the function doesn't directly
+own any references, but that the reference count is still > 0 (a "borrowed
+reference"), as compared to the case where the function owns a reference, but
+we don't know of any in the rest of the program (this is typical when receiving
+a "new reference" e.g. from a function call to a constructor).
+
+Within the reference-count checker, we now look for memory locations that
+store references to objects.   If those locations not on the stack, then the
+references they store are now assumed to legally count towards the ob_refcnt
+that the function "owns".  This is needed in order to correctly handle e.g.
+the PyList_SET_ITEM() macro, which directly writes to the list's ob_item field,
+"stealing" a reference: we can detect these references, and count them towards
+the ob_refcnt value.
+
+The checker can now detect types that look like PyObject subclasses at the C
+level (by looking at the top-most fields), and uses this information in various
+places.
+
+The checker now exposes custom GCC attributes allowing you to mark APIs that
+have non-standard reference-handling behavior:
+
+.. code-block:: c
+
+   PyObject *foo(void)
+     CPYCHECKER_RETURNS_BORROWED_REF;
+
+   extern void bar(int i, PyObject *obj, int j, PyObject *other)
+     CPYCHECKER_STEALS_REFERENCE_TO_ARG(2)
+     CPYCHECKER_STEALS_REFERENCE_TO_ARG(4);
+
+It also exposes an attribute allowing you to the run-time and compile-time
+type information for a Python extension class:
+    
+.. code-block:: c
+
+  /* Define some PyObject subclass, as both a struct and a typedef */
+  struct OurObjectStruct {
+      PyObject_HEAD
+      /* other fields */
+  };
+  typedef struct OurObjectStruct OurExtensionObject;
+
+  /*
+    Declare the PyTypeObject, using the custom attribute to associate it with
+    the typedef above:
+  */
+  extern PyTypeObject UserDefinedExtension_Type
+    CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF("OurExtensionObject");
+
+Function calls with NULL-pointer arguments
+------------------------------------------
+The checker knows about various CPython API hooks that will crash on NULL
+pointer arguments, and will emit warnings when it can determine a path through
+the code that will lead to a definite call with a NULL value.
+
+
+Dereferences of uninitialized pointers
+--------------------------------------
+The checker will now complain about paths through a function for which it can
+prove that an uninitialized pointer will be dereferenced.
+
+
+Error-reporting improvements
+----------------------------
+
+The error-reporting machinery can generate HTML reports: see e.g.:
+http://readthedocs.org/docs/gcc-python-plugin/en/latest/cpychecker.html#reference-count-checking
+and http://dmalcolm.livejournal.com/6560.html
+
+The checker can now annotate its HTML (and textual) reports with information
+showing how some pertinent aspect of the program's state changes during a
+particular path through a function.
+
+For example, when reporting on reference-counting errors, the HTML report
+showing the flow through the function will now display all changes to an object's
+ob_refcnt, together with all changes to what the value ought to be (e.g. due to
+pointers being stored to persistent memory locations):
+
+   .. figure:: sample-html-error-report.png
+      :alt: screenshot of the HTML report
+
+Similarly, when reporting on exception-handling errors, it now displays the
+"history" of changes to the thread-local exception state.
+
+There's also a debug mode which dumps _everything_ that changes within the
+report, which is helpful for debugging the checker itself.
+
+The error report will attempt to use the most representative name for a leaked
+object, using a variable name or a C expression fragment as appropriate.
+
+The checker will attempt to combine duplicate error reports, so that it will
+only emit one error for all of the various traces of execution that exhibit a
+particular reference-counting bug.
+
+Finally, when writing out an HTML report, the path to the HTML is now noted
+within gcc's regular stderr messages.
+
+
+Signal:noise ratio improvements
+-------------------------------
+
+To suppress various false-positives that I commonly ran into on real code, the
+checker now makes certain assumptions:
+  
+   * When encountering an unknown function that returns a PyObject*, the
+     checker assumes that it will either return a new reference to a sane
+     object (with a sane ob_type), or return NULL and set the thread-local
+     exception state.
+
+   * The checker assumes that a PyObject* argument to a function is non-NULL
+     and has a >0 refcount, and has a sane ob_type (e.g. with a sane refcount
+     and tp_dealloc)
+
+   * When dereferencing a pointer that it has no knowledge about (e.g. a
+     pointer field in a structure), the checker now assumes that it's
+     non-NULL, unless it knows that NULL is a definite possibility i.e. it
+     optimistically assumes that you know what you're doing (this could be
+     turned into a command-line option).  Note that for the cases where we
+     know that the pointer can _definitely_ be NULL, an error will still be
+     reported (e.g. when considering the various possible return values for a
+     function known to be able to return NULL).
+
+Coverage of the CPython API
+---------------------------
+
+I've gone through much of the CPython API, "teaching" the checker about the
+reference-count semantics of each API call (and which calls will crash if fed a
+NULL pointer).  This involves writing a simple fragment of Python code for
+each function, which describes the various different affects that the call can
+have on the internal state within the callee.
+
+This release adds support for calls to the following:
+   * _PyObject_New
+   * Py_{Initialize|Finalize}
+   * Py_InitModule4
+   * PyArg_ParseTuple[AndKeywords], and the PY_SSIZE_T_CLEAN variants (only
+     partial coverage so far: "O", "O!" should work though)
+   * PyArg_UnpackTuple
+   * PyBool_FromLong
+   * Py_BuildValue and the PY_SSIZE_T_CLEAN variant (only partial coverage so
+     far)
+   * PyDict_{GetItem,GetItemString,New,SetItem,SetItemString}
+   * PyErr_{Format,NoMemory,Occurred,Print,PrintEx,SetFromErrno[WithFilename],
+     SetObject,SetString}
+   * PyEval_InitThreads
+   * PyGILState_{Ensure,Release}
+   * PyImport_{AppendInittab,ImportModule}
+   * PyInt_{AsLong,FromLong}
+   * PyList_Append
+   * PyLong_{FromString,FromVoidPtr}
+   * PyMem_{Malloc,Free}
+   * PyModule_Add{IntConstant,Object,StringConstant}
+   * PyObject_{Call,CallMethod,HasAttrString,IsTrue,Repr,Str}
+   * PyRun_{SimpleFileExFlags,SimpleStringFlags}
+   * PySequence_GetItem
+   * PyString_{AsString,FromFormat,FromString,FromStringAndSize}
+   * PyStructSequence_{InitType,New}
+   * PySys_SetObject
+   * PyTuple_{New,SetItem,Size}
+   * PyType_{IsSubtype,Ready}
+
+I've been targetting those API entrypoints that I use myself in the plugin;
+this is one area which is particularly amenable to patching, for anyone who
+wants to get involved.   I've also added a (disabled) hook that complains
+about Python API entrypoints that weren't explicitly handled, to make it easy
+to find gaps in our coverage of the CPython API.
+
+
+Other user-visible improvments
+------------------------------
+
+   * There's now a "gcc-with-cpychecker" harness, to make it easier to invoke
+     GCC with the cpychecker code from e.g. Makefiles
+
+   * The checker now respects `__attribute((nonnull))` on function arguments
+     when detecting NULL pointers
+
+   * Handle functions that don't return (e.g. "exit")
+
+   * Number the unknown heap regions, to clarify things when there's more than
+     one
+
+Internal improvements
+---------------------
+
+  * The cpychecker now has some protection against combinatorial explosion
+    for functions that have very large numbers of possible routes through
+    them.  For such functions, the checker will emit a note on stderr and
+    not attempt to find reference-counting bugs in the function.
+
+  * The cpychecker is now done as a custom pass (rather than by wiring up a
+    callback associated with every pass)
+
+  * I've tuned the logging within the checker, eliminating some CPU/memory
+    consumption issues seen when analysing complicated C code.  In particular,
+    the log message arguments are now only expanded when logging is enabled
+    (previously this was happening all the time).
+
+  * Lots of other internal improvements and bug fixes (e.g. handling of arrays
+    vs pointers, static vs auto local variables, add missing handlers for
+    various kinds of C expression, lots of work on improving the readability of
+    error messages)
