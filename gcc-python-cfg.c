@@ -130,8 +130,10 @@ gcc_python_gimple_seq_to_list(gimple_seq seq)
 	}
 
 	if (PyList_Append(result, obj_stmt)) {
-	    goto error;
+            Py_DECREF(obj_stmt);
+            goto error;
 	}
+        Py_DECREF(obj_stmt);
 
 #if 0
 	printf("  gimple: %p code: %s (%i) %s:%i num_ops=%i\n", 
@@ -221,9 +223,11 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 	    goto error;
 	}
 
-	if (PyList_Append(result, obj)) {
-	    goto error;
+        if (PyList_Append(result, obj)) {
+            Py_DECREF(obj);
+            goto error;
 	}
+        Py_DECREF(obj);
     }
 
     return result;

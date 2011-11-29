@@ -75,6 +75,7 @@ gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self)
 	    Py_DECREF(obj_var);
 	    goto error;
 	}
+        Py_DECREF(obj_var);
     }
 
     return result;
@@ -104,6 +105,7 @@ gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self)
 	    Py_DECREF(obj_var);
 	    goto error;
 	}
+        Py_DECREF(obj_var);
     }
 
     return result;

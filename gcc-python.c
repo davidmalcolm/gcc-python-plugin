@@ -630,6 +630,7 @@ gcc_python_get_variables(PyObject *self, PyObject *args)
 	    Py_DECREF(obj_var);
 	    goto error;
 	}
+        Py_DECREF(obj_var);
     }
 
     return result;
@@ -757,6 +758,7 @@ gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
 	    Py_DECREF(obj_var);
 	    goto error;
 	}
+        Py_DECREF(obj_var);
     }
 
     return result;
