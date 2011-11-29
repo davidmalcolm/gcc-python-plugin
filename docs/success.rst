@@ -54,7 +54,15 @@ support:
 
 Bugs found in itself
 --------------------
-Bugs found in the gcc Python plugin itself, by running the cpychecker script
-when compiling another copy:
+Bugs found and fixed in the gcc Python plugin itself, by running the cpychecker
+script when compiling another copy:
+
+   * various reference counting errors:
+
+     * http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=a9f48fac24a66c77007d99bf23f2eab188eb909e
+
+     * http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=2922ad81c8e0ea954d462433ecc83d86d9ebab68
 
    * bad format string: https://fedorahosted.org/pipermail/gcc-python-plugin/2011-August/000065.html
+
+   * minor const-correctness error: http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=4fe4a83288e04be35a96d0bfec332197fb32c358
