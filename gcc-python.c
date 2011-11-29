@@ -933,13 +933,12 @@ static struct PyModuleDef gcc_module_def = {
 
 static PyMODINIT_FUNC PyInit_gcc(void)
 {
-    PyObject *m;
 #if PY_MAJOR_VERSION == 3
+    PyObject *m;
     m = PyModule_Create(&gcc_module_def);
 #else
-    m = Py_InitModule("gcc", GccMethods);
+    Py_InitModule("gcc", GccMethods);
 #endif
-    gcc_python_globals.module = m;
 
 #if PY_MAJOR_VERSION == 3
     return m;
@@ -1190,7 +1189,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     LOG("Py_Initialize finished");
 
-    PyImport_ImportModule("gcc");
+    gcc_python_globals.module = PyImport_ImportModule("gcc");
 
     PyEval_InitThreads();
   
