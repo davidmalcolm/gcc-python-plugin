@@ -293,6 +293,17 @@ if six.MAXSIZE == 0x7fffffff:
     # mismatch:
     exclude_test('tests/cpychecker/PyArg_ParseTuple/incorrect_converters')
 
+    # The expected output for the following tests assumes a 64-bit build:
+    exclude_test('tests/cpychecker/absinterp/casts/pointer-to-long')
+    exclude_test('tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O')
+    exclude_test('tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O')
+    exclude_test('tests/cpychecker/refcounts/PyInt_AsLong/correct_cast')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_New/correct')
+    exclude_test('tests/cpychecker/refcounts/module_handling')
+    exclude_test('tests/plugin/constants')
+    exclude_test('tests/plugin/gimple-walk-tree/dump-all')
+    exclude_test('tests/plugin/gimple-walk-tree/find-one')
+
 # Certain tests don't work for Python 3:
 if six.PY3:
     # The PyInt_ API doesn't exist anymore in Python 3:
@@ -345,6 +356,9 @@ if hasattr(sys, 'gettotalrefcount'):
     exclude_test('tests/cpychecker/refcounts/unrecognized_function2')
     exclude_test('tests/cpychecker/refcounts/use_after_dealloc')
     exclude_test('tests/examples/spelling-checker')
+
+# This test is unreliable, due to differences in the dictionary:
+exclude_test('tests/examples/spelling-checker')
 
 num_passes = 0
 failed_tests = []
