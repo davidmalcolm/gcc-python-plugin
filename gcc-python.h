@@ -231,7 +231,7 @@ VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 
 void
 gcc_python_double_int_as_text(double_int di, bool is_unsigned,
-                              char *out, int bufsize);
+                              char *out, int bufsize)  __attribute__((nonnull));
 
 PyObject *
 gcc_python_int_from_double_int(double_int di, bool is_unsigned);
@@ -249,7 +249,7 @@ gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
 /* gcc-python.c */
 int gcc_python_is_within_event(enum plugin_event *out_event);
 
-char * gcc_python_strdup(const char *str);
+char * gcc_python_strdup(const char *str) __attribute__((nonnull));
 
 void gcc_python_print_exception(const char *msg);
 

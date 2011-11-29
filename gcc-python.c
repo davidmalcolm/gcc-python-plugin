@@ -1160,6 +1160,10 @@ on_plugin_finish(void *gcc_data, void *user_data)
     Py_Finalize();
 }
 
+extern int
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version) __attribute__((nonnull));
+
 int
 plugin_init (struct plugin_name_args *plugin_info,
              struct plugin_gcc_version *version)
