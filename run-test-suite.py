@@ -314,6 +314,37 @@ if six.PY3:
     # this test for Python 2:
     exclude_test('tests/cpychecker/refcounts/module_handling')
 
+# Certain tests don't work for debug builds of Python:
+if hasattr(sys, 'gettotalrefcount'):
+    exclude_test('tests/cpychecker/refcounts/PyDict_SetItem/correct')
+    exclude_test('tests/cpychecker/refcounts/PyDict_SetItem/incorrect')
+    exclude_test('tests/cpychecker/refcounts/PyDict_SetItemString/correct')
+    exclude_test('tests/cpychecker/refcounts/PyDict_SetItemString/incorrect')
+    exclude_test('tests/cpychecker/refcounts/PyList_Append/correct')
+    exclude_test('tests/cpychecker/refcounts/PyList_Append/incorrect')
+    exclude_test('tests/cpychecker/refcounts/PyList_Append/incorrect-loop')
+    exclude_test('tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct')
+    exclude_test('tests/cpychecker/refcounts/PyList_SET_ITEM_macro/correct_multiple')
+    exclude_test('tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple')
+    exclude_test('tests/cpychecker/refcounts/PyString_AsString/correct')
+    exclude_test('tests/cpychecker/refcounts/PyString_AsString/incorrect')
+    exclude_test('tests/cpychecker/refcounts/PySys_SetObject/correct')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/correct_multiple')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SET_ITEM_macro/incorrect_multiple')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SetItem/correct')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple')
+    exclude_test('tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple')
+    exclude_test('tests/cpychecker/refcounts/Py_BuildValue/correct-code-N')
+    exclude_test('tests/cpychecker/refcounts/Py_BuildValue/correct-code-O')
+    exclude_test('tests/cpychecker/refcounts/correct_decref')
+    exclude_test('tests/cpychecker/refcounts/loop_n_times')
+    exclude_test('tests/cpychecker/refcounts/module_handling')
+    exclude_test('tests/cpychecker/refcounts/object_from_callback')
+    exclude_test('tests/cpychecker/refcounts/returning_dead_object')
+    exclude_test('tests/cpychecker/refcounts/unrecognized_function2')
+    exclude_test('tests/cpychecker/refcounts/use_after_dealloc')
+    exclude_test('tests/examples/spelling-checker')
 
 num_passes = 0
 failed_tests = []
