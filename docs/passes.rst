@@ -28,18 +28,18 @@ passes can have both successors and child passes.
 
 There are actually five "roots" to this tree:
 
-   * The gcc.Pass holding :ref:`all "lowering" passes <all_lowering_passes>`,
+   * The :py:class:`gcc.Pass` holding :ref:`all "lowering" passes <all_lowering_passes>`,
      invoked per function within the callgraph, to turn high-level GIMPLE into
      lower-level forms (this wraps `all_lowering_passes` within gcc/passes.c).
 
-   * The gcc.Pass holding :ref:`all "small IPA" passes <all_small_ipa_passes>`,
+   * The :py:class:`gcc.Pass` holding :ref:`all "small IPA" passes <all_small_ipa_passes>`,
      working on the whole callgraph (IPA is "Interprocedural Analysis";
      `all_small_ipa_passes` within gcc/passes.c)
 
-   * The gcc.Pass holding :ref:`all regular IPA passes <all_regular_ipa_passes>`
+   * The :py:class:`gcc.Pass` holding :ref:`all regular IPA passes <all_regular_ipa_passes>`
      (`all_regular_ipa_passes` within gcc/passes.c)
 
-   * The gcc.Pass holding those :ref:`passes relating to link-time-optimization
+   * The :py:class:`gcc.Pass` holding those :ref:`passes relating to link-time-optimization
      <all_lto_gen_passes>` (`all_lto_gen_passes` within gcc/passes.c)
 
    * The :ref:`"all other passes" gcc.Pass catchall <all_passes>`, holding the
@@ -48,22 +48,20 @@ There are actually five "roots" to this tree:
 
 .. classmethod:: gcc.Pass.get_roots()
 
-   Returns a tuple of `gcc.Pass` instances, giving the 5 top-level passes
-   within GCC's tree of passes, in the order described above.
+   Returns a tuple of :py:class:`gcc.Pass` instances, giving the 5 top-level
+   passes within GCC's tree of passes, in the order described above.
 
 .. classmethod:: gcc.Pass.get_by_name(name)
 
-   Get the gcc.Pass instance for the pass with the given name, raising
-   ValueError if it isn't found
+   Get the :py:class:`gcc.Pass` instance for the pass with the given name,
+   raising ValueError if it isn't found
 
 .. py:class:: gcc.Pass
 
-   This wraps one of GCC's `struct opt_pass *`, but the wrapper class is still
-   a work-in-progress.  Hopefully we'll eventually be able to subclass this and
-   allow creating custom passes written in Python.
+   This wraps one of GCC's `struct opt_pass *` instances.
 
    Beware:  "pass" is a reserved word in Python, so use e.g. `ps` as a variable
-   name for an instance of gcc.Pass
+   name for an instance of :py:class:`gcc.Pass`
 
    .. py:attribute:: name
 
@@ -125,25 +123,27 @@ There are actually five "roots" to this tree:
       (boolean) Is dumping enabled for this pass?  Set this attribute to `True`
       to enable dumping.
 
-There are four subclasses of gcc.Pass:
+There are four subclasses of :py:class:`gcc.Pass`:
 
 .. py:class:: gcc.GimplePass
 
-   Subclass of gcc.Pass, signifying a pass called per-function on the GIMPLE
-   representation of that function.
+   Subclass of :py:class:`gcc.Pass`, signifying a pass called per-function on
+   the GIMPLE representation of that function.
 
 .. py:class:: gcc.RtlPass
 
-   Subclass of gcc.Pass, signifying a pass called per-function on the RTL
-   representation of that function.
+   Subclass of :py:class:`gcc.Pass`, signifying a pass called per-function on
+   the RTL representation of that function.
 
 .. py:class:: gcc.SimpleIpaPass
 
-   Subclass of gcc.Pass, signifying a pass called once (not per-function)
+   Subclass of :py:class:`gcc.Pass`, signifying a pass called once (not
+   per-function)
 
 .. py:class:: gcc.IpaPass
 
-   Subclass of gcc.Pass, signifying a pass called once (not per-function)
+   Subclass of :py:class:`gcc.Pass`, signifying a pass called once (not
+   per-function)
 
 .. _creating-new-passes:
 
@@ -151,7 +151,8 @@ Creating new optimization passes
 --------------------------------
 You can create new optimization passes.  This involves three steps:
 
-   * subclassing the appropriate gcc.Pass subclass (e.g. gcc.GimplePass)
+   * subclassing the appropriate :py:class:`gcc.Pass` subclass (e.g.
+     :py:class:`gcc.GimplePass`)
 
    * creating an instance of your subclass
 
@@ -177,14 +178,16 @@ Here's an example::
    # ...and wire it up, after the "cfg" pass:
    my_pass.register_after('cfg')
 
-For gcc.GimplePass and gcc.IpaPass, the signatures of `gate` and `execute` are:
+For :py:class:`gcc.GimplePass` and :py:class:`gcc.IpaPass`, the signatures of
+`gate` and `execute` are:
 
    .. method:: gate(self, fun)
    .. method:: execute(self, fun)
 
 where fun is a :py:class:`gcc.Function`.
 
-For gcc.SimpleIpaPass and gcc.IpaPass, the signature of `gate` and `execute` are:
+For :py:class:`gcc.SimpleIpaPass` and :py:class:`gcc.IpaPass`, the signature
+of `gate` and `execute` are:
 
    .. method:: gate(self)
    .. method:: execute(self)
@@ -202,8 +205,8 @@ to a GCC error:
 
 .. method:: gcc.Pass.register_after(name [, instance_number=0 ])
 
-   Given the name of another pass, register this gcc.Pass to occur immediately
-   after that other pass.
+   Given the name of another pass, register this :py:class:`gcc.Pass` to occur
+   immediately after that other pass.
 
    If the other pass occurs multiple times, the pass will be inserted at the
    specified instance number, or at every instance, if supplied 0.
@@ -211,16 +214,16 @@ to a GCC error:
    .. note::
 
       The other pass must be of the same kind as this pass.  For example,
-      if it is a subclass of gcc.GimplePass, then this pass must also be
-      a subclass of gcc.GimplePass.
+      if it is a subclass of :py:class:`gcc.GimplePass`, then this pass must
+      also be a subclass of :py:class:`gcc.GimplePass`.
 
       If they don't match, GCC won't be able to find the other pass, giving
       an error like this::
 
          cc1: fatal error: pass 'ssa' not found but is referenced by new pass 'my-ipa-pass'
 
-      where we attempted to register a gcc.IpaPass subclass relative to 'ssa',
-      which is a gcc.GimplePass
+      where we attempted to register a :py:class:`gcc.IpaPass` subclass
+      relative to 'ssa', which is a :py:class:`gcc.GimplePass`
 
 .. method:: gcc.Pass.register_before(name [, instance_number=0 ])
 
@@ -240,13 +243,13 @@ By default, no logging is done; dumping must be explicitly enabled.
 
 Dumping of passes can be enabled from the command-line in groups:
 
-   * `-fdump-tree-all` enables dumping for all `gcc.GimplePass` (both builtin,
-     and custom ones from plugins)
+   * `-fdump-tree-all` enables dumping for all :py:class:`gcc.GimplePass`
+     (both builtin, and custom ones from plugins)
 
-   * `-fdump-rtl-all` is similar, but for all `gcc.RtlPass`
+   * `-fdump-rtl-all` is similar, but for all :py:class:`gcc.RtlPass`
 
-   * `-fdump-ipa-all` as above, but for all `gcc.IpaPass` and
-     `gcc.SimpleIpaPass`
+   * `-fdump-ipa-all` as above, but for all :py:class:`gcc.IpaPass` and
+     :py:class:`gcc.SimpleIpaPass`
 
 For more information, see
 http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
@@ -260,8 +263,8 @@ plugin, or a driver script).
 If enabled for a pass, then a file is written to the same directory as the
 output file, with a name based on the input file and the pass number.
 
-For example, given a custom `gcc.Pass` with name `'test-pass'`, then when
-`input.c` is compiled to `build/output.o`::
+For example, given a custom :py:class:`gcc.Pass` with name `'test-pass'`, then
+when `input.c` is compiled to `build/output.o`::
 
    $ gcc -fdump-tree-all -o build/output.o src/input.c
 
@@ -335,7 +338,7 @@ one can simply open a file and write to it.
       filename = '%s.%s-refcount-errors.html' % (gcc.get_dump_base_name(),
                                                  fun.decl.name)
 
-   given `fun`, a `gcc.Function`.
+   given `fun`, a :py:class:`gcc.Function`.
 
    By default, this is the name of the input file, but within the output
    file's directory.  (It can be overridden using the `-dumpbase` command-line

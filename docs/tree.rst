@@ -18,8 +18,6 @@
 gcc.Tree and its subclasses
 ===========================
 
-.. py:currentmodule:: gcc
-
 The various language front-ends for GCC emit "tree" structures (which I believe
 are actually graphs), used throughout the rest of the internal representation of
 the code passing through GCC.
@@ -92,16 +90,17 @@ also add it to the API documentation, and add a test case.
 
 .. py:function:: gccutils.pformat(tree)
 
-   This function attempts to generate a debug dump of a `gcc.Tree` and all of
-   its "interesting" attributes, recursively.  It's loosely modelled on
-   Python's `pprint` module and GCC's own `debug_tree` diagnostic routine
+   This function attempts to generate a debug dump of a :py:class:`gcc.Tree`
+   and all of its "interesting" attributes, recursively.  It's loosely modelled
+   on Python's `pprint` module and GCC's own `debug_tree` diagnostic routine
    using indentation to try to show the structure.
 
    It returns a string.
 
-   It differs from `gcc.Tree.debug` in that it shows the Python wrapper
-   objects, rather than the underlying GCC data structures themselves.  For
-   example, it can't show attributes that haven't been wrapped yet.
+   It differs from :py:meth:`gcc.Tree.debug()` in that it shows the Python
+   wrapper objects, rather than the underlying GCC data structures
+   themselves.  For example, it can't show attributes that haven't been
+   wrapped yet.
 
    Objects that have already been reported within this call are abbreviated
    to "..." to try to keep the output readable.
@@ -150,7 +149,7 @@ also add it to the API documentation, and add a test case.
 
 .. py:function:: gccutils.pprint(tree)
 
-   Similar to `gccutils.pformat()`, but prints the output to stdout.
+   Similar to :py:meth:`gccutils.pformat()`, but prints the output to stdout.
 
    (should this be stderr instead? probably should take a stream as an arg, but
    what should the default be?)
@@ -173,7 +172,7 @@ Declarations
 
 .. py:class:: gcc.Declaration
 
-   A subclass of `gcc.Tree` indicating a declaration
+   A subclass of :py:class:`gcc.Tree` indicating a declaration
 
    Corresponds to the `tcc_declaration` value of `enum tree_code_class` within
    GCC's own C sources.
@@ -190,8 +189,8 @@ Declarations
 
 .. py:class:: gcc.FieldDecl
 
-   A subclass of `gcc.Declaration` indicating the declaration of a field within
-   a structure.
+   A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
+   field within a structure.
 
    .. py:attribute:: name
 
@@ -200,8 +199,8 @@ Declarations
 
 .. py:class:: gcc.FunctionDecl
 
-   A subclass of `gcc.Declaration` indicating the declaration of a function.
-   Internally, this wraps a `(struct tree_function_decl *)`
+   A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
+   function.   Internally, this wraps a `(struct tree_function_decl *)`
 
    .. py:attribute:: function
 
@@ -393,8 +392,8 @@ Additional attributes for various gcc.Type subclasses:
 
    .. py:attribute:: argument_types
 
-      A tuple of gcc.Type instances, representing the function's argument
-      types
+      A tuple of :py:class:`gcc.Type` instances, representing the function's
+      argument types
 
    .. py:function:: gccutils.get_nonnull_arguments(funtype)
 
@@ -419,7 +418,7 @@ Constants
 
 .. py:class:: gcc.Constant
 
-   A subclass of `gcc.Tree` indicating a constant value.
+   Subclass of :py:class:`gcc.Tree` indicating a constant value.
 
    Corresponds to the `tcc_constant` value of `enum tree_code_class` within
    GCC's own C sources.
@@ -446,7 +445,7 @@ Binary Expressions
 
 .. py:class:: gcc.Binary
 
-   A subclass of `gcc.Tree` indicating a binary expression.
+   Subclass of :py:class:`gcc.Tree` indicating a binary expression.
 
    Corresponds to the `tcc_binary` value of `enum tree_code_class` within
    GCC's own C sources.
@@ -581,7 +580,7 @@ Unary Expressions
 
 .. py:class:: gcc.Unary
 
-   A subclass of `gcc.Tree` indicating a unary expression (i.e. taking a
+   Subclass of :py:class:`gcc.Tree` indicating a unary expression (i.e. taking a
    single argument).
 
    Corresponds to the `tcc_unary` value of `enum tree_code_class` within
@@ -589,7 +588,7 @@ Unary Expressions
 
    .. py:attribute:: operand
 
-      The operand of this operator, as a `gcc.Tree`.
+      The operand of this operator, as a :py:class:`gcc.Tree`.
 
    .. py:attribute:: location
 
@@ -630,7 +629,7 @@ Comparisons
 
 .. py:class:: gcc.Comparison
 
-   A subclass of `gcc.Tree` for comparison expressions
+   Subclass of :py:class:`gcc.Tree` for comparison expressions
 
    Corresponds to the `tcc_comparison` value of `enum tree_code_class` within
    GCC's own C sources.
@@ -666,7 +665,8 @@ References to storage
 
 .. py:class:: gcc.Reference
 
-   A subclass of `gcc.Tree` for expressions involving a reference to storage.
+   Subclass of :py:class:`gcc.Tree` for expressions involving a reference to
+   storage.
 
    Corresponds to the `tcc_reference` value of `enum tree_code_class` within
    GCC's own C sources.
@@ -677,7 +677,8 @@ References to storage
 
 .. py:class:: ArrayRef
 
-   A subclass of `gcc.Reference` for expressions involving an array reference:
+   A subclass of :py:class:`gcc.Reference` for expressions involving an array
+   reference:
 
    .. code-block:: c
 
@@ -688,17 +689,18 @@ References to storage
 
    .. py:attribute:: array
 
-      The `gcc.Tree` for the array within the reference
+      The :py:class:`gcc.Tree` for the array within the reference
       (`gcc.VarDecl('buffer')` in the example above)
 
    .. py:attribute:: index
 
-      The `gcc.Tree` for the index within the reference (`gcc.IntegerCst(42)`
-      in the example above)
+      The :py:class:`gcc.Tree` for the index within the reference
+      (`gcc.IntegerCst(42)` in the example above)
 
 .. py:class:: gcc.ComponentReference
 
-   A subclass of `gcc.Reference` for expressions involving a field lookup.
+   A subclass of :py:class:`gcc.Reference` for expressions involving a field
+   lookup.
 
    This can mean either a direct field lookup, as in:
 
@@ -718,17 +720,17 @@ References to storage
 
    .. py:attribute:: target
 
-      The `gcc.Tree` for the container of the field (either `s` or `*p` in the
-      examples above)
+      The :py:class:`gcc.Tree` for the container of the field (either `s` or
+      `*p` in the examples above)
 
    .. py:attribute:: field
 
-      The `gcc.FieldDecl` for the field within the target.
+      The :py:class:`gcc.FieldDecl` for the field within the target.
 
 .. py:class:: gcc.MemRef
 
-   A subclass of `gcc.Reference` for expressions involving dereferencing a
-   pointer:
+   A subclass of :py:class:`gcc.Reference` for expressions involving
+   dereferencing a pointer:
 
    .. code-block:: c
 
@@ -738,9 +740,10 @@ References to storage
 
    .. py:attribute:: operand
 
-      The `gcc.Tree` for the expression describing the target of the pointer
+      The :py:class:`gcc.Tree` for the expression describing the target of the
+      pointer
 
-Other subclasses of `gcc.Reference` include:
+Other subclasses of :py:class:`gcc.Reference` include:
 
       =====================================  ======================
       Subclass                               C/C++ operators
@@ -765,8 +768,8 @@ Other expression subclasses
 
 .. py:class:: gcc.Expression
 
-   A subclass of `gcc.Tree` indicating an expression that doesn't fix into the
-   other categories.
+   Subclass of :py:class:`gcc.Tree` indicating an expression that doesn't fit
+   into the other categories.
 
    Corresponds to the `tcc_expression` value of `enum tree_code_class` within
    GCC's own C sources.

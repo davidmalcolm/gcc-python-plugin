@@ -18,8 +18,6 @@
 Working with functions and control flow graphs
 ==============================================
 
-.. py:currentmodule:: gcc
-
 Many of the plugin events are called for each function within the source code
 being compiled.  Each time, the plugin passes a :py:class:`gcc.Function`
 instance as a parameter to your callback, so that you can work on it.

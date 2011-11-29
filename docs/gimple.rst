@@ -18,8 +18,6 @@
 Gimple statements
 =================
 
-.. py:currentmodule:: gcc
-
 TODO
 
 .. py:class:: gcc.Gimple
@@ -41,11 +39,12 @@ TODO
 
    .. py:attribute:: block
 
-      The lexical block holding this statement, as a gcc.Tree
+      The lexical block holding this statement, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: exprtype
 
-      The type of the main expression computed by this statement, as a gcc.Tree (which might be gcc.VoidType)
+      The type of the main expression computed by this statement, as a
+      :py:class:`gcc.Tree` (which might be :py:class:`gcc.VoidType`)
 
    .. py:attribute:: str_no_uid
 
@@ -81,8 +80,9 @@ TODO
          callback(node, *args, **kwargs)
 
       If the callback returns a true value, the traversal stops, and that
-      `gcc.Tree` is the result of the call to `walk_tree`.  Otherwise, the
-      traversal continues, and `walk_tree` eventually returns `None`.
+      :py:class:`gcc.Tree` is the result of the call to `walk_tree`.
+      Otherwise, the traversal continues, and `walk_tree` eventually returns
+      `None`.
 
 .. py:class:: gcc.GimpleAssign
 
@@ -90,42 +90,44 @@ TODO
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a gcc.Tree
+      Left-hand-side of the assignment, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: rhs
 
       The operands on the right-hand-side of the expression, as a list of
-      gcc.Tree instances
+      :py:class:`gcc.Tree` instances
 
    .. py:attribute:: exprcode
 
-      The kind of the expression, as an gcc.Tree subclass (the type itself, not
-      an instance)
+      The kind of the expression, as an :py:class:`gcc.Tree` subclass (the type
+      itself, not an instance)
 
 .. py:class:: gcc.GimpleCall
 
-   Subclass of gcc.Gimple: an invocation of a function, assigning the result to an l-value
+   Subclass of :py:class:`gcc.Gimple`: an invocation of a function, assigning
+   the result to an l-value
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a gcc.Tree
+      Left-hand-side of the assignment, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: rhs
 
       The operands on the right-hand-side of the expression, as a list of
-      gcc.Tree instances
+      :py:class:`gcc.Tree` instances
 
    .. py:attribute:: fn
 
-      The function being called, as a gcc.Tree
+      The function being called, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: fndecl
 
-      The  declaration of the function being called (if any), as a gcc.Tree
+      The  declaration of the function being called (if any), as a
+      :py:class:`gcc.Tree`
 
    .. py:attribute:: args
 
-      The arguments for the call, as a list of gcc.Tree
+      The arguments for the call, as a list of :py:class:`gcc.Tree`
 
    .. py:attribute:: noreturn
 
@@ -134,21 +136,22 @@ TODO
 
 .. py:class:: gcc.GimpleReturn
 
-   Subclass of gcc.Gimple: a "return" statement, signifying the end of a `gcc.BasicBlock`
+   Subclass of :py:class:`gcc.Gimple`: a "return" statement, signifying the end
+   of a :py:class:`gcc.BasicBlock`
 
    .. py:attribute:: retval
 
-   The return value, as a gcc.Tree
+   The return value, as a :py:class:`gcc.Tree`
 
 .. py:class:: gcc.GimpleCond
 
-   Subclass of gcc.Gimple: a conditional jump, of the form::
+   Subclass of :py:class:`gcc.Gimple`: a conditional jump, of the form::
 
      if (LHS EXPRCODE RHS) goto TRUE_LABEL else goto FALSE_LABEL
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the comparison, as a gcc.Tree
+      Left-hand-side of the comparison, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: exprcode
 
@@ -162,7 +165,7 @@ TODO
 
    .. py:attribute:: rhs
 
-      The right-hand-side of the comparison, as a gcc.Tree
+      The right-hand-side of the comparison, as a :py:class:`gcc.Tree`
 
    .. py:attribute:: true_label
 
@@ -187,23 +190,24 @@ TODO
 
 .. py:class:: gcc.GimplePhi
 
-   Subclass of gcc.Gimple used in the SSA passes: a "PHI" or "phoney" function,
-   for merging the various possible values a variable can have based on the edge
-   that we entered this :py:class:`gcc.BasicBlock` on.
+   Subclass of :py:class:`gcc.Gimple` used in the SSA passes: a "PHI" or
+   "phoney" function, for merging the various possible values a variable can
+   have based on the edge that we entered this :py:class:`gcc.BasicBlock` on.
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a gcc.Tree (generally a gcc.SsaName,
-      I believe)
+      Left-hand-side of the assignment, as a :py:class:`gcc.Tree` (generally a
+      :py:class:`gcc.SsaName`, I believe)
 
    .. py:attribute:: args
 
-      A list of (:py:class:`gcc.Tree`, :py:class:`gcc.Edge`) pairs representing the possible (expr, edge) inputs
+      A list of (:py:class:`gcc.Tree`, :py:class:`gcc.Edge`) pairs representing
+      the possible (expr, edge) inputs
 
 .. py:class:: gcc.GimpleSwitch
 
-   Subclass of gcc.Gimple: a switch statement, signifying the end of a
-   `gcc.BasicBlock`
+   Subclass of :py:class:`gcc.Gimple`: a switch statement, signifying the end of a
+   :py:class:`gcc.BasicBlock`
 
    .. py:attribute:: indexvar
 

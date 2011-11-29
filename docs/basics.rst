@@ -18,8 +18,6 @@
 .. For notes on how to document Python in RST form, see e.g.:
 .. http://sphinx.pocoo.org/domains.html#the-python-domain
 
-.. py:currentmodule:: gcc
-
 Requirements
 ============
 
@@ -248,7 +246,7 @@ You can override this using gcc.set_location:
 Accessing parameters
 --------------------
 
-.. py:data:: argument_dict
+.. py:data:: gcc.argument_dict
 
    Exposes the arguments passed to the plugin as a dictionary.
 
@@ -269,7 +267,7 @@ Accessing parameters
 
       {'script': 'test.py', 'foo': 'bar'}
 
-.. py:data:: argument_tuple
+.. py:data:: gcc.argument_tuple
 
 
   Exposes the arguments passed to the plugin as a tuple of (key, value) pairs,
