@@ -286,13 +286,14 @@ Types
       `sizeof()` this type, as an `int`, or raising `TypeError` for those
       types which don't have a well-defined size
 
-   The standard C types are accessible via class methods of gcc.Type.
+   The standard C types are accessible via class methods of :py:class:`gcc.Type`.
    They are only created by GCC after plugins are loaded, and so they're
    only visible during callbacks, not during the initial run of the code.
    (yes, having them as class methods is slightly clumsy).
 
-   Each of the following returns a `gcc.Type` instance representing the given
-   type (or None at startup before any passes, when the types don't yet exist)
+   Each of the following returns a :py:class:`gcc.Type` instance representing
+   the given type (or None at startup before any passes, when the types don't
+   yet exist)
 
       =============================  =====================
       Class method                   C Type
@@ -321,7 +322,7 @@ Types
 
 .. py:class:: gcc.IntegerType
 
-   Subclass of gcc.Type, adding a few properties:
+   Subclass of :py:class:`gcc.Type`, adding a few properties:
 
    .. py:attribute:: unsigned
 
@@ -341,7 +342,7 @@ Types
 
 .. py:class:: gcc.FloatType
 
-   Subclass of gcc.Type representing C's `float` and `double` types
+   Subclass of :py:class:`gcc.Type` representing C's `float` and `double` types
 
    .. py:attribute:: precision
 
@@ -354,9 +355,9 @@ Types
 
    .. py:attribute:: dereference
 
-      The gcc.Type that this type points to
+      The :py:class:`gcc.Type` that this type points to
 
-Additional attributes for various gcc.Type subclasses:
+Additional attributes for various :py:class:`gcc.Type` subclasses:
 
    .. py:attribute:: const
 
@@ -364,7 +365,7 @@ Additional attributes for various gcc.Type subclasses:
 
    .. py:attribute:: const_equivalent
 
-      The gcc.Type for the `const` version of this type
+      The :py:class:`gcc.Type` for the `const` version of this type
 
    .. py:attribute:: volatile
 
@@ -372,7 +373,7 @@ Additional attributes for various gcc.Type subclasses:
 
    .. py:attribute:: volatile_equivalent
 
-      The gcc.Type for the `volatile` version of this type
+      The :py:class:`gcc.Type` for the `volatile` version of this type
 
    .. py:attribute:: restrict
 
@@ -380,13 +381,15 @@ Additional attributes for various gcc.Type subclasses:
 
    .. py:attribute:: restrict_equivalent
 
-      The gcc.Type for the `restrict` version of this type
+      The :py:class:`gcc.Type` for the `restrict` version of this type
 
 
 .. py:class:: gcc.FunctionType
 
-   Subclass of gcc.Type representing the type of a given function (or or a
-   typedef to a function type, e.g. for callbacks).
+   Subclass of :py:class:`gcc.Type` representing the type of a given function
+   (or or a typedef to a function type, e.g. for callbacks).
+
+   See also :py:class:`gcc.FunctionType`
 
    The `type` attribute holds the return type.
 
