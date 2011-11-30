@@ -19,8 +19,8 @@
 # subdirectory containing a "script.py" is regarded as a test case.
 #
 # A test consists of:
-#   input.c: C source code to be compiled
-#   script.py: a Python script to be run by GCC during said compilation
+#   input.c/cc: C/C++ source code to be compiled
+#   script.py:  a Python script to be run by GCC during said compilation
 #   stdout.txt: (optional) the expected stdout from GCC (empty if not present)
 #   stderr.txt: (optional) as per stdout.txt
 #   getopts.py: (optional) if present, stdout from this script is
@@ -162,10 +162,20 @@ class UnexpectedOutput(CompilationError):
         return self.stream.diff(self.label)
 
 
+def get_source_file(testdir):
+    # Locate the source file within the test directory,
+    # trying various different suffixes (by programming language)
+    suffixes = ['.c', '.cc', '.java', '.f', '.f90']
+    for suffix in suffixes:
+        inputfile = os.path.join(testdir, 'input%s' % suffix)
+        if os.path.exists(inputfile):
+            return inputfile
+    raise RuntimeError('Source file not found')
+
 def run_test(testdir):
     # Compile each 'input.c', using 'script.py'
     # Assume success and empty stdout; compare against expected stderr, or empty if file not present
-    c_input = os.path.join(testdir, 'input.c')
+    inputfile = get_source_file(testdir)
     outfile = os.path.join(testdir, 'output.o')
     script_py = os.path.join(testdir, 'script.py')
     out = TestStream(os.path.join(testdir, 'stdout.txt'))
@@ -183,7 +193,7 @@ def run_test(testdir):
 
     # Special-case: add the python include dir (for this runtime) if the C code
     # uses Python.h:
-    with open(c_input, 'r') as f:
+    with open(inputfile, 'r') as f:
         code = f.read()
     if '#include <Python.h>' in code:
         args += ['-I' + get_python_inc()]
@@ -203,7 +213,7 @@ def run_test(testdir):
         args += opts_out.split()
 
     # and the source file goes at the end:
-    args += [c_input]
+    args += [inputfile]
 
     # Invoke the compiler:
     p = Popen(args, env=env, stdout=PIPE, stderr=PIPE)
