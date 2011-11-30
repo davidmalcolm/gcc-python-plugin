@@ -23,6 +23,8 @@
 #include "gcc-python-compat.h"
 #include "gimple.h"
 
+#include "cp/cp-tree.h" /* for TFF_* for use by gcc_FunctionDecl_get_fullname */
+
 //#include "rtl.h"
 /*
   "struct rtx_def" is declarted within rtl.h, c.f:
@@ -151,6 +153,41 @@ error:
     Py_XDECREF(name);
     Py_XDECREF(result);
     return NULL;
+}
+
+PyObject *
+gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
+{
+    /*
+      Unfortunately, decl_as_string() is only available from the C++
+      frontend: cc1plus (it's defined in gcc/cp/error.c).
+
+      See http://gcc.gnu.org/ml/gcc/2011-11/msg00504.html
+
+      Hence we try to dynamically load the symbol, which will be already
+      present if we were loaded by cc1plus (for C++), and not be found
+      otherwise
+
+      Declared in cp/cp-tree.h as:
+        extern const char *decl_as_string (tree, int);
+    */
+
+    const char *(*decl_as_string)(tree, int);
+    const char *str;
+
+    decl_as_string = dlsym(RTLD_DEFAULT, "decl_as_string");
+
+    if (NULL == decl_as_string) {
+        return PyErr_Format(PyExc_RuntimeError,
+                            "attribute 'fullname' is only available when compiling C++ code");
+    }
+
+    str = decl_as_string(self->t,
+                         TFF_DECL_SPECIFIERS
+                         |TFF_RETURN_TYPE
+                         |TFF_FUNCTION_DEFAULT_ARGUMENTS
+                         |TFF_EXCEPTION_SPECIFICATION);
+    return gcc_python_string_from_string(str);
 }
 
 PyObject *
@@ -297,6 +334,11 @@ gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
     return NULL;
 }
 
+PyObject *
+gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure)
+{
+    return gcc_FunctionType_get_argument_types(self, closure);
+}
 
 PyObject *
 gcc_Constructor_get_elements(PyObject *self, void *closure)

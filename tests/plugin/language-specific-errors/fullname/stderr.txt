@@ -1,0 +1,6 @@
+tests/plugin/language-specific-errors/fullname/input.c: In function 'foo':
+tests/plugin/language-specific-errors/fullname/input.c:21:1: error: Unhandled Python exception raised calling 'execute' method
+Traceback (most recent call last):
+  File "tests/plugin/language-specific-errors/fullname/script.py", line 29, in execute
+    print('  fn.decl.fullname: %r' % fn.decl.fullname)
+RuntimeError: attribute 'fullname' is only available when compiling C++ code

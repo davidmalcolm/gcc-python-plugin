@@ -216,10 +216,54 @@ Declarations
       The :py:class:`gcc.ResultDecl` representing the return value of this
       function
 
+   .. py:attribute:: fullname
+
+      .. note:: This attribute is only usable with C++ code.  Attempting to use
+         it from another language will lead to a `RuntimeError` exception.
+
+      (string) The "full name" of this function, including the scope, return
+      type and default arguments.
+
+      For example, given this code:
+
+      .. code-block:: c++
+
+         namespace Example {
+             struct Coord {
+                 int x;
+                 int y;
+             };
+
+             class Widget {
+             public:
+                 void set_location(const struct Coord& coord);
+             };
+         };
+
+      `set_location`'s fullname is::
+
+         'void Example::Widget::set_location(const Example::Coord&)'
+
    .. py:attribute:: callgraph_node
 
       The :py:class:`gcc.CallgraphNode` for this function declaration, or
       `None`
+
+   .. py:attribute:: is_public
+
+      (bool) For C++: is this declaration "public"
+
+   .. py:attribute:: is_private
+
+      (bool) For C++: is this declaration "private"
+
+   .. py:attribute:: is_protected
+
+      (bool) For C++: is this declaration "protected"
+
+   .. py:attribute:: is_static
+
+      (bool) For C++: is this declaration "static"
 
 .. py:class:: gcc.VarDecl
 
@@ -415,6 +459,18 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
 
           * the attribute is present, with a list of 1-based argument indices
             (Note that the result is still 0-based)
+
+.. py:class:: gcc.MethodType
+
+   Subclass of :py:class:`gcc.Type` representing the type of a given method.
+   Similar to :py:class:`gcc.FunctionType`
+
+   The `type` attribute holds the return type.
+
+   .. py:attribute:: argument_types
+
+      A tuple of :py:class:`gcc.Type` instances, representing the function's
+      argument types
 
 Constants
 ---------

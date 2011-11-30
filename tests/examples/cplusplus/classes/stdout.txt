@@ -1,0 +1,391 @@
+fn: gcc.Function('__base_dtor ')
+  fn.decl.name: '__base_dtor '
+  fn.decl.fullname: 'Example::Widget::~Widget()'
+  str(fn.decl): gcc.FunctionDecl('__base_dtor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Widget *']
+  block 2
+    gimple[0]:
+      str(stmt): 'this->_vptr.Widget = &_ZTVN7Example6WidgetE[2];'
+      repr(stmt): 'gcc.GimpleAssign()'
+  block 3
+    gimple[0]:
+      str(stmt): '<L0>:'
+      repr(stmt): 'gcc.GimpleLabel()'
+    gimple[1]:
+      str(stmt): 'D.nnnnn = 0 & 1;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[2]:
+      str(stmt): 'D.nnnnn = (bool) D.nnnnn;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[3]:
+      str(stmt): 'if (D.nnnnn != 0)'
+      repr(stmt): 'gcc.GimpleCond()'
+  block 4
+    gimple[0]:
+      str(stmt): 'operator delete (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'operator delete'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('operator delete')
+      stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+  block 5
+    gimple[0]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('__base_dtor ')
+  fn.decl.name: '__base_dtor '
+  fn.decl.fullname: 'Example::Dialog::~Dialog()'
+  str(fn.decl): gcc.FunctionDecl('__base_dtor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Dialog *']
+  block 2
+    gimple[0]:
+      str(stmt): 'this->D.nnnnn._vptr.Widget = &_ZTVN7Example6DialogE[2];'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'Example::Widget::~Widget (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): '__base_dtor '
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('__base_dtor ')
+      stmt.fn.operand.fullname: 'Example::Widget::~Widget()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+  block 3
+    gimple[0]:
+      str(stmt): '<L0>:'
+      repr(stmt): 'gcc.GimpleLabel()'
+    gimple[1]:
+      str(stmt): 'D.nnnnn = 0 & 1;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[2]:
+      str(stmt): 'D.nnnnn = (bool) D.nnnnn;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[3]:
+      str(stmt): 'if (D.nnnnn != 0)'
+      repr(stmt): 'gcc.GimpleCond()'
+  block 4
+    gimple[0]:
+      str(stmt): 'operator delete (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'operator delete'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('operator delete')
+      stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+  block 5
+    gimple[0]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('foo')
+  fn.decl.name: 'foo'
+  fn.decl.fullname: 'void foo(const Example::Coord&)'
+  str(fn.decl): gcc.FunctionDecl('foo')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.FunctionType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['const struct Coord &']
+  block 2
+    gimple[0]:
+      str(stmt): 'D.nnnnn = operator new (16);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'operator new'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('operator new')
+      stmt.fn.operand.fullname: 'void* operator new(long unsigned int) throw (std::bad_alloc)'
+    str(stmt.args[0]): '16'
+    str(stmt.lhs): gcc.VarDecl(nnnn)
+    gimple[1]:
+      str(stmt): 'dlg.0 = D.nnnnn;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[2]:
+      str(stmt): 'Example::Dialog::Dialog (dlg.0);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): '__comp_ctor '
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('__comp_ctor ')
+      stmt.fn.operand.fullname: 'Example::Dialog::Dialog()'
+    str(stmt.args[0]): "gcc.VarDecl('dlg.0')"
+    str(stmt.lhs): None
+    gimple[3]:
+      str(stmt): 'dlg = dlg.0;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[4]:
+      str(stmt): 'Example::Widget::set_location (dlg, coord);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'set_location'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('set_location')
+      stmt.fn.operand.fullname: 'void Example::Widget::set_location(const Example::Coord&)'
+    str(stmt.args[0]): "gcc.VarDecl('dlg')"
+    str(stmt.args[1]): "gcc.ParmDecl('coord')"
+    str(stmt.lhs): None
+    gimple[5]:
+      str(stmt): 'if (dlg != 0B)'
+      repr(stmt): 'gcc.GimpleCond()'
+  block 3
+    gimple[0]:
+      str(stmt): 'D.nnnnn = dlg->_vptr.Widget;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'D.nnnnn = D.nnnnn + 8;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[2]:
+      str(stmt): 'D.nnnnn = *D.nnnnn;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[3]:
+      str(stmt): 'OBJ_TYPE_REF(D.nnnnn;dlg->1) (dlg);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.ObjTypeRef'>
+    str(stmt.fn): 'OBJ_TYPE_REF(D.nnnnn;dlg->1)'
+    stmt.fn: <gcc.ObjTypeRef object at 0xdeadbeef>
+    str(stmt.args[0]): "gcc.VarDecl('dlg')"
+    str(stmt.lhs): None
+  block 4
+    gimple[0]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('__base_ctor ')
+  fn.decl.name: '__base_ctor '
+  fn.decl.fullname: 'Example::Dialog::Dialog()'
+  str(fn.decl): gcc.FunctionDecl('__base_ctor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Dialog *']
+  block 2
+    gimple[0]:
+      str(stmt): 'D.nnnnn = &this->D.nnnnn;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'Example::Widget::Widget (D.nnnnn);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): '__base_ctor '
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('__base_ctor ')
+      stmt.fn.operand.fullname: 'Example::Widget::Widget()'
+    str(stmt.args[0]): 'gcc.VarDecl(nnnn)'
+    str(stmt.lhs): None
+    gimple[2]:
+      str(stmt): 'this->D.nnnnn._vptr.Widget = &_ZTVN7Example6DialogE[2];'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[3]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('__base_ctor ')
+  fn.decl.name: '__base_ctor '
+  fn.decl.fullname: 'Example::Widget::Widget()'
+  str(fn.decl): gcc.FunctionDecl('__base_ctor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: True
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Widget *']
+  block 2
+    gimple[0]:
+      str(stmt): 'this->_vptr.Widget = &_ZTVN7Example6WidgetE[2];'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('foo')
+  fn.decl.name: 'foo'
+  fn.decl.fullname: 'void foo(const char*)'
+  str(fn.decl): gcc.FunctionDecl('foo')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.FunctionType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['const char *']
+  block 2
+    gimple[0]:
+      str(stmt): 'GIMPLE_NOP'
+      repr(stmt): 'gcc.GimpleNop()'
+    gimple[1]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('foo')
+  fn.decl.name: 'foo'
+  fn.decl.fullname: 'void foo()'
+  str(fn.decl): gcc.FunctionDecl('foo')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.FunctionType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: []
+  block 2
+    gimple[0]:
+      str(stmt): 'GIMPLE_NOP'
+      repr(stmt): 'gcc.GimpleNop()'
+    gimple[1]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('set_location')
+  fn.decl.name: 'set_location'
+  fn.decl.fullname: 'void Example::Widget::set_location(const Example::Coord&)'
+  str(fn.decl): gcc.FunctionDecl('set_location')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Widget *', 'const struct Coord &']
+  block 2
+    gimple[0]:
+      str(stmt): 'this->m_location = *coord;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('get_width')
+  fn.decl.name: 'get_width'
+  fn.decl.fullname: 'virtual int Example::Dialog::get_width()'
+  str(fn.decl): gcc.FunctionDecl('get_width')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'int'
+  argument types: ['struct Dialog *']
+  block 2
+    gimple[0]:
+      str(stmt): 'D.nnnnn = 400;'
+      repr(stmt): 'gcc.GimpleAssign()'
+    gimple[1]:
+      str(stmt): 'return D.nnnnn;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('__deleting_dtor ')
+  fn.decl.name: '__deleting_dtor '
+  fn.decl.fullname: 'virtual Example::Dialog::~Dialog()'
+  str(fn.decl): gcc.FunctionDecl('__deleting_dtor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Dialog *']
+  block 2
+    gimple[0]:
+      str(stmt): 'Example::Dialog::~Dialog (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): '__comp_dtor '
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('__comp_dtor ')
+      stmt.fn.operand.fullname: 'virtual Example::Dialog::~Dialog()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+  block 3
+    gimple[0]:
+      str(stmt): '<L0>:'
+      repr(stmt): 'gcc.GimpleLabel()'
+    gimple[1]:
+      str(stmt): 'operator delete (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'operator delete'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('operator delete')
+      stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+    gimple[2]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'
+fn: gcc.Function('__deleting_dtor ')
+  fn.decl.name: '__deleting_dtor '
+  fn.decl.fullname: 'virtual Example::Widget::~Widget()'
+  str(fn.decl): gcc.FunctionDecl('__deleting_dtor ')
+    type(fn): <type 'gcc.Function'>
+    type(fn.decl): <type 'gcc.FunctionDecl'>
+    type(fn.decl.type): <type 'gcc.MethodType'>
+  fn.decl.is_public: True
+  fn.decl.is_private: False
+  fn.decl.is_protected: False
+  fn.decl.is_static: True
+  return type: 'void'
+  argument types: ['struct Widget *']
+  block 2
+    gimple[0]:
+      str(stmt): 'Example::Widget::~Widget (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): '__comp_dtor '
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('__comp_dtor ')
+      stmt.fn.operand.fullname: 'virtual Example::Widget::~Widget()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+  block 3
+    gimple[0]:
+      str(stmt): '<L0>:'
+      repr(stmt): 'gcc.GimpleLabel()'
+    gimple[1]:
+      str(stmt): 'operator delete (this);'
+      repr(stmt): 'gcc.GimpleCall()'
+    type(stmt.fn): <type 'gcc.AddrExpr'>
+    str(stmt.fn): 'operator delete'
+    stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
+      stmt.fn.operand: gcc.FunctionDecl('operator delete')
+      stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
+    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.lhs): None
+    gimple[2]:
+      str(stmt): 'return;'
+      repr(stmt): 'gcc.GimpleReturn()'

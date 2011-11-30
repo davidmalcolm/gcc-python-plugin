@@ -63,7 +63,10 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
                                     PyGetSetDef('addr', 'gcc_Tree_get_addr', None,
                                                 'The address of the underlying GCC object in memory'),
                                     PyGetSetDef('str_no_uid', 'gcc_Tree_get_str_no_uid', None,
-                                                'A string representation of this object, like str(), but without including any internal UID')])
+                                                'A string representation of this object, like str(), but without including any internal UID')],
+                                   identifier_prefix='gcc_Tree',
+                                   typename='PyGccTree')
+
     cu.add_defn(getsettable.c_defn())
     
     pytype = PyTypeObject(identifier = 'gcc_TreeType',
@@ -298,7 +301,9 @@ def generate_tree_code_classes():
 
         cc = tree_type.camel_cased_string()
 
-        getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [])
+        getsettable =  PyGetSetDefTable('gcc_%s_getset_table' % cc, [],
+                                        identifier_prefix='gcc_%s' % cc,
+                                        typename='PyGccTree')
 
         tp_as_number = None
         tp_repr = None
@@ -462,7 +467,17 @@ def generate_tree_code_classes():
                                   None,
                                   "A tuple of gcc.Type instances, representing the argument types of this function type")
 
+        if tree_type.SYM == 'METHOD_TYPE':
+            getsettable.add_gsdef('argument_types',
+                                  'gcc_MethodType_get_argument_types',
+                                  None,
+                                  "A tuple of gcc.Type instances, representing the argument types of this method type")
+
         if tree_type.SYM == 'FUNCTION_DECL':
+            getsettable.add_gsdef('fullname',
+                                  'gcc_FunctionDecl_get_fullname',
+                                  None,
+                                  'C++ only: the full name of this function declaration')
             add_simple_getter('function',
                               'gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t))',
                               'The gcc.Function (or None) for this declaration')
@@ -475,6 +490,12 @@ def generate_tree_code_classes():
             add_simple_getter('callgraph_node',
                               'gcc_python_make_wrapper_cgraph_node(cgraph_get_node(self->t))',
                               'The gcc.CallgraphNode for this function declaration, or None')
+
+            for attr in ('public', 'private', 'protected', 'static'):
+                getsettable.add_simple_getter(cu,
+                                              'is_%s' % attr,
+                                              'PyBool_FromLong(TREE_%s(self->t))' % attr.upper(),
+                                              None)
 
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":

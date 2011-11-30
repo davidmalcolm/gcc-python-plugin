@@ -109,6 +109,9 @@ PyObject *
 gcc_Declaration_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure);
+
+PyObject *
 gcc_IdentifierNode_repr(struct PyGccTree * self);
 
 PyObject *
@@ -128,6 +131,9 @@ gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure);
 
 PyObject *
 gcc_IntegerConstant_repr(struct PyGccTree * self);
+
+PyObject *
+gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
 gcc_StringConstant_repr(struct PyGccTree * self);
