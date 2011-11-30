@@ -76,12 +76,21 @@ def _type_of_simple_arg(arg):
     elif arg == 'K':
         return get_PY_LONG_LONG().unsigned_equivalent
 
+class AnyPyObjectPtr(AwkwardType):
+    """
+    For use when we expect PyObject*, or any subclass
+    """
+    def is_compatible(self, actual_type, actual_arg):
+        # We expect a pointer to a PyObject*, or any subclass:
+        from libcpychecker.refcounts import type_is_pyobjptr_subclass
+        return type_is_pyobjptr_subclass(actual_type)
+
 class ObjectFormatUnit(FormatUnit):
     """
     Base class for Py_BuildValue format codes that expect a PyObject*
     """
     def get_expected_types(self):
-        return [get_PyObject().pointer]
+        return [AnyPyObjectPtr()]
 
 class CodeSO(ObjectFormatUnit):
     """
