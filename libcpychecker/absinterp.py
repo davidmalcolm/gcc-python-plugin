@@ -955,6 +955,11 @@ class RegionForLocal(RegionOnStack):
         RegionOnStack.__init__(self, 'region for %r' % vardecl, stack)
         self.vardecl = vardecl
 
+class RegionForStaticLocal(RegionForGlobal):
+    # "static" locals work more like globals.  In particular, they're not on
+    # the stack
+    pass
+
 class RegionOnHeap(Region):
     """
     Represents an area of memory allocated on the heap
@@ -1573,17 +1578,19 @@ class State(object):
             else:
                 self.value_for_region[region] = UnknownValue.make(parm.type, parm.location)
         for local in fun.local_decls:
-            region = RegionForLocal(local, stack)
-            self.region_for_var[local] = region
             if local.static:
                 # Statically-allocated locals are zero-initialized before the
                 # function is called for the first time, and then preserve
                 # state between function calls
+                region = RegionForStaticLocal(local)
+
                 # For now, don't try to track all possible values a static var
                 # can take; simply treat it as an UnknownValue
                 v_local = UnknownValue.make(local.type, fun.start)
             else:
+                region = RegionForLocal(local, stack)
                 v_local = UninitializedData(local.type, fun.start)
+            self.region_for_var[local] = region
             self.value_for_region[region] = v_local
 
         # Region for the gcc.ResultDecl, if any:
