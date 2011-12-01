@@ -265,6 +265,16 @@ Declarations
 
       (bool) For C++: is this declaration "static"
 
+.. py:class:: gcc.ParmDecl
+
+   A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
+   parameter to a function or method.
+
+.. py:class:: gcc.ResultDecl
+
+   A subclass of :py:class:`gcc.Declaration` declararing a dummy variable that
+   will hold the return value from a function.
+
 .. py:class:: gcc.VarDecl
 
    A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
@@ -734,7 +744,7 @@ References to storage
 
       The :py:class:`gcc.Location` for this storage reference
 
-.. py:class:: ArrayRef
+.. py:class:: gcc.ArrayRef
 
    A subclass of :py:class:`gcc.Reference` for expressions involving an array
    reference:
