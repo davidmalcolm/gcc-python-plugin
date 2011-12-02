@@ -49,12 +49,22 @@ something like::
 
    make CC=/path/to/built/plugin/gcc-with-cpychecker
 
+to override the Makefile variable `CC`.
+
 You may need to supply an absolute path, especially if the "make" recursively
 invokes "make" within subdirectories (thus having a different working
 directory).
 
-(TODO: some way of integrating the checker with `distutils
-<http://docs.python.org/library/distutils.html>`_)
+Similarly, for projects that use `distutils
+<http://docs.python.org/library/distutils.html>`_, the code is typically built
+with an invocation like this::
+
+   python setup.py build
+
+This respects the environment variable `CC`, so typically you can replace the
+above with something like this in order to add the additional checks::
+
+   CC=/path/to/built/plugin/gcc-with-cpychecker python setup.py build
 
 Reference-count checking
 ------------------------
