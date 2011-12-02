@@ -62,6 +62,14 @@ a particular usage pattern of C++ method calls:
    * https://fedorahosted.org/pipermail/gcc-python-plugin/2011-December/000136.html
    * https://bugs.freedesktop.org/show_bug.cgi?id=43460
 
+pycups
+------
+Bugs found in the `Python bindings for the CUPS API
+<http://cyberelk.net/tim/software/pycups/>`_ by compiling it with the
+plugin's :ref:`gcc-with-cpychecker <cpychecker>` script:
+
+  * https://fedorahosted.org/pycups/ticket/17
+
 Bugs found in itself
 --------------------
 Bugs found and fixed in the gcc Python plugin itself, by running the the
