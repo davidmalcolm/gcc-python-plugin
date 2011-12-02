@@ -1032,6 +1032,20 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
+    def impl_PyErr_SetNone(self, stmt, v_exc):
+        # http://docs.python.org/c-api/exceptions.html#PyErr_SetNone
+
+        # Defined in Python/errors.c:
+        #   void
+        #   PyErr_SetNone(PyObject *exception)
+
+        # It's acceptable for v_exc to be NULL
+        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetNone')
+        t_next.dest.cpython.exception_rvalue = v_exc
+        if isinstance(v_exc, PointerToRegion):
+            t_next.dest.cpython.add_external_ref(v_exc, stmt.loc)
+        return [t_next]
+
     def impl_PyErr_SetObject(self, stmt, v_exc, v_value):
         # http://docs.python.org/c-api/exceptions.html#PyErr_SetObject
         #
