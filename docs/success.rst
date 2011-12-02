@@ -52,6 +52,14 @@ support:
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13369
 
 
+`LibreOffice <http://www.libreoffice.org/>`_
+--------------------------------------------
+Stephan Bergmann wrote a script to analyze LibreOffice's source code, detecting
+a particular usage pattern of C++ method calls:
+
+   * https://fedorahosted.org/pipermail/gcc-python-plugin/2011-December/000136.html
+   * https://bugs.freedesktop.org/show_bug.cgi?id=43460
+
 Bugs found in itself
 --------------------
 Bugs found and fixed in the gcc Python plugin itself, by running the cpychecker
