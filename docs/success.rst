@@ -24,9 +24,11 @@ it.
 If you want to share a success story here, please email the plugin's `mailing list
 <https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_.
 
-gdb
----
-Bugs found in gdb by running the cpychecker script when compiling it:
+The `GNU Debugger <http://sourceware.org/gdb/>`_
+------------------------------------------------
+Bugs found in gdb by compiling it with the plugin's
+:ref:`gcc-with-cpychecker <cpychecker>` script:
+
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13308
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13309
    * http://sourceware.org/bugzilla/show_bug.cgi?id=13310
@@ -62,8 +64,9 @@ a particular usage pattern of C++ method calls:
 
 Bugs found in itself
 --------------------
-Bugs found and fixed in the gcc Python plugin itself, by running the cpychecker
-script when compiling another copy:
+Bugs found and fixed in the gcc Python plugin itself, by running the the
+plugin's :ref:`gcc-with-cpychecker <cpychecker>` script when compiling another
+copy:
 
    * various reference counting errors:
 

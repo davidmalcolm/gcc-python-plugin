@@ -15,6 +15,8 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
+.. _cpychecker:
+
 Usage example: a static analysis tool for CPython extension code
 ================================================================
 
