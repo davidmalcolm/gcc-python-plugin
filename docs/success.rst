@@ -70,6 +70,15 @@ plugin's :ref:`gcc-with-cpychecker <cpychecker>` script:
 
   * https://fedorahosted.org/pycups/ticket/17
 
+python-krbV
+-----------
+
+Bug found in the `Python bindings for the Kerberos 5 API
+<https://fedorahosted.org/python-krbV/>`_ by compiling it with the
+plugin's :ref:`gcc-with-cpychecker <cpychecker>` script:
+
+  * https://fedorahosted.org/python-krbV/ticket/1
+
 Bugs found in itself
 --------------------
 Bugs found and fixed in the gcc Python plugin itself, by running the the
