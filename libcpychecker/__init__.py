@@ -20,10 +20,12 @@ from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
 from libcpychecker.attributes import register_our_attributes
+from libcpychecker.initializers import check_initializers
 
-class CpyChecker(gcc.GimplePass):
+class CpyCheckerGimplePass(gcc.GimplePass):
     """
-    The custom pass that implements our extra compile-time checks
+    The custom pass that implements the per-function part of
+    our extra compile-time checks
     """
     def __init__(self,
                  dump_traces=False,
@@ -31,7 +33,7 @@ class CpyChecker(gcc.GimplePass):
                  verify_pyargs=True,
                  verify_refcounting=False,
                  show_possible_null_derefs=False):
-        gcc.GimplePass.__init__(self, 'cpychecker')
+        gcc.GimplePass.__init__(self, 'cpychecker-gimple')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.verify_pyargs = verify_pyargs
@@ -49,52 +51,30 @@ class CpyChecker(gcc.GimplePass):
                 check_refcounts(fun, self.dump_traces, self.show_traces,
                                 self.show_possible_null_derefs)
 
-def is_a_method_callback(decl):
-    methods = get_all_PyMethodDef_methods()
-    log('methods: %s', methods)
-    # FIXME
-    
+class CpyCheckerIpaPass(gcc.SimpleIpaPass):
+    """
+    The custom pass that implements the whole-program part of
+    our extra compile-time checks
+    """
+    def __init__(self):
+        gcc.SimpleIpaPass.__init__(self, 'cpychecker-ipa')
 
-def get_all_PyMethodDef_methods():
-    # Locate all initializers for PyMethodDef, returning a list of
-    # (gcc.Declaration, gcc.Location) for the relevant callback functions
-    # (the ml_meth field, and the location of the initializer)
-    log('get_all_PyMethodDef_methods')
-
-    def get_ml_meth_decl(methoddef_initializer):
-         for idx2, value2 in value.elements:
-             if isinstance(idx2, gcc.Declaration):
-                 if idx2.name == 'ml_meth':
-                     if isinstance(value2, gcc.AddrExpr):
-                         log('    GOT A PyMethodDef.ml_meth initializer declaration: %s', value2)
-                         log('      value2.operand: %r', value2.operand) # gcc.Declaration
-                         log('      value2.operand: %s', value2.operand)
-                         log('      value2.operand.function: %s', value2.operand.function)
-                         return (value2.operand, value2.location)
-    result = []
-    vars = gcc.get_variables()
-    for var in vars:
-        if isinstance(var.decl, gcc.VarDecl):
-            if isinstance(var.decl.type, gcc.ArrayType):
-                if str(var.decl.type.type) == 'struct PyMethodDef':
-                    if var.decl.initial:
-                        for idx, value in var.decl.initial.elements:
-                            decl = get_ml_meth_decl(value)
-                            if decl:
-                                result.append(decl)
-    return result
+    def execute(self):
+        check_initializers()
 
 def main(**kwargs):
     # Register our custom attributes:
     gcc.register_callback(gcc.PLUGIN_ATTRIBUTES,
                           register_our_attributes)
 
-    # Register our GCC pass:
-    ps = CpyChecker(**kwargs)
-
+    # Register our GCC passes:
+    gimple_ps = CpyCheckerGimplePass(**kwargs)
     if 1:
         # non-SSA version:
-        ps.register_before('*warn_function_return')
+        gimple_ps.register_before('*warn_function_return')
     else:
         # SSA version:
-        ps.register_after('ssa')
+        gimple_ps.register_after('ssa')
+
+    ipa_ps = CpyCheckerIpaPass()
+    ipa_ps.register_before('*free_lang_data')

@@ -1,0 +1,12 @@
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: error: flags do not match callback signature for 'incorrect_pycfunction' within PyMethodDef table
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: actual type of underlying callback: struct PyObject * <Tc53> (struct PyObject *, struct PyObject *) (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: error: flags do not match callback signature for 'incorrect_subclass' within PyMethodDef table
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: actual type of underlying callback: struct PyObject * <T152e> (struct MySubclass *, struct PyObject *) (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: error: flags do not match callback signature for 'incorrect_pycfunction_with_keywords' within PyMethodDef table
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)" (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: actual type of underlying callback: struct PyObject * <Tc58> (struct PyObject *, struct PyObject *, struct PyObject *) (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef

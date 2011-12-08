@@ -20,33 +20,27 @@
 #include <Python.h>
 
 /*
-  Test of correct reference-handling in a call to PyArg_ParseTupleAndKeywords
-  that uses the "O" format code
+  http://docs.python.org/c-api/structures.html#PyMethodDef
 */
 
-PyObject *
-test(PyObject *self, PyObject *args, PyObject *kwargs)
+/*
+  Verify that the analyser warns about a table of PyMethodDef initializers
+  missing a sentinel value
+*/
+
+static PyObject *
+correct_pycfunction(PyObject *self, PyObject *args)
 {
-    PyObject *obj;
-    char *keywords[] = {"object", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O:test", keywords,
-                                     &obj)) {
-        return NULL;
-    }
-
-    /*
-      We now have a borrowed non-NULL ref to "obj".
-
-      To correctly use it as the return value, we need to INCREF it:
-    */
-    Py_INCREF(obj);
-    return obj;
+    Py_RETURN_NONE;
 }
-static PyMethodDef test_methods[] = {
-    {"test_method",  (PyCFunction)test, (METH_VARARGS | METH_KEYWORDS), NULL},
-    {NULL, NULL, 0, NULL} /* Sentinel */
+
+static PyMethodDef methods[] = {
+    {"test",
+     (PyCFunction)correct_pycfunction,
+     0, /* ml_flags */
+     NULL},
+
+    /* missing a sentinel value */
 };
 
 /*

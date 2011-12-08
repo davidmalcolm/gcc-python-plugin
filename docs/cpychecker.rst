@@ -419,6 +419,60 @@ Given the above, the checker will associate the given ``PyTypeObject`` with the
 given typedef.
 
 
+Verification of PyMethodDef tables
+----------------------------------
+
+The checker will verify the types within tables of `PyMethodDef
+<http://docs.python.org/c-api/structures.html#PyMethodDef>`_ initializers: the
+callbacks are typically cast to ``PyCFunction``, but the exact type needs to
+correspond to the flags given.  For example ``(METH_VARARGS | METH_KEYWORDS)``
+implies a different function signature to the default, which the vanilla C
+compiler has no way of verifying.
+
+.. code-block:: c
+
+   /*
+     BUG: there's a mismatch between the signature of the callback and
+     that implied by ml_flags below.
+    */
+   static PyObject *widget_display(PyObject *self, PyObject *args);
+
+   static PyMethodDef widget_methods[] = {
+       {"display",
+        (PyCFunction)widget_display,
+        (METH_VARARGS | METH_KEYWORDS), /* ml_flags */
+        NULL},
+
+       {NULL, NULL, 0, NULL} /* terminator */
+   };
+
+Given the above, the checker will emit an error like this::
+
+   input.c:59:6: error: flags do not match callback signature for 'widget_display' within PyMethodDef table
+   input.c:59:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
+   input.c:59:6: note: actual type of underlying callback: struct PyObject * <Tc53> (struct PyObject *, struct PyObject *) (2 arguments)
+   input.c:59:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+
+It will also warn about tables of ``PyMethodDef`` initializers that are
+lacking a ``NULL`` sentinel value to terminate the iteration:
+
+.. code-block:: c
+
+   static PyMethodDef widget_methods[] = {
+       {"display",
+        (PyCFunction)widget_display,
+        0, /* ml_flags */
+        NULL},
+
+       /* BUG: this array is missing a NULL value to terminate
+          the list of methods, leading to a possible segfault
+          at run-time */
+   };
+
+Given the above, the checker will emit this error::
+
+  input.c:39:6: error: missing NULL sentinel value at end of PyMethodDef table
+
 Limitations and caveats
 -----------------------
 
@@ -459,12 +513,6 @@ Ideas for future tests
 ----------------------
 
 Here's a list of some other C coding bugs I intend for the tool to detect:
-
-  * type-checking for PyMethodDef tables: the callbacks are typically cast
-    to PyCFunction, but the exact type needs to correspond to the flags
-    given (e.g. ``(METH_VARARGS | METH_KEYWORDS)`` implies a different function
-    signature to the default, and the C compiler has currently no way of
-    verifying that these agree with each other).
 
   * tp_traverse errors (which can mess up the garbage collector); missing it
     altogether, or omitting fields
