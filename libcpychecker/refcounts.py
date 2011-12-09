@@ -1550,6 +1550,21 @@ class CPython(Facet):
 
         return [t_success, t_failure]
 
+    def impl_PyObject_AsFileDescriptor(self, stmt, v_o):
+        # http://docs.python.org/c-api/object.html#PyObject_AsFileDescriptor
+        #   int PyObject_AsFileDescriptor(PyObject *o)
+        # Implemented in Objects/fileobject.c
+        # Uses PyInt_Check(o) macro, which will segfault on NULL
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
+
+        fnname = stmt.fn.operand.name
+
+        # For now, don't try to implement the internal logic:
+        t_return = self.state.mktrans_assignment(stmt.lhs,
+                                       UnknownValue.make(stmt.lhs.type, stmt.loc),
+                                       'when %s() returns' % fnname)
+        return [t_return]
+
     def impl_PyObject_Call(self, stmt, v_o, v_args, v_kw):
         # http://docs.python.org/c-api/object.html#PyObject_Call
         # Implemented in Objects/abstract.c:
