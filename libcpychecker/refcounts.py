@@ -775,6 +775,19 @@ class CPython(Facet):
         return result
 
     ########################################################################
+    def impl_Py_AtExit(self, stmt, v_func):
+        # http://docs.python.org/c-api/sys.html#Py_AtExit
+
+        fnname = stmt.fn.operand.name
+
+        # Dummy implementation
+        t_return = self.state.mktrans_assignment(stmt.lhs,
+                                       UnknownValue.make(stmt.lhs.type, stmt.loc),
+                                       'when %s() returns' % fnname)
+        return [t_return]
+
+
+    ########################################################################
     # PyBool_*
     ########################################################################
     def impl_PyBool_FromLong(self, stmt, v_long):
