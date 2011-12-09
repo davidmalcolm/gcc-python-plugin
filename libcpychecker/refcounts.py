@@ -1101,6 +1101,18 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
+    def impl_PyErr_WarnEx(self, stmt, v_category, v_text, v_stack_level):
+        # http://docs.python.org/c-api/exceptions.html#PyErr_WarnEx
+        #  int
+        #  PyErr_WarnEx(PyObject *category, const char *text, Py_ssize_t stack_level)
+        # returns 0 on OK
+        # returns -1 if an exception is raised
+        # Defined in Python/_warnings.c
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+
     ########################################################################
     # PyEval_InitThreads()
     ########################################################################
