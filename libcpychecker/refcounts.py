@@ -1366,6 +1366,14 @@ class CPython(Facet):
                                                           'PyLong_Type')
         return [t_success, t_failure]
 
+    def impl_PyLong_FromLongLong(self, stmt, v_v):
+        # http://docs.python.org/c-api/long.html#PyLong_FromLongLong
+        #   PyObject* PyLong_FromLongLong(PY_LONG_LONG v)
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyLongObject',
+                                                          'PyLong_Type')
+        return [t_success, t_failure]
+
     def impl_PyLong_FromString(self, stmt, v_str, v_pend, v_base):
         # Declared in longobject.h as:
         #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
