@@ -661,6 +661,20 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    def impl_PyArg_Parse(self, stmt, v_args, v_fmt, *v_varargs):
+        # Declared in modsupport.h:
+        #   PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);
+        # Also, with #ifdef PY_SSIZE_T_CLEAN
+        #   #define PyArg_Parse			_PyArg_Parse_SizeT
+        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+
+    def impl__PyArg_Parse_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
+        # Declared in modsupport.h:
+        #   PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);
+        # Also, with #ifdef PY_SSIZE_T_CLEAN
+        #   #define PyArg_Parse			_PyArg_Parse_SizeT
+        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
+
     def impl_PyArg_ParseTuple(self, stmt, v_args, v_fmt, *v_varargs):
         # Declared in modsupport.h:
         #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);

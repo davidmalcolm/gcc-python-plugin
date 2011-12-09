@@ -309,6 +309,9 @@ It currently verifies the arguments to the following API entrypoints:
   * `PyArg_ParseTupleAndKeywords
     <http://docs.python.org/c-api/arg.html#PyArg_ParseTupleAndKeywords>`_
 
+  * `PyArg_Parse
+    <http://docs.python.org/c-api/arg.html#PyArg_Parse>`_
+
   * `Py_BuildValue
     <http://docs.python.org/c-api/arg.html#Py_BuildValue>`_
 

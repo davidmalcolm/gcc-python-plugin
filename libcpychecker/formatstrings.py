@@ -431,6 +431,16 @@ def check_pyargs(fun):
                                PyArgParseFmt,
                                'PyArg_ParseTuple',
                                1, 2, True)
+            elif stmt.fndecl.name == 'PyArg_Parse':
+                check_callsite(stmt,
+                               PyArgParseFmt,
+                               'PyArg_Parse',
+                               1, 2, False)
+            elif stmt.fndecl.name == '_PyArg_Parse_SizeT':
+                check_callsite(stmt,
+                               PyArgParseFmt,
+                               'PyArg_Parse',
+                               1, 2, True)
             elif stmt.fndecl.name == 'PyArg_ParseTupleAndKeywords':
                 check_keyword_array(stmt, 3)
                 check_callsite(stmt,
