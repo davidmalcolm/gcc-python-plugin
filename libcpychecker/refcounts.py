@@ -1490,6 +1490,14 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    def impl_PyModule_GetDict(self, stmt, v_module):
+        # http://docs.python.org/c-api/module.html#PyModule_GetDict
+        #   PyObject* PyModule_GetDict(PyObject *module)
+        # returns borrowed ref.  Always succeeds
+        fnname = stmt.fn.operand.name
+        s_success = self.mkstate_borrowed_ref(stmt, 'module __dict__ from %s' % fnname)
+        return [Transition(self.state, s_success, None)]
+
     ########################################################################
     # PyObject_*
     ########################################################################
