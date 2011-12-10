@@ -803,16 +803,19 @@ class NullPtrDereference(PredictedValueError):
                     % (self.expr, self.state.loc.get_stmt().loc))
 
 class NullPtrArgument(PredictedValueError):
-    def __init__(self, state, stmt, idx, ptr, isdefinite):
+    def __init__(self, state, stmt, idx, ptr, isdefinite, why):
         check_isinstance(state, State)
         check_isinstance(stmt, gcc.Gimple)
         check_isinstance(idx, int)
         check_isinstance(ptr, AbstractValue)
+        if why is not None:
+            check_isinstance(why, str)
         PredictedValueError.__init__(self, state, stmt.args[idx], ptr, isdefinite)
         self.stmt = stmt
         self.idx = idx
         # this is a 0-based index; it is changed to a 1-based index when
         # printed
+        self.why = why
 
     def __str__(self):
         if self.isdefinite:
@@ -1664,12 +1667,14 @@ class State(object):
                 isdefinite = not hasattr(ptr, 'fromsplit')
                 raise NullPtrDereference(self, expr, ptr, isdefinite)
 
-    def raise_any_null_ptr_func_arg(self, stmt, idx, ptr):
+    def raise_any_null_ptr_func_arg(self, stmt, idx, ptr, why=None):
         # idx is the 0-based index of the argument
 
         check_isinstance(stmt, gcc.Gimple)
         check_isinstance(idx, int)
         check_isinstance(ptr, AbstractValue)
+        if why:
+            check_isinstance(why, str)
         if isinstance(ptr, ConcreteValue):
             if ptr.is_null_ptr():
                 # NULL argument to a function that requires non-NULL
@@ -1678,7 +1683,7 @@ class State(object):
                 # that this pointer was NULL; we don't know for sure
                 # that it was.
                 isdefinite = not hasattr(ptr, 'fromsplit')
-                raise NullPtrArgument(self, stmt, idx, ptr, isdefinite)
+                raise NullPtrArgument(self, stmt, idx, ptr, isdefinite, why)
 
     def raise_split_value(self, ptr_rvalue, loc=None):
         """

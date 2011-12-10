@@ -261,7 +261,13 @@ The checker will emit errors for various events:
 
   * if a ``NULL`` value is erroneously passed to various CPython API
     entrypoints which are known to implicitly dereference those arguments
-    (which would lead to a segmentation fault if that code path were executed).
+    (which would lead to a segmentation fault if that code path were executed)::
+
+      input.c: In function 'test':
+      input.c:38:33: error: calling PyString_AsString with NULL (gcc.VarDecl('repr_args')) as argument 1 at input.c:38
+      input.c:31:15: note: when PyObject_Repr() fails at:     repr_args = PyObject_Repr(args);
+      input.c:38:33: note: PyString_AsString() invokes Py_TYPE() on the pointer via the PyString_Check() macro, thus accessing (NULL)->ob_type
+      input.c:27:1: note: graphical error report for function 'test' written out to 'input.c.test-refcount-errors.html'
 
   * if it detects that an uninitialized local variable has been used
 

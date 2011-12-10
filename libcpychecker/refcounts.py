@@ -212,6 +212,25 @@ class GenericTpDealloc(AbstractValue):
 
         return [Transition(state, s_new, desc)]
 
+
+########################################################################
+# Helper functions to generate meaningful explanations of why a NULL
+# argument is a bug:
+########################################################################
+def invokes_Py_TYPE_via_macro(fnname, macro):
+    """
+    Generate a descriptive message for cases of raise_any_null_ptr_func_arg()
+    such as PyDict_SetItem() which invoke the PyDict_Check() macro
+    """
+    return ('%s() invokes Py_TYPE() on the pointer via the %s()'
+            ' macro, thus accessing (NULL)->ob_type' % (fnname, macro))
+
+def invokes_Py_INCREF(fnname):
+    return ('%s() invokes Py_INCREF() on the pointer, thus accessing'
+            ' (NULL)->ob_refcnt' % fnname)
+
+########################################################################
+
 class CPython(Facet):
     __slots__ = ('exception_rvalue', )
 
@@ -934,14 +953,21 @@ class CPython(Facet):
     def impl_PyDict_SetItem(self, stmt, v_dp, v_key, v_item):
         # Declared in dictobject.h:
         #   PyAPI_FUNC(int) PyDict_SetItem(PyObject *mp, PyObject *key, PyObject *item);
-        # Defined in dictobject.c
+        # Defined in Objects/dictobject.c
         #
         # API docs:
         #   http://docs.python.org/c-api/dict.html#PyDict_SetItem
         # Can return -1, setting MemoryError
         # Otherwise returns 0, and adds a ref on the value
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
-        self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
+        fnname = 'PyDict_SetItem'
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_dp,
+                          why=invokes_Py_TYPE_via_macro(fnname,
+                                                        'PyDict_Check'))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key,
+                          why=invokes_Py_TYPE_via_macro(fnname,
+                                                        'PyString_CheckExact'))
+        self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item,
+                          why=invokes_Py_INCREF(fnname))
 
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         # the dictionary now owns a new ref on "item".  We won't model the
@@ -1319,9 +1345,9 @@ class CPython(Facet):
         # http://docs.python.org/c-api/list.html#PyList_SetItem
         fnname = stmt.fn.operand.name
 
-        # It uses Py_List_Check, a macro which uses Py_TYPE(op) without
-        # checking op; hence it will segfault will a NULL "list" pointer
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
+                       why=invokes_Py_TYPE_via_macro(fnname,
+                                                     'PyList_Check'))
 
         # However, it appears to be robust in the face of NULL "item" pointers
 
@@ -1554,10 +1580,13 @@ class CPython(Facet):
         # http://docs.python.org/c-api/object.html#PyObject_AsFileDescriptor
         #   int PyObject_AsFileDescriptor(PyObject *o)
         # Implemented in Objects/fileobject.c
-        # Uses PyInt_Check(o) macro, which will segfault on NULL
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
 
         fnname = stmt.fn.operand.name
+
+        # Uses PyInt_Check(o) macro, which will segfault on NULL
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+                   why=invokes_Py_TYPE_via_macro(fnname,
+                                                 'PyInt_Check'))
 
         # For now, don't try to implement the internal logic:
         t_return = self.state.mktrans_assignment(stmt.lhs,
@@ -1735,9 +1764,13 @@ class CPython(Facet):
         #    ((PyStringObject *)op) -> ob_sval
         # With other classes, this call can fail
 
+        fnname = 'PyString_AsString'
+
         # It will segfault if called with NULL, since it uses PyString_Check,
         # which reads through the object's ob_type:
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
+                     why=invokes_Py_TYPE_via_macro(fnname,
+                                                   'PyString_Check'))
 
         returntype = stmt.fn.type.dereference.type
 
@@ -1893,7 +1926,9 @@ class CPython(Facet):
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
+                   why=invokes_Py_TYPE_via_macro(fnname,
+                                                 'PyTuple_Check'))
 
         # i is range checked
         # newitem can safely be NULL
@@ -1967,7 +2002,9 @@ class CPython(Facet):
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
+                   why=invokes_Py_TYPE_via_macro(fnname,
+                                                 'PyTuple_Check'))
 
         # FIXME: cast:
         v_ob_size = self.state.get_value_of_field_by_region(v_op.region,
@@ -2316,6 +2353,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
             err = rep.make_error(fun, trace.err.loc, str(trace.err))
             err.add_trace(trace)
+            if hasattr(trace.err, 'why'):
+                if trace.err.why:
+                    err.add_note(trace.err.loc,
+                                 trace.err.why)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
