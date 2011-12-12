@@ -700,30 +700,34 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyArg_Parse(self, stmt, v_args, v_fmt, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);
+        fnmeta = FnMeta(name='PyArg_Parse',
+                        declared_in='modsupport.h',
+                        prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_Parse			_PyArg_Parse_SizeT
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
     def impl__PyArg_Parse_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);
+        fnmeta = FnMeta(name='_PyArg_Parse_SizeT',
+                        declared_in='modsupport.h',
+                        prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_Parse			_PyArg_Parse_SizeT
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
 
     def impl_PyArg_ParseTuple(self, stmt, v_args, v_fmt, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
+        fnmeta = FnMeta(name='PyArg_ParseTuple',
+                        declared_in='modsupport.h',
+                        prototype='PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
         return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
 
     def impl__PyArg_ParseTuple_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);
+        fnmeta = FnMeta(name='_PyArg_ParseTuple_SizeT',
+                        declared_in='modsupport.h',
+                        prototype='PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
@@ -731,9 +735,10 @@ class CPython(Facet):
 
     def impl_PyArg_ParseTupleAndKeywords(self, stmt, v_args, v_kwargs,
                                          v_fmt, v_keywords, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
-        #                                               const char *, char **, ...);
+        fnmeta = FnMeta(name='PyArg_ParseTupleAndKeywords',
+                        declared_in='modsupport.h',
+                        prototype=('PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,\n'
+                                   '                                            const char *, char **, ...);'),)
         #
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
@@ -742,9 +747,10 @@ class CPython(Facet):
 
     def impl__PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
                                                 v_fmt, v_keywords, *v_varargs):
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
-        #                                               const char *, char **, ...);
+        fnmeta = FnMeta(name='_PyArg_ParseTupleAndKeywords_SizeT',
+                        declared_in='modsupport.h',
+                        prototype=('PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,\n'
+                                   '                                            const char *, char **, ...);'),)
         #
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
@@ -753,11 +759,12 @@ class CPython(Facet):
 
     def impl_PyArg_UnpackTuple(self, stmt, v_args, v_name, v_min, v_max,
                                *v_varargs):
-        # http://docs.python.org/c-api/arg.html#PyArg_UnpackTuple
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(int) PyArg_UnpackTuple(PyObject *, const char *,
-        #                                     Py_ssize_t, Py_ssize_t, ...);
-        # Defined in Python/getargs.c:
+        fnmeta = FnMeta(name='PyArg_UnpackTuple',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_UnpackTuple',
+                        declared_in='modsupport.h',
+                        prototype=('PyAPI_FUNC(int) PyArg_UnpackTuple(PyObject *, const char *,\n'
+                                   '                                  Py_ssize_t, Py_ssize_t, ...);'),
+                        defined_in='Python/getargs.c')
         #   int
         #   PyArg_UnpackTuple(PyObject *args, const char *name,
         #                     Py_ssize_t min, Py_ssize_t max, ...)
@@ -814,14 +821,13 @@ class CPython(Facet):
 
     ########################################################################
     def impl_Py_AtExit(self, stmt, v_func):
-        # http://docs.python.org/c-api/sys.html#Py_AtExit
-
-        fnname = stmt.fn.operand.name
+        fnmeta = FnMeta(name='Py_AtExit',
+                        docurl='http://docs.python.org/c-api/sys.html#Py_AtExit')
 
         # Dummy implementation
         t_return = self.state.mktrans_assignment(stmt.lhs,
                                        UnknownValue.make(stmt.lhs.type, stmt.loc),
-                                       'when %s() returns' % fnname)
+                                       'when %s() returns' % fnmeta.name)
         return [t_return]
 
 
@@ -829,12 +835,12 @@ class CPython(Facet):
     # PyBool_*
     ########################################################################
     def impl_PyBool_FromLong(self, stmt, v_long):
-        # Declared in boolobject.h:
-        #   PyAPI_FUNC(PyObject *) PyBool_FromLong(long);
-        # Defined in Objects/boolobject.c
-        #
-        # Always succeeds, returning a new ref to one of the two singleton
-        # booleans
+        fnmeta = FnMeta(name='PyBool_FromLong',
+                        declared_in='boolobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyBool_FromLong(long);',
+                        defined_in='Objects/boolobject.c',
+                        notes=('Always succeeds, returning a new ref to one of'
+                               ' the two singleton booleans'))
         # v_ok = self.state.eval_stmt_args(stmt)[0]
         s_success, r_nonnull = self.mkstate_new_ref(stmt, 'PyBool_FromLong')
         return [self.state.mktrans_from_fncall_state(stmt, s_success,
@@ -898,28 +904,26 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_Py_BuildValue(self, stmt, v_fmt, *args):
-        # http://docs.python.org/c-api/arg.html#Py_BuildValue
-        #
-        # Declared in modsupport.h:
-        #   PyAPI_FUNC(PyObject *) Py_BuildValue(const char *, ...);
-        #
-        # Defined in Python/modsupport.c:
+        fnmeta = FnMeta(name='Py_BuildValue',
+                        docurl='http://docs.python.org/c-api/arg.html#Py_BuildValue',
+                        declared_in='modsupport.h',
+                        prototype='PyAPI_FUNC(PyObject *) Py_BuildValue(const char *, ...);',
+                        defined_in='Python/modsupport.c')
         #   PyObject *
         #   Py_BuildValue(const char *format, ...)
         #
         return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=False)
 
     def impl__Py_BuildValue_SizeT(self, stmt, v_fmt, *args):
-        # http://docs.python.org/c-api/arg.html#Py_BuildValue
-        #
-        # Declared in modsupport.h:
+        fnmeta = FnMeta(name='_Py_BuildValue_SizeT',
+                        docurl='http://docs.python.org/c-api/arg.html#Py_BuildValue',
+                        declared_in='modsupport.h',
         #   #ifdef PY_SSIZE_T_CLEAN
         #   #define Py_BuildValue   _Py_BuildValue_SizeT
         #   #endif
         #
-        #   PyAPI_FUNC(PyObject *) _Py_BuildValue_SizeT(const char *, ...);
-        #
-        # Defined in Python/modsupport.c:
+                        prototype='PyAPI_FUNC(PyObject *) _Py_BuildValue_SizeT(const char *, ...);',
+                        defined_in='Python/modsupport.c')
         #   PyObject *
         #   _Py_BuildValue_SizeT(const char *format, ...)
         #
@@ -966,20 +970,19 @@ class CPython(Facet):
                 #t_memoryexc]
 
     def impl_PyDict_New(self, stmt):
+        fnmeta = FnMeta(name='PyDict_New')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyDictObject',
                                                           'PyDict_Type')
         return [t_success, t_failure]
 
     def impl_PyDict_SetItem(self, stmt, v_dp, v_key, v_item):
-        # Declared in dictobject.h:
-        #   PyAPI_FUNC(int) PyDict_SetItem(PyObject *mp, PyObject *key, PyObject *item);
-        # Defined in Objects/dictobject.c
-        #
-        # API docs:
-        #   http://docs.python.org/c-api/dict.html#PyDict_SetItem
-        # Can return -1, setting MemoryError
-        # Otherwise returns 0, and adds a ref on the value
+        fnmeta = FnMeta(name='PyDict_SetItem',
+                        declared_in='dictobject.h',
+                        prototype='PyAPI_FUNC(int) PyDict_SetItem(PyObject *mp, PyObject *key, PyObject *item);',
+                        defined_in='Objects/dictobject.c',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_SetItem',
+                        notes='Can return -1, setting MemoryError.  Otherwise returns 0, and adds a ref on the value')
         fnname = 'PyDict_SetItem'
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_dp,
                           why=invokes_Py_TYPE_via_macro(fnname,
@@ -1002,15 +1005,13 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyDict_SetItemString(self, stmt, v_dp, v_key, v_item):
-        # Declared in dictobject.h:
-        #   PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);
-        # Defined in dictobject.c
-        #
-        # API docs:
-        #   http://docs.python.org/c-api/dict.html#PyDict_SetItemString
-        # Can return -1, setting MemoryError
-        # Otherwise returns 0, and adds a ref on the value
-
+        fnmeta = FnMeta(name='PyDict_SetItemString',
+                        declared_in='dictobject.h',
+                        prototype='PyAPI_FUNC(int) PyDict_SetItemString(PyObject *dp, const char *key, PyObject *item);',
+                        defined_in='Objects/dictobject.c',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_SetItemString',
+                        notes=('Can return -1, setting MemoryError.'
+                               '  Otherwise returns 0, and adds a ref on the value'))
         # This is implemented in terms of PyDict_SetItem and shows the same
         # success and failures:
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
@@ -1022,12 +1023,11 @@ class CPython(Facet):
     # PyErr_*
     ########################################################################
     def impl_PyErr_Format(self, stmt, v_exc, v_fmt, *v_args):
-        # Declared in pyerrors.h:
-        #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
-        # Defined in Python/errors.c
-        #
-
-        # It always returns NULL:
+        fnmeta = FnMeta(name='PyErr_Format',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);',
+                        defined_in='Python/errors.c',
+                        notes='Always returns NULL',)
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_Format()')
@@ -1035,12 +1035,11 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_NoMemory(self, stmt):
-        # Declared in pyerrors.h:
-        #   PyAPI_FUNC(PyObject *) PyErr_NoMemory(void);
-        #
-        # Defined in Python/errors.c
-        #
-        # It always returns NULL:
+        fnmeta = FnMeta(name='PyErr_NoMemory',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyErr_NoMemory(void);',
+                        defined_in='Python/errors.c',
+                        notes='Always returns NULL',)
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_NoMemory()')
@@ -1048,22 +1047,22 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_Occurred(self, stmt):
-        # Declared in pyerrors.h:
-        #   PyAPI_FUNC(PyObject *) PyErr_Occurred(void);
-        #
-        # Defined in Python/errors.c
-        #
-        # http://docs.python.org/c-api/exceptions.html#PyErr_Occurred
-        # Returns a borrowed reference; can't fail:
+        fnmeta = FnMeta(name='PyErr_Occurred',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyErr_Occurred(void);',
+                        defined_in='Python/errors.c',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_Occurred',
+                        notes="Returns a borrowed reference; can't fail")
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          self.exception_rvalue,
                                          'PyErr_Occurred()')
         return [t_next]
 
     def impl_PyErr_Print(self, stmt):
-        # Declared in pythonrun.h:
-        #   PyAPI_FUNC(void) PyErr_Print(void);
-        # Defined in pythonrun.c
+        fnmeta = FnMeta(name='PyErr_Print',
+                        declared_in='pythonrun.h',
+                        prototype='PyAPI_FUNC(void) PyErr_Print(void);',
+                        defined_in='Python/pythonrun.c',)
 
         t_next = self.state.mktrans_nop(stmt, 'PyErr_Print')
         # Clear the error indicator:
@@ -1071,9 +1070,10 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_PrintEx(self, stmt, v_int):
-        # Declared in pythonrun.h:
-        #   PyAPI_FUNC(void) PyErr_PrintEx(int);
-        # Defined in pythonrun.c
+        fnmeta = FnMeta(name='PyErr_PrintEx',
+                        declared_in='pythonrun.h',
+                        prototype='PyAPI_FUNC(void) PyErr_PrintEx(int);',
+                        defined_in='Python/pythonrun.c',)
 
         t_next = self.state.mktrans_nop(stmt, 'PyErr_PrintEx')
         # Clear the error indicator:
@@ -1081,10 +1081,9 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_SetFromErrno(self, stmt, v_exc):
-        # API docs:
-        #   http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno
-        #
-        # It always returns NULL:
+        fnmeta = FnMeta(name='PyErr_SetFromErrno',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno',
+                        notes='Always returns NULL',)
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_SetFromErrno()')
@@ -1092,14 +1091,15 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_SetFromErrnoWithFilename(self, stmt, v_exc, v_filename):
-        # http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrnoWithFilename
-        # Defined in Python/errors.c:
+        fnmeta = FnMeta(name='PyErr_SetFromErrnoWithFilename',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrnoWithFilename',
+                        defined_in='Python/errors.c',
+                        notes='Always returns NULL',)
         #   PyObject *
         #   PyErr_SetFromErrnoWithFilename(PyObject *exc, const char *filename)
         #
         # "filename" can be NULL.
-        #
-        # It always returns NULL:
+
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
                                          'PyErr_SetFromErrnoWithFilename()')
@@ -1107,9 +1107,9 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_SetNone(self, stmt, v_exc):
-        # http://docs.python.org/c-api/exceptions.html#PyErr_SetNone
-
-        # Defined in Python/errors.c:
+        fnmeta = FnMeta(name='PyErr_SetNone',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetNone',
+                        defined_in='Python/errors.c',)
         #   void
         #   PyErr_SetNone(PyObject *exception)
 
@@ -1121,12 +1121,11 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_SetObject(self, stmt, v_exc, v_value):
-        # http://docs.python.org/c-api/exceptions.html#PyErr_SetObject
-        #
-        # Declared in pyerrors.h:
-        #   PyAPI_FUNC(void) PyErr_SetObject(PyObject *, PyObject *);
-        #
-        # Defined in Python/errors.c
+        fnmeta = FnMeta(name='PyErr_SetObject',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetObject',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(void) PyErr_SetObject(PyObject *, PyObject *);',
+                        defined_in='Python/errors.c',)
         #   void
         #   PyErr_SetObject(PyObject *exception, PyObject *value)
         #
@@ -1140,21 +1139,22 @@ class CPython(Facet):
         return [t_next]
 
     def impl_PyErr_SetString(self, stmt, v_exc, v_string):
-        # Declared in pyerrors.h:
-        #   PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);
-        # Defined in Python/errors.c
-        #
+        fnmeta = FnMeta(name='PyErr_SetString',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);',
+                        defined_in='Python/errors.c',)
         t_next = self.state.mktrans_nop(stmt, 'PyErr_SetString')
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
     def impl_PyErr_WarnEx(self, stmt, v_category, v_text, v_stack_level):
-        # http://docs.python.org/c-api/exceptions.html#PyErr_WarnEx
+        fnmeta = FnMeta(name='PyErr_WarnEx',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_WarnEx',
         #  int
         #  PyErr_WarnEx(PyObject *category, const char *text, Py_ssize_t stack_level)
         # returns 0 on OK
         # returns -1 if an exception is raised
-        # Defined in Python/_warnings.c
+                        defined_in='Python/_warnings.c')
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
@@ -1164,7 +1164,8 @@ class CPython(Facet):
     # PyEval_InitThreads()
     ########################################################################
     def impl_PyEval_InitThreads(self, stmt):
-        # http://docs.python.org/c-api/init.html#PyEval_InitThreads
+        fnmeta = FnMeta(name='PyEval_InitThreads',
+                        docurl='http://docs.python.org/c-api/init.html#PyEval_InitThreads')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyEval_InitThreads')]
 
@@ -1172,7 +1173,8 @@ class CPython(Facet):
     # Py_Finalize()
     ########################################################################
     def impl_Py_Finalize(self, stmt):
-        # http://docs.python.org/c-api/init.html#Py_Finalize
+        fnmeta = FnMeta(name='Py_Finalize',
+                        docurl='http://docs.python.org/c-api/init.html#Py_Finalize')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'Py_Finalize')]
 
@@ -1180,7 +1182,8 @@ class CPython(Facet):
     # PyGILState_*
     ########################################################################
     def impl_PyGILState_Ensure(self, stmt):
-        # http://docs.python.org/c-api/init.html#PyGILState_Ensure
+        fnmeta = FnMeta(name='PyGILState_Ensure',
+        docurl='http://docs.python.org/c-api/init.html#PyGILState_Ensure')
         # Return some opaque handle:
         returntype = stmt.fn.type.dereference.type
         return [self.state.mktrans_assignment(stmt.lhs,
@@ -1188,7 +1191,8 @@ class CPython(Facet):
                                               'PyGILState_Ensure')]
 
     def impl_PyGILState_Release(self, stmt, v_state):
-        # http://docs.python.org/c-api/init.html#PyGILState_Release
+        fnmeta = FnMeta(name='PyGILState_Release',
+                        docurl='http://docs.python.org/c-api/init.html#PyGILState_Release')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyGILState_Release')]
 
@@ -1196,7 +1200,8 @@ class CPython(Facet):
     # PyImport_*
     ########################################################################
     def impl_PyImport_AppendInittab(self, stmt, v_name, v_initfunc):
-        # http://docs.python.org/c-api/import.html#PyImport_AppendInittab
+        fnmeta = FnMeta(name='PyImport_AppendInittab',
+                        docurl='http://docs.python.org/c-api/import.html#PyImport_AppendInittab')
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (doesn't set an exception on failure, and Py_Initialize shouldn't
@@ -1204,7 +1209,8 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyImport_ImportModule(self, stmt, v_name):
-        # http://docs.python.org/c-api/import.html#PyImport_ImportModule
+        fnmeta = FnMeta(name='PyImport_ImportModule',
+                        docurl='http://docs.python.org/c-api/import.html#PyImport_ImportModule')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyModuleObject',
                                                           'PyModule_Type')
@@ -1214,7 +1220,8 @@ class CPython(Facet):
     # Py_Initialize*
     ########################################################################
     def impl_Py_Initialize(self, stmt):
-        # http://docs.python.org/c-api/init.html#Py_Initialize
+        fnmeta = FnMeta(name='Py_Initialize',
+                        docurl='http://docs.python.org/c-api/init.html#Py_Initialize')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'Py_Initialize')]
 
@@ -1242,11 +1249,11 @@ class CPython(Facet):
     # Py_Int*
     ########################################################################
     def impl_PyInt_AsLong(self, stmt, v_op):
-        # Declared in intobject.h as:
-        #   PyAPI_FUNC(long) PyInt_AsLong(PyObject *);
-        # Defined in Objects/intobject.c
-        #
-        # http://docs.python.org/c-api/int.html#PyInt_AsLong
+        fnmeta = FnMeta(name='PyInt_AsLong',
+                        declared_in='intobject.h',
+                        prototype='PyAPI_FUNC(long) PyInt_AsLong(PyObject *);',
+                        defined_in='Objects/intobject.c',
+                        docurl='http://docs.python.org/c-api/int.html#PyInt_AsLong')
 
         # Can fail (gracefully) with NULL, and with non-int objects
 
@@ -1274,9 +1281,10 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyInt_FromLong(self, stmt, v_ival):
-        # Declared in intobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyInt_FromLong(long);
-        # Defined in Objects/intobject.c
+        fnmeta = FnMeta(name='PyInt_FromLong',
+                        declared_in='intobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyInt_FromLong(long);',
+                        defined_in='Objects/intobject.c')
         #
         # CPython2 shares objects for integers in the range:
         #   -5 <= ival < 257
@@ -1302,13 +1310,12 @@ class CPython(Facet):
     # PyList_*
     ########################################################################
     def impl_PyList_Append(self, stmt, v_op, v_newitem):
-        # Declared in listobject.h as:
-        #   PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);
-        #
-        # Defined in listobject.c
-        #
-        # http://docs.python.org/c-api/list.html#PyList_Append
-        #
+        fnmeta = FnMeta(name='PyList_Append',
+                        declared_in='listobject.h',
+                        prototype='PyAPI_FUNC(int) PyList_Append(PyObject *, PyObject *);',
+                        defined_in='Objects/listobject.c',
+                        docurl='http://docs.python.org/c-api/list.html#PyList_Append')
+
         # If it succeeds, it adds a reference on the item
         #
 
@@ -1331,6 +1338,7 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyList_New(self, stmt, v_len):
+        fnmeta = FnMeta(name='PyList_New')
         # Decl:
         #   PyObject* PyList_New(Py_ssize_t len)
         # Returns a new reference, or raises MemoryError
@@ -1360,9 +1368,9 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyList_SetItem(self, stmt, v_list, v_index, v_item):
-        # Decl:
-        #   int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)
-        # http://docs.python.org/c-api/list.html#PyList_SetItem
+        fnmeta = FnMeta(name='PyList_SetItem',
+                        prototype='int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)',
+                        docurl='http://docs.python.org/c-api/list.html#PyList_SetItem',)
         fnname = stmt.fn.operand.name
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
@@ -1407,31 +1415,35 @@ class CPython(Facet):
     # PyLong_*
     ########################################################################
     def impl_PyLong_FromLong(self, stmt, v_long):
+        fnmeta = FnMeta(name='PyLong_FromLong')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyLongObject',
                                                           'PyLong_Type')
         return [t_success, t_failure]
 
     def impl_PyLong_FromLongLong(self, stmt, v_v):
-        # http://docs.python.org/c-api/long.html#PyLong_FromLongLong
-        #   PyObject* PyLong_FromLongLong(PY_LONG_LONG v)
+        fnmeta = FnMeta(name='PyLong_FromLongLong',
+                        docurl='http://docs.python.org/c-api/long.html#PyLong_FromLongLong',
+                        prototype='PyObject* PyLong_FromLongLong(PY_LONG_LONG v)')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyLongObject',
                                                           'PyLong_Type')
         return [t_success, t_failure]
 
     def impl_PyLong_FromString(self, stmt, v_str, v_pend, v_base):
-        # Declared in longobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);
-        # Defined in longobject.c
-        # http://docs.python.org/c-api/long.html#PyLong_FromString
+        fnmeta = FnMeta(name='PyLong_FromString',
+                        declared_in='longobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyLong_FromString(char *, char **, int);',
+                        defined_in='Objects/longobject.c',
+                        docurl='http://docs.python.org/c-api/long.html#PyLong_FromString')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyLongObject',
                                                           'PyLong_Type')
         return [t_success, t_failure]
 
     def impl_PyLong_FromVoidPtr(self, stmt, v_p):
-        # http://docs.python.org/c-api/long.html#PyLong_FromVoidPtr
+        fnmeta = FnMeta(name='PyLong_FromVoidPtr',
+                        docurl='http://docs.python.org/c-api/long.html#PyLong_FromVoidPtr')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyLongObject',
                                                           'PyLong_Type')
@@ -1441,7 +1453,8 @@ class CPython(Facet):
     # PyMem_*
     ########################################################################
     def impl_PyMem_Free(self, stmt, v_ptr):
-        # http://docs.python.org/c-api/memory.html#PyMem_Free
+        fnmeta = FnMeta(name='PyMem_Free',
+                        docurl='http://docs.python.org/c-api/memory.html#PyMem_Free')
         fnname = 'PyMem_Free'
 
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
@@ -1480,7 +1493,8 @@ class CPython(Facet):
         return [Transition(self.state, s_new, desc)]
 
     def impl_PyMem_Malloc(self, stmt, v_size):
-        # http://docs.python.org/c-api/memory.html#PyMem_Malloc
+        fnmeta = FnMeta(name='PyMem_Malloc',
+                        docurl='http://docs.python.org/c-api/memory.html#PyMem_Malloc')
         fnname = 'PyMem_Malloc'
         returntype = stmt.fn.type.dereference.type
         r_nonnull = self.state.make_heap_region('PyMem_Malloc', stmt)
@@ -1498,7 +1512,8 @@ class CPython(Facet):
     # PyModule_*
     ########################################################################
     def impl_PyModule_AddIntConstant(self, stmt, v_module, v_name, v_value):
-        # http://docs.python.org/c-api/module.html#PyModule_AddIntConstant
+        fnmeta = FnMeta(name='PyModule_AddIntConstant',
+                        docurl='http://docs.python.org/c-api/module.html#PyModule_AddIntConstant')
 
         # (No externally-visible refcount changes)
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1510,10 +1525,10 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyModule_AddObject(self, stmt, v_module, v_name, v_value):
-        # Steals a reference to the object if if succeeds:
-        #   http://docs.python.org/c-api/module.html#PyModule_AddObject
-        # Implemented in Python/modsupport.c
-
+        fnmeta = FnMeta(name='PyModule_AddObject',
+                        docurl='http://docs.python.org/c-api/module.html#PyModule_AddObject',
+                        defined_in='Python/modsupport.c',
+                        notes='Steals a reference to the object if if succeeds')
         # On success, steals a ref from v_value:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_success.cpython.steal_reference(v_value.region)
@@ -1525,7 +1540,8 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyModule_AddStringConstant(self, stmt, v_module, v_name, v_value):
-        # http://docs.python.org/c-api/module.html#PyModule_AddStringConstant
+        fnmeta = FnMeta(name='PyModule_AddStringConstant',
+                        docurl='http://docs.python.org/c-api/module.html#PyModule_AddStringConstant',)
 
         # (No externally-visible refcount changes)
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1598,9 +1614,10 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyObject_AsFileDescriptor(self, stmt, v_o):
-        # http://docs.python.org/c-api/object.html#PyObject_AsFileDescriptor
-        #   int PyObject_AsFileDescriptor(PyObject *o)
-        # Implemented in Objects/fileobject.c
+        fnmeta = FnMeta(name='PyObject_AsFileDescriptor',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_AsFileDescriptor',
+                        prototype='int PyObject_AsFileDescriptor(PyObject *o)',
+                        defined_in='Objects/fileobject.c')
 
         fnname = stmt.fn.operand.name
 
@@ -1616,38 +1633,41 @@ class CPython(Facet):
         return [t_return]
 
     def impl_PyObject_Call(self, stmt, v_o, v_args, v_kw):
-        # http://docs.python.org/c-api/object.html#PyObject_Call
-        # Implemented in Objects/abstract.c:
-        #   PyObject *
-        #   PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw)
+        fnmeta = FnMeta(name='PyObject_Call',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_Call',
+                        defined_in='Objects/abstract.c',
+                        prototype=('PyObject *\n'
+                                   'PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw)'))
         # "func" and "args" must not be NULL, but "kw" can be:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_args)
         return self.make_transitions_for_new_ref_or_fail(stmt)
 
     def impl_PyObject_CallMethod(self, stmt, v_o, v_name, v_format, *args):
-        # http://docs.python.org/c-api/object.html#PyObject_CallMethod
-        #
-        # Implemented in Objects/abstract.c:
-        #   PyObject *
-        #   PyObject_CallMethod(PyObject *o, char *name, char *format, ...)
+        fnmeta = FnMeta(name='PyObject_CallMethod',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallMethod',
+                        defined_in='Objects/abstract.c',
+                        prototype=('PyObject *\n'
+                                   'PyObject_CallMethod(PyObject *o, char *name, char *format, ...)'))
         return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
                                                 args, with_size_t=False)
 
     def impl__PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
+        fnmeta = FnMeta(name='_PyObject_CallMethod_SizeT',
         # abstract.h has:
         #   #ifdef PY_SSIZE_T_CLEAN
         #   #define PyObject_CallMethod _PyObject_CallMethod_SizeT
         #   #endif
         #
-        # Implemented in Objects/abstract.c:
+                        defined_in='Objects/abstract.c')
         #   PyObject *
         #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
         return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
                                                 args, with_size_t=True)
 
     def impl_PyObject_HasAttrString(self, stmt, v_o, v_attr_name):
-        # http://docs.python.org/c-api/object.html#PyObject_HasAttrString
+        fnmeta = FnMeta(name='PyObject_HasAttrString',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_HasAttrString')
 
         fnname = stmt.fn.operand.name
 
@@ -1669,7 +1689,8 @@ class CPython(Facet):
                 Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnname)]
 
     def impl_PyObject_IsTrue(self, stmt, v_o):
-        #   http://docs.python.org/c-api/object.html#PyObject_IsTrue
+        fnmeta = FnMeta(name='PyObject_IsTrue',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_IsTrue')
         s_true = self.state.mkstate_concrete_return_of(stmt, 1)
         s_false = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -1681,8 +1702,9 @@ class CPython(Facet):
                 Transition(self.state, s_failure, 'when %s() returns -1 (failure)' % fnname)]
 
     def impl__PyObject_New(self, stmt, v_typeptr):
-        # Declaration in objimpl.h:
-        #   PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);
+        fnmeta = FnMeta(name='_PyObject_New',
+        # Declaration in objimpl.h',
+                        prototype='PyAPI_FUNC(PyObject *) _PyObject_New(PyTypeObject *);')
         #
         # For use via this macro:
         #   #define PyObject_New(type, typeobj) \
@@ -1710,17 +1732,18 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyObject_Repr(self, stmt, v_o):
-        # Declared in object.h as:
-        #  PyAPI_FUNC(PyObject *) PyObject_Repr(PyObject *);
-        # Docs:
-        #   http://docs.python.org/c-api/object.html#PyObject_Repr
+        fnmeta = FnMeta(name='PyObject_Repr',
+                        declared_in='object.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyObject_Repr(PyObject *);',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_Repr')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyStringObject',
                                                           'PyString_Type')
         return [t_success, t_failure]
 
     def impl_PyObject_Str(self, stmt, v_o):
-        # Declared in object.h as:
+        fnmeta = FnMeta(name='PyObject_Str',
+                        declared_in='object.h')
         #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
         # also with:
         #  #define PyObject_Bytes PyObject_Str
@@ -1734,7 +1757,8 @@ class CPython(Facet):
     ########################################################################
     def impl_PyRun_SimpleFileExFlags(self, stmt, v_fp, v_filename,
                                      v_closeit, v_flags):
-        # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags
+        fnmeta = FnMeta(name='PyRun_SimpleFileExFlags',
+                        docurl='http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags')
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
@@ -1742,7 +1766,8 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyRun_SimpleStringFlags(self, stmt, v_command, v_flags):
-        # http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags
+        fnmeta = FnMeta(name='PyRun_SimpleStringFlags',
+                        docurl='http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags')
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
@@ -1752,11 +1777,11 @@ class CPython(Facet):
     # PySequence_*
     ########################################################################
     def impl_PySequence_GetItem(self, stmt, v_o, v_i):
-        # http://docs.python.org/c-api/sequence.html#PySequence_GetItem
-        # Declared in abstract.h:
-        #   PyAPI_FUNC(PyObject *) PySequence_GetItem(PyObject *o, Py_ssize_t i);
-        #
-        # Defined in Objects/abstract.c:
+        fnmeta = FnMeta(name='PySequence_GetItem',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_GetItem',
+                        declared_in='abstract.h',
+                        prototype='PyAPI_FUNC(PyObject *) PySequence_GetItem(PyObject *o, Py_ssize_t i);',
+                        defined_in='Objects/abstract.c')
         #   PyObject *
         #   PySequence_GetItem(PyObject *s, Py_ssize_t i)
         #   {
@@ -1775,11 +1800,11 @@ class CPython(Facet):
     # PyString_*
     ########################################################################
     def impl_PyString_AsString(self, stmt, v_op):
-        # Declared in stringobject.h as:
-        #   PyAPI_FUNC(char *) PyString_AsString(PyObject *);
-        # Implemented in Objects/stringobject.c
-        #
-        #  http://docs.python.org/c-api/string.html#PyString_AsString
+        fnmeta = FnMeta(name='PyString_AsString',
+                        declared_in='stringobject.h',
+                        prototype='PyAPI_FUNC(char *) PyString_AsString(PyObject *);',
+                        defined_in='Objects/stringobject.c',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_AsString')
         #
         # With PyStringObject and their subclasses, it returns
         #    ((PyStringObject *)op) -> ob_sval
@@ -1819,12 +1844,12 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
-        # Declared in stringobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)
-        #                             Py_GCC_ATTRIBUTE((format(printf, 1, 2)));
-        # Returns a new reference
-        #   http://docs.python.org/c-api/string.html#PyString_FromFormat
-        #
+        fnmeta = FnMeta(name='PyString_FromFormat',
+                        declared_in='stringobject.h',
+                        prototype=('PyAPI_FUNC(PyObject *) PyString_FromFormat(const char*, ...)\n'
+                                   '    Py_GCC_ATTRIBUTE((format(printf, 1, 2)));'),
+                        notes='Returns a new reference',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_FromFormat')
         # (We do not yet check that the format string matches the types of the
         # varargs)
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
@@ -1833,12 +1858,10 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyString_FromString(self, stmt, v_str):
-        # Declared in stringobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyString_FromString(const char *);
-        #
-        #   http://docs.python.org/c-api/string.html#PyString_FromString
-        #
-
+        fnmeta = FnMeta(name='PyString_FromString',
+                        declared_in='stringobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyString_FromString(const char *);',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_FromString')
         # The input _must_ be non-NULL; it is not checked:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_str)
 
@@ -1848,12 +1871,11 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyString_FromStringAndSize(self, stmt, v_str, v_size):
-        # Declared in stringobject.h as:
-        #   PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);
-        #
-        # http://docs.python.org/c-api/string.html#PyString_FromStringAndSize
-        #
-        # Defined in Objects/stringobject.c:
+        fnmeta = FnMeta(name='PyString_FromStringAndSize',
+                        declared_in='stringobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyString_FromStringAndSize(const char *, Py_ssize_t);',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_FromStringAndSize',
+                        defined_in='Objects/stringobject.c')
         #   # PyObject *
         #   PyString_FromStringAndSize(const char *str, Py_ssize_t size)
 
@@ -1869,17 +1891,17 @@ class CPython(Facet):
     # PyStructSequence_*
     ########################################################################
     def impl_PyStructSequence_InitType(self, stmt, v_type, v_desc):
-        # void PyStructSequence_InitType(PyTypeObject *type, PyStructSequence_Desc *desc)
-        #
-        # Implemented in Objects/structseq.c
+        fnmeta = FnMeta(name='PyStructSequence_InitType',
+                        prototype='void PyStructSequence_InitType(PyTypeObject *type, PyStructSequence_Desc *desc)',
+                        defined_in='Objects/structseq.c')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyStructSequence_InitType')]
 
     def impl_PyStructSequence_New(self, stmt, v_typeptr):
-        # Declared in structseq.h as:
-        #   PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);
-        #
-        # Implemented in Objects/structseq.c
+        fnmeta = FnMeta(name='PyStructSequence_New',
+                        declared_in='structseq.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyStructSequence_New(PyTypeObject* type);',
+                        defined_in='Objects/structseq.c')
 
         # From our perspective, this is very similar to _PyObject_New
         check_isinstance(stmt, gcc.GimpleCall)
@@ -1904,11 +1926,11 @@ class CPython(Facet):
     # PySys_*
     ########################################################################
     def impl_PySys_SetObject(self, stmt, v_name, v_value):
-        # Declated in sysmodule.h
-        # Defined in Python/sysmodule.c:
-        #   int PySys_SetObject(char *name, PyObject *v)
-        # Docs:
-        #   http://docs.python.org/c-api/sys.html#PySys_SetObject
+        fnmeta = FnMeta(name='PySys_SetObject',
+                        declared_in='sysmodule.h',
+                        defined_in='Python/sysmodule.c',
+                        prototype='int PySys_SetObject(char *name, PyObject *v)',
+                        docurl='http://docs.python.org/c-api/sys.html#PySys_SetObject')
         #
         # can be called with NULL or non-NULL, calls PyDict_SetItemString
         # on non-NULL, which adds a ref on it
@@ -1929,7 +1951,8 @@ class CPython(Facet):
     # PyTuple_*
     ########################################################################
     def impl_PyTuple_New(self, stmt, v_len):
-        # http://docs.python.org/c-api/tuple.html#PyTuple_New
+        fnmeta = FnMeta(name='PyTuple_New',
+                        docurl='http://docs.python.org/c-api/tuple.html#PyTuple_New')
 
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyTupleObject',
@@ -1940,8 +1963,9 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     def impl_PyTuple_SetItem(self, stmt, v_op, v_i, v_newitem):
-        # http://docs.python.org/c-api/tuple.html#PyTuple_SetItem
-        # Implemented in Objects/tupleobject.c
+        fnmeta = FnMeta(name='PyTuple_SetItem',
+                        docurl='http://docs.python.org/c-api/tuple.html#PyTuple_SetItem',
+                        defined_in='Objects/tupleobject.c')
         fnname = 'PyTuple_SetItem'
         returntype = stmt.fn.type.dereference.type
 
@@ -2016,8 +2040,9 @@ class CPython(Facet):
 
 
     def impl_PyTuple_Size(self, stmt, v_op):
-        # http://docs.python.org/c-api/tuple.html#PyTuple_Size
-        # Implemented in Objects/tupleobject.c
+        fnmeta = FnMeta(name='PyTuple_Size',
+                        docurl='http://docs.python.org/c-api/tuple.html#PyTuple_Size',
+                        defined_in='Objects/tupleobject.c')
         fnname = 'PyTuple_Size'
         returntype = stmt.fn.type.dereference.type
 
@@ -2052,14 +2077,16 @@ class CPython(Facet):
     # PyType_*
     ########################################################################
     def impl_PyType_IsSubtype(self, stmt, v_a, v_b):
-        # http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype
+        fnmeta = FnMeta(name='PyType_IsSubtype',
+                        docurl='http://docs.python.org/dev/c-api/type.html#PyType_IsSubtype')
         returntype = stmt.fn.type.dereference.type
         return [self.state.mktrans_assignment(stmt.lhs,
                                         UnknownValue.make(returntype, stmt.loc),
                                         None)]
 
     def impl_PyType_Ready(self, stmt, v_type):
-        #  http://docs.python.org/dev/c-api/type.html#PyType_Ready
+        fnmeta = FnMeta(name='PyType_Ready',
+                        docurl='http://docs.python.org/dev/c-api/type.html#PyType_Ready')
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
 
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
