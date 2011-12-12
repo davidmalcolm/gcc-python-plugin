@@ -983,15 +983,14 @@ class CPython(Facet):
                         defined_in='Objects/dictobject.c',
                         docurl='http://docs.python.org/c-api/dict.html#PyDict_SetItem',
                         notes='Can return -1, setting MemoryError.  Otherwise returns 0, and adds a ref on the value')
-        fnname = 'PyDict_SetItem'
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_dp,
-                          why=invokes_Py_TYPE_via_macro(fnname,
+                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                         'PyDict_Check'))
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key,
-                          why=invokes_Py_TYPE_via_macro(fnname,
+                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                         'PyString_CheckExact'))
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item,
-                          why=invokes_Py_INCREF(fnname))
+                          why=invokes_Py_INCREF(fnmeta.name))
 
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         # the dictionary now owns a new ref on "item".  We won't model the
@@ -1371,10 +1370,9 @@ class CPython(Facet):
         fnmeta = FnMeta(name='PyList_SetItem',
                         prototype='int PyList_SetItem(PyObject *list, Py_ssize_t index, PyObject *item)',
                         docurl='http://docs.python.org/c-api/list.html#PyList_SetItem',)
-        fnname = stmt.fn.operand.name
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
-                       why=invokes_Py_TYPE_via_macro(fnname,
+                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                      'PyList_Check'))
 
         # However, it appears to be robust in the face of NULL "item" pointers
@@ -1386,14 +1384,14 @@ class CPython(Facet):
             not_a_list = self.state.mkstate_concrete_return_of(stmt, -1)
             result.append(Transition(self.state,
                            not_a_list,
-                           '%s() fails (not a list)' % fnname))
+                           '%s() fails (not a list)' % fnmeta.name))
 
         # Index out of range?
         if 0: # FIXME: check
             out_of_range = self.state.mkstate_concrete_return_of(stmt, -1)
             result.append(Transition(self.state,
                            out_of_range,
-                           '%s() fails (index out of range)' % fnname))
+                           '%s() fails (index out of range)' % fnmeta.name))
 
         if 1:
             s_success  = self.state.mkstate_concrete_return_of(stmt, 0)
@@ -1407,7 +1405,7 @@ class CPython(Facet):
             # reference to an item already in the list at the affected position.
             result.append(Transition(self.state,
                                      s_success,
-                                     '%s() succeeds' % fnname))
+                                     '%s() succeeds' % fnmeta.name))
 
         return result
 
@@ -1455,7 +1453,6 @@ class CPython(Facet):
     def impl_PyMem_Free(self, stmt, v_ptr):
         fnmeta = FnMeta(name='PyMem_Free',
                         docurl='http://docs.python.org/c-api/memory.html#PyMem_Free')
-        fnname = 'PyMem_Free'
 
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
 
@@ -1495,17 +1492,17 @@ class CPython(Facet):
     def impl_PyMem_Malloc(self, stmt, v_size):
         fnmeta = FnMeta(name='PyMem_Malloc',
                         docurl='http://docs.python.org/c-api/memory.html#PyMem_Malloc')
-        fnname = 'PyMem_Malloc'
+
         returntype = stmt.fn.type.dereference.type
         r_nonnull = self.state.make_heap_region('PyMem_Malloc', stmt)
         v_nonnull = PointerToRegion(returntype, stmt.loc, r_nonnull)
         # FIXME: it hasn't been initialized
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_nonnull,
-                                            'when %s() succeeds' % fnname)
+                                            'when %s() succeeds' % fnmeta.name)
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
-                                            'when %s() fails' % fnname)
+                                            'when %s() fails' % fnmeta.name)
         return [t_success, t_failure]
 
     ########################################################################
@@ -1557,7 +1554,7 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/module.html#PyModule_GetDict',
                         prototype='PyObject* PyModule_GetDict(PyObject *module)',
                         notes='Returns a borrowed reference.  Always succeeds')
-        fnname = stmt.fn.operand.name
+
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         return [Transition(self.state, s_success, None)]
 
@@ -1619,17 +1616,15 @@ class CPython(Facet):
                         prototype='int PyObject_AsFileDescriptor(PyObject *o)',
                         defined_in='Objects/fileobject.c')
 
-        fnname = stmt.fn.operand.name
-
         # Uses PyInt_Check(o) macro, which will segfault on NULL
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
-                   why=invokes_Py_TYPE_via_macro(fnname,
+                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                  'PyInt_Check'))
 
         # For now, don't try to implement the internal logic:
         t_return = self.state.mktrans_assignment(stmt.lhs,
                                        UnknownValue.make(stmt.lhs.type, stmt.loc),
-                                       'when %s() returns' % fnname)
+                                       'when %s() returns' % fnmeta.name)
         return [t_return]
 
     def impl_PyObject_Call(self, stmt, v_o, v_args, v_kw):
@@ -1669,8 +1664,6 @@ class CPython(Facet):
         fnmeta = FnMeta(name='PyObject_HasAttrString',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_HasAttrString')
 
-        fnname = stmt.fn.operand.name
-
         # the object must be non-NULL: it is unconditionally
         # dereferenced to get the ob_type:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
@@ -1685,8 +1678,8 @@ class CPython(Facet):
         s_true = self.state.mkstate_concrete_return_of(stmt, 1)
         s_false = self.state.mkstate_concrete_return_of(stmt, 0)
 
-        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnname),
-                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnname)]
+        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnmeta.name),
+                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnmeta.name)]
 
     def impl_PyObject_IsTrue(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_IsTrue',
@@ -1696,10 +1689,9 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
 
-        fnname = stmt.fn.operand.name
-        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnname),
-                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnname),
-                Transition(self.state, s_failure, 'when %s() returns -1 (failure)' % fnname)]
+        return [Transition(self.state, s_true, 'when %s() returns 1 (true)' % fnmeta.name),
+                Transition(self.state, s_false, 'when %s() returns 0 (false)' % fnmeta.name),
+                Transition(self.state, s_failure, 'when %s() returns -1 (failure)' % fnmeta.name)]
 
     def impl__PyObject_New(self, stmt, v_typeptr):
         fnmeta = FnMeta(name='_PyObject_New',
@@ -1792,9 +1784,9 @@ class CPython(Facet):
         # When it succeeds, it returns a new reference; see e.g.
         # Objects/listobject.c: list_item (the sq_item callback for
         # PyList_Type): it Py_INCREFs the returned item.
-        fnname = 'PySequence_GetItem'
+
         return self.make_transitions_for_new_ref_or_fail(stmt,
-                                                         'new ref from %s' % fnname)
+                                                         'new ref from %s' % fnmeta.name)
 
     ########################################################################
     # PyString_*
@@ -1810,12 +1802,10 @@ class CPython(Facet):
         #    ((PyStringObject *)op) -> ob_sval
         # With other classes, this call can fail
 
-        fnname = 'PyString_AsString'
-
         # It will segfault if called with NULL, since it uses PyString_Check,
         # which reads through the object's ob_type:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                     why=invokes_Py_TYPE_via_macro(fnname,
+                     why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                    'PyString_Check'))
 
         returntype = stmt.fn.type.dereference.type
@@ -1934,16 +1924,16 @@ class CPython(Facet):
         #
         # can be called with NULL or non-NULL, calls PyDict_SetItemString
         # on non-NULL, which adds a ref on it
-        fnname = 'PySys_SetObject'
+
         returntype = stmt.fn.type.dereference.type
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, 0),
-                                            'when %s() succeeds' % fnname)
+                                            'when %s() succeeds' % fnmeta.name)
         if isinstance(v_value, PointerToRegion):
             t_success.dest.cpython.add_external_ref(v_value, stmt.loc)
         t_failure = self.state.mktrans_assignment(stmt.lhs,
                                             ConcreteValue(returntype, stmt.loc, -1),
-                                            'when %s() fails' % fnname)
+                                            'when %s() fails' % fnmeta.name)
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
 
@@ -1966,13 +1956,13 @@ class CPython(Facet):
         fnmeta = FnMeta(name='PyTuple_SetItem',
                         docurl='http://docs.python.org/c-api/tuple.html#PyTuple_SetItem',
                         defined_in='Objects/tupleobject.c')
-        fnname = 'PyTuple_SetItem'
+
         returntype = stmt.fn.type.dereference.type
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                   why=invokes_Py_TYPE_via_macro(fnname,
+                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                  'PyTuple_Check'))
 
         # i is range checked
@@ -2043,13 +2033,13 @@ class CPython(Facet):
         fnmeta = FnMeta(name='PyTuple_Size',
                         docurl='http://docs.python.org/c-api/tuple.html#PyTuple_Size',
                         defined_in='Objects/tupleobject.c')
-        fnname = 'PyTuple_Size'
+
         returntype = stmt.fn.type.dereference.type
 
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                   why=invokes_Py_TYPE_via_macro(fnname,
+                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
                                                  'PyTuple_Check'))
 
         # FIXME: cast:
@@ -2070,7 +2060,7 @@ class CPython(Facet):
         s_failure.cpython.set_exception('PyExc_SystemError', stmt.loc)
         t_failure = Transition(self.state,
                                s_failure,
-                               'when %s() fails (not a tuple)' % fnname)
+                               'when %s() fails (not a tuple)' % fnmeta.name)
         return [t_success, t_failure]
 
     ########################################################################
