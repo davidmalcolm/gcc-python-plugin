@@ -8,9 +8,9 @@ Trace 0:
     'taking False path'
     'when PyLong_FromLong() succeeds'
     'taking False path'
-    'when PyTuple_SetItem succeeds'
-    'when PyTuple_SetItem succeeds'
-    'when PyTuple_SetItem succeeds'
+    'when PyTuple_SetItem() succeeds'
+    'when PyTuple_SetItem() succeeds'
+    'when PyTuple_SetItem() succeeds'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=33), region=RegionOnHeap('PyTupleObject', gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=33)))
