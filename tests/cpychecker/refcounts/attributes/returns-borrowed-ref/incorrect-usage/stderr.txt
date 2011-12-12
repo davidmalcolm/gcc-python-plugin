@@ -3,7 +3,7 @@ tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: due to object being referenced by: return value
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: but final ob_refcnt is N + 0
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: borrowed ref from foo() allocated at:     PyObject *obj = foo();
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: borrowed reference returned by foo() allocated at:     PyObject *obj = foo();
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: when foo() succeeds at:     PyObject *obj = foo();
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: ob_refcnt is now refs: 0 + N where N >= 1
 tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: returning at:     return obj;

@@ -11,11 +11,11 @@ Trace 0:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -37,11 +37,11 @@ Trace 1:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -63,11 +63,11 @@ Trace 2:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -89,11 +89,11 @@ Trace 3:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -115,11 +115,11 @@ Trace 4:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -141,11 +141,11 @@ Trace 5:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -167,11 +167,11 @@ Trace 6:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -193,11 +193,11 @@ Trace 7:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -219,11 +219,11 @@ Trace 8:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -245,11 +245,11 @@ Trace 9:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -271,11 +271,11 @@ Trace 10:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -297,11 +297,11 @@ Trace 11:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -323,11 +323,11 @@ Trace 12:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -349,11 +349,11 @@ Trace 13:
     'when PyModule_AddIntConstant() succeeds'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -375,11 +375,11 @@ Trace 14:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() succeeds'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -401,11 +401,11 @@ Trace 15:
     'when PyModule_AddIntConstant() fails'
     'when PyModule_AddStringConstant() fails'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -424,11 +424,11 @@ Trace 16:
     'taking True path'
     'when taking True path'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -448,11 +448,11 @@ Trace 17:
     'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=58))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/module_handling/input.c:58
@@ -468,11 +468,11 @@ Trace 18:
     'when PyDict_New() fails'
     'taking True path'
     'returning'
-  output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
-    repr(): RegionOnHeap('output from Py_InitModule4', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
-    str(): output from Py_InitModule4 allocated at tests/cpychecker/refcounts/module_handling/input.c:50
+  borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50:
+    repr(): RegionOnHeap('borrowed reference returned by Py_InitModule4_64()', gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50))
+    str(): borrowed reference returned by Py_InitModule4_64() allocated at tests/cpychecker/refcounts/module_handling/input.c:50
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for output from Py_InitModule4'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/module_handling/input.c', line=50), region=Region('PyTypeObject for borrowed reference returned by Py_InitModule4_64()'))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/module_handling/input.c:58
 

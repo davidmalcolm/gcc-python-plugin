@@ -3,10 +3,10 @@ Trace 0:
     'when foo() succeeds'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45), region=RegionOnHeap('borrowed ref from foo()', gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45)))
-    str(): (struct PyObject *)&RegionOnHeap('borrowed ref from foo()', gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45)) from tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45), region=RegionOnHeap('borrowed reference returned by foo()', gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45)))
+    str(): (struct PyObject *)&RegionOnHeap('borrowed reference returned by foo()', gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45)) from tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45), region=Region('PyTypeObject for borrowed ref from foo()'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c', line=45), region=Region('PyTypeObject for borrowed reference returned by foo()'))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

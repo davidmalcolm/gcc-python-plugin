@@ -1887,9 +1887,11 @@ class State(object):
                 if fnname in fnnames_returning_borrowed_refs:
                     # The function being called was marked as returning a
                     # borrowed ref, rather than a new ref:
+                    from libcpychecker.refcounts import FnMeta
+                    fnmeta = FnMeta(name=fnname)
                     return self.apply_fncall_side_effects(
                         self.cpython.make_transitions_for_borrowed_ref_or_fail(stmt,
-                                                                               'borrowed ref from %s()' % fnname),
+                                                                               fnmeta),
                         stmt)
                 return self.apply_fncall_side_effects(
                     self.cpython.make_transitions_for_new_ref_or_fail(stmt,

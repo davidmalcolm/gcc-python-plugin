@@ -3,10 +3,10 @@ Trace 0:
     'when PyDict_GetItem() succeeds'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), region=RegionOnHeap('result from PyDict_GetItem', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35)))
-    str(): (struct PyObject *)&RegionOnHeap('result from PyDict_GetItem', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35)) from tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), region=RegionOnHeap('borrowed reference returned by PyDict_GetItem()', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35)))
+    str(): (struct PyObject *)&RegionOnHeap('borrowed reference returned by PyDict_GetItem()', gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35)) from tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35
     r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), region=Region('PyTypeObject for result from PyDict_GetItem'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c', line=35), region=Region('PyTypeObject for borrowed reference returned by PyDict_GetItem()'))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

@@ -3,7 +3,7 @@ tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: error: ob_refc
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: due to object being referenced by: return value
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: but final ob_refcnt is N + 0
-tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: result from PyDict_GetItem allocated at:     return PyDict_GetItem(some_dict, args);
+tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: borrowed reference returned by PyDict_GetItem() allocated at:     return PyDict_GetItem(some_dict, args);
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: when PyDict_GetItem() succeeds at:     return PyDict_GetItem(some_dict, args);
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: ob_refcnt is now refs: 0 + N where N >= 1
 tests/cpychecker/refcounts/PyDict_GetItem/incorrect/input.c:35:5: note: returning at:     return PyDict_GetItem(some_dict, args);

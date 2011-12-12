@@ -231,6 +231,25 @@ def invokes_Py_INCREF(fnname):
 
 ########################################################################
 
+class FnMeta(object):
+    """
+    Metadata describing an API function
+    """
+    __slots__ = ('name', # the name of the function
+                 'docurl', # URL of the API documentation, on docs.python.org
+                 'declared_in', # name of the header file in which this is declared
+                 'prototype', # fragment of C giving the prototype (for documentation purposes)
+                 'defined_in', # where is this function defined (in CPython)
+                 'notes', # fragment of text, giving notes on the function
+                 )
+    def __init__(self, **kwargs):
+        for key in self.__slots__:
+            setattr(self, key, None)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+########################################################################
+
 class CPython(Facet):
     __slots__ = ('exception_rvalue', )
 
@@ -477,12 +496,14 @@ class CPython(Facet):
         # FIXME
         return newstate, r_nonnull
 
-    def mkstate_borrowed_ref(self, stmt, name, r_typeobj=None):
+    def mkstate_borrowed_ref(self, stmt, fnmeta, r_typeobj=None):
         """Make a new State, giving a borrowed ref to some object"""
+        check_isinstance(fnmeta, FnMeta)
         newstate = self.state.copy()
         newstate.loc = self.state.loc.next_loc()
 
-        r_nonnull = newstate.cpython.make_sane_object(stmt, name,
+        r_nonnull = newstate.cpython.make_sane_object(stmt,
+                                              'borrowed reference returned by %s()' % fnmeta.name,
                                               RefcountValue.borrowed_ref(),
                                               r_typeobj)
         if stmt.lhs:
@@ -521,7 +542,7 @@ class CPython(Facet):
         s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
-    def make_transitions_for_borrowed_ref_or_fail(self, stmt, objname=None):
+    def make_transitions_for_borrowed_ref_or_fail(self, stmt, fnmeta):
         """
         Generate the appropriate list of 2 transitions for a call to a
         function that either:
@@ -530,10 +551,8 @@ class CPython(Facet):
         Optionally, a name for the new object can be supplied; otherwise
         a sane default will be used.
         """
-        if objname is None:
-            fnname = stmt.fn.operand.name
-            objname = 'borrowed ref from call to %s' % fnname
-        s_success = self.mkstate_borrowed_ref(stmt, objname)
+        check_isinstance(fnmeta, FnMeta)
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -910,13 +929,15 @@ class CPython(Facet):
     # PyDict_*
     ########################################################################
     def impl_PyDict_GetItem(self, stmt, v_mp, v_key):
-        # Declared in dictobject.h:
-        #   PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *mp, PyObject *key);
-        # Defined in dictobject.c
-        #
-        # Returns a borrowed ref, or NULL if not found.  It does _not_ set
-        # an exception (for historical reasons)
-        s_success = self.mkstate_borrowed_ref(stmt, 'result from PyDict_GetItem')
+        fnmeta = FnMeta(name='PyDict_GetItem',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_GetItem',
+                        declared_in='dictobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *mp, PyObject *key);',
+                        defined_in='Objects/dictobject.c',
+                        notes=('Returns a borrowed reference, or NULL if not'
+                               ' found.  It does *not* set an exception (for'
+                               ' historical reasons)'''))
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
                                              'when PyDict_GetItem does not find item')
@@ -925,13 +946,13 @@ class CPython(Facet):
                 t_notfound]
 
     def impl_PyDict_GetItemString(self, stmt, v_dp, v_key):
-        # Declared in dictobject.h:
-        #   PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);
-        # Defined in dictobject.c
-        #
-        # Returns a borrowed ref, or NULL if not found (can also return NULL
-        # and set MemoryError)
-        s_success = self.mkstate_borrowed_ref(stmt, 'PyDict_GetItemString')
+        fnmeta = FnMeta(name='PyDict_GetItemString',
+                        declared_in='dictobject.h',
+                        prototype='PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);',
+                        defined_in='Objects/dictobject.c',
+                        notes=('Returns a borrowed ref, or NULL if not found'
+                               ' (can also return NULL and set MemoryError)'))
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
                                              'PyDict_GetItemString does not find string')
@@ -1202,19 +1223,18 @@ class CPython(Facet):
     ########################################################################
     def impl_Py_InitModule4_64(self, stmt, v_name, v_methods,
                                v_doc, v_self, v_apiver):
-        # Decl:
-        #   PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,
-        #                                         const char *doc, PyObject *self,
-        #                                         int apiver);
-        #  Returns a borrowed reference
-        #
+        fnmeta = FnMeta(name='Py_InitModule4_64',
+                        prototype=('PyAPI_FUNC(PyObject *) Py_InitModule4(const char *name, PyMethodDef *methods,\n'
+                                   '                                      const char *doc, PyObject *self,\n'
+                                   '                                      int apiver);'),
+                        notes=('Returns a borrowed reference'))
         # FIXME:
         #  On 64-bit:
         #    #define Py_InitModule4 Py_InitModule4_64
         #  with tracerefs:
         #    #define Py_InitModule4 Py_InitModule4TraceRefs_64
         #    #define Py_InitModule4 Py_InitModule4TraceRefs
-        s_success = self.mkstate_borrowed_ref(stmt, 'output from Py_InitModule4')
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         s_failure = self.mkstate_exception(stmt)
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
@@ -1517,11 +1537,12 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyModule_GetDict(self, stmt, v_module):
-        # http://docs.python.org/c-api/module.html#PyModule_GetDict
-        #   PyObject* PyModule_GetDict(PyObject *module)
-        # returns borrowed ref.  Always succeeds
+        fnmeta = FnMeta(name='PyModule_GetDict',
+                        docurl='http://docs.python.org/c-api/module.html#PyModule_GetDict',
+                        prototype='PyObject* PyModule_GetDict(PyObject *module)',
+                        notes='Returns a borrowed reference.  Always succeeds')
         fnname = stmt.fn.operand.name
-        s_success = self.mkstate_borrowed_ref(stmt, 'module __dict__ from %s' % fnname)
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         return [Transition(self.state, s_success, None)]
 
     ########################################################################
