@@ -1368,6 +1368,23 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    def impl_PyList_GetItem(self, stmt, v_list, v_index):
+        fnmeta = FnMeta(name='PyList_GetItem',
+                        docurl='http://docs.python.org/c-api/list.html#PyList_GetItem',
+                        prototype='PyObject* PyList_GetItem(PyObject *list, Py_ssize_t index)',
+                        defined_in='Objects/listobject.c',
+                        notes='Returns a borrowed reference, or raises an IndexError')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
+                                               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                                             'PyList_Check'))
+
+        # FIXME: for now, simply return a borrowed ref, rather than
+        # trying to track indices and the array:
+        s_success = self.mkstate_borrowed_ref(stmt,
+                                              'item from PyList_GetItem()')
+        return [Transition(self.state, s_success, None)]
+
     def impl_PyList_New(self, stmt, v_len):
         fnmeta = FnMeta(name='PyList_New',
                         prototype='PyObject* PyList_New(Py_ssize_t len)',
