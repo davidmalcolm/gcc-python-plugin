@@ -1369,10 +1369,9 @@ class CPython(Facet):
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
     def impl_PyList_New(self, stmt, v_len):
-        fnmeta = FnMeta(name='PyList_New')
-        # Decl:
-        #   PyObject* PyList_New(Py_ssize_t len)
-        # Returns a new reference, or raises MemoryError
+        fnmeta = FnMeta(name='PyList_New',
+                        prototype='PyObject* PyList_New(Py_ssize_t len)',
+                        notes='Returns a new reference, or raises MemoryError')
 
         check_isinstance(v_len, AbstractValue)
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
