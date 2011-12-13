@@ -244,6 +244,9 @@ class UnknownValue(AbstractValue):
         return UnknownValue.make(gcctype, loc)
 
     def is_equal(self, rhs):
+        # If it's the *same* value, it's equal to itself:
+        if self is rhs:
+            return True
         return None
 
     def impl_is_lt(self, rhs):
@@ -529,6 +532,11 @@ class WithinRange(AbstractValue):
 
     def is_equal(self, rhs):
         log('is_equal(%s, %s)', self, rhs)
+
+        # If it's the *same* value, it's equal to itself:
+        if self is rhs:
+            return True
+
         if isinstance(rhs, WithinRange):
             # They can only be equal if there's an overlap:
             if self.contains(rhs.minvalue) or self.contains(rhs.maxvalue):
@@ -1553,8 +1561,14 @@ class State(object):
                     return value
 
     def get_value_of_field_by_region(self, region, field):
-        # Lookup region->field
-        # For use in writing selftests
+        """
+        Lookup region->field, getting its AbstractValue, if any, or None
+
+        For use in writing selftests and diagnostics, as it has no
+        side-effects.
+
+        You may want to use read_field_by_name() instead
+        """
         log('get_value_of_field_by_region(%r, %r)', region, field)
         check_isinstance(region, Region)
         check_isinstance(field, str)
@@ -1562,6 +1576,30 @@ class State(object):
             field_region = region.fields[field]
             return self.value_for_region.get(field_region, None)
         return None
+
+    def read_field_by_name(self, stmt, region, fieldname):
+        """
+        Lookup region->field, getting its AbstractValue.
+
+        If the field doesn't have a value yet, if will be set to a new
+        UnknownValue so that subsequent reads of the field receive the
+        *same* unknown value
+        """
+        log('read_field_by_name(%r, %r)', region, fieldname)
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(region, Region)
+        check_isinstance(fieldname, str)
+
+        v_field = self.get_value_of_field_by_region(region,
+                                                    fieldname)
+        if v_field is None:
+            v_field = UnknownValue.make(stmt.lhs.type, stmt.loc)
+            r_field = self.make_field_region(region,
+                                             fieldname)
+            self.value_for_region[r_field] = v_field
+
+        return v_field
+
 
     def init_for_function(self, fun):
         log('State.init_for_function(%r)', fun)

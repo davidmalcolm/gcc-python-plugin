@@ -1440,6 +1440,24 @@ class CPython(Facet):
 
         return result
 
+    def impl_PyList_Size(self, stmt, v_list):
+        fnmeta = FnMeta(name='PyList_Size',
+                        docurl='http://docs.python.org/c-api/list.html#PyList_Size',
+                        prototype='Py_ssize_t PyList_Size(PyObject *list)',
+                        defined_in='Objects/listobject.c')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
+                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                     'PyList_Check'))
+
+        v_ob_size = self.state.read_field_by_name(stmt,
+                                                  v_list.region, 'ob_size')
+
+        t_return = self.state.mktrans_assignment(stmt.lhs,
+                                       v_ob_size,
+                                       fnmeta.desc_when_call_returns_value('ob_size'))
+        return [t_return]
+
     ########################################################################
     # PyLong_*
     ########################################################################

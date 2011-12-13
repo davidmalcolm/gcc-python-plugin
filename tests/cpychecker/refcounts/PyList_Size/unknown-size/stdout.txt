@@ -1,0 +1,16 @@
+Trace 0:
+  Transitions:
+    'when PyList_Size() returns ob_size'
+    'when PyList_Size() returns ob_size'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/unknown-size/input.c', line=34), value=42)
+    str(): (Py_ssize_t)42 from tests/cpychecker/refcounts/PyList_Size/unknown-size/input.c:34
+  Region("region-for-arg-gcc.ParmDecl('list')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('list')")
+    str(): Region("region-for-arg-gcc.ParmDecl('list')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/unknown-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('list')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Size/unknown-size/input.c:28
