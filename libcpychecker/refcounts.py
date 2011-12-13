@@ -1292,8 +1292,9 @@ class CPython(Facet):
         if self.object_ptr_has_global_ob_type(v_op, 'PyInt_Type'):
             # We know it's a PyIntObject; the call will succeed:
             # FIXME: cast:
-            v_ob_ival = self.state.get_value_of_field_by_region(v_op.region,
-                                                          'ob_ival')
+            v_ob_ival = self.state.read_field_by_name(stmt,
+                                                      v_op.region,
+                                                      'ob_ival')
             t_success = self.state.mktrans_assignment(stmt.lhs,
                                                 v_ob_ival,
                                                 'PyInt_AsLong() returns ob_ival')
@@ -2052,8 +2053,9 @@ class CPython(Facet):
             return result
 
         # Range check:
-        v_ob_size = self.state.get_value_of_field_by_region(v_op.region,
-                                                            'ob_size')
+        v_ob_size = self.state.read_field_by_name(stmt,
+                                                  v_op.region,
+                                                  'ob_size')
 
         lt_zero = v_i.is_lt(ConcreteValue.from_int(0))
         lt_size = v_i.is_lt(v_ob_size)
