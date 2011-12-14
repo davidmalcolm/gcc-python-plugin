@@ -1,0 +1,49 @@
+Trace 0:
+  Transitions:
+    'when PyObject_GenericSetAttr() succeeds'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=29), value=0)
+    str(): (int)0 from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('o')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('o')")
+    str(): Region("region-for-arg-gcc.ParmDecl('o')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
+  Region("region-for-arg-gcc.ParmDecl('name')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('name')")
+    str(): Region("region-for-arg-gcc.ParmDecl('name')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
+  Region("region-for-arg-gcc.ParmDecl('value')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('value')")
+    str(): Region("region-for-arg-gcc.ParmDecl('value')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('value')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:28
+
+Trace 1:
+  Transitions:
+    'when PyObject_GenericSetAttr() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=29), value=-1)
+    str(): (int)-1 from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('o')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('o')")
+    str(): Region("region-for-arg-gcc.ParmDecl('o')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
+  Region("region-for-arg-gcc.ParmDecl('name')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('name')")
+    str(): Region("region-for-arg-gcc.ParmDecl('name')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
+  Region("region-for-arg-gcc.ParmDecl('value')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('value')")
+    str(): Region("region-for-arg-gcc.ParmDecl('value')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('value')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_AttributeError')) from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:29

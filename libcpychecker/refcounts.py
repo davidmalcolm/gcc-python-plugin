@@ -217,6 +217,10 @@ class GenericTpDealloc(AbstractValue):
 # Helper functions to generate meaningful explanations of why a NULL
 # argument is a bug:
 ########################################################################
+def invokes_Py_TYPE(fnmeta):
+    return ('%s() invokes Py_TYPE() on the pointer, thus accessing'
+            ' (NULL)->ob_type' % fnmeta.name)
+
 def invokes_Py_TYPE_via_macro(fnname, macro):
     """
     Generate a descriptive message for cases of raise_any_null_ptr_func_arg()
@@ -1834,6 +1838,56 @@ class CPython(Facet):
         #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
         return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
                                                 args, with_size_t=True)
+
+    def impl_PyObject_GenericGetAttr(self, stmt, v_o, v_name):
+        fnmeta = FnMeta(name='PyObject_GenericGetAttr',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_GenericGetAttr',
+                        prototype='PyObject* PyObject_GenericGetAttr(PyObject *o, PyObject *name)',
+                        defined_in='Objects/object.c')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
+               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                             'PyString_Check'))
+
+        # The "success" case:
+        s_success, nonnull = self.mkstate_new_ref(stmt, 'new ref from %s()' % fnmeta.name)
+        t_success = Transition(self.state,
+                               s_success,
+                               fnmeta.desc_when_call_succeeds())
+        # The "failure" case:
+        returntype = stmt.fn.type.dereference.type
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                       ConcreteValue(returntype, stmt.loc, 0),
+                                                  fnmeta.desc_when_call_fails())
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+
+        return [t_success, t_failure]
+
+    def impl_PyObject_GenericSetAttr(self, stmt, v_o, v_name, v_value):
+        fnmeta = FnMeta(name='PyObject_GenericSetAttr',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_GenericSetAttr',
+                        prototype='PyObject_GenericSetAttr(PyObject *o, PyObject *name, PyObject *value)',
+                        defined_in='Objects/object.c')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
+               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                             'PyString_Check'))
+        # (it appears that value can legitimately be NULL)
+
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_AttributeError', stmt.loc)
+
+        return [Transition(self.state,
+                           s_success,
+                           fnmeta.desc_when_call_succeeds()),
+                Transition(self.state,
+                           s_failure,
+                           fnmeta.desc_when_call_fails())]
 
     def impl_PyObject_HasAttrString(self, stmt, v_o, v_attr_name):
         fnmeta = FnMeta(name='PyObject_HasAttrString',
