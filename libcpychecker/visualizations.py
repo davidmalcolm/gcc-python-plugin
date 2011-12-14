@@ -234,6 +234,10 @@ pre {
 .transition {
     #border: 0.1em dotted #ddffdd;
     #padding: 1em;
+    border: 0.1em solid #ccc;
+    -moz-box-shadow: 2px 2px 2px #ccc;
+    -webkit-box-shadow: 2px 2px 2px #ccc;
+    box-shadow: 2px 2px 2px #ccc;
     margin-left: 5em;
     font-family: proportional;
     font-style: italic;
@@ -243,6 +247,10 @@ pre {
 .error {
     #border: 0.1em dotted #ddffdd;
     #padding: 1em;
+    border: 0.1em solid #cc0000;
+    -moz-box-shadow: 2px 2px 2px #cc0000;
+    -webkit-box-shadow: 2px 2px 2px #cc0000;
+    box-shadow: 2px 2px 2px #cc0000;
     margin-left: 5em;
     color: red;
     font-family: proportional;
@@ -254,6 +262,10 @@ pre {
 .note {
     #border: 0.1em dotted #ddffdd;
     #padding: 1em;
+    border: 0.1em solid #ccc;
+    -moz-box-shadow: 2px 2px 2px #ccc;
+    -webkit-box-shadow: 2px 2px 2px #ccc;
+    box-shadow: 2px 2px 2px #ccc;
     margin-left: 5em;
     font-family: proportional;
     font-weight: bold;
