@@ -282,10 +282,12 @@ class FnMeta(object):
 ########################################################################
 
 class CPython(Facet):
-    __slots__ = ('exception_rvalue', )
+    __slots__ = ('exception_rvalue', 'has_gil',)
 
-    def __init__(self, state, exception_rvalue=None, fun=None):
+    def __init__(self, state, exception_rvalue=None,
+                 has_gil=True, fun=None):
         Facet.__init__(self, state)
+        check_isinstance(has_gil, bool)
         if exception_rvalue:
             check_isinstance(exception_rvalue, AbstractValue)
             self.exception_rvalue = exception_rvalue
@@ -294,10 +296,12 @@ class CPython(Facet):
             self.exception_rvalue = ConcreteValue(get_PyObjectPtr(),
                                                   fun.start,
                                                   0)
+        self.has_gil = has_gil
 
     def copy(self, newstate):
         f_new = CPython(newstate,
-                        self.exception_rvalue)
+                        self.exception_rvalue,
+                        self.has_gil)
         return f_new
 
     def init_for_function(self, fun):
@@ -1198,6 +1202,34 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/init.html#PyEval_InitThreads')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'PyEval_InitThreads')]
+
+    def impl_PyEval_RestoreThread(self, stmt, v_tstate):
+        fnmeta = FnMeta(name='PyEval_RestoreThread',
+                        docurl='http://docs.python.org/c-api/init.html#PyEval_RestoreThread',
+                        prototype='void PyEval_RestoreThread(PyThreadState *tstate)',
+                        defined_in='Python/ceval.c',
+                        notes='Reclaims the GIL')
+        t_success = self.state.mktrans_nop(stmt, fnmeta.name)
+        t_success.desc = 'reacquiring the GIL by calling %s()' % fnmeta.name
+        # Acquire the GIL:
+        t_success.dest.cpython.has_gil = True
+        return [t_success]
+
+    def impl_PyEval_SaveThread(self, stmt):
+        fnmeta = FnMeta(name='PyEval_SaveThread',
+                        docurl='http://docs.python.org/c-api/init.html#PyEval_SaveThread',
+                        prototype='PyThreadState* PyEval_SaveThread()',
+                        defined_in='Python/ceval.c',
+                        notes='Releases the GIL')
+
+        returntype = stmt.fn.type.dereference.type
+
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                                                  UnknownValue.make(returntype, stmt.loc),
+                                                  'releasing the GIL by calling %s()' % fnmeta.name)
+        # Release the GIL:
+        t_success.dest.cpython.has_gil = False
+        return [t_success]
 
     ########################################################################
     # Py_Finalize()
