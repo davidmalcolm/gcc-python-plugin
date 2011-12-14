@@ -965,8 +965,37 @@ class CPython(Facet):
         return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=True)
 
     ########################################################################
+
+    def impl_PyCallable_Check(self, stmt, v_o):
+        fnmeta = FnMeta(name='PyCallable_Check',
+                        docurl='http://docs.python.org/c-api/object.html#PyCallable_Check',
+                        defined_in='Objects/object.c', # not abstract.c
+                        notes='Always succeeds')
+        # robust against NULL
+        s_true = self.state.mkstate_concrete_return_of(stmt, 1)
+        s_false = self.state.mkstate_concrete_return_of(stmt, 0)
+
+        return [Transition(self.state, s_true,
+                           fnmeta.desc_when_call_returns_value('1 (true)')),
+                Transition(self.state, s_false,
+                           fnmeta.desc_when_call_returns_value('0 (false)'))]
+
+    ########################################################################
     # PyCObject_*
     ########################################################################
+
+    def impl_PyCObject_AsVoidPtr(self, stmt, v_self):
+        fnmeta = FnMeta(name='PyCObject_AsVoidPtr',
+                        docurl='http://docs.python.org/c-api/cobject.html#PyCObject_AsVoidPtr',
+                        declared_in='cobject.h',
+                        prototype='void * PyCObject_AsVoidPtr(PyObject *self)',
+                        defined_in='Objects/cobject.c')
+        # TODO: robust against NULL ptr, lazily setting exception
+        returntype = stmt.fn.type.dereference.type
+        t_result = self.state.mktrans_assignment(stmt.lhs,
+                                                 UnknownValue.make(returntype, stmt.loc),
+                                                 'when %s() returns' % fnmeta.name)
+        return [t_result]
 
     def mktrans_cobject_deprecation_warning(self, fnmeta, stmt):
         """
