@@ -2378,6 +2378,22 @@ class CPython(Facet):
 
         return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
 
+    ########################################################################
+    # PyUnicode_*
+    ########################################################################
+
+    def impl_PyUnicodeUCS4_AsUTF8String(self, stmt, v_unicode):
+        fnmeta = FnMeta(name='PyUnicode_AsUTF8String',
+                        docurl='http://docs.python.org/c-api/unicode.html#PyUnicode_AsUTF8String',
+                        prototype='PyObject* PyUnicode_AsUTF8String(PyObject *unicode)',
+                        defined_in='Objects/unicodeobject.c')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_unicode,
+                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                        'PyUnicode_Check'))
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyStringObject',
+                                                          'PyString_Type')
+        return [t_success, t_failure]
 
     ########################################################################
     # (end of Python API implementations)
