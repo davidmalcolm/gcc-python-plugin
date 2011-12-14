@@ -1491,7 +1491,7 @@ class CPython(Facet):
         # FIXME: for now, simply return a borrowed ref, rather than
         # trying to track indices and the array:
         s_success = self.mkstate_borrowed_ref(stmt,
-                                              'item from PyList_GetItem()')
+                                              fnmeta)
         return [Transition(self.state, s_success, None)]
 
     def impl_PyList_New(self, stmt, v_len):
