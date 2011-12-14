@@ -965,6 +965,54 @@ class CPython(Facet):
         return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=True)
 
     ########################################################################
+    # PyCObject_*
+    ########################################################################
+
+    def mktrans_cobject_deprecation_warning(self, fnmeta, stmt):
+        """
+        Generate a Transition simulating the outcome of these clauses:
+            if (cobject_deprecation_warning()) {
+                return NULL;
+            }
+        in CPython 2.7's Objects/cobject.c
+
+        This indicates that Py_Py3kWarningFlag is enabled, and that the
+        warnings have been so configured (perhaps in other code in the process)
+        as to trigger an exception, leading to a NULL return.
+
+        Plenty of legacy code doesn't expect a NULL return from these APIs,
+        alas.
+
+        Include/warnings.h has:
+         #define PyErr_WarnPy3k(msg, stacklevel) \
+            (Py_Py3kWarningFlag ? PyErr_WarnEx(PyExc_DeprecationWarning, msg, stacklevel) : 0)
+        Python/_warnings.c defines PyErr_WarnEx
+        """
+        s_deprecation = self.mkstate_exception(stmt)
+        t_deprecation = Transition(self.state,
+                                   s_deprecation,
+                                   desc=fnmeta.desc_when_call_fails(
+            why=('when py3k deprecation warnings are enabled and configured'
+                 ' to raise exceptions')))
+        return t_deprecation
+
+    def impl_PyCObject_FromVoidPtr(self, stmt, v_cobj, v_destr):
+        fnmeta = FnMeta(name='PyCObject_FromVoidPtr',
+                        docurl='http://docs.python.org/c-api/cobject.html#PyCObject_FromVoidPtr',
+                        declared_in='cobject.h',
+                        prototype='PyObject* PyCObject_FromVoidPtr(void* cobj, void (*destr)(void *))',
+                        defined_in='Objects/cobject.c',
+                        notes='Deprecated API')
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyCObject',
+                                                          'PyCObject_Type')
+        return [t_success,
+                # Prioritize the more interesting failure over regular malloc
+                # failure, so that it doesn't disapper in de-duplication:
+                self.mktrans_cobject_deprecation_warning(fnmeta, stmt),
+                t_failure]
+
+    ########################################################################
     # PyDict_*
     ########################################################################
     def impl_PyDict_GetItem(self, stmt, v_mp, v_key):
@@ -2053,6 +2101,33 @@ class CPython(Facet):
         # Set ob_size:
         r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
         t_success.dest.value_for_region[r_ob_size] = v_len
+        return [t_success, t_failure]
+
+    def impl_PyTuple_Pack(self, stmt, v_n, *v_args):
+        fnmeta = FnMeta(name='PyTuple_Pack',
+                        docurl='http://docs.python.org/c-api/tuple.html#PyTuple_Pack',
+                        defined_in='Objects/tupleobject.c')
+
+        if isinstance(v_n, ConcreteValue):
+            if v_n.value != len(v_args):
+                class WrongArgCount(PredictedError):
+                    def __str__(self):
+                        return 'mismatching argument count in call to %s' % fnmeta.name
+                raise WrongArgCount()
+
+        # All PyObject* args must be non-NULL:
+        for i, v_arg in enumerate(v_args):
+            self.state.raise_any_null_ptr_func_arg(stmt, i+1, v_arg,
+                                  why=invokes_Py_INCREF(fnmeta.name))
+
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyTupleObject',
+                                                          'PyTuple_Type')
+        # Set ob_size:
+        r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
+        t_success.dest.value_for_region[r_ob_size] = v_n
+
+        #FIXME: adds a ref on each item; sets ob_item
         return [t_success, t_failure]
 
     def impl_PyTuple_SetItem(self, stmt, v_op, v_i, v_newitem):

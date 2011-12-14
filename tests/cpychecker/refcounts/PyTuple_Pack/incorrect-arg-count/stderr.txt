@@ -1,0 +1,3 @@
+tests/cpychecker/refcounts/PyTuple_Pack/incorrect-arg-count/input.c: In function 'test':
+tests/cpychecker/refcounts/PyTuple_Pack/incorrect-arg-count/input.c:30:5: error: mismatching argument count in call to PyTuple_Pack
+tests/cpychecker/refcounts/PyTuple_Pack/incorrect-arg-count/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyTuple_Pack/incorrect-arg-count/input.c.test-refcount-errors.html'

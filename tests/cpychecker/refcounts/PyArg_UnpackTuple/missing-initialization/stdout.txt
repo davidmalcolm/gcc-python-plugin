@@ -79,10 +79,10 @@ Trace 3:
     'when PyTuple_Pack() succeeds'
     'returning'
   Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42), region=RegionOnHeap('new ref from (unknown) PyTuple_Pack', gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42)))
-    str(): (struct PyObject *)&RegionOnHeap('new ref from (unknown) PyTuple_Pack', gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42)) from tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42), region=RegionOnHeap('PyTupleObject', gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42)))
+    str(): (struct PyObject *)&RegionOnHeap('PyTupleObject', gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42)) from tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
     r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42), region=Region('PyTypeObject for new ref from (unknown) PyTuple_Pack'))
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c', line=42), region=RegionForGlobal(gcc.VarDecl('PyTuple_Type')))
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
