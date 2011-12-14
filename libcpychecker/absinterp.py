@@ -471,6 +471,14 @@ class WithinRange(AbstractValue):
         self.minvalue = min(values)
         self.maxvalue = max(values)
 
+    @classmethod
+    def ge_zero(cls, gcctype, loc):
+        """
+        Make a WithinRange for the given type, assuming a value >= 0, up to
+        the maximum value representable by the type
+        """
+        return WithinRange(gcctype, loc, 0, gcctype.max_value.constant)
+
     def __str__(self):
         if self.loc:
             return ('(%s)val [%s <= val <= %s] from %s'
@@ -1784,11 +1792,26 @@ class State(object):
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
 
+    def mkstate_return_of(self, stmt, v_return):
+        """
+        Clone this state (at a function call), updating the location, and
+        setting the result of the call to the given AbstractValue
+        """
+        check_isinstance(v_return, AbstractValue)
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        if stmt.lhs:
+            newstate.assign(stmt.lhs,
+                            v_return,
+                            stmt.loc)
+        return newstate
+
     def mkstate_concrete_return_of(self, stmt, value):
         """
         Clone this state (at a function call), updating the location, and
         setting the result of the call to the given concrete value
         """
+        check_isinstance(value, numeric_types)
         newstate = self.copy()
         newstate.loc = self.loc.next_loc()
         if stmt.lhs:

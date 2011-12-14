@@ -2057,6 +2057,37 @@ class CPython(Facet):
                                                           'PyString_Type')
         return [t_success, t_failure]
 
+    def impl_PyString_Size(self, stmt, v_string):
+        fnmeta = FnMeta(name='PyString_Size',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_Size',
+                        prototype='Py_ssize_t PyString_Size(PyObject *string)',
+                        defined_in='Objects/stringobject.c')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_string,
+                     why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                   'PyString_Check'))
+        # for strings, returns ob_size
+        if self.object_ptr_has_global_ob_type(v_string, 'PyString_Type'):
+            # We know it's a PyStringObject; the call will succeed:
+            v_ob_size = self.state.read_field_by_name(stmt,
+                                                      v_op.region,
+                                                      'ob_size')
+            t_success = self.state.mktrans_assignment(stmt.lhs,
+                                                v_ob_size,
+                                                fnmeta.desc_when_call_returns_value('ob_size'))
+            return [t_success]
+
+        # for non-strings, can fail with -1, setting an exception
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+
+        # otherwise, expect a non-negative value:
+        returntype = stmt.fn.type.dereference.type
+        s_success = self.state.mkstate_return_of(stmt,
+                                                 WithinRange.ge_zero(returntype,
+                                                                     stmt.loc))
+
+        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+
     ########################################################################
     # PyStructSequence_*
     ########################################################################
