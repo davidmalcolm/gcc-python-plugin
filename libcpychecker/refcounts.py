@@ -2531,6 +2531,18 @@ class ExceptionStateAnnotator(Annotator):
 
         return result
 
+from libcpychecker.initializers import get_all_PyTypeObject_initializers
+def function_is_tp_iternext_callback(fun):
+    """
+    Is the given gcc.Function known to be used as the tp_iternext callback
+    within a PyTypeObject?
+    """
+    check_isinstance(fun, gcc.Function)
+    for typeobj in get_all_PyTypeObject_initializers():
+        tp_iternext = typeobj.function_ptr_field('tp_iternext')
+        if fun.decl == tp_iternext:
+            return True
+
 def check_refcounts(fun, dump_traces=False, show_traces=False,
                     show_possible_null_derefs=False,
                     show_timings=False):
@@ -2787,6 +2799,14 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     if (isinstance(endstate.cpython.exception_rvalue,
                                   ConcreteValue)
                         and endstate.cpython.exception_rvalue.value == 0):
+
+                        # Don't emit the error for functions that are a
+                        # PyTypeObject's tp_iternext callback, as it's
+                        # legitimate to return NULL from them:
+                        # http://docs.python.org/c-api/typeobj.html#tp_iternext
+                        if function_is_tp_iternext_callback(fun):
+                            return
+
                         err = rep.make_error(fun,
                                              endstate.get_gcc_loc(fun),
                                              'returning (PyObject*)NULL without setting an exception')

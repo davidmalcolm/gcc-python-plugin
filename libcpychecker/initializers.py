@@ -167,4 +167,23 @@ def get_all_PyMethodDef_initializers():
                         result += table
     return result
 
+class PyTypeObjectInitializer(StructInitializer):
+    pass
 
+def get_all_PyTypeObject_initializers():
+    """
+    Locate all initializers for PyTypeObject, returning a list
+    of PyTypeObjectInitializer instances
+    """
+    log('get_all_PyTypeObject_initializers')
+
+    result = []
+    vars = gcc.get_variables()
+    for var in vars:
+        if isinstance(var.decl, gcc.VarDecl):
+            if str(var.decl.type) == 'struct PyTypeObject':
+                ctor = var.decl.initial
+                if ctor:
+                    si = PyTypeObjectInitializer(ctor)
+                    result.append(si)
+    return result
