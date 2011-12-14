@@ -2778,18 +2778,20 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                                  'memory deallocated here')
 
         # Detect failure to set exceptions when returning NULL:
-        if not trace.err:
-            if (isinstance(return_value, ConcreteValue)
-                and return_value.value == 0
-                and str(return_value.gcctype)=='struct PyObject *'):
+        def warn_about_NULL_without_exception():
+            if not trace.err:
+                if (isinstance(return_value, ConcreteValue)
+                    and return_value.value == 0
+                    and str(return_value.gcctype)=='struct PyObject *'):
 
-                if (isinstance(endstate.cpython.exception_rvalue,
-                              ConcreteValue)
-                    and endstate.cpython.exception_rvalue.value == 0):
-                    err = rep.make_error(fun,
-                                         endstate.get_gcc_loc(fun),
-                                         'returning (PyObject*)NULL without setting an exception')
-                    err.add_trace(trace, ExceptionStateAnnotator())
+                    if (isinstance(endstate.cpython.exception_rvalue,
+                                  ConcreteValue)
+                        and endstate.cpython.exception_rvalue.value == 0):
+                        err = rep.make_error(fun,
+                                             endstate.get_gcc_loc(fun),
+                                             'returning (PyObject*)NULL without setting an exception')
+                        err.add_trace(trace, ExceptionStateAnnotator())
+        warn_about_NULL_without_exception()
 
     # (all traces analysed)
 
