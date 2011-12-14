@@ -1149,6 +1149,20 @@ class CPython(Facet):
         t_next.dest.cpython.exception_rvalue = v_exc
         return [t_next]
 
+    def impl_PyErr_NewException(self, stmt, v_name, v_base, v_dict):
+        fnmeta = FnMeta(name='PyErr_NewException',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_NewException',
+                        prototype=('PyObject*\n'
+                                   'Err_NewException(char *name, PyObject *base, PyObject *dict)'),
+                        defined_in='Python/errors.c',
+                        notes='Return value: New reference (or NULL e.g. MemoryError)')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_name)
+        # "base" and "dict" may be NULL
+
+        return self.make_transitions_for_new_ref_or_fail(stmt,
+                        objname='new exception object from %s' % fnmeta.name)
+
     def impl_PyErr_NoMemory(self, stmt):
         fnmeta = FnMeta(name='PyErr_NoMemory',
                         declared_in='pyerrors.h',
