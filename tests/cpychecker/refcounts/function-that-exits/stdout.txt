@@ -1,0 +1,31 @@
+Trace 0:
+  Transitions:
+    'when PyObject_Repr() succeeds'
+    'taking True path'
+    'PyString_AsString() returns ob_sval'
+    'not returning from exit'
+  Region("region-for-arg-gcc.ParmDecl('obj')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
+  PyStringObject allocated at tests/cpychecker/refcounts/function-that-exits/input.c:33:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=33))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/function-that-exits/input.c:33
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/function-that-exits/input.c:29
+
+Trace 1:
+  Transitions:
+    'when PyObject_Repr() fails'
+    'taking False path'
+    'not returning from exit'
+  Region("region-for-arg-gcc.ParmDecl('obj')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/function-that-exits/input.c:33

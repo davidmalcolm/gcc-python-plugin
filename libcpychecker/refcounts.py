@@ -2652,6 +2652,12 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         log('endstate.region_for_var: %r', endstate.region_for_var)
         log('endstate.value_for_region: %r', endstate.value_for_region)
 
+        if endstate.not_returning:
+            # We have a function that calls exit() or abort() or similar
+            # Don't bother reporting reference leaks etc: the process is
+            # going away
+            continue
+
         # Consider all regions of memory we know about:
         for k in endstate.region_for_var:
             if not isinstance(endstate.region_for_var[k], Region):
