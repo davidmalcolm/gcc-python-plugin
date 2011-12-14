@@ -298,6 +298,10 @@ NULL for which the per-thread exception state has not been set::
 
 (TODO: provide a way to mark a function as setting this state)
 
+The checker does not emit the warning for cases where it is known that such
+behavior is acceptable.  Currently this covers functions used as `tp_iternext
+<http://docs.python.org/c-api/typeobj.html#tp_iternext>`_ callbacks of a
+``PyTypeObject``.
 
 Format string checking
 ----------------------
