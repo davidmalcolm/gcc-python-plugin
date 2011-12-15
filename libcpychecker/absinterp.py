@@ -72,6 +72,13 @@ class AbstractValue(object):
         return ('%s(gcctype=%r, loc=%r)'
                 % (self.__class__.__name__, str(self.gcctype), self.loc))
 
+    def is_null_ptr(self):
+        """
+        Is this AbstractValue *definitely* a NULL pointer?
+        """
+        # Overridden by ConcreteValue
+        return False
+
     def get_transitions_for_function_call(self, state, stmt):
         """
         For use for handling function pointers.  Return a list of Transition
@@ -1703,15 +1710,14 @@ class State(object):
             raise UsageOfUninitializedData(self, expr, ptr,
                                            'dereferencing uninitialized pointer')
 
-        if isinstance(ptr, ConcreteValue):
-            if ptr.is_null_ptr():
-                # Read through NULL
-                # If we earlier split the analysis into NULL/non-NULL
-                # cases, then we're only considering the possibility
-                # that this pointer was NULL; we don't know for sure
-                # that it was.
-                isdefinite = not hasattr(ptr, 'fromsplit')
-                raise NullPtrDereference(self, expr, ptr, isdefinite)
+        if ptr.is_null_ptr():
+            # Read through NULL
+            # If we earlier split the analysis into NULL/non-NULL
+            # cases, then we're only considering the possibility
+            # that this pointer was NULL; we don't know for sure
+            # that it was.
+            isdefinite = not hasattr(ptr, 'fromsplit')
+            raise NullPtrDereference(self, expr, ptr, isdefinite)
 
     def raise_any_null_ptr_func_arg(self, stmt, idx, ptr, why=None):
         # idx is the 0-based index of the argument
@@ -1721,15 +1727,14 @@ class State(object):
         check_isinstance(ptr, AbstractValue)
         if why:
             check_isinstance(why, str)
-        if isinstance(ptr, ConcreteValue):
-            if ptr.is_null_ptr():
-                # NULL argument to a function that requires non-NULL
-                # If we earlier split the analysis into NULL/non-NULL
-                # cases, then we're only considering the possibility
-                # that this pointer was NULL; we don't know for sure
-                # that it was.
-                isdefinite = not hasattr(ptr, 'fromsplit')
-                raise NullPtrArgument(self, stmt, idx, ptr, isdefinite, why)
+        if ptr.is_null_ptr():
+            # NULL argument to a function that requires non-NULL
+            # If we earlier split the analysis into NULL/non-NULL
+            # cases, then we're only considering the possibility
+            # that this pointer was NULL; we don't know for sure
+            # that it was.
+            isdefinite = not hasattr(ptr, 'fromsplit')
+            raise NullPtrArgument(self, stmt, idx, ptr, isdefinite, why)
 
     def raise_split_value(self, ptr_rvalue, loc=None):
         """
@@ -2445,9 +2450,8 @@ class Trace(object):
             # It doesn't matter if it's uninitialized, or NULL:
             if isinstance(v_srcptr, UninitializedData):
                 continue
-            if isinstance(v_srcptr, ConcreteValue):
-                if v_srcptr.is_null_ptr():
-                    continue
+            if v_srcptr.is_null_ptr():
+                continue
             if isinstance(v_srcptr, PointerToRegion):
                 if v_srcptr.region == r_dstptr:
                     ever_had_value = True

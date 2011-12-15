@@ -1654,9 +1654,8 @@ class CPython(Facet):
         desc = None
 
         # It's safe to call on NULL
-        if isinstance(v_ptr, ConcreteValue):
-            if v_ptr.is_null_ptr():
-                desc = 'calling PyMem_Free on NULL'
+        if v_ptr.is_null_ptr():
+            desc = 'calling PyMem_Free on NULL'
         elif isinstance(v_ptr, PointerToRegion):
             # Mark the arg as being deallocated:
             region = v_ptr.region
@@ -1775,10 +1774,9 @@ class CPython(Facet):
                     print('  exptype: %r %s' % (exptype, exptype))
                 if isinstance(unit, ObjectFormatUnit):
                     # NULL inputs ptrs guarantee failure:
-                    if isinstance(v_vararg, ConcreteValue):
-                        if v_vararg.is_null_ptr():
-                            # The call will fail:
-                            return False
+                    if v_vararg.is_null_ptr():
+                        # The call will fail:
+                        return False
 
                     # non-NULL input ptrs receive "external" references on
                     # success for codes "S" and "O", but code "N" steals a
