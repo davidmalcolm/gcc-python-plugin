@@ -1730,6 +1730,19 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/module.html#PyModule_AddObject',
                         defined_in='Python/modsupport.c',
                         notes='Steals a reference to the object if if succeeds')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_module,
+                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                     'PyModule_Check'))
+
+        # Explicitly checks for non-NULL obj:
+        if v_value.is_null_ptr():
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc)
+            return [Transition(self.state,
+                               s_failure,
+                               'returning -1 from %s()' % fnmeta.name)]
+
         # On success, steals a ref from v_value:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_success.cpython.steal_reference(v_value.region)
