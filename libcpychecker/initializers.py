@@ -48,11 +48,17 @@ class StructInitializer(object):
         """
         Extract the initializer for the given field, as an int
         """
+        if fieldname not in self.fielddict:
+            return 0 # implicit 0
+
         tree = self.fielddict[fieldname]
         check_isinstance(tree, gcc.IntegerCst)
         return tree.constant
 
     def char_ptr_field(self, fieldname):
+        if fieldname not in self.fielddict:
+            return None # implicit NULL
+
         tree = self.fielddict[fieldname]
         if isinstance(tree, gcc.IntegerCst):
             if tree.constant == 0:
@@ -69,6 +75,9 @@ class StructInitializer(object):
         Extract the initializer for the given field, as a gcc.FunctionDecl,
         or None for NULL.
         """
+        if fieldname not in self.fielddict:
+            return None # implicit NULL
+
         tree = self.fielddict[fieldname]
 
         # go past casts:
