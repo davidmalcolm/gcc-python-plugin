@@ -1477,6 +1477,18 @@ class CPython(Facet):
         # If it succeeds, it adds a reference on the item
         #
 
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
+                               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                                             'PyList_Check'))
+
+        # It handles newitem being NULL:
+        if v_newitem.is_null_ptr():
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.bad_internal_call(stmt.loc)
+            return [Transition(self.state,
+                               s_failure,
+                               'returning -1 from %s() due to NULL item' % fnmeta.name)]
+
         # On success, adds a ref on input:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_success.cpython.add_ref(v_newitem, stmt.loc)
