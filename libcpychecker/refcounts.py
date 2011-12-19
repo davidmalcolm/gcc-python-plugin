@@ -218,20 +218,23 @@ class GenericTpDealloc(AbstractValue):
 # argument is a bug:
 ########################################################################
 def invokes_Py_TYPE(fnmeta):
+    check_isinstance(fnmeta, FnMeta)
     return ('%s() invokes Py_TYPE() on the pointer, thus accessing'
             ' (NULL)->ob_type' % fnmeta.name)
 
-def invokes_Py_TYPE_via_macro(fnname, macro):
+def invokes_Py_TYPE_via_macro(fnmeta, macro):
     """
     Generate a descriptive message for cases of raise_any_null_ptr_func_arg()
     such as PyDict_SetItem() which invoke the PyDict_Check() macro
     """
+    check_isinstance(fnmeta, FnMeta)
     return ('%s() invokes Py_TYPE() on the pointer via the %s()'
-            ' macro, thus accessing (NULL)->ob_type' % (fnname, macro))
+            ' macro, thus accessing (NULL)->ob_type' % (fnmeta.name, macro))
 
-def invokes_Py_INCREF(fnname):
+def invokes_Py_INCREF(fnmeta):
+    check_isinstance(fnmeta, FnMeta)
     return ('%s() invokes Py_INCREF() on the pointer, thus accessing'
-            ' (NULL)->ob_refcnt' % fnname)
+            ' (NULL)->ob_refcnt' % fnmeta.name)
 
 ########################################################################
 
@@ -1100,13 +1103,13 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/dict.html#PyDict_SetItem',
                         notes='Can return -1, setting MemoryError.  Otherwise returns 0, and adds a ref on the value')
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_dp,
-                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
                                                         'PyDict_Check'))
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key,
-                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
                                                         'PyString_CheckExact'))
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item,
-                          why=invokes_Py_INCREF(fnmeta.name))
+                          why=invokes_Py_INCREF(fnmeta))
 
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         # the dictionary now owns a new ref on "item".  We won't model the
@@ -1478,7 +1481,7 @@ class CPython(Facet):
         #
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                               why=invokes_Py_TYPE_via_macro(fnmeta,
                                                              'PyList_Check'))
 
         # It handles newitem being NULL:
@@ -1515,7 +1518,7 @@ class CPython(Facet):
                         notes='Returns a borrowed reference, or raises an IndexError')
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
-                                               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                                               why=invokes_Py_TYPE_via_macro(fnmeta,
                                                                              'PyList_Check'))
 
         # FIXME: for now, simply return a borrowed ref, rather than
@@ -1559,7 +1562,7 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/list.html#PyList_SetItem',)
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
-                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                       why=invokes_Py_TYPE_via_macro(fnmeta,
                                                      'PyList_Check'))
 
         # However, it appears to be robust in the face of NULL "item" pointers
@@ -1603,7 +1606,7 @@ class CPython(Facet):
                         defined_in='Objects/listobject.c')
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_list,
-                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                       why=invokes_Py_TYPE_via_macro(fnmeta,
                                                      'PyList_Check'))
 
         v_ob_size = self.state.read_field_by_name(stmt,
@@ -1732,7 +1735,7 @@ class CPython(Facet):
                         notes='Steals a reference to the object if if succeeds')
 
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_module,
-                       why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                       why=invokes_Py_TYPE_via_macro(fnmeta,
                                                      'PyModule_Check'))
 
         # Explicitly checks for non-NULL obj:
@@ -1834,7 +1837,7 @@ class CPython(Facet):
 
         # Uses PyInt_Check(o) macro, which will segfault on NULL
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
-                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                   why=invokes_Py_TYPE_via_macro(fnmeta,
                                                  'PyInt_Check'))
 
         # For now, don't try to implement the internal logic:
@@ -1885,7 +1888,7 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
                why=invokes_Py_TYPE(fnmeta))
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
-               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+               why=invokes_Py_TYPE_via_macro(fnmeta,
                                              'PyString_Check'))
 
         # The "success" case:
@@ -1911,7 +1914,7 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
                why=invokes_Py_TYPE(fnmeta))
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
-               why=invokes_Py_TYPE_via_macro(fnmeta.name,
+               why=invokes_Py_TYPE_via_macro(fnmeta,
                                              'PyString_Check'))
         # (it appears that value can legitimately be NULL)
 
@@ -2076,7 +2079,7 @@ class CPython(Facet):
         # It will segfault if called with NULL, since it uses PyString_Check,
         # which reads through the object's ob_type:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                     why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                     why=invokes_Py_TYPE_via_macro(fnmeta,
                                                    'PyString_Check'))
 
         returntype = stmt.fn.type.dereference.type
@@ -2154,7 +2157,7 @@ class CPython(Facet):
                         prototype='Py_ssize_t PyString_Size(PyObject *string)',
                         defined_in='Objects/stringobject.c')
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_string,
-                     why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                     why=invokes_Py_TYPE_via_macro(fnmeta,
                                                    'PyString_Check'))
         # for strings, returns ob_size
         if self.object_ptr_has_global_ob_type(v_string, 'PyString_Type'):
@@ -2269,7 +2272,7 @@ class CPython(Facet):
         # All PyObject* args must be non-NULL:
         for i, v_arg in enumerate(v_args):
             self.state.raise_any_null_ptr_func_arg(stmt, i+1, v_arg,
-                                  why=invokes_Py_INCREF(fnmeta.name))
+                                  why=invokes_Py_INCREF(fnmeta))
 
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyTupleObject',
@@ -2291,7 +2294,7 @@ class CPython(Facet):
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                   why=invokes_Py_TYPE_via_macro(fnmeta,
                                                  'PyTuple_Check'))
 
         # i is range checked
@@ -2370,7 +2373,7 @@ class CPython(Facet):
         # The CPython implementation uses PyTuple_Check, which uses
         # Py_TYPE(op), an unchecked read through the ptr:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
-                   why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                   why=invokes_Py_TYPE_via_macro(fnmeta,
                                                  'PyTuple_Check'))
 
         # FIXME: cast:
@@ -2425,7 +2428,7 @@ class CPython(Facet):
                         prototype='PyObject* PyUnicode_AsUTF8String(PyObject *unicode)',
                         defined_in='Objects/unicodeobject.c')
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_unicode,
-                          why=invokes_Py_TYPE_via_macro(fnmeta.name,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
                                                         'PyUnicode_Check'))
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyStringObject',
