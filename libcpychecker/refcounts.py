@@ -238,56 +238,6 @@ def invokes_Py_INCREF(fnmeta):
 
 ########################################################################
 
-class FnMeta(object):
-    """
-    Metadata describing an API function
-    """
-    __slots__ = ('name', # the name of the function
-                 'docurl', # URL of the API documentation, on docs.python.org
-                 'declared_in', # name of the header file in which this is declared
-                 'prototype', # fragment of C giving the prototype (for documentation purposes)
-                 'defined_in', # where is this function defined (in CPython)
-                 'notes', # fragment of text, giving notes on the function
-                 )
-    def __init__(self, **kwargs):
-        for key in self.__slots__:
-            setattr(self, key, None)
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def desc_when_call_returns_value(self, valuedesc):
-        """
-        Generate descriptive text for a Transition involving a call to this
-        function that returns some value (described in string form)
-
-        e.g. "when PyTuple_Size() returns ob_size"
-        """
-        return 'when %s() returns %s' % (self.name, valuedesc)
-
-    def desc_when_call_succeeds(self):
-        """
-        Generate descriptive text for a Transition involving a call to this
-        function that succeeds.
-
-        e.g. "when PyTuple_SetItem() succeeds"
-        """
-        return 'when %s() succeeds' % self.name
-
-    def desc_when_call_fails(self, why=None):
-        """
-        Generate descriptive text for a Transition involving a call to this
-        function that fails, optionally with a textual description of the
-        kind of failure
-
-        e.g. "when PyTuple_SetItem() fails (index out of range)"
-        """
-        if why:
-            return 'when %s() fails (%s)' % (self.name, why)
-        else:
-            return 'when %s() fails' % self.name
-
-########################################################################
-
 class CPython(Facet):
     __slots__ = ('exception_rvalue', 'has_gil',)
 
@@ -568,7 +518,7 @@ class CPython(Facet):
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return t_failure.dest
 
-    def make_transitions_for_new_ref_or_fail(self, stmt, objname=None):
+    def make_transitions_for_new_ref_or_fail(self, stmt, fnmeta, objname=None):
         """
         Generate the appropriate list of 2 transitions for a call to a
         function that either:
@@ -577,12 +527,14 @@ class CPython(Facet):
         Optionally, a name for the new object can be supplied; otherwise
         a sane default will be used.
         """
+        if fnmeta:
+            check_isinstance(fnmeta, FnMeta)
         if objname is None:
-            fnname = stmt.fn.operand.name
-            objname = 'new ref from call to %s' % fnname
+            objname = 'new ref from call to %s' % fnmeta.name
         s_success, nonnull = self.mkstate_new_ref(stmt, objname)
         s_failure = self.mkstate_exception(stmt)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def make_transitions_for_borrowed_ref_or_fail(self, stmt, fnmeta):
         """
@@ -596,7 +548,8 @@ class CPython(Facet):
         check_isinstance(fnmeta, FnMeta)
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         s_failure = self.mkstate_exception(stmt)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def object_ptr_has_global_ob_type(self, v_object_ptr, vardecl_name):
         """
@@ -674,7 +627,7 @@ class CPython(Facet):
     ########################################################################
     # PyArg_*
     ########################################################################
-    def _handle_PyArg_function(self, stmt, v_fmt, v_varargs, with_size_t):
+    def _handle_PyArg_function(self, stmt, fnmeta, v_fmt, v_varargs, with_size_t):
         """
         Handle one of the various PyArg_Parse* functions
         """
@@ -739,7 +692,8 @@ class CPython(Facet):
             except FormatStringError:
                 pass
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyArg_Parse(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='PyArg_Parse',
@@ -747,7 +701,8 @@ class CPython(Facet):
                         prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_Parse			_PyArg_Parse_SizeT
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=False)
 
     def impl__PyArg_Parse_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='_PyArg_Parse_SizeT',
@@ -755,7 +710,8 @@ class CPython(Facet):
                         prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_Parse			_PyArg_Parse_SizeT
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=True)
 
     def impl_PyArg_ParseTuple(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='PyArg_ParseTuple',
@@ -764,7 +720,8 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=False)
 
     def impl__PyArg_ParseTuple_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='_PyArg_ParseTuple_SizeT',
@@ -773,7 +730,8 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTuple		_PyArg_ParseTuple_SizeT
 
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=True)
 
     def impl_PyArg_ParseTupleAndKeywords(self, stmt, v_args, v_kwargs,
                                          v_fmt, v_keywords, *v_varargs):
@@ -785,7 +743,8 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=False)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=False)
 
     def impl__PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
                                                 v_fmt, v_keywords, *v_varargs):
@@ -797,7 +756,8 @@ class CPython(Facet):
         # Also, with #ifdef PY_SSIZE_T_CLEAN
         #   #define PyArg_ParseTupleAndKeywords	_PyArg_ParseTupleAndKeywords_SizeT
 
-        return self._handle_PyArg_function(stmt, v_fmt, v_varargs, with_size_t=True)
+        return self._handle_PyArg_function(stmt, fnmeta,
+                                           v_fmt, v_varargs, with_size_t=True)
 
     def impl_PyArg_UnpackTuple(self, stmt, v_args, v_name, v_min, v_max,
                                *v_varargs):
@@ -891,7 +851,7 @@ class CPython(Facet):
     ########################################################################
     # Py_BuildValue*
     ########################################################################
-    def _handle_Py_BuildValue(self, stmt, v_fmt, v_varargs, with_size_t):
+    def _handle_Py_BuildValue(self, stmt, fnmeta, v_fmt, v_varargs, with_size_t):
         """
         Handle one of the various Py_BuildValue functions
 
@@ -932,7 +892,7 @@ class CPython(Facet):
                             t_success.dest.cpython.steal_reference(v_vararg.region)
             return True
 
-        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
+        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
         fmt_string = v_fmt.as_string_constant()
         if fmt_string:
@@ -954,7 +914,8 @@ class CPython(Facet):
         #   PyObject *
         #   Py_BuildValue(const char *format, ...)
         #
-        return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=False)
+        return self._handle_Py_BuildValue(stmt, fnmeta,
+                                          v_fmt, args, with_size_t=False)
 
     def impl__Py_BuildValue_SizeT(self, stmt, v_fmt, *args):
         fnmeta = FnMeta(name='_Py_BuildValue_SizeT',
@@ -969,7 +930,8 @@ class CPython(Facet):
         #   PyObject *
         #   _Py_BuildValue_SizeT(const char *format, ...)
         #
-        return self._handle_Py_BuildValue(stmt, v_fmt, args, with_size_t=True)
+        return self._handle_Py_BuildValue(stmt, fnmeta,
+                                          v_fmt, args, with_size_t=True)
 
     ########################################################################
 
@@ -1095,6 +1057,20 @@ class CPython(Facet):
                                                           'PyDict_Type')
         return [t_success, t_failure]
 
+    def _handle_PyDict_SetItem(self, stmt, fnmeta,
+                               v_dp, v_key, v_item):
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        # the dictionary now owns a new ref on "item".  We won't model the
+        # insides of the dictionary type.  Instead, treat it as a new
+        # external reference:
+        s_success.cpython.add_external_ref(v_item, stmt.loc)
+
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
     def impl_PyDict_SetItem(self, stmt, v_dp, v_key, v_item):
         fnmeta = FnMeta(name='PyDict_SetItem',
                         declared_in='dictobject.h',
@@ -1111,16 +1087,8 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item,
                           why=invokes_Py_INCREF(fnmeta))
 
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        # the dictionary now owns a new ref on "item".  We won't model the
-        # insides of the dictionary type.  Instead, treat it as a new
-        # external reference:
-        s_success.cpython.add_external_ref(v_item, stmt.loc)
-
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
-
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self._handle_PyDict_SetItem(stmt, fnmeta,
+                                           v_dp, v_key, v_item)
 
     def impl_PyDict_SetItemString(self, stmt, v_dp, v_key, v_item):
         fnmeta = FnMeta(name='PyDict_SetItemString',
@@ -1135,7 +1103,9 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key)
         self.state.raise_any_null_ptr_func_arg(stmt, 2, v_item)
         # (strictly speaking, v_key goes from being a char* to a PyObject*)
-        return self.impl_PyDict_SetItem(stmt, v_dp, v_key, v_item)
+
+        return self._handle_PyDict_SetItem(stmt, fnmeta,
+                                           v_dp, v_key, v_item)
 
     ########################################################################
     # PyErr_*
@@ -1163,7 +1133,7 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_name)
         # "base" and "dict" may be NULL
 
-        return self.make_transitions_for_new_ref_or_fail(stmt,
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta,
                         objname='new exception object from %s' % fnmeta.name)
 
     def impl_PyErr_NoMemory(self, stmt):
@@ -1290,7 +1260,8 @@ class CPython(Facet):
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # PyEval_InitThreads()
@@ -1366,7 +1337,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (doesn't set an exception on failure, and Py_Initialize shouldn't
         # have been called yet, in any case)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyImport_ImportModule(self, stmt, v_name):
         fnmeta = FnMeta(name='PyImport_ImportModule',
@@ -1403,7 +1375,8 @@ class CPython(Facet):
         #    #define Py_InitModule4 Py_InitModule4TraceRefs
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         s_failure = self.mkstate_exception(stmt)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # Py_Int*
@@ -1508,7 +1481,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyList_GetItem(self, stmt, v_list, v_index):
         fnmeta = FnMeta(name='PyList_GetItem',
@@ -1726,7 +1700,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyModule_AddObject(self, stmt, v_module, v_name, v_value):
         fnmeta = FnMeta(name='PyModule_AddObject',
@@ -1754,7 +1729,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyModule_AddStringConstant(self, stmt, v_module, v_name, v_value):
         fnmeta = FnMeta(name='PyModule_AddStringConstant',
@@ -1767,7 +1743,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyModule_GetDict(self, stmt, v_module):
         fnmeta = FnMeta(name='PyModule_GetDict',
@@ -1781,7 +1758,8 @@ class CPython(Facet):
     ########################################################################
     # PyObject_*
     ########################################################################
-    def _handle_PyObject_CallMethod(self, stmt, v_o, v_name, v_fmt, v_varargs, with_size_t):
+    def _handle_PyObject_CallMethod(self, stmt, fnmeta,
+                                    v_o, v_name, v_fmt, v_varargs, with_size_t):
         check_isinstance(v_o, AbstractValue)
         check_isinstance(v_name, AbstractValue)
         check_isinstance(v_fmt, AbstractValue)
@@ -1816,7 +1794,7 @@ class CPython(Facet):
                             t_failure.dest.cpython.dec_ref(v_vararg, stmt.loc)
             return True
 
-        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt)
+        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
         fmt_string = v_fmt.as_string_constant()
         if fmt_string:
@@ -1855,7 +1833,7 @@ class CPython(Facet):
         # "func" and "args" must not be NULL, but "kw" can be:
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_args)
-        return self.make_transitions_for_new_ref_or_fail(stmt)
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
     def impl_PyObject_CallMethod(self, stmt, v_o, v_name, v_format, *args):
         fnmeta = FnMeta(name='PyObject_CallMethod',
@@ -1863,7 +1841,8 @@ class CPython(Facet):
                         defined_in='Objects/abstract.c',
                         prototype=('PyObject *\n'
                                    'PyObject_CallMethod(PyObject *o, char *name, char *format, ...)'))
-        return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
+        return self._handle_PyObject_CallMethod(stmt, fnmeta,
+                                                v_o, v_name, v_format,
                                                 args, with_size_t=False)
 
     def impl__PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
@@ -1876,7 +1855,8 @@ class CPython(Facet):
                         defined_in='Objects/abstract.c')
         #   PyObject *
         #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
-        return self._handle_PyObject_CallMethod(stmt, v_o, v_name, v_format,
+        return self._handle_PyObject_CallMethod(stmt, fnmeta,
+                                                v_o, v_name, v_format,
                                                 args, with_size_t=True)
 
     def impl_PyObject_GenericGetAttr(self, stmt, v_o, v_name):
@@ -2029,7 +2009,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
         # (FIXME: handle the potential autoclosing of the FILE*)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     def impl_PyRun_SimpleStringFlags(self, stmt, v_command, v_flags):
         fnmeta = FnMeta(name='PyRun_SimpleStringFlags',
@@ -2037,7 +2018,8 @@ class CPython(Facet):
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         # (no way to get the exception on failure)
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # PySequence_*
@@ -2060,6 +2042,7 @@ class CPython(Facet):
         # PyList_Type): it Py_INCREFs the returned item.
 
         return self.make_transitions_for_new_ref_or_fail(stmt,
+                                                         fnmeta,
                                                          'new ref from %s' % fnmeta.name)
 
     ########################################################################
@@ -2180,7 +2163,8 @@ class CPython(Facet):
                                                  WithinRange.ge_zero(returntype,
                                                                      stmt.loc))
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # PyStructSequence_*
@@ -2416,7 +2400,8 @@ class CPython(Facet):
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
         s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # various possible errors
 
-        return self.state.make_transitions_for_fncall(stmt, s_success, s_failure)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # PyUnicode_*

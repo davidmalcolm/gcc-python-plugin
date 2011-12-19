@@ -40,6 +40,56 @@ numeric_types = integer_types + (float, )
 #   the prefix "r_" means a Region
 #   the prefix "f_" means a Facet
 
+########################################################################
+
+class FnMeta(object):
+    """
+    Metadata describing an API function
+    """
+    __slots__ = ('name', # the name of the function
+                 'docurl', # URL of the API documentation, on docs.python.org
+                 'declared_in', # name of the header file in which this is declared
+                 'prototype', # fragment of C giving the prototype (for documentation purposes)
+                 'defined_in', # where is this function defined (in CPython)
+                 'notes', # fragment of text, giving notes on the function
+                 )
+    def __init__(self, **kwargs):
+        for key in self.__slots__:
+            setattr(self, key, None)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def desc_when_call_returns_value(self, valuedesc):
+        """
+        Generate descriptive text for a Transition involving a call to this
+        function that returns some value (described in string form)
+
+        e.g. "when PyTuple_Size() returns ob_size"
+        """
+        return 'when %s() returns %s' % (self.name, valuedesc)
+
+    def desc_when_call_succeeds(self):
+        """
+        Generate descriptive text for a Transition involving a call to this
+        function that succeeds.
+
+        e.g. "when PyTuple_SetItem() succeeds"
+        """
+        return 'when %s() succeeds' % self.name
+
+    def desc_when_call_fails(self, why=None):
+        """
+        Generate descriptive text for a Transition involving a call to this
+        function that fails, optionally with a textual description of the
+        kind of failure
+
+        e.g. "when PyTuple_SetItem() fails (index out of range)"
+        """
+        if why:
+            return 'when %s() fails (%s)' % (self.name, why)
+        else:
+            return 'when %s() fails' % self.name
+
 ############################################################################
 # Various kinds of r-value:
 ############################################################################
@@ -94,6 +144,7 @@ class AbstractValue(object):
             #   - return a new reference, or
             #   - return NULL and set an exception (e.g. MemoryError)
             return state.cpython.make_transitions_for_new_ref_or_fail(stmt,
+                                                                      None,
                                                                       'new ref from call through function pointer')
         return state.apply_fncall_side_effects(
             [state.mktrans_assignment(stmt.lhs,
@@ -1850,20 +1901,21 @@ class State(object):
             desc = '%s() %s' % (fnname, partialdesc)
         return Transition(self, state, desc)
 
-    def make_transitions_for_fncall(self, stmt, s_success, s_failure):
+    def make_transitions_for_fncall(self, stmt, fnmeta, s_success, s_failure):
         """
         Given a function call, convert a pair of State instances into a pair
         of Transition instances, marking one as a successful call, the other
         as a failed call.
         """
         check_isinstance(stmt, gcc.GimpleCall)
+        if fnmeta:
+            check_isinstance(fnmeta, FnMeta)
         check_isinstance(s_success, State)
         check_isinstance(s_failure, State)
 
-        if hasattr(stmt.fn, 'operand'):
-            fnname = stmt.fn.operand.name
-            return [Transition(self, s_success, 'when %s() succeeds' % fnname),
-                    Transition(self, s_failure, 'when %s() fails' % fnname)]
+        if fnmeta:
+            return [Transition(self, s_success, fnmeta.desc_when_call_succeeds()),
+                    Transition(self, s_failure, fnmeta.desc_when_call_fails())]
         else:
             return [Transition(self, s_success, 'when call succeeds'),
                     Transition(self, s_failure, 'when call fails')]
@@ -1946,6 +1998,9 @@ class State(object):
             # Unknown function returning (PyObject*):
             if str(stmt.fn.operand.type.type) == 'struct PyObject *':
                 log('Invocation of unknown function returning PyObject *: %r' % fnname)
+
+                fnmeta = FnMeta(name=fnname)
+
                 # Assume that all such functions either:
                 #   - return a new reference, or
                 #   - return NULL and set an exception (e.g. MemoryError)
@@ -1953,14 +2008,13 @@ class State(object):
                 if fnname in fnnames_returning_borrowed_refs:
                     # The function being called was marked as returning a
                     # borrowed ref, rather than a new ref:
-                    from libcpychecker.refcounts import FnMeta
-                    fnmeta = FnMeta(name=fnname)
                     return self.apply_fncall_side_effects(
                         self.cpython.make_transitions_for_borrowed_ref_or_fail(stmt,
                                                                                fnmeta),
                         stmt)
                 return self.apply_fncall_side_effects(
                     self.cpython.make_transitions_for_new_ref_or_fail(stmt,
+                                                                      fnmeta,
                                                                  'new ref from (unknown) %s' % fnname),
                     stmt)
 
