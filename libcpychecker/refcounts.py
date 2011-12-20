@@ -30,7 +30,8 @@ from libcpychecker.attributes import fnnames_returning_borrowed_refs, \
     stolen_refs_by_fnname
 from libcpychecker.diagnostics import Reporter, Annotator, Note
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
-    TypeCheckCheckerType, TypeCheckResultType
+    TypeCheckCheckerType, TypeCheckResultType, \
+    ConverterCallbackType, ConverterResultType
 from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \
     CodeSO, CodeN
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
@@ -666,6 +667,14 @@ class CPython(Facet):
                                            stmt.loc,
                                            self.make_sane_object(stmt, 'object from arg "O!"',
                                                                  RefcountValue.borrowed_ref()))
+
+            if unit.code == 'O&':
+                # Assume for now that conversion succeeds
+                if isinstance(exptype, ConverterCallbackType):
+                    # This is read from, not written to:
+                    return None
+                if isinstance(exptype, ConverterResultType):
+                    return UnknownValue.make(exptype.type, stmt.loc)
 
             # Unknown value:
             check_isinstance(exptype, gcc.PointerType)
