@@ -2475,15 +2475,14 @@ class Trace(object):
 
     def get_all_var_region_pairs(self):
         """
-        Get the list of all (LHS,region) pairs in region_for_var within all of
+        Get the set of all (LHS,region) pairs in region_for_var within all of
         the states in this trace, without duplicates
         """
-        result = []
+        result = set()
         for s_iter in self.states:
             for var_iter, r_iter in s_iter.region_for_var.items():
                 pair = (var_iter, r_iter)
-                if pair not in result:
-                    result.append(pair)
+                result.add(pair)
         return result
 
     def var_points_unambiguously_to(self, r_srcptr, r_dstptr):
