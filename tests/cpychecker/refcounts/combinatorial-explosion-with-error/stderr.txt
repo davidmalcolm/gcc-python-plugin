@@ -1,48 +1,5 @@
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c: In function 'test_adding_module_objects':
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:33:1: note: this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of '*leaky' is 1 too high
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: PyDictObject allocated at:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: when PyLong_FromLong() succeeds at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:36:8: note: taking False path at:     if (!item) {
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: reaching:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: when PyDict_New() succeeds at:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_001", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_002", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_003", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_004", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_005", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_006", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_007", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_008", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_009", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_010", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_011", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_012", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_013", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_014", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_015", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_016", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_017", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_018", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_019", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_020", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_021", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_022", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_023", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_024", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_025", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_026", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_031", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_032", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 127 similar trace(s) to this
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 1 too high
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
@@ -135,21 +92,64 @@ tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: not
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: ob_refcnt is now refs: 1 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 2 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: ob_refcnt is now refs: 1 + N where N >= 28
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 3 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 1 + N where N >= 29
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 2 + N where N >= 29
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 3 + N where N >= 28
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: ob_refcnt is now refs: 1 + N where N >= 30
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 2 + N where N >= 30
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: ob_refcnt is now refs: 2 + N where N >= 29
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 3 + N where N >= 29
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_031", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: ob_refcnt is now refs: 1 + N where N >= 31
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 2 + N where N >= 31
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: ob_refcnt is now refs: 2 + N where N >= 30
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 3 + N where N >= 30
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_032", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: ob_refcnt is now refs: 2 + N where N >= 31
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 6 similar trace(s) to this
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 4 similar trace(s) to this
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of '*leaky' is 1 too high
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: but final ob_refcnt is N + 1
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: PyDictObject allocated at:     leaky = PyDict_New();
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: when PyLong_FromLong() succeeds at:     PyObject *item = PyLong_FromLong(4096);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:36:8: note: taking False path at:     if (!item) {
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: reaching:     leaky = PyDict_New();
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: when PyDict_New() succeeds at:     leaky = PyDict_New();
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_001", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_002", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_003", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_004", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_005", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_006", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_007", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_008", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_009", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_010", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_011", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_012", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_013", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_014", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_015", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_016", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_017", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_018", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_019", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_020", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_021", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_022", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_023", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_024", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_025", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_026", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_029", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_030", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_031", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_032", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 19 similar trace(s) to this
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 2 too high
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
@@ -242,20 +242,20 @@ tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: not
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: ob_refcnt is now refs: 1 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 2 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: ob_refcnt is now refs: 1 + N where N >= 28
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 3 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 1 + N where N >= 29
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 2 + N where N >= 29
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 3 + N where N >= 28
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: ob_refcnt is now refs: 1 + N where N >= 30
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 2 + N where N >= 30
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: ob_refcnt is now refs: 2 + N where N >= 29
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 3 + N where N >= 29
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_031", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: ob_refcnt is now refs: 2 + N where N >= 30
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 3 + N where N >= 30
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 20 similar trace(s) to this
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 7 similar trace(s) to this
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 3 too high
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
@@ -348,19 +348,19 @@ tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: not
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: ob_refcnt is now refs: 1 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 2 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: ob_refcnt is now refs: 1 + N where N >= 28
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 3 + N where N >= 27
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 1 + N where N >= 29
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 2 + N where N >= 29
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_030", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: ob_refcnt is now refs: 2 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 3 + N where N >= 28
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_030", item);
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: ob_refcnt is now refs: 2 + N where N >= 29
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 3 + N where N >= 29
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 4 + N where N >= 29
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 34 similar trace(s) to this
+tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 4 similar trace(s) to this
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 4 too high
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
@@ -462,312 +462,6 @@ tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: no
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 4 + N where N >= 28
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 5 + N where N >= 28
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 34 similar trace(s) to this
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 5 too high
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: but final ob_refcnt is N + 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: PyLongObject allocated at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: when PyLong_FromLong() succeeds at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:36:8: note: taking False path at:     if (!item) {
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: reaching:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: when PyDict_New() succeeds at:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:58:5: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_001", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: ob_refcnt is now refs: 1 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:61:5: note: ob_refcnt is now refs: 2 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_002", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: ob_refcnt is now refs: 1 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:64:5: note: ob_refcnt is now refs: 2 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_003", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: ob_refcnt is now refs: 1 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:67:5: note: ob_refcnt is now refs: 2 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_004", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: ob_refcnt is now refs: 1 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:70:5: note: ob_refcnt is now refs: 2 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_005", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: ob_refcnt is now refs: 1 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:73:5: note: ob_refcnt is now refs: 2 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_006", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: ob_refcnt is now refs: 1 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:76:5: note: ob_refcnt is now refs: 2 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_007", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: ob_refcnt is now refs: 1 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:79:5: note: ob_refcnt is now refs: 2 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_008", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: ob_refcnt is now refs: 1 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:82:5: note: ob_refcnt is now refs: 2 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_009", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: ob_refcnt is now refs: 1 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:85:5: note: ob_refcnt is now refs: 2 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_010", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: ob_refcnt is now refs: 1 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:88:5: note: ob_refcnt is now refs: 2 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_011", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: ob_refcnt is now refs: 1 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:91:5: note: ob_refcnt is now refs: 2 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_012", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: ob_refcnt is now refs: 1 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:94:5: note: ob_refcnt is now refs: 2 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_013", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: ob_refcnt is now refs: 1 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:97:5: note: ob_refcnt is now refs: 2 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_014", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: ob_refcnt is now refs: 1 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:100:5: note: ob_refcnt is now refs: 2 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_015", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: ob_refcnt is now refs: 1 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:103:5: note: ob_refcnt is now refs: 2 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_016", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: ob_refcnt is now refs: 1 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:106:5: note: ob_refcnt is now refs: 2 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_017", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: ob_refcnt is now refs: 1 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:109:5: note: ob_refcnt is now refs: 2 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_018", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: ob_refcnt is now refs: 1 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:112:5: note: ob_refcnt is now refs: 2 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_019", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: ob_refcnt is now refs: 1 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:115:5: note: ob_refcnt is now refs: 2 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_020", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: ob_refcnt is now refs: 1 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:118:5: note: ob_refcnt is now refs: 2 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_021", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: ob_refcnt is now refs: 1 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:121:5: note: ob_refcnt is now refs: 2 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_022", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: ob_refcnt is now refs: 1 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:124:5: note: ob_refcnt is now refs: 2 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_023", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: ob_refcnt is now refs: 1 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:127:5: note: ob_refcnt is now refs: 2 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_024", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: ob_refcnt is now refs: 1 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:130:5: note: ob_refcnt is now refs: 2 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_025", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: ob_refcnt is now refs: 1 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:133:5: note: ob_refcnt is now refs: 2 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_026", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: ob_refcnt is now refs: 1 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: note: ob_refcnt is now refs: 2 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_027", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: ob_refcnt is now refs: 1 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 2 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 3 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 4 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 5 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 6 + N where N >= 27
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 20 similar trace(s) to this
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 6 too high
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: but final ob_refcnt is N + 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: PyLongObject allocated at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: when PyLong_FromLong() succeeds at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:36:8: note: taking False path at:     if (!item) {
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: reaching:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: when PyDict_New() succeeds at:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:58:5: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_001", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: ob_refcnt is now refs: 1 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:61:5: note: ob_refcnt is now refs: 2 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_002", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: ob_refcnt is now refs: 1 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:64:5: note: ob_refcnt is now refs: 2 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_003", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: ob_refcnt is now refs: 1 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:67:5: note: ob_refcnt is now refs: 2 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_004", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: ob_refcnt is now refs: 1 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:70:5: note: ob_refcnt is now refs: 2 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_005", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: ob_refcnt is now refs: 1 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:73:5: note: ob_refcnt is now refs: 2 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_006", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: ob_refcnt is now refs: 1 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:76:5: note: ob_refcnt is now refs: 2 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_007", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: ob_refcnt is now refs: 1 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:79:5: note: ob_refcnt is now refs: 2 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_008", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: ob_refcnt is now refs: 1 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:82:5: note: ob_refcnt is now refs: 2 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_009", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: ob_refcnt is now refs: 1 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:85:5: note: ob_refcnt is now refs: 2 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_010", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: ob_refcnt is now refs: 1 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:88:5: note: ob_refcnt is now refs: 2 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_011", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: ob_refcnt is now refs: 1 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:91:5: note: ob_refcnt is now refs: 2 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_012", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: ob_refcnt is now refs: 1 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:94:5: note: ob_refcnt is now refs: 2 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_013", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: ob_refcnt is now refs: 1 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:97:5: note: ob_refcnt is now refs: 2 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_014", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: ob_refcnt is now refs: 1 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:100:5: note: ob_refcnt is now refs: 2 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_015", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: ob_refcnt is now refs: 1 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:103:5: note: ob_refcnt is now refs: 2 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_016", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: ob_refcnt is now refs: 1 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:106:5: note: ob_refcnt is now refs: 2 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_017", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: ob_refcnt is now refs: 1 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:109:5: note: ob_refcnt is now refs: 2 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_018", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: ob_refcnt is now refs: 1 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:112:5: note: ob_refcnt is now refs: 2 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_019", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: ob_refcnt is now refs: 1 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:115:5: note: ob_refcnt is now refs: 2 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_020", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: ob_refcnt is now refs: 1 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:118:5: note: ob_refcnt is now refs: 2 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_021", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: ob_refcnt is now refs: 1 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:121:5: note: ob_refcnt is now refs: 2 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_022", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: ob_refcnt is now refs: 1 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:124:5: note: ob_refcnt is now refs: 2 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_023", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: ob_refcnt is now refs: 1 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:127:5: note: ob_refcnt is now refs: 2 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_024", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: ob_refcnt is now refs: 1 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:130:5: note: ob_refcnt is now refs: 2 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_025", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: ob_refcnt is now refs: 1 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:133:5: note: ob_refcnt is now refs: 2 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_026", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: ob_refcnt is now refs: 1 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: note: ob_refcnt is now refs: 2 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_027", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 3 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 4 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 5 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 6 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 7 + N where N >= 26
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: found 6 similar trace(s) to this
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: error: ob_refcnt of return value is 7 too high
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: but final ob_refcnt is N + 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: PyLongObject allocated at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: when PyLong_FromLong() succeeds at:     PyObject *item = PyLong_FromLong(4096);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34:15: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:36:8: note: taking False path at:     if (!item) {
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: reaching:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:11: note: when PyDict_New() succeeds at:     leaky = PyDict_New();
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:58:5: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_001", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:59:23: note: ob_refcnt is now refs: 1 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:61:5: note: ob_refcnt is now refs: 2 + N where N >= 1
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_002", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:62:23: note: ob_refcnt is now refs: 1 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:64:5: note: ob_refcnt is now refs: 2 + N where N >= 2
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_003", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:65:23: note: ob_refcnt is now refs: 1 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:67:5: note: ob_refcnt is now refs: 2 + N where N >= 3
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_004", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:68:23: note: ob_refcnt is now refs: 1 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:70:5: note: ob_refcnt is now refs: 2 + N where N >= 4
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_005", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:71:23: note: ob_refcnt is now refs: 1 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:73:5: note: ob_refcnt is now refs: 2 + N where N >= 5
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_006", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:74:23: note: ob_refcnt is now refs: 1 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:76:5: note: ob_refcnt is now refs: 2 + N where N >= 6
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_007", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:77:23: note: ob_refcnt is now refs: 1 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:79:5: note: ob_refcnt is now refs: 2 + N where N >= 7
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_008", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:80:23: note: ob_refcnt is now refs: 1 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:82:5: note: ob_refcnt is now refs: 2 + N where N >= 8
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_009", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:83:23: note: ob_refcnt is now refs: 1 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:85:5: note: ob_refcnt is now refs: 2 + N where N >= 9
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_010", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:86:23: note: ob_refcnt is now refs: 1 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:88:5: note: ob_refcnt is now refs: 2 + N where N >= 10
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_011", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:89:23: note: ob_refcnt is now refs: 1 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:91:5: note: ob_refcnt is now refs: 2 + N where N >= 11
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_012", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:92:23: note: ob_refcnt is now refs: 1 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:94:5: note: ob_refcnt is now refs: 2 + N where N >= 12
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_013", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:95:23: note: ob_refcnt is now refs: 1 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:97:5: note: ob_refcnt is now refs: 2 + N where N >= 13
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_014", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:98:23: note: ob_refcnt is now refs: 1 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:100:5: note: ob_refcnt is now refs: 2 + N where N >= 14
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_015", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:101:23: note: ob_refcnt is now refs: 1 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:103:5: note: ob_refcnt is now refs: 2 + N where N >= 15
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_016", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:104:23: note: ob_refcnt is now refs: 1 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:106:5: note: ob_refcnt is now refs: 2 + N where N >= 16
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_017", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:107:23: note: ob_refcnt is now refs: 1 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:109:5: note: ob_refcnt is now refs: 2 + N where N >= 17
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_018", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:110:23: note: ob_refcnt is now refs: 1 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:112:5: note: ob_refcnt is now refs: 2 + N where N >= 18
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_019", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:113:23: note: ob_refcnt is now refs: 1 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:115:5: note: ob_refcnt is now refs: 2 + N where N >= 19
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_020", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:116:23: note: ob_refcnt is now refs: 1 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:118:5: note: ob_refcnt is now refs: 2 + N where N >= 20
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_021", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:119:23: note: ob_refcnt is now refs: 1 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:121:5: note: ob_refcnt is now refs: 2 + N where N >= 21
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_022", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:122:23: note: ob_refcnt is now refs: 1 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:124:5: note: ob_refcnt is now refs: 2 + N where N >= 22
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_023", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:125:23: note: ob_refcnt is now refs: 1 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:127:5: note: ob_refcnt is now refs: 2 + N where N >= 23
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_024", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:128:23: note: ob_refcnt is now refs: 1 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:130:5: note: ob_refcnt is now refs: 2 + N where N >= 24
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: when PyModule_AddObject() succeeds at:     PyModule_AddObject(m, "item_025", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:131:23: note: ob_refcnt is now refs: 1 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:133:5: note: ob_refcnt is now refs: 2 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:134:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_026", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:136:5: note: ob_refcnt is now refs: 3 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:137:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_027", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:139:5: note: ob_refcnt is now refs: 4 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:140:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_028", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:142:5: note: ob_refcnt is now refs: 5 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:143:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_029", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:145:5: note: ob_refcnt is now refs: 6 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:146:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_030", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:148:5: note: ob_refcnt is now refs: 7 + N where N >= 25
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:149:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_031", item);
-tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:151:5: note: ob_refcnt is now refs: 8 + N where N >= 25
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:152:23: note: when PyModule_AddObject() fails at:     PyModule_AddObject(m, "item_032", item);
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:155:1: note: returning
 tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:33:1: note: graphical error report for function 'test_adding_module_objects' written out to 'tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c.test_adding_module_objects-refcount-errors.html'

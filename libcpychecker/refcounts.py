@@ -2695,7 +2695,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         # print(dot)
         invoke_dot(dot)
 
-    limits=Limits(maxtrans=1024)
+    limits=Limits(maxtrans=256)
 
     try:
         traces = iter_traces(fun,
