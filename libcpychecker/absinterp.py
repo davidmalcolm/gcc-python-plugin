@@ -2583,8 +2583,15 @@ class Resources:
 class TooComplicated(Exception):
     """
     The function is too complicated for the checker to analyze.
+
+    We have a list of Trace instances, each of which is "complete" in the sense
+    that it fully captures one path through the function.  However, we know
+    that the list itself is incomplete: it's not the full list of all
+    possible traces.
     """
-    pass
+    def __init__(self, complete_traces):
+        check_isinstance(complete_traces, list)
+        self.complete_traces = complete_traces
 
 class Limits:
     """
@@ -2594,18 +2601,26 @@ class Limits:
         self.maxtrans = maxtrans
         self.trans_seen = 0
 
-    def on_transition(self, transition):
+    def on_transition(self, transition, result):
+        """
+        result is a list of all *complete* traces so far
+        """
         self.trans_seen += 1
         if self.trans_seen > self.maxtrans:
-            raise TooComplicated()
+            raise TooComplicated(result)
 
-def iter_traces(fun, facets, prefix=None, limits=None):
+def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
     """
     Traverse the tree of traces of program state, returning a list
     of Trace instances.
 
     For now, don't include any traces that contain loops, as a primitive
     way of ensuring termination of the analysis
+
+    This is recursive, setting up a depth-first traversal of the state tree.
+    If it's interrupted by a TooComplicated exception, we should at least
+    capture an incomplete list of paths down to some of the bottoms of the
+    tree.
     """
     log('iter_traces(%r, %r, %r)', fun, facets, prefix)
     if prefix is None:
@@ -2678,14 +2693,23 @@ def iter_traces(fun, facets, prefix=None, limits=None):
             check_isinstance(transition, Transition)
             transition.dest.verify()
 
+            # Potentially raise a TooComplicated exception:
             if limits:
-                limits.on_transition(transition)
+                limits.on_transition(transition, result)
 
             newprefix = prefix.copy().add(transition)
 
-            # Recurse:
-            for trace in iter_traces(fun, facets, newprefix, limits):
-                result.append(trace)
+            # Recurse
+            # This gives us a depth-first traversal of the state tree
+            try:
+                for trace in iter_traces(fun, facets, newprefix, limits,
+                                         depth + 1):
+                    result.append(trace)
+            except TooComplicated:
+                err = sys.exc_info()[1]
+                traces = err.complete_traces
+                traces += result
+                raise TooComplicated(traces)
         return result
     else:
         # We're at a terminating state:

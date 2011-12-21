@@ -38,108 +38,140 @@ test_adding_module_objects(PyObject *m)
       Each of these function calls steals a reference to the object if it
       succeeds, but can fail.
 
-      Hence the expected ereference count can change at each function call, so
+      Hence the expected reference count can change at each function call, so
       that (in theory) there are 2^N possible outcomes.
 
       The point of the test is to verify that the checker doesn't take O(2^N)
       time for such a case.
     */
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_001", item);
+    if (0 == PyModule_AddObject(m, "item_001", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_002", item);
+    if (0 == PyModule_AddObject(m, "item_002", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_003", item);
+    if (0 == PyModule_AddObject(m, "item_003", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_004", item);
+    if (0 == PyModule_AddObject(m, "item_004", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_005", item);
+    if (0 == PyModule_AddObject(m, "item_005", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_006", item);
+    if (0 == PyModule_AddObject(m, "item_006", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_007", item);
+    if (0 == PyModule_AddObject(m, "item_007", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_008", item);
+    if (0 == PyModule_AddObject(m, "item_008", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_009", item);
+    if (0 == PyModule_AddObject(m, "item_009", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_010", item);
+    if (0 == PyModule_AddObject(m, "item_010", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_011", item);
+    if (0 == PyModule_AddObject(m, "item_011", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_012", item);
+    if (0 == PyModule_AddObject(m, "item_012", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_013", item);
+    if (0 == PyModule_AddObject(m, "item_013", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_014", item);
+    if (0 == PyModule_AddObject(m, "item_014", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_015", item);
+    if (0 == PyModule_AddObject(m, "item_015", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_016", item);
+    if (0 == PyModule_AddObject(m, "item_016", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_017", item);
+    if (0 == PyModule_AddObject(m, "item_017", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_018", item);
+    if (0 == PyModule_AddObject(m, "item_018", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_019", item);
+    if (0 == PyModule_AddObject(m, "item_019", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_020", item);
+    if (0 == PyModule_AddObject(m, "item_020", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_021", item);
+    if (0 == PyModule_AddObject(m, "item_021", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_022", item);
+    if (0 == PyModule_AddObject(m, "item_022", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_023", item);
+    if (0 == PyModule_AddObject(m, "item_023", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_024", item);
+    if (0 == PyModule_AddObject(m, "item_024", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_025", item);
+    if (0 == PyModule_AddObject(m, "item_025", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_026", item);
+    if (0 == PyModule_AddObject(m, "item_026", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_027", item);
+    if (0 == PyModule_AddObject(m, "item_027", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_028", item);
+    if (0 == PyModule_AddObject(m, "item_028", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_029", item);
+    if (0 == PyModule_AddObject(m, "item_029", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_030", item);
+    if (0 == PyModule_AddObject(m, "item_030", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_031", item);
+    if (0 == PyModule_AddObject(m, "item_031", item)) {
+        Py_INCREF(item);
+    }
 
-    Py_INCREF(item);
-    PyModule_AddObject(m, "item_032", item);
+    if (0 == PyModule_AddObject(m, "item_032", item)) {
+        Py_INCREF(item);
+    }
 
     return item;
 }

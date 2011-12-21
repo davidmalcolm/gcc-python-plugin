@@ -2702,9 +2702,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                              facets,
                              limits=limits)
     except TooComplicated:
+        err = sys.exc_info()[1]
         gcc.inform(fun.start,
-                   'this function is too complicated for the reference-count checker to analyze')
-        return
+                   'this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed')
+        traces = err.complete_traces
 
     if dump_traces:
         traces = list(traces)
