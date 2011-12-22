@@ -98,7 +98,7 @@ def stmt_is_return_of_objptr(stmt):
                 return True
 
 def make_null_pyobject_ptr(stmt):
-    return ConcreteValue(get_PyObjectPtr(), stmt.loc, 0)
+    return make_null_ptr(get_PyObjectPtr(), stmt.loc)
 
 class RefcountValue(AbstractValue):
     """
@@ -958,6 +958,28 @@ class CPython(Facet):
                            fnmeta.desc_when_call_returns_value('1 (true)')),
                 Transition(self.state, s_false,
                            fnmeta.desc_when_call_returns_value('0 (false)'))]
+
+    ########################################################################
+    # PyCapsule_*
+    ########################################################################
+
+    def impl_PyCapsule_GetPointer(self, stmt, v_capsule, v_name):
+        fnmeta = FnMeta(name='PyCapsule_GetPointer',
+                        docurl='http://docs.python.org/c-api/capsule.html#PyCapsule_GetPointer',
+                        prototype='void* PyCapsule_GetPointer(PyObject *capsule, const char *name)',
+                        defined_in='Objects/capsule.c')
+        # either returns NULL, setting an exception, or returns non-NULL
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                           UnknownValue.make(stmt.lhs.type,
+                                             stmt.loc),
+                           fnmeta.desc_when_call_succeeds())
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                           make_null_ptr(stmt.lhs.type,
+                                         stmt.loc),
+                           fnmeta.desc_when_call_fails())
+        t_failure.dest.cpython.set_exception('PyExc_ValueError',
+                                             stmt.loc)
+        return [t_success, t_failure]
 
     ########################################################################
     # PyCObject_*

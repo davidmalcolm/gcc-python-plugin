@@ -826,6 +826,9 @@ class UninitializedData(AbstractValue):
     def extract_from_parent(self, region, gcctype, loc):
         return UninitializedData(gcctype, self.loc)
 
+def make_null_ptr(gcctype, loc):
+    return ConcreteValue(gcctype, loc, 0)
+
 ############################################################################
 # Various kinds of predicted error:
 ############################################################################
