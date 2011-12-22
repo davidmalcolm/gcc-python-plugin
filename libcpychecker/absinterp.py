@@ -763,6 +763,14 @@ class PointerToRegion(AbstractValue):
     def impl_is_ge(self, rhs):
         return None
 
+    def eval_unary_op(self, exprcode, gcctype, loc):
+        if exprcode == gcc.ConvertExpr:
+            # Casting of this non-NULL pointer to another type:
+            return UnknownValue.make(gcctype, loc)
+
+        # Defer to base class:
+        AbstractValue.eval_unary_op(self, exprcode, gcctype, loc)
+
 class DeallocatedMemory(AbstractValue):
     """
     A 'poisoned' r-value: this memory has been deallocated, so the r-value

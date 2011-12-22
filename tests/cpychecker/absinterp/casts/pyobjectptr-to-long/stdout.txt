@@ -1,0 +1,13 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='long int', loc=gcc.Location(file='tests/cpychecker/absinterp/casts/pyobjectptr-to-long/input.c', line=29), minvalue=-0x8000000000000000, maxvalue=0x7fffffffffffffff)
+    str(): (long int)val [-0x8000000000000000 <= val <= 0x7fffffffffffffff] from tests/cpychecker/absinterp/casts/pyobjectptr-to-long/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('obj')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/absinterp/casts/pyobjectptr-to-long/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/casts/pyobjectptr-to-long/input.c:28
