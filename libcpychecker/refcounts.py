@@ -1674,6 +1674,29 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyMapping_*
+    ########################################################################
+
+    def impl_PyMapping_Size(self, stmt, v_o):
+        fnmeta = FnMeta(name='PyMapping_Size',
+                        docurl='http://docs.python.org/c-api/mapping.html#PyMapping_Size',
+                        prototype='Py_ssize_t PyMapping_Size(PyObject *o)',
+                        defined_in='Objects/abstract.c',
+                        notes='Can cope with NULL (sets exception)')
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                           UnknownValue.make(stmt.lhs.type,
+                                             stmt.loc),
+                           fnmeta.desc_when_call_succeeds())
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                           ConcreteValue(stmt.lhs.type,
+                                         stmt.loc,
+                                         -1),
+                           fnmeta.desc_when_call_fails())
+        t_failure.dest.cpython.set_exception('PyExc_TypeError',
+                                             stmt.loc)
+        return [t_success, t_failure]
+
+    ########################################################################
     # PyMem_*
     ########################################################################
     def impl_PyMem_Free(self, stmt, v_ptr):

@@ -1,0 +1,29 @@
+Trace 0:
+  Transitions:
+    'when PyMapping_Size() succeeds'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyMapping_Size/basic/input.c', line=29), minvalue=-0x8000000000000000, maxvalue=0x7fffffffffffffff)
+    str(): (Py_ssize_t)val [-0x8000000000000000 <= val <= 0x7fffffffffffffff] from tests/cpychecker/refcounts/PyMapping_Size/basic/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('obj')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyMapping_Size/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyMapping_Size/basic/input.c:28
+
+Trace 1:
+  Transitions:
+    'when PyMapping_Size() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyMapping_Size/basic/input.c', line=29), value=-1)
+    str(): (Py_ssize_t)-1 from tests/cpychecker/refcounts/PyMapping_Size/basic/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('obj')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyMapping_Size/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PyMapping_Size/basic/input.c:29
