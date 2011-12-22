@@ -48,8 +48,25 @@ class CpyCheckerGimplePass(gcc.GimplePass):
 
             # The refcount code is too buggy for now to be on by default:
             if self.verify_refcounting:
-                check_refcounts(fun, self.dump_traces, self.show_traces,
-                                self.show_possible_null_derefs)
+                if 0:
+                    # Profiled version:
+                    import cProfile
+                    prof_filename = '%s.%s.refcount-profile' % (gcc.get_dump_base_name(),
+                                                                fun.decl.name)
+                    cProfile.runctx('self._check_refcounts(fun)',
+                                    globals(), locals(),
+                                    filename=prof_filename)
+                    import pstats
+                    prof = pstats.Stats(prof_filename)
+                    prof.sort_stats('cumulative').print_stats(20)
+                else:
+                    # Normal mode (without profiler):
+                    self._check_refcounts(fun)
+
+    def _check_refcounts(self, fun):
+        check_refcounts(fun, self.dump_traces, self.show_traces,
+                        self.show_possible_null_derefs)
+
 
 class CpyCheckerIpaPass(gcc.SimpleIpaPass):
     """
