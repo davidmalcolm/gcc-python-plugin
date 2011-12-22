@@ -1276,6 +1276,18 @@ class CPython(Facet):
     ########################################################################
     # PyEval_InitThreads()
     ########################################################################
+
+    def impl_PyEval_CallObjectWithKeywords(self, stmt, v_func, v_arg, v_kw):
+        fnmeta = FnMeta(name='PyEval_CallObjectWithKeywords',
+                        prototype=('PyObject *\n'
+                                   'PyEval_CallObjectWithKeywords(PyObject *func, PyObject *arg, PyObject *kw)'),
+                        defined_in='Python/ceval.c')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_func,
+                                               why='looks up func->ob_type within inner call to PyObject_Call()')
+        # arg and kw can each be NULL, though
+
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
     def impl_PyEval_InitThreads(self, stmt):
         fnmeta = FnMeta(name='PyEval_InitThreads',
                         docurl='http://docs.python.org/c-api/init.html#PyEval_InitThreads')
