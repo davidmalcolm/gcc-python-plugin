@@ -304,8 +304,9 @@ class CPython(Facet):
         oldvalue = self.state.get_store(ob_refcnt, None, loc) # FIXME: gcctype
         check_isinstance(oldvalue, AbstractValue)
         log('oldvalue: %r', oldvalue)
-        #if isinstance(oldvalue, UnknownValue):
-        #    self.raise_split_value(oldvalue, loc)
+        # If we never had a ob_refcnt, treat it as a borrowed reference:
+        if isinstance(oldvalue, UnknownValue):
+            oldvalue = RefcountValue.borrowed_ref()
         check_isinstance(oldvalue, RefcountValue)
         newvalue = fn(oldvalue)
         log('newvalue: %r', newvalue)
