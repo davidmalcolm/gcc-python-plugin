@@ -1769,9 +1769,13 @@ class CPython(Facet):
     # PyObject_*
     ########################################################################
     def _handle_PyObject_CallMethod(self, stmt, fnmeta,
-                                    v_o, v_name, v_fmt, v_varargs, with_size_t):
+                                    v_o, v_fmt, v_varargs, with_size_t):
+        """
+        For functions in Objects/abstract.c that use Py_VaBuildValue or
+        _Py_VaBuildValue_SizeT, then use call_function_tail
+        (e.g. handles PyObject_CallFunction also)
+        """
         check_isinstance(v_o, AbstractValue)
-        check_isinstance(v_name, AbstractValue)
         check_isinstance(v_fmt, AbstractValue)
         check_isinstance(v_varargs, tuple) # of AbstractValue
         check_isinstance(with_size_t, bool)
@@ -1846,6 +1850,26 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_args)
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
+    def impl_PyObject_CallFunction(self, stmt, v_callable, v_format, *args):
+        fnmeta = FnMeta(name='PyObject_CallFunction',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallFunction',
+                        defined_in='Objects/abstract.c',
+                        prototype='PyObject* PyObject_CallFunction(PyObject *callable, char *format, ...)')
+        # callable can be NULL
+
+        return self._handle_PyObject_CallMethod(stmt, fnmeta,
+                                                v_callable, v_format,
+                                                args, with_size_t=False)
+
+    def impl__PyObject_CallFunction_SizeT(self, stmt, v_callable, v_format, *args):
+        fnmeta = FnMeta(name='_PyObject_CallFunction_SizeT',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallFunction',
+                        defined_in='Objects/abstract.c',
+                        prototype='PyObject * _PyObject_CallFunction_SizeT(PyObject *callable, char *format, ...)')
+        return self._handle_PyObject_CallMethod(stmt, fnmeta,
+                                                v_callable, v_format,
+                                                args, with_size_t=True)
+
     def _check_objargs(self, stmt, fnmeta, args, base_idx):
         """
         Object/abstract.c: objargs_mktuple(va_list va)
@@ -1892,7 +1916,7 @@ class CPython(Facet):
                         prototype=('PyObject *\n'
                                    'PyObject_CallMethod(PyObject *o, char *name, char *format, ...)'))
         return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_o, v_name, v_format,
+                                                v_o, v_format,
                                                 args, with_size_t=False)
 
     def impl__PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
@@ -1906,7 +1930,7 @@ class CPython(Facet):
         #   PyObject *
         #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
         return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_o, v_name, v_format,
+                                                v_o, v_format,
                                                 args, with_size_t=True)
 
     def impl_PyObject_CallMethodObjArgs(self, stmt, v_o, v_name, *args):
