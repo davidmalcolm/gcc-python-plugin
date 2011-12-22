@@ -1841,8 +1841,48 @@ class CPython(Facet):
                         prototype=('PyObject *\n'
                                    'PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw)'))
         # "func" and "args" must not be NULL, but "kw" can be:
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o)
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+                                               why='looks up func->ob_type')
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_args)
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
+    def _check_objargs(self, stmt, fnmeta, args, base_idx):
+        """
+        Object/abstract.c: objargs_mktuple(va_list va)
+        expects a NULL-terminated list of PyObject*
+        """
+        check_isinstance(fnmeta, FnMeta)
+
+        # must be PyObject* (or NULL):
+        for i, v_arg in enumerate(args):
+            if v_arg.is_null_ptr():
+                continue
+            if not type_is_pyobjptr_subclass(v_arg.gcctype):
+                loc = v_arg.loc
+                if not loc:
+                    loc = stmt.loc
+                gcc.error(loc,
+                          ('argument %i had type %s but was expecting a PyObject* (or subclass)'
+                           % (i + base_idx + 1, v_arg.gcctype)))
+
+        # check NULL-termination:
+        if not args or not args[-1].is_null_ptr():
+            gcc.error(stmt.loc,
+                      ('arguments to %s were not NULL-terminated'
+                       % fnmeta.name))
+
+    def impl_PyObject_CallFunctionObjArgs(self, stmt, v_callable, *args):
+        fnmeta = FnMeta(name='PyObject_CallFunctionObjArgs',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallFunctionObjArgs',
+                        prototype='PyObject* PyObject_CallFunctionObjArgs(PyObject *callable, ...)',
+                        defined_in='Objects/abstract.c',
+                        notes='args must be NULL-terminated')
+
+        # "callable" can be NULL
+
+        # Check args:
+        self._check_objargs(stmt, fnmeta, args, 1)
+
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
     def impl_PyObject_CallMethod(self, stmt, v_o, v_name, v_format, *args):
@@ -1868,6 +1908,19 @@ class CPython(Facet):
         return self._handle_PyObject_CallMethod(stmt, fnmeta,
                                                 v_o, v_name, v_format,
                                                 args, with_size_t=True)
+
+    def impl_PyObject_CallMethodObjArgs(self, stmt, v_o, v_name, *args):
+        fnmeta = FnMeta(name='PyObject_CallMethodObjArgs',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallMethodObjArgs',
+                        defined_in='Objects/abstract.c',
+                        prototype='PyObject* PyObject_CallMethodObjArgs(PyObject *o, PyObject *name, ..., NULL)')
+
+        # "callable" and "name" can be NULL
+
+        # Check args:
+        self._check_objargs(stmt, fnmeta, args, 2)
+
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
     def impl_PyObject_GenericGetAttr(self, stmt, v_o, v_name):
         fnmeta = FnMeta(name='PyObject_GenericGetAttr',

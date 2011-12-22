@@ -1,0 +1,8 @@
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 2 had type char[12] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 3 had type char[13] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 4 had type char[4] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 5 had type char[3] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 6 had type char[3] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: argument 7 had type char[4] * but was expecting a PyObject* (or subclass)
+tests/cpychecker/refcounts/PyObject_CallFunctionObjArgs/incorrect/input.c:33:5: error: arguments to PyObject_CallFunctionObjArgs were not NULL-terminated
