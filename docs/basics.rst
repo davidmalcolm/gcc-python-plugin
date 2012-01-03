@@ -481,15 +481,35 @@ Currently useful callback events
 Generating custom errors and warnings
 =====================================
 
-.. py:function:: gcc.warning(location, option, message)
+.. py:function:: gcc.warning(location, message, option=None)
 
-   Emits a compiler warning at the given :py:class:`gcc.Location`.
+   Emits a compiler warning at the given :py:class:`gcc.Location`, potentially
+   controlled by a :py:class:`gcc.Option`.
 
-   The warning is controlled by the given :py:class:`gcc.Option`.
+   If no option is supplied (or `None` is supplied), then the warning is an
+   unconditional one, always issued::
+
+      gcc.warning(func.start, 'this is an unconditional warning')
+
+   .. code-block:: bash
+
+      $ ./gcc-with-python script.py input.c
+      input.c:25:1: warning: this is an unconditional warning [enabled by default]
+
+   and will be an error if `-Werror` is supplied as a command-line argument to
+   GCC:
+
+   .. code-block:: bash
+
+      $ ./gcc-with-python script.py -Werror input.c
+      input.c:25:1: error: this is an unconditional warning [-Werror]
+
+   It's possible to associate the warning with a command-line option, so that
+   it is controlled by that option.
 
    For example, given this Python code::
 
-      gcc.warning(func.start, gcc.Option('-Wformat'), 'Incorrect formatting')
+      gcc.warning(func.start, 'Incorrect formatting', gcc.Option('-Wformat'))
 
    if the given warning is enabled, a warning will be printed to stderr:
 
@@ -503,13 +523,13 @@ Generating custom errors and warnings
 
    .. code-block:: bash
 
-      $ ./gcc-with-python -Werror script.py input.c
+      $ ./gcc-with-python script.py -Werror input.c
       input.c:25:1: error: incorrect formatting [-Werror=format]
       cc1: all warnings being treated as errors
 
    .. code-block:: bash
 
-      $ ./gcc-with-python -Werror=format script.py input.c
+      $ ./gcc-with-python script.py -Werror=format input.c
       input.c:25:1: error: incorrect formatting [-Werror=format]
       cc1: some warnings being treated as errors
 
@@ -517,7 +537,7 @@ Generating custom errors and warnings
 
    .. code-block:: bash
 
-      $ ./gcc-with-python -Wno-format script.py input.c
+      $ ./gcc-with-python script.py -Wno-format input.c
 
    .. note:: Due to the way GCC implements some options, it's not always
       possible for the plugin to fully disable some warnings.  See

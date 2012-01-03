@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import sys
+
 import gcc
 
 # Verify that the various error and warning methods work:
@@ -24,7 +26,8 @@ def on_pass_execution(p, fn):
         gcc.error(fn.start, 'this is an error (with positional args)')
         gcc.error(location=fn.start,
                   message='this is an error (with keyword args)')
-        gcc.warning(fn.end, gcc.Option('-Wdiv-by-zero'), 'this is a warning (with positional args)')
+        gcc.warning(fn.end, 'this is a warning (with positional args)',
+                    gcc.Option('-Wdiv-by-zero'))
         gcc.warning(location=fn.end,
                     message='this is a warning (with keyword args)',
                     option=gcc.Option('-Wdiv-by-zero'))
@@ -34,8 +37,24 @@ def on_pass_execution(p, fn):
 
         # Verify that -Wno-format was honored:
         gcc.warning(fn.end,
-                    gcc.Option('-Wformat'),
-                    'this warning ought not to appear')
+                    'this warning ought not to appear',
+                    gcc.Option('-Wformat'))
+
+        # Verify that we can issue an unconditional warning, with no option
+        # (as per https://fedorahosted.org/gcc-python-plugin/ticket/8 ):
+        gcc.warning(fn.end, 'this is an unconditional warning')
+        gcc.warning(fn.end, 'this is another unconditional warning', None)
+
+        # Verify that gcc.warning handles an object of the wrong type by
+        # raising a TypeError
+        try:
+            gcc.warning(fn.end, 'this is another unconditional warning',
+                        'this should have been a gcc.Option instance, or None')
+        except TypeError:
+            err = sys.exc_info()[1]
+            sys.stderr.write('expected error was found: %s\n' % err)
+        else:
+            raise RuntimeError('expected exception was not raised')
 
         # Exercise gcc.inform:
         gcc.inform(fn.start, 'This is the start of the function')

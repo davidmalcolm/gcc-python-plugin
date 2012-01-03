@@ -4,5 +4,8 @@ tests/plugin/diagnostics/input.c:23:1: error: this is an error (with keyword arg
 tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with positional args) [-Wdiv-by-zero]
 tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with keyword args) [-Wdiv-by-zero]
 tests/plugin/diagnostics/input.c:23:1: error: a warning with some embedded format strings %s and %i
+tests/plugin/diagnostics/input.c:25:1: warning: this is an unconditional warning [enabled by default]
+tests/plugin/diagnostics/input.c:25:1: warning: this is another unconditional warning [enabled by default]
+expected error was found: option must be either None, or of type gcc.Option
 tests/plugin/diagnostics/input.c:23:1: note: This is the start of the function
 tests/plugin/diagnostics/input.c:25:1: note: This is the end of the function

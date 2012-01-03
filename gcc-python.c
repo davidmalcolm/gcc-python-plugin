@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -456,28 +456,53 @@ static PyObject *
 gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
-    PyGccOption *opt_obj;
     const char *msg;
+    PyObject *opt_obj = &_Py_NoneStruct;
+    int opt_code;
     char *keywords[] = {"location",
-                        "option",
                         "message",
+                        "option",
                         NULL};
     bool was_reported;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O!O!s:warning", keywords,
+                                     "O!s|O:warning", keywords,
+
+                                     /* code "O!": */
                                      &gcc_LocationType, &loc_obj,
-                                     &gcc_OptionType, &opt_obj,
-                                     &msg)) {
+                                     /* code: "s": */
+                                     &msg,
+
+                                     /* optional args: */
+                                     /* code: "O": */
+                                     &opt_obj)) {
         return NULL;
     }
 
-    /* Ugly workaround; see this function: */
-    if (0 == gcc_python_option_is_enabled(opt_obj->opt_code)) {
-        return PyBool_FromLong(0);
+    assert(opt_obj);
+
+    /* If a gcc.Option was given, extract the code: */
+    if (Py_TYPE(opt_obj) == &gcc_OptionType) {
+        opt_code = ((PyGccOption*)opt_obj)->opt_code;
+
+        /* Ugly workaround; see this function: */
+        if (0 == gcc_python_option_is_enabled(opt_code)) {
+            return PyBool_FromLong(0);
+        }
+
+    } else {
+        if (opt_obj == &_Py_NoneStruct) {
+            /* No gcc.Option given: an unconditionally enabled warning: */
+            opt_code = 0;
+        } else {
+            /* Some other object was given: */
+            return PyErr_Format(PyExc_TypeError,
+                                ("option must be either None,"
+                                 " or of type gcc.Option"));
+        }
     }
 
-    was_reported = warning_at(loc_obj->loc, opt_obj->opt_code, "%s", msg);
+    was_reported = warning_at(loc_obj->loc, opt_code, "%s", msg);
 
     return PyBool_FromLong(was_reported);
 }
