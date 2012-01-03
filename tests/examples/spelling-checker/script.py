@@ -39,8 +39,8 @@ class SpellcheckingPass(gcc.GimplePass):
                     # Warn about the spelling error (controlling the warning
                     # with the -Wall command-line option):
                     if gcc.warning(loc,
-                                   gcc.Option('-Wall'),
-                                   'Possibly misspelt word in string constant: %r' % word):
+                                   'Possibly misspelt word in string constant: %r' % word,
+                                   gcc.Option('-Wall')):
                         # and, if the warning was not suppressed at the command line, emit
                         # suggested respellings:
                         suggestions = spellingdict.suggest(word)
