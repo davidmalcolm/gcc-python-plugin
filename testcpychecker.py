@@ -101,7 +101,7 @@ class PyArg_ParseTupleTests(AnalyzerTests):
                '    Py_RETURN_NONE;\n'
                '}\n')
         experr = ("$(SRCFILE): In function 'bogus_format_string':\n"
-                  '$(SRCFILE):12:26: error: unknown format char in "This is not a valid format string": \'T\' [-fpermissive]\n')
+                  '$(SRCFILE):12:26: error: unknown format char in "This is not a valid format string": \'T\' [-Werror]\n')
         self.assertFindsError(src, experr)
                    
     def test_finding_htons_error(self):
@@ -133,7 +133,7 @@ socket_htons(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               "$(SRCFILE): In function 'socket_htons':\n"
-                              '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format code "i:htons" [-fpermissive]\n'
+                              '$(SRCFILE):17:26: error: Mismatching type in call to PyArg_ParseTuple with format code "i:htons" [-Werror]\n'
                               '  argument 3 ("&x1") had type\n'
                               '    "long unsigned int *" (pointing to 64 bits)\n'
                               '  but was expecting\n'
@@ -157,7 +157,7 @@ not_enough_varargs(PyObject *self, PyObject *args)
                               '  expected 1 extra arguments:\n'
                               '    "int *" (pointing to 32 bits)\n'
                               '  but got none\n'
-                              ' [-fpermissive]\n')
+                              ' [-Werror]\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -179,7 +179,7 @@ too_many_varargs(PyObject *self, PyObject *args)
                               '  but got 2:\n'
                               '    "int *" (pointing to 32 bits)\n'
                               '    "int *" (pointing to 32 bits)\n'
-                              ' [-fpermissive]\n')
+                              ' [-Werror]\n')
 
     def test_correct_usage(self):
         src = """
@@ -249,7 +249,7 @@ correct_usage(PyObject *self, PyObject *args)
 
     def get_expected_error(self):
         return ("$(SRCFILE): In function '%(function_name)s':\n"
-                '$(SRCFILE):%(linenum)i:%(colnum)i: error: Mismatching type in call to %(funcname)s with format code "%(code)s" [-fpermissive]\n'
+                '$(SRCFILE):%(linenum)i:%(colnum)i: error: Mismatching type in call to %(funcname)s with format code "%(code)s" [-Werror]\n'
                 '  argument %(argindex)i ("&val") had type\n'
                 '    "void * *"\n'
                 '  but was expecting\n'
@@ -482,7 +482,7 @@ class Py_BuildValueTests(AnalyzerTests):
                '    return Py_BuildValue("this is not a valid format string");\n'
                '}\n')
         experr = ("$(SRCFILE): In function 'bogus_format_string':\n"
-                  '$(SRCFILE):12:5: error: unknown format char in "this is not a valid format string": \'t\' [-fpermissive]\n')
+                  '$(SRCFILE):12:5: error: unknown format char in "this is not a valid format string": \'t\' [-Werror]\n')
         self.assertFindsError(src, experr)
 
     def test_not_enough_varargs(self):
@@ -499,7 +499,7 @@ not_enough_varargs(PyObject *self, PyObject *args)
                               '  expected 1 extra arguments:\n'
                               '    "int"\n'
                               '  but got none\n'
-                              ' [-fpermissive]\n')
+                              ' [-Werror]\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -517,7 +517,7 @@ too_many_varargs(PyObject *self, PyObject *args)
                               '  but got 2:\n'
                               '    "int"\n'
                               '    "int"\n'
-                              ' [-fpermissive]\n')
+                              ' [-Werror]\n')
 
     def test_correct_usage(self):
         src = """

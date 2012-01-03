@@ -1,48 +1,48 @@
 In file included from tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/input.c:29:0:
 tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc: In function 'hash_format_codes':
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:49:26: error: Mismatching type in call to PyArg_ParseTuple with format code "s#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:49:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "s#" [enabled by default]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "s#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:52:37: error: Mismatching type in call to PyArg_ParseTupleAndKeywords with format code "s#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:52:37: warning: Mismatching type in call to PyArg_ParseTupleAndKeywords with format code "s#" [enabled by default]
   argument 6 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "s#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:72:26: error: Mismatching type in call to PyArg_ParseTuple with format code "z#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:72:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "z#" [enabled by default]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "z#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:83:26: error: Mismatching type in call to PyArg_ParseTuple with format code "u#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:83:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "u#" [enabled by default]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "u#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:94:26: error: Mismatching type in call to PyArg_ParseTuple with format code "es#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:94:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "es#" [enabled by default]
   argument 5 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "es#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:105:26: error: Mismatching type in call to PyArg_ParseTuple with format code "et#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:105:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "et#" [enabled by default]
   argument 5 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "et#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:116:26: error: Mismatching type in call to PyArg_ParseTuple with format code "t#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:116:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "t#" [enabled by default]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits)
   for format code "t#"
-tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:127:26: error: Mismatching type in call to PyArg_ParseTuple with format code "w#" [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:127:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "w#" [enabled by default]
   argument 4 ("&ival") had type
     "int *" (pointing to 32 bits)
   but was expecting

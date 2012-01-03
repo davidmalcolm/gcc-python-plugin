@@ -29,7 +29,7 @@ from libcpychecker.absinterp import *
 from libcpychecker.attributes import fnnames_returning_borrowed_refs, \
     stolen_refs_by_fnname
 from libcpychecker.diagnostics import Reporter, Annotator, Note
-from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringError, \
+from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringWarning,\
     TypeCheckCheckerType, TypeCheckResultType, \
     ConverterCallbackType, ConverterResultType
 from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \

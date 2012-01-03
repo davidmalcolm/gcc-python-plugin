@@ -50,17 +50,17 @@ class NullPointer:
     def describe(self):
         return 'NULL'
 
-class CExtensionError(Exception):
-    # Base class for errors discovered by static analysis in C extension code
+class CExtensionWarning(Exception):
+    # Base class for warnings discovered by static analysis in C extension code
     pass
 
-class FormatStringError(CExtensionError):
+class FormatStringWarning(CExtensionWarning):
     def __init__(self, fmt_string):
         self.fmt_string = fmt_string
 
-class UnknownFormatChar(FormatStringError):
+class UnknownFormatChar(FormatStringWarning):
     def __init__(self, fmt_string, ch):
-        FormatStringError.__init__(self, fmt_string)
+        FormatStringWarning.__init__(self, fmt_string)
         self.ch = ch
 
     def __str__(self):
@@ -71,13 +71,13 @@ class UnhandledCode(UnknownFormatChar):
         return "unhandled format code in \"%s\": '%s' (FIXME)" % (self.fmt_string, self.ch)
 
 
-class MismatchedParentheses(FormatStringError):
+class MismatchedParentheses(FormatStringWarning):
     def __str__(self):
         return "mismatched parentheses in format string \"%s\"" % (self.fmt_string, )
 
-class ParsedFormatStringError(FormatStringError):
+class ParsedFormatStringWarning(FormatStringWarning):
     def __init__(self, funcname, fmt):
-        FormatStringError.__init__(self, fmt.fmt_string)
+        FormatStringWarning.__init__(self, fmt.fmt_string)
         self.funcname = funcname
         self.fmt = fmt
 
@@ -131,9 +131,9 @@ class ParsedFormatString:
         return ('%s(fmt_string=%r, args=%r)'
                 % (self.__class__.__name__, self.fmt_string, self.args))
 
-class WrongNumberOfVars(ParsedFormatStringError):
+class WrongNumberOfVars(ParsedFormatStringWarning):
     def __init__(self, funcname, fmt, varargs):
-        ParsedFormatStringError.__init__(self, funcname, fmt)
+        ParsedFormatStringWarning.__init__(self, funcname, fmt)
         self.varargs = varargs
 
     def __str__(self):
@@ -164,7 +164,7 @@ class TooManyVars(WrongNumberOfVars):
     def _get_desc_prefix(self):
         return 'Too many arguments'
 
-class MismatchingType(ParsedFormatStringError):
+class MismatchingType(ParsedFormatStringWarning):
     def __init__(self, funcname, fmt, arg_num, arg_fmt_string, exp_type, vararg):
         super(self.__class__, self).__init__(funcname, fmt)
         self.arg_num = arg_num
@@ -348,11 +348,11 @@ def check_pyargs(fun):
                         elif isinstance(contents, gcc.IntegerCst):
                             elements[elt_idx] = contents.constant
                     if elements[-1] != 0:
-                        gcc.permerror(stmt.loc, 'keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated')
+                        gcc.warning(stmt.loc, 'keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated')
                     i = 0
                     for elt in elements[0:-1]:
                         if not elt:
-                            gcc.permerror(stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i)
+                            gcc.warning(stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i)
                         i = i + 1
 
     def check_callsite(stmt, parser, funcname, format_idx, varargs_idx, with_size_t):
@@ -379,9 +379,9 @@ def check_pyargs(fun):
                 # Figure out expected types, based on the format string...
                 try:
                     fmt = parser.from_string(fmt_string, with_size_t)
-                except FormatStringError:
+                except FormatStringWarning:
                     exc = sys.exc_info()[1]
-                    gcc.permerror(stmt.loc, str(exc))
+                    gcc.warning(stmt.loc, str(exc))
                     return
                 log('fmt: %r', fmt.args)
 
@@ -392,11 +392,11 @@ def check_pyargs(fun):
                 varargs = stmt.args[varargs_idx:]
                 # log('varargs: %r', varargs)
                 if len(varargs) < len(exp_types):
-                    gcc.permerror(loc, str(NotEnoughVars(funcname, fmt, varargs)))
+                    gcc.warning(loc, str(NotEnoughVars(funcname, fmt, varargs)))
                     return
 
                 if len(varargs) > len(exp_types):
-                    gcc.permerror(loc, str(TooManyVars(funcname, fmt, varargs)))
+                    gcc.warning(loc, str(TooManyVars(funcname, fmt, varargs)))
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
@@ -408,8 +408,8 @@ def check_pyargs(fun):
                             loc = vararg.location
                         else:
                             loc = stmt.loc
-                        gcc.permerror(loc,
-                                      str(err))
+                        gcc.warning(loc,
+                                    str(err))
                         sys.stderr.write(err.extra_info())
 
     def maybe_check_callsite(stmt):

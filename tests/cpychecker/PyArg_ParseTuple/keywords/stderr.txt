@@ -1,2 +1,2 @@
 tests/cpychecker/PyArg_ParseTuple/keywords/input.c: In function 'parse_to_a_typedef':
-tests/cpychecker/PyArg_ParseTuple/keywords/input.c:32:37: error: keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated [-fpermissive]
+tests/cpychecker/PyArg_ParseTuple/keywords/input.c:32:37: warning: keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated [enabled by default]
