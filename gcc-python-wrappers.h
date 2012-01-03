@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -30,6 +30,12 @@ PyMODINIT_FUNC initoptpass(void);
 /* gcc-python-attribute.c: */
 PyObject*
 gcc_python_register_attribute(PyObject *self, PyObject *args, PyObject *kwargs);
+
+/* gcc-python-callbacks.c: */
+int gcc_python_is_within_event(enum plugin_event *out_event);
+
+PyObject*
+gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs);
 
 /* gcc-python-callgraph.c: */
 PyObject *

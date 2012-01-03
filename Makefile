@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ GCC=gcc
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
   gcc-python-attribute.c \
+  gcc-python-callbacks.c \
   gcc-python-callgraph.c \
   gcc-python-cfg.c \
   gcc-python-closure.c \
