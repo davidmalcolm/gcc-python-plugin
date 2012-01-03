@@ -50,6 +50,19 @@ gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self);
 extern PyObject *
 gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self);
 
+/* gcc-python-diagnostics.c: */
+PyObject*
+gcc_python_permerror(PyObject *self, PyObject *args);
+
+PyObject *
+gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs);
+
 /* gcc-python-pass.c: */
 extern PyObject *
 gcc_python_make_wrapper_pass(struct opt_pass *pass);

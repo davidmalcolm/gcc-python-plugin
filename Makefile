@@ -23,6 +23,7 @@ PLUGIN_SOURCE_FILES= \
   gcc-python-callgraph.c \
   gcc-python-cfg.c \
   gcc-python-closure.c \
+  gcc-python-diagnostics.c \
   gcc-python-function.c \
   gcc-python-gimple.c \
   gcc-python-location.c \
