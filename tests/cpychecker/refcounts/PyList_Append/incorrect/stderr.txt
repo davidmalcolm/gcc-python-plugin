@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:1: error: ob_refcnt of '*item' is 1 too high
+tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:1: warning: ob_refcnt of '*item' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:1: note: due to object being referenced by: PyListObject.ob_item[0]
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:1: note: but final ob_refcnt is N + 2

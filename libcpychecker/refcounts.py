@@ -1942,15 +1942,15 @@ class CPython(Facet):
                 loc = v_arg.loc
                 if not loc:
                     loc = stmt.loc
-                gcc.error(loc,
-                          ('argument %i had type %s but was expecting a PyObject* (or subclass)'
-                           % (i + base_idx + 1, v_arg.gcctype)))
+                gcc.warning(loc,
+                            ('argument %i had type %s but was expecting a PyObject* (or subclass)'
+                             % (i + base_idx + 1, v_arg.gcctype)))
 
         # check NULL-termination:
         if not args or not args[-1].is_null_ptr():
-            gcc.error(stmt.loc,
-                      ('arguments to %s were not NULL-terminated'
-                       % fnmeta.name))
+            gcc.warning(stmt.loc,
+                        ('arguments to %s were not NULL-terminated'
+                         % fnmeta.name))
 
     def impl_PyObject_CallFunctionObjArgs(self, stmt, v_callable, *args):
         fnmeta = FnMeta(name='PyObject_CallFunctionObjArgs',
@@ -2881,12 +2881,12 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     if not show_possible_null_derefs:
                         continue
 
-            err = rep.make_error(fun, trace.err.loc, str(trace.err))
-            err.add_trace(trace)
+            w = rep.make_warning(fun, trace.err.loc, str(trace.err))
+            w.add_trace(trace)
             if hasattr(trace.err, 'why'):
                 if trace.err.why:
-                    err.add_note(trace.err.loc,
-                                 trace.err.why)
+                    w.add_note(trace.err.loc,
+                               trace.err.why)
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
@@ -2963,24 +2963,24 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                             exp_refcnt -= 1
 
             # Helper function for when ob_refcnt is wrong:
-            def emit_refcount_error(msg):
-                err = rep.make_error(fun, endstate.get_gcc_loc(fun), msg)
-                err.add_note(endstate.get_gcc_loc(fun),
-                             ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
-                              % exp_refcnt))
+            def emit_refcount_warning(msg):
+                w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
+                w.add_note(endstate.get_gcc_loc(fun),
+                           ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
+                            % exp_refcnt))
                 if exp_refcnt > 0:
-                    err.add_note(endstate.get_gcc_loc(fun),
-                                 ('due to object being referenced by: %s'
-                                  % ', '.join(exp_refs)))
-                err.add_note(endstate.get_gcc_loc(fun),
-                             ('but final ob_refcnt is N + %i'
-                              % ob_refcnt.relvalue))
+                    w.add_note(endstate.get_gcc_loc(fun),
+                               ('due to object being referenced by: %s'
+                                % ', '.join(exp_refs)))
+                w.add_note(endstate.get_gcc_loc(fun),
+                           ('but final ob_refcnt is N + %i'
+                            % ob_refcnt.relvalue))
                 # For dynamically-allocated objects, indicate where they
                 # were allocated:
                 if isinstance(region, RegionOnHeap):
                     alloc_loc = region.alloc_stmt.loc
                     if alloc_loc:
-                        err.add_note(region.alloc_stmt.loc,
+                        w.add_note(region.alloc_stmt.loc,
                                      ('%s allocated at: %s'
                                       % (region.name,
                                          get_src_for_loc(alloc_loc))))
@@ -2992,42 +2992,44 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     # Debug help:
                     from libcpychecker.diagnostics import TestAnnotator
                     annotator = TestAnnotator()
-                err.add_trace(trace, annotator)
+                w.add_trace(trace, annotator)
 
                 if 0:
                     # Handy for debugging:
-                    err.add_note(endstate.get_gcc_loc(fun),
-                                 'this was trace %i' % i)
-                return err
+                    w.add_note(endstate.get_gcc_loc(fun),
+                               'this was trace %i' % i)
+                return w
 
             # Here's where we verify the refcount:
             if isinstance(ob_refcnt, RefcountValue):
                 if ob_refcnt.relvalue > exp_refcnt:
                     # Refcount is too high:
-                    err = emit_refcount_error('ob_refcnt of %s is %i too high'
-                                              % (desc, ob_refcnt.relvalue - exp_refcnt))
+                    w = emit_refcount_warning('ob_refcnt of %s is %i too high'
+                                              % (desc,
+                                                 ob_refcnt.relvalue - exp_refcnt))
                 elif ob_refcnt.relvalue < exp_refcnt:
                     # Refcount is too low:
-                    err = emit_refcount_error('ob_refcnt of %s is %i too low'
-                                              % (desc, exp_refcnt - ob_refcnt.relvalue))
+                    w = emit_refcount_warning('ob_refcnt of %s is %i too low'
+                                              % (desc,
+                                                 exp_refcnt - ob_refcnt.relvalue))
                     # Special-case hint for when None has too low a refcount:
                     if return_value:
                         if isinstance(return_value.region, RegionForGlobal):
                             if return_value.region.vardecl.name == '_Py_NoneStruct':
-                                err.add_note(endstate.get_gcc_loc(fun),
-                                             'consider using "Py_RETURN_NONE;"')
+                                w.add_note(endstate.get_gcc_loc(fun),
+                                           'consider using "Py_RETURN_NONE;"')
 
         # Detect returning a deallocated object:
         if return_value:
             if isinstance(return_value, PointerToRegion):
                 rvalue = endstate.value_for_region.get(return_value.region, None)
                 if isinstance(rvalue, DeallocatedMemory):
-                    err = rep.make_error(fun,
+                    w = rep.make_warning(fun,
                                          endstate.get_gcc_loc(fun),
                                          'returning pointer to deallocated memory')
-                    err.add_trace(trace)
-                    err.add_note(rvalue.loc,
-                                 'memory deallocated here')
+                    w.add_trace(trace)
+                    w.add_note(rvalue.loc,
+                               'memory deallocated here')
 
         # Detect failure to set exceptions when returning NULL:
         def warn_about_NULL_without_exception():
@@ -3047,10 +3049,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                         if function_is_tp_iternext_callback(fun):
                             return
 
-                        err = rep.make_error(fun,
+                        w = rep.make_warning(fun,
                                              endstate.get_gcc_loc(fun),
                                              'returning (PyObject*)NULL without setting an exception')
-                        err.add_trace(trace, ExceptionStateAnnotator())
+                        w.add_trace(trace, ExceptionStateAnnotator())
         warn_about_NULL_without_exception()
 
     # (all traces analysed)
@@ -3064,7 +3066,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
     # de-duplication
     rep.flush()
 
-    if rep.got_errors():
+    if rep.got_warnings():
         filename = ('%s.%s-refcount-errors.html'
                     % (gcc.get_dump_base_name(), fun.decl.name))
         rep.dump_html(fun, filename)

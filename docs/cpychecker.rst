@@ -72,10 +72,10 @@ The checker attempts to analyze all possible paths through each function,
 tracking the various ``PyObject*`` objects encountered.
 
 For each path through the function and ``PyObject*``, it determines what the
-reference count ought to be at the end of the function, issuing an error report
-for any that are incorrect.
+reference count ought to be at the end of the function, issuing warnings for
+any that are incorrect.
 
-The error report is in two forms: the classic textual output to GCC's standard
+The warnings are in two forms: the classic textual output to GCC's standard
 error stream, together with an HTML report indicating the flow through the
 function, in graphical form.
 
@@ -104,7 +104,7 @@ For example, given this buggy C code:
 the checker emits these messages to stderr::
 
    input.c: In function 'test':
-   input.c:38:1: error: ob_refcnt of '*list' is 1 too high
+   input.c:38:1: warning: ob_refcnt of '*list' is 1 too high [enabled by default]
    input.c:38:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
    input.c:38:1: note: but final ob_refcnt is N + 1
    input.c:27:10: note: PyListObject allocated at:     list = PyList_New(1);
@@ -246,7 +246,7 @@ Error-handling checking
 -----------------------
 The checker has knowledge of much of the CPython C API, and will generate
 a trace tree containing many of the possible error paths.   It will issue
-error reports for code that appears to not gracefully handle an error.
+warnings for code that appears to not gracefully handle an error.
 
 (TODO: show example)
 
@@ -255,7 +255,7 @@ return can either NULL (setting an exception), or a new reference.  It knows
 about much of the other parts of the CPython C API, including many other
 functions that can fail.
 
-The checker will emit errors for various events:
+The checker will emit warnings for various events:
 
   * if it detects a dereferencing of a ``NULL`` value
 
@@ -264,7 +264,7 @@ The checker will emit errors for various events:
     (which would lead to a segmentation fault if that code path were executed)::
 
       input.c: In function 'test':
-      input.c:38:33: error: calling PyString_AsString with NULL (gcc.VarDecl('repr_args')) as argument 1 at input.c:38
+      input.c:38:33: warning: calling PyString_AsString with NULL (gcc.VarDecl('repr_args')) as argument 1 at input.c:38
       input.c:31:15: note: when PyObject_Repr() fails at:     repr_args = PyObject_Repr(args);
       input.c:38:33: note: PyString_AsString() invokes Py_TYPE() on the pointer via the PyString_Check() macro, thus accessing (NULL)->ob_type
       input.c:27:1: note: graphical error report for function 'test' written out to 'input.c.test-refcount-errors.html'
@@ -275,7 +275,7 @@ The checker will emit errors for various events:
     object being returned::
 
        input.c: In function 'test':
-       input.c:43:1: error: returning pointer to deallocated memory
+       input.c:43:1: warning: returning pointer to deallocated memory
        input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
        input.c:31:8: note: taking False path at:     if (!tmp) {
        input.c:39:5: note: reaching:     Py_DECREF(tmp);
@@ -294,7 +294,7 @@ warning about any paths through functions returning a ``PyObject*`` that return
 NULL for which the per-thread exception state has not been set::
 
    input.c: In function 'test':
-   input.c:32:5: error: returning (PyObject*)NULL without setting an exception
+   input.c:32:5: warning: returning (PyObject*)NULL without setting an exception
 
 (TODO: provide a way to mark a function as setting this state)
 
@@ -461,7 +461,7 @@ compiler has no way of verifying.
 
 Given the above, the checker will emit an error like this::
 
-   input.c:59:6: error: flags do not match callback signature for 'widget_display' within PyMethodDef table
+   input.c:59:6: warning: flags do not match callback signature for 'widget_display' within PyMethodDef table
    input.c:59:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
    input.c:59:6: note: actual type of underlying callback: struct PyObject * <Tc53> (struct PyObject *, struct PyObject *) (2 arguments)
    input.c:59:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
@@ -482,9 +482,9 @@ lacking a ``NULL`` sentinel value to terminate the iteration:
           at run-time */
    };
 
-Given the above, the checker will emit this error::
+Given the above, the checker will emit this warning::
 
-  input.c:39:6: error: missing NULL sentinel value at end of PyMethodDef table
+  input.c:39:6: warning: missing NULL sentinel value at end of PyMethodDef table
 
 Limitations and caveats
 -----------------------

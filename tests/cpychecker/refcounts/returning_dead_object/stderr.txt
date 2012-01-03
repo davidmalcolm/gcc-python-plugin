@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/returning_dead_object/input.c: In function 'returning_dead_object':
-tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: error: ob_refcnt of return value is 1 too low
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: warning: ob_refcnt of return value is 1 too low [enabled by default]
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: due to object being referenced by: return value
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: but final ob_refcnt is N + 0
@@ -12,7 +12,7 @@ tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: ob_refcnt i
 tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: when taking True path at:     Py_DECREF(tmp);
 tests/cpychecker/refcounts/returning_dead_object/input.c:42:5: note: reaching:     return tmp;
 tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: note: returning
-tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: error: returning pointer to deallocated memory
+tests/cpychecker/refcounts/returning_dead_object/input.c:43:1: warning: returning pointer to deallocated memory [enabled by default]
 tests/cpychecker/refcounts/returning_dead_object/input.c:29:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/returning_dead_object/input.c:31:8: note: taking False path at:     if (!tmp) {
 tests/cpychecker/refcounts/returning_dead_object/input.c:39:5: note: reaching:     Py_DECREF(tmp);

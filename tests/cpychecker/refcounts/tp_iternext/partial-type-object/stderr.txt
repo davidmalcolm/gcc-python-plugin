@@ -1,4 +1,4 @@
 tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c: In function 'test':
-tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c:33:5: error: returning (PyObject*)NULL without setting an exception
+tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c:33:5: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
 tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c:33:5: note: returning at:     return NULL;
 tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c:31:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c.test-refcount-errors.html'

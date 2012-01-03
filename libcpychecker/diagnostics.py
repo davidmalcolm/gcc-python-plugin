@@ -101,20 +101,20 @@ class Reporter:
     """
     def __init__(self):
         self.reports = []
-        self._got_errors = False
+        self._got_warnings = False
 
-    def make_error(self, fun, loc, msg):
+    def make_warning(self, fun, loc, msg):
         assert isinstance(fun, gcc.Function)
         assert isinstance(loc, gcc.Location)
 
-        self._got_errors = True
+        self._got_warnings = True
 
-        err = Report(fun, loc, msg)
-        self.reports.append(err)
+        w = Report(fun, loc, msg)
+        self.reports.append(w)
 
-        err.add_error(loc, msg)
+        w.add_warning(loc, msg)
 
-        return err
+        return w
 
     def make_debug_dump(self, fun, loc, msg):
         assert isinstance(fun, gcc.Function)
@@ -123,8 +123,8 @@ class Reporter:
         self.reports.append(r)
         return r
 
-    def got_errors(self):
-        return self._got_errors
+    def got_warnings(self):
+        return self._got_warnings
 
     def to_html(self, fun):
         # (FIXME: eliminate self.fun from HtmlRenderer and the above arg)
@@ -177,9 +177,9 @@ class SavedDiagnostic:
         self.loc = loc
         self.msg = msg
 
-class SavedError(SavedDiagnostic):
+class SavedWarning(SavedDiagnostic):
     def flush(self):
-        gcc.error(self.loc, self.msg)
+        gcc.warning(self.loc, self.msg)
 
 class SavedInform(SavedDiagnostic):
     def flush(self):
@@ -202,9 +202,9 @@ class Report:
         self.is_duplicate = False
         self.duplicates = [] # list of Report
 
-    def add_error(self, loc, msg):
-        # Add a gcc.error() to the buffer of GCC diagnostics
-        self._saved_diagnostics.append(SavedError(loc, msg))
+    def add_warning(self, loc, msg):
+        # Add a gcc.warning() to the buffer of GCC diagnostics
+        self._saved_diagnostics.append(SavedWarning(loc, msg))
 
     def add_inform(self, loc, msg):
         # Add a gcc.inform() to the buffer of GCC diagnostics

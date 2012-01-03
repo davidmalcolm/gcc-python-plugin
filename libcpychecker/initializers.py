@@ -134,10 +134,10 @@ def verify_any_PyMethodDef_flags():
                 exptypemsg = 'expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)"'
             actualargs = len(ml_meth.type.argument_types)
             if expargs != actualargs:
-                gcc.error(si.get_location(),
-                          'flags do not match callback signature for %r'
-                          ' within PyMethodDef table'
-                          % ml_meth.name)
+                gcc.warning(si.get_location(),
+                            'flags do not match callback signature for %r'
+                            ' within PyMethodDef table'
+                            % ml_meth.name)
                 gcc.inform(si.get_location(),
                            exptypemsg + ' (%s arguments)' % expargs)
                 gcc.inform(si.get_location(),
@@ -171,8 +171,8 @@ def get_all_PyMethodDef_initializers():
                         if 0:
                             print('final ml_name: %r' % ml_name)
                         if ml_name is not None:
-                            gcc.error(table[-1].get_location(),
-                                      'missing NULL sentinel value at end of PyMethodDef table')
+                            gcc.warning(table[-1].get_location(),
+                                        'missing NULL sentinel value at end of PyMethodDef table')
                         result += table
     return result
 

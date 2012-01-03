@@ -1,5 +1,5 @@
 tests/cpychecker/absinterp/custom-strdup/input.c: In function 'test_strdup':
-tests/cpychecker/absinterp/custom-strdup/input.c:50:12: error: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50
+tests/cpychecker/absinterp/custom-strdup/input.c:50:12: warning: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50 [enabled by default]
 tests/cpychecker/absinterp/custom-strdup/input.c:45:8: note: when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL at:     if (!result) {
 tests/cpychecker/absinterp/custom-strdup/input.c:45:8: note: taking False path at:     if (!result) {
 tests/cpychecker/absinterp/custom-strdup/input.c:49:9: note: reaching:     dst = result;

@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c: In function 'test':
-tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:64:1: error: ob_refcnt of return value is 1 too low
+tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:64:1: warning: ob_refcnt of return value is 1 too low [enabled by default]
 tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:64:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:64:1: note: due to object being referenced by: return value
 tests/cpychecker/refcounts/attributes/steals-reference-to-arg/incorrect-usage/input.c:64:1: note: but final ob_refcnt is N + 0

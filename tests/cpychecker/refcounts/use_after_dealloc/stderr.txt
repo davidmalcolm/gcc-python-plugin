@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/use_after_dealloc/input.c: In function 'use_after_dealloc':
-tests/cpychecker/refcounts/use_after_dealloc/input.c:42:5: error: reading from deallocated memory at tests/cpychecker/refcounts/use_after_dealloc/input.c:42: memory deallocated at tests/cpychecker/refcounts/use_after_dealloc/input.c:41
+tests/cpychecker/refcounts/use_after_dealloc/input.c:42:5: warning: reading from deallocated memory at tests/cpychecker/refcounts/use_after_dealloc/input.c:42: memory deallocated at tests/cpychecker/refcounts/use_after_dealloc/input.c:41 [enabled by default]
 tests/cpychecker/refcounts/use_after_dealloc/input.c:30:15: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/use_after_dealloc/input.c:32:8: note: taking False path at:     if (!tmp) {
 tests/cpychecker/refcounts/use_after_dealloc/input.c:41:5: note: reaching:     Py_DECREF(tmp);

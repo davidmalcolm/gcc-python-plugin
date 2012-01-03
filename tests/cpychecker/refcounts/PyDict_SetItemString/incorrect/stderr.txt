@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: error: ob_refcnt of '*value' is 1 too high
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: warning: ob_refcnt of '*value' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
 tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: note: but final ob_refcnt is N + 1
 tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:11: note: PyLongObject allocated at:     value = PyLong_FromLong(1000);

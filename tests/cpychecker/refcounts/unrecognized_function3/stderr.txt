@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/unrecognized_function3/input.c: In function 'call_to_unrecognized_function':
-tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: error: ob_refcnt of new ref from (unknown) foo is 1 too high
+tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: warning: ob_refcnt of new ref from (unknown) foo is 1 too high [enabled by default]
 tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
 tests/cpychecker/refcounts/unrecognized_function3/input.c:33:1: note: but final ob_refcnt is N + 1
 tests/cpychecker/refcounts/unrecognized_function3/input.c:32:8: note: new ref from (unknown) foo allocated at:     foo(42);

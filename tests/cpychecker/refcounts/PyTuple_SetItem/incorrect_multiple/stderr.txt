@@ -1,5 +1,5 @@
 tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c: In function 'handle_SetItem':
-tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: error: ob_refcnt of PyLongObject is 1 too high
+tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: warning: ob_refcnt of PyLongObject is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
 tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: due to object being referenced by: PyTupleObject.ob_item[2]
 tests/cpychecker/refcounts/PyTuple_SetItem/incorrect_multiple/input.c:76:1: note: but final ob_refcnt is N + 2
