@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -25,10 +25,18 @@
 #   stderr.txt: (optional) as per stdout.txt
 #   getopts.py: (optional) if present, stdout from this script is
 #               added to GCC's invocation options
+#   metadata.ini: (optional) if present, can override other properties of the
+#                 test (see below)
 #
 # This runner either invokes all tests, or just a subset, if supplied the
 # names of the subdirectories as arguments.  All test cases within the given
 # directories will be run.
+
+# The optional metadata.ini can contain these sections:
+#
+# [ExpectedBehavior]
+#   exitcode = integer value, for overriding defaults
+#
 
 import glob
 import os
@@ -38,6 +46,7 @@ from distutils.sysconfig import get_python_inc
 from subprocess import Popen, PIPE
 
 import six
+from six.moves import configparser
 
 from cpybuilder import CommandError
 
@@ -181,6 +190,9 @@ def run_test(testdir):
     out = TestStream(os.path.join(testdir, 'stdout.txt'))
     err = TestStream(os.path.join(testdir, 'stderr.txt'))
 
+    cp = configparser.SafeConfigParser()
+    cp.read([os.path.join(testdir, 'metadata.ini')])
+
     env = dict(os.environ)
     env['LC_ALL'] = 'C'
 
@@ -223,33 +235,29 @@ def run_test(testdir):
         err.actual = err.actual.decode()
     #print 'out: %r' % out.actual
     #print 'err: %r' % err.actual
-    c = p.wait()
+    exitcode_actual = p.wait()
 
-    expsuccess = (err.expdata == '')
-
-    # Special case:
-    if testdir == 'tests/cpychecker/refcounts/combinatorial-explosion':
-        # This test case should succeed, whilst emitting a note on stderr;
-        # don't treat the stderr output as leading to an expected failure:
-        expsuccess = True
-
-    if testdir == 'tests/examples/spelling-checker':
-        # This test case emits warnings on stderr;
-        # don't treat the stderr output as leading to an expected failure:
-        expsuccess = True
+    # Expected exit code
+    # By default, we expect success if the expected stderr is empty, and
+    # and failure if it's non-empty.
+    # This can be overridden if the test has a metadata.ini, by setting
+    # exitcode within the [ExpectedBehavior] section:
+    if err.expdata == '':
+        exitcode_expected = 0
+    else:
+        exitcode_expected = 1
+    if cp.has_section('ExpectedBehavior'):
+        if cp.has_option('ExpectedBehavior', 'exitcode'):
+            exitcode_expected = cp.getint('ExpectedBehavior', 'exitcode')
 
     # Check exit code:
-    if expsuccess:
-        # Expect a successful exit:
-        if c != 0:
-            raise CompilationError(out.actual, err.actual, p, args)
+    if exitcode_actual != exitcode_expected:
+        sys.stderr.write(out.diff('stdout'))
+        sys.stderr.write(err.diff('stderr'))
+        raise CompilationError(out.actual, err.actual, p, args)
+
+    if exitcode_expected == 0:
         assert os.path.exists(outfile)
-    else:
-        # Expect a failed exit:
-        if c == 0:
-            sys.stderr.write(out.diff('stdout'))
-            sys.stderr.write(err.diff('stderr'))
-            raise CompilationError(out.actual, err.actual, p, args)
     
     out.check_for_diff(out.actual, err.actual, p, args, 'stdout', 0)
     err.check_for_diff(out.actual, err.actual, p, args, 'stderr', 0)
