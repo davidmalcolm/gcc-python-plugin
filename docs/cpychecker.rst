@@ -1,5 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -491,6 +491,21 @@ lacking a ``NULL`` sentinel value to terminate the iteration:
 Given the above, the checker will emit this warning::
 
   input.c:39:6: warning: missing NULL sentinel value at end of PyMethodDef table
+
+Additional tests
+----------------
+
+* the checker will verify the argument lists of invocations of
+  `PyObject_CallFunctionObjArgs
+  <http://docs.python.org/c-api/object.html#PyObject_CallFunctionObjArgs>`_ and
+  `PyObject_CallMethodObjArgs
+  <http://docs.python.org/c-api/object.html#PyObject_CallMethodObjArgs>`_,
+  checking that all of the arguments are of the correct type
+  (PyObject* or subclasses), and that the list is NULL-terminated::
+
+     input.c: In function 'test':
+     input.c:33:5: warning: argument 2 had type char[12] * but was expecting a PyObject* (or subclass)
+     input.c:33:5: warning: arguments to PyObject_CallFunctionObjArgs were not NULL-terminated
 
 Limitations and caveats
 -----------------------
