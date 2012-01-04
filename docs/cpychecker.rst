@@ -325,6 +325,12 @@ It currently verifies the arguments to the following API entrypoints:
   * `Py_BuildValue
     <http://docs.python.org/c-api/arg.html#Py_BuildValue>`_
 
+  * `PyObject_CallFunction
+    <http://docs.python.org/c-api/object.html#PyObject_CallFunction>`_
+
+  * `PyObject_CallMethod
+    <http://docs.python.org/c-api/object.html#PyObject_CallMethod>`_
+
 along with the variants that occur if you define `PY_SSIZE_T_CLEAN` before
 `#include <Python.h>`.
 
