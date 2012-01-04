@@ -317,11 +317,17 @@ if six.MAXSIZE == 0x7fffffff:
 
     # The expected output for the following tests assumes a 64-bit build:
     exclude_test('tests/cpychecker/absinterp/casts/pointer-to-long')
+    exclude_test('tests/cpychecker/absinterp/casts/pyobjectptr-to-long')
     exclude_test('tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O')
     exclude_test('tests/cpychecker/refcounts/PyArg_ParseTupleAndKeywords/correct_O')
     exclude_test('tests/cpychecker/refcounts/PyInt_AsLong/correct_cast')
+    exclude_test('tests/cpychecker/refcounts/PyList_Size/known-size')
+    exclude_test('tests/cpychecker/refcounts/PyMapping_Size/basic')
+    exclude_test('tests/cpychecker/refcounts/PyString_Size/correct')
     exclude_test('tests/cpychecker/refcounts/PyTuple_New/correct')
     exclude_test('tests/cpychecker/refcounts/module_handling')
+    exclude_test('tests/cpychecker/refcounts/storage_regions/static/correct')
+    exclude_test('tests/examples/cplusplus/classes')
     exclude_test('tests/plugin/constants')
     exclude_test('tests/plugin/gimple-walk-tree/dump-all')
     exclude_test('tests/plugin/gimple-walk-tree/find-one')
