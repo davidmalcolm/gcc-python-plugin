@@ -109,7 +109,7 @@ class TestStream:
 
             # Remove exact numbers from types
             # (e.g. from "int (*<T513>) (int)" to "int (*<Tnnn>) (int)"):
-            line = re.sub('<T([0-9]+)>', '<Tnnn>', line)
+            line = re.sub('<T([0-9a-f]+)>', '<Tnnn>', line)
 
             # Remove exact path to Python header file and line number
             # e.g.
