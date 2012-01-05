@@ -1,3 +1,9 @@
+d000: gcc.RealCst(0.0) 0.0
+d001: gcc.RealCst(1.0e+0) 1.0
+d002: gcc.RealCst(-1.0e+0) -1.0
+f000: gcc.RealCst(0.0) 0.0
+f001: gcc.RealCst(1.0e+0) 1.0
+f002: gcc.RealCst(-1.0e+0) -1.0
 i000: 0x0
 i001: 0x1
 i002: -0x1

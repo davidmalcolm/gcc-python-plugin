@@ -348,6 +348,13 @@ def generate_tree_code_classes():
             cu.add_defn(number_methods.c_defn())
             tp_repr = '(reprfunc)gcc_IntegerConstant_repr'
 
+        if cc == 'RealCst':
+            getsettable.add_gsdef('constant',
+                                  'gcc_RealCst_get_constant',
+                                  None,
+                                  'The actual value of this constant, as a float')
+            tp_repr = '(reprfunc)gcc_RealCst_repr'
+
         # TYPE_QUALS for various foo_TYPE classes:
         if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
                              'FIXED_POINT_TYPE', 'COMPLEX_TYPE', 'VECTOR_TYPE',

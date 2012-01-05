@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -404,6 +404,41 @@ gcc_IntegerConstant_repr(struct PyGccTree * self)
     gcc_python_double_int_as_text(TREE_INT_CST(self->t),
                                   TYPE_UNSIGNED(type),
                                   buf, sizeof(buf));
+    return gcc_python_string_from_format("%s(%s)",
+                                         Py_TYPE(self)->tp_name,
+                                         buf);
+}
+
+PyObject *
+gcc_RealCst_get_constant(struct PyGccTree * self, void *closure)
+{
+    /* "cheat" and go through the string representation: */
+    REAL_VALUE_TYPE *d;
+    char buf[60];
+    PyObject *str;
+    PyObject *result;
+
+    d = TREE_REAL_CST_PTR(self->t);
+    real_to_decimal (buf, d, sizeof (buf), 0, 1);
+
+    str = PyString_FromString(buf);
+    if (!str) {
+        return NULL;
+    }
+
+    result = PyFloat_FromString(str, NULL);
+    Py_DECREF(str);
+    return result;
+}
+
+PyObject *
+gcc_RealCst_repr(struct PyGccTree * self)
+{
+    REAL_VALUE_TYPE *d;
+    char buf[60];
+
+    d = TREE_REAL_CST_PTR(self->t);
+    real_to_decimal (buf, d, sizeof (buf), 0, 1);
     return gcc_python_string_from_format("%s(%s)",
                                          Py_TYPE(self)->tp_name,
                                          buf);

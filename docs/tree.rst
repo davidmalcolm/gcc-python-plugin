@@ -1,5 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -503,7 +503,7 @@ Constants
       .. py:class:: FixedCst
       .. py:class:: IntegerCst        `int` or `long`
       .. py:class:: PtrmemCst
-      .. py:class:: RealCst
+      .. py:class:: RealCst           `float`
       .. py:class:: StringCst         `str`
       .. py:class:: VectorCst
       ==============================  ===============

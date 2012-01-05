@@ -36,3 +36,12 @@ unsigned long long i005 = 0xffffffffffffffff;
 /* -2^32 */
 signed long long i006 = -0x100000000;
 
+/* Various float values */
+float f000 = 0;
+float f001 = 1;
+float f002 = -1;
+
+/* Various double values */
+double d000 = 0;
+double d001 = 1;
+double d002 = -1;

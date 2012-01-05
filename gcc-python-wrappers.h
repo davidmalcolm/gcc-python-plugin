@@ -152,6 +152,12 @@ PyObject *
 gcc_IntegerConstant_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_RealCst_get_constant(struct PyGccTree * self, void *closure);
+
+PyObject *
+gcc_RealCst_repr(struct PyGccTree * self);
+
+PyObject *
 gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *

@@ -24,9 +24,15 @@ def on_finish_unit():
     vars = gccutils.get_variables_as_dict()
     for name in sorted(vars):
         var = vars[name]
-        assert isinstance(var.decl.initial, gcc.IntegerCst)
-        print('%s: %s' % (name, hex(var.decl.initial.constant)))
-        assert int(var.decl.initial) == var.decl.initial.constant
+        if name.startswith('i'):
+            assert isinstance(var.decl.initial, gcc.IntegerCst)
+            print('%s: %s' % (name, hex(var.decl.initial.constant)))
+            assert int(var.decl.initial) == var.decl.initial.constant
+        elif name.startswith('f') or name.startswith('d'):
+            assert isinstance(var.decl.initial, gcc.RealCst)
+            print('%s: %r %s' % (name,
+                                 var.decl.initial,
+                                 var.decl.initial.constant))
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       on_finish_unit)
