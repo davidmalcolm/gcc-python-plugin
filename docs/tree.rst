@@ -766,7 +766,7 @@ References to storage
       The :py:class:`gcc.Tree` for the index within the reference
       (`gcc.IntegerCst(42)` in the example above)
 
-.. py:class:: gcc.ComponentReference
+.. py:class:: gcc.ComponentRef
 
    A subclass of :py:class:`gcc.Reference` for expressions involving a field
    lookup.
