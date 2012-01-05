@@ -2931,6 +2931,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # If it's the return value, it should have a net refcnt delta of
             # 1; all other PyObject should have a net delta of 0:
             if isinstance(return_value, PointerToRegion) and region == return_value.region:
+                is_return_value = True
                 desc = 'return value'
                 if fun.decl.name in fnnames_returning_borrowed_refs:
                     # ...then this function has been marked as returning a
@@ -2939,6 +2940,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                 else:
                     exp_refs = ['return value']
             else:
+                is_return_value = False
                 # Try to get a descriptive name for the region:
                 desc = trace.get_description_for_region(region)
                 # print('desc: %r' % desc)
@@ -3013,7 +3015,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                                               % (desc,
                                                  exp_refcnt - ob_refcnt.relvalue))
                     # Special-case hint for when None has too low a refcount:
-                    if return_value:
+                    if is_return_value:
                         if isinstance(return_value.region, RegionForGlobal):
                             if return_value.region.vardecl.name == '_Py_NoneStruct':
                                 w.add_note(endstate.get_gcc_loc(fun),
