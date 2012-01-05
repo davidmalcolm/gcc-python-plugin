@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+  error: PredictedArithmeticError()
+  error: integer division or modulo by zero with right-hand-side (int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:29

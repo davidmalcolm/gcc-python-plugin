@@ -1,0 +1,17 @@
+Trace 0:
+  Transitions:
+    'when considering range: 0 <= value <= 0'
+  error: PredictedArithmeticError()
+  error: possible integer division or modulo by zero with right-hand-side (unsigned int)val [0 <= val <= 0] from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:29
+
+Trace 1:
+  Transitions:
+    'when considering range: 1 <= value <= 0xffffffff'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='unsigned int', loc=gcc.Location(file='tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c', line=30), minvalue=0, maxvalue=0x7fffffff)
+    str(): (unsigned int)val [0 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:30
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:29

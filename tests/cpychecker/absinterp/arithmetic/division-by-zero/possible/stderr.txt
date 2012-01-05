@@ -1,0 +1,4 @@
+tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c: In function 'test':
+tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:30:14: warning: possible integer division or modulo by zero with right-hand-side (unsigned int)val [0 <= val <= 0] from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28 [enabled by default]
+tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:30:14: note: when considering range: 0 <= value <= 0 at:     return i % j;
+tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:29:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c.test-refcount-errors.html'

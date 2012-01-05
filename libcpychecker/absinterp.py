@@ -320,7 +320,7 @@ class UnknownValue(AbstractValue):
         check_isinstance(v_other, AbstractValue)
         return self
 
-def eval_binop(exprcode, a, b):
+def eval_binop(exprcode, a, b, rhsvalue):
     """
     Evaluate a gcc exprcode on a pair of Python values (as opposed to
     AbstractValue instances)
@@ -328,6 +328,7 @@ def eval_binop(exprcode, a, b):
     log('eval_binop(%s, %s, %s)', exprcode, a, b)
     assert isinstance(a, numeric_types)
     assert isinstance(b, numeric_types)
+    assert isinstance(rhsvalue, AbstractValue)
 
     def inner():
         if exprcode == gcc.PlusExpr:
@@ -362,7 +363,12 @@ def eval_binop(exprcode, a, b):
         # (an implicit return of None means "did not know how to handle this
         # expression")
 
-    result = inner()
+    try:
+        result = inner()
+    except (ArithmeticError, ValueError):
+        err = sys.exc_info()[1]
+        isdefinite = not hasattr(rhsvalue, 'fromsplit')
+        raise PredictedArithmeticError(err, rhsvalue, isdefinite)
     log('result: %s', result)
     assert isinstance(result, numeric_types)
     return result
@@ -450,7 +456,7 @@ class ConcreteValue(AbstractValue):
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
-            newvalue = eval_binop(exprcode, self.value, rhs.value)
+            newvalue = eval_binop(exprcode, self.value, rhs.value, rhs)
             if newvalue is not None:
                 return ConcreteValue(gcctype, loc, newvalue)
         return UnknownValue.make(gcctype, loc)
@@ -578,16 +584,26 @@ class WithinRange(AbstractValue):
 
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
-            values = [eval_binop(exprcode, val, rhs.value)
+            values = [eval_binop(exprcode, val, rhs.value, rhs)
                       for val in (self.minvalue, self.maxvalue)]
             return WithinRange(gcctype, loc, min(values), max(values))
         elif isinstance(rhs, WithinRange):
             # Assume that the operations are "concave" in that the resulting
             # range is within that found by trying all four corners:
-            values = (eval_binop(exprcode, self.minvalue, rhs.minvalue),
-                      eval_binop(exprcode, self.minvalue, rhs.maxvalue),
-                      eval_binop(exprcode, self.maxvalue, rhs.minvalue),
-                      eval_binop(exprcode, self.maxvalue, rhs.maxvalue))
+
+            # Avoid division by zero:
+            # (see https://fedorahosted.org/gcc-python-plugin/ticket/25 )
+            if exprcode == gcc.TruncDivExpr or exprcode == gcc.TruncModExpr:
+                if rhs.minvalue == 0 and rhs.maxvalue > 0:
+                    zero_range = WithinRange(rhs.gcctype, rhs.loc, 0)
+                    gt_zero_range = WithinRange(rhs.gcctype, rhs.loc,
+                                                1, rhs.maxvalue)
+                    rhs.raise_split(zero_range, gt_zero_range)
+
+            values = (eval_binop(exprcode, self.minvalue, rhs.minvalue, rhs),
+                      eval_binop(exprcode, self.minvalue, rhs.maxvalue, rhs),
+                      eval_binop(exprcode, self.maxvalue, rhs.minvalue, rhs),
+                      eval_binop(exprcode, self.maxvalue, rhs.maxvalue, rhs))
             return WithinRange(gcctype, loc,
                                min(values),
                                max(values))
@@ -648,12 +664,7 @@ class WithinRange(AbstractValue):
                 false_range = WithinRange(self.gcctype, self.loc,
                                           rhs.value + 1,
                                           self.maxvalue)
-                ranges = [true_range, false_range]
-                descriptions = ['when considering range: %s <= value <= %s' %
-                                (value_to_str(r.minvalue),
-                                 value_to_str(r.maxvalue))
-                                for r in ranges]
-                raise SplitValue(self, ranges, descriptions)
+                self.raise_split(true_range, false_range)
             return None
         return None
 
@@ -683,14 +694,19 @@ class WithinRange(AbstractValue):
                 false_range = WithinRange(self.gcctype, self.loc,
                                           rhs.value,
                                           self.maxvalue)
-                ranges = [true_range, false_range]
-                descriptions = ['when considering range: %s <= value <= %s' %
-                                (value_to_str(r.minvalue),
-                                 value_to_str(r.maxvalue))
-                                for r in ranges]
-                raise SplitValue(self, ranges, descriptions)
+                self.raise_split(true_range, false_range)
             return None
         return None
+
+    def raise_split(self, *new_ranges):
+        """
+        Raise a SplitValue exception to subdivide this range into subranges
+        """
+        descriptions = ['when considering range: %s <= value <= %s' %
+                        (value_to_str(r.minvalue),
+                         value_to_str(r.maxvalue))
+                        for r in new_ranges]
+        raise SplitValue(self, new_ranges, descriptions)
 
     def impl_is_ge(self, rhs):
         # Is A >= B ?
@@ -858,6 +874,19 @@ class PredictedValueError(PredictedError):
         self.expr = expr
         self.value = value
         self.isdefinite = isdefinite
+
+class PredictedArithmeticError(PredictedError):
+    def __init__(self, err, rhsvalue, isdefinite):
+        check_isinstance(err, (ArithmeticError, ValueError))
+        self.err = err
+        self.rhsvalue = rhsvalue
+        self.isdefinite = isdefinite
+
+    def __str__(self):
+        if self.isdefinite:
+            return '%s with right-hand-side %s' % (self.err, self.rhsvalue)
+        else:
+            return 'possible %s with right-hand-side %s' % (self.err, self.rhsvalue)
 
 class UsageOfUninitializedData(PredictedValueError):
     def __init__(self, state, expr, value, desc):
