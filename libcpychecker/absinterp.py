@@ -1360,6 +1360,8 @@ class State(object):
             return expr
         if isinstance(expr, gcc.IntegerCst):
             return ConcreteValue(expr.type, loc, expr.constant)
+        if isinstance(expr, gcc.RealCst):
+            return ConcreteValue(expr.type, loc, expr.constant)
         if isinstance(expr, gcc.SsaName):
             region = self.var_region(expr.var)
             check_isinstance(region, Region)
@@ -2289,6 +2291,8 @@ class State(object):
         elif stmt.exprcode == gcc.ParmDecl:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.IntegerCst:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.RealCst:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.AddrExpr:
             return self.eval_rvalue(rhs[0], stmt.loc)
