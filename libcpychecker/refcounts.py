@@ -1519,9 +1519,26 @@ class CPython(Facet):
         # discount that refcount:
         ob_item_region = self.state.make_field_region(v_op.region, 'ob_item')
         ob_size_region = self.state.make_field_region(v_op.region, 'ob_size')
-        check_isinstance(s_success.value_for_region[ob_size_region], ConcreteValue) # for now
-        index = s_success.value_for_region[ob_size_region].value
-        array_region = s_success._array_region(ob_item_region, index)
+
+        # Locate the insertion index, based on ob_size:
+        v_index = self.state.read_field_by_name(stmt,
+                                                get_Py_ssize_t().type,
+                                                v_op.region, 'ob_size')
+        if isinstance(v_index, ConcreteValue):
+            index_value = v_index.value
+        elif isinstance(v_index, WithinRange):
+            # We don't know the size of the list, just that it (presumably)
+            # has some sane ob_size.
+            # Use the smallest non-negative size (raising it as a 1-item
+            # SplitValue so that the assumption is noted):
+            index_value = max(0, v_index.minvalue)
+            v_index.raise_as_concrete(stmt.loc,
+                                      index_value,
+                                      'when treating ob_size as %i' % index_value)
+        else:
+            raise NotImplementedError()
+        array_region = s_success._array_region(ob_item_region, index_value)
+
         s_success.value_for_region[array_region] = v_newitem
 
         # Can fail with memory error, overflow error:
@@ -2887,7 +2904,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # dereferences that are only possible, not definite: it may be
             # that there are invariants that we know nothing about that mean
             # that they can't happen:
-            if isinstance(trace.err, NullPtrDereference):
+            if isinstance(trace.err, (NullPtrDereference, NullPtrArgument)):
                 if not trace.err.isdefinite:
                     if not show_possible_null_derefs:
                         continue

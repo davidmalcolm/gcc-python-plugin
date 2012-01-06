@@ -708,6 +708,23 @@ class WithinRange(AbstractValue):
                         for r in new_ranges]
         raise SplitValue(self, new_ranges, descriptions)
 
+    def raise_as_concrete(self, loc, value, desc):
+        """
+        Raise a SplitValue exception to reinterpret this range as a specific
+        ConcreteValue from now on.
+
+        This is slightly abusing the SplitValue mechanism, as it's just one
+        new value, but it should at least add the descriptive text into the
+        trace.
+        """
+        if loc:
+            check_isinstance(loc, gcc.Location)
+        check_isinstance(value, numeric_types)
+        check_isinstance(desc, str)
+        v_new = ConcreteValue(self.gcctype, loc,
+                              value)
+        raise SplitValue(self, [v_new], [desc])
+
     def impl_is_ge(self, rhs):
         # Is A >= B ?
         if isinstance(rhs, WithinRange):
@@ -1822,6 +1839,8 @@ class State(object):
         check_isinstance(ptr, AbstractValue)
         if why:
             check_isinstance(why, str)
+        if isinstance(ptr, UnknownValue):
+            self.raise_split_value(ptr, stmt.loc)
         if ptr.is_null_ptr():
             # NULL argument to a function that requires non-NULL
             # If we earlier split the analysis into NULL/non-NULL

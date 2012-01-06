@@ -2,6 +2,7 @@ Trace 0:
   Transitions:
     'when PyArg_ParseTuple() succeeds'
     'taking False path'
+    'when treating unknown char * from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52 as non-NULL'
     'when PyString_FromString() succeeds'
     'returning'
   Return value:
@@ -26,6 +27,7 @@ Trace 1:
   Transitions:
     'when PyArg_ParseTuple() succeeds'
     'taking False path'
+    'when treating unknown char * from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52 as non-NULL'
     'when PyString_FromString() fails'
     'returning'
   Return value:
@@ -45,6 +47,26 @@ Trace 1:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52
 
 Trace 2:
+  Transitions:
+    'when PyArg_ParseTuple() succeeds'
+    'taking False path'
+    'when treating unknown char * from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyString_FromString with NULL (gcc.VarDecl(nnnn)) as argument 1 at tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:52
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c', line=35), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang/input.c:36
+
+Trace 3:
   Transitions:
     'when PyArg_ParseTuple() fails'
     'taking True path'

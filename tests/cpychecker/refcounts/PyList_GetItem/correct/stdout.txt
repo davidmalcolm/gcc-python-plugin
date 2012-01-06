@@ -1,5 +1,6 @@
 Trace 0:
   Transitions:
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:26 as non-NULL'
     'taking True path'
     'returning'
   Return value:
@@ -7,6 +8,24 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('borrowed reference returned by PyList_GetItem()', gcc.Location(file='tests/cpychecker/refcounts/PyList_GetItem/correct/input.c', line=32)) from tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:32
     r->ob_refcnt: refs: 1 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_GetItem/correct/input.c', line=32), region=Region('PyTypeObject for borrowed reference returned by PyList_GetItem()'))
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_GetItem/correct/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_GetItem/correct/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:30
+
+Trace 1:
+  Transitions:
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:26 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyList_GetItem with NULL (gcc.VarDecl('some_list.0')) as argument 1 at tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:32
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

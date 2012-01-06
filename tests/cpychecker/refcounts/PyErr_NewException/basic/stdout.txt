@@ -1,5 +1,6 @@
 Trace 0:
   Transitions:
+    'when treating unknown char * from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:27 as non-NULL'
     'when PyErr_NewException() succeeds'
     'returning'
   Return value:
@@ -22,6 +23,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
+    'when treating unknown char * from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:27 as non-NULL'
     'when PyErr_NewException() fails'
     'returning'
   Return value:
@@ -39,3 +41,21 @@ Trace 1:
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('dict')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
+
+Trace 2:
+  Transitions:
+    'when treating unknown char * from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:27 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyErr_NewException with NULL (gcc.ParmDecl('name')) as argument 1 at tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('base')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('base')")
+    str(): Region("region-for-arg-gcc.ParmDecl('base')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('base')"))
+  Region("region-for-arg-gcc.ParmDecl('dict')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('dict')")
+    str(): Region("region-for-arg-gcc.ParmDecl('dict')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('dict')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:28
