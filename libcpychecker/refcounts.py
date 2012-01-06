@@ -297,6 +297,8 @@ class CPython(Facet):
 
         fn is a function taking a RefcountValue instance, returning another one
         """
+        if isinstance(pyobjectptr, UnknownValue):
+            self.state.raise_split_value(pyobjectptr, loc)
         check_isinstance(pyobjectptr, PointerToRegion)
         ob_refcnt = self.state.make_field_region(pyobjectptr.region,
                                                  'ob_refcnt')
