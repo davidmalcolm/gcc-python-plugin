@@ -2904,7 +2904,10 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # dereferences that are only possible, not definite: it may be
             # that there are invariants that we know nothing about that mean
             # that they can't happen:
-            if isinstance(trace.err, (NullPtrDereference, NullPtrArgument)):
+            # (similarly for arithmetic issues e.g. negative shift, divide by
+            # zero, etc)
+            if isinstance(trace.err, (NullPtrDereference, NullPtrArgument,
+                                      PredictedArithmeticError)):
                 if not trace.err.isdefinite:
                     if not show_possible_null_derefs:
                         continue

@@ -1,0 +1,17 @@
+Trace 0:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= -1'
+  error: PredictedArithmeticError()
+  error: possible negative shift count with right-hand-side (int)val [-0x80000000 <= val <= -1] from tests/cpychecker/absinterp/arithmetic/negative-shift/possible/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/negative-shift/possible/input.c:30
+
+Trace 1:
+  Transitions:
+    'when considering range: 0 <= value <= 0x7fffffff'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/arithmetic/negative-shift/possible/input.c', line=31), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/arithmetic/negative-shift/possible/input.c:31
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/negative-shift/possible/input.c:30

@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+  error: PredictedArithmeticError()
+  error: negative shift count with right-hand-side (int)-3 from tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:30

@@ -535,6 +535,12 @@ class WithinRange(AbstractValue):
         self.minvalue = min(values)
         self.maxvalue = max(values)
 
+        # Clamp to be within the type's expressible range:
+        if self.minvalue < gcctype.min_value.constant:
+            self.minvalue = gcctype.min_value.constant
+        if self.maxvalue > gcctype.max_value.constant:
+            self.maxvalue = gcctype.max_value.constant
+
     @classmethod
     def ge_zero(cls, gcctype, loc):
         """
@@ -599,6 +605,16 @@ class WithinRange(AbstractValue):
                     gt_zero_range = WithinRange(rhs.gcctype, rhs.loc,
                                                 1, rhs.maxvalue)
                     rhs.raise_split(zero_range, gt_zero_range)
+
+            # Avoid negative shifts:
+            # (see https://fedorahosted.org/gcc-python-plugin/ticket/14 )
+            if exprcode == gcc.LshiftExpr or exprcode == gcc.RshiftExpr:
+                if rhs.minvalue < 0 and rhs.maxvalue >= 0:
+                    neg_range = WithinRange(rhs.gcctype, rhs.loc,
+                                            rhs.minvalue, -1)
+                    ge_zero_range = WithinRange(rhs.gcctype, rhs.loc,
+                                                0, rhs.maxvalue)
+                    rhs.raise_split(neg_range, ge_zero_range)
 
             values = (eval_binop(exprcode, self.minvalue, rhs.minvalue, rhs),
                       eval_binop(exprcode, self.minvalue, rhs.maxvalue, rhs),

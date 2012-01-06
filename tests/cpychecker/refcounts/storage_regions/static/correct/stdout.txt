@@ -6,7 +6,7 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/storage_regions/static/correct/input.c', line=30), region=Region('heap-region-0'))
     str(): (struct PyObject *)&Region('heap-region-0') from tests/cpychecker/refcounts/storage_regions/static/correct/input.c:30
-    r->ob_refcnt: (Py_ssize_t)val [-0x7fffffffffffffff <= val <= 0x8000000000000000L] from tests/cpychecker/refcounts/storage_regions/static/correct/input.c:46
+    r->ob_refcnt: (Py_ssize_t)val [-0x7fffffffffffffff <= val <= 0x7fffffffffffffff] from tests/cpychecker/refcounts/storage_regions/static/correct/input.c:46
     r->ob_type: None
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
