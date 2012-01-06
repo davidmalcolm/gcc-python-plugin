@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -1440,6 +1440,7 @@ class CPython(Facet):
             # We know it's a PyIntObject; the call will succeed:
             # FIXME: cast:
             v_ob_ival = self.state.read_field_by_name(stmt,
+                                                      returntype,
                                                       v_op.region,
                                                       'ob_ival')
             t_success = self.state.mktrans_assignment(stmt.lhs,
@@ -1627,7 +1628,9 @@ class CPython(Facet):
                        why=invokes_Py_TYPE_via_macro(fnmeta,
                                                      'PyList_Check'))
 
+        returntype = stmt.fn.type.dereference.type
         v_ob_size = self.state.read_field_by_name(stmt,
+                                                  returntype,
                                                   v_list.region, 'ob_size')
 
         t_return = self.state.mktrans_assignment(stmt.lhs,
@@ -2289,7 +2292,9 @@ class CPython(Facet):
         # for strings, returns ob_size
         if self.object_ptr_has_global_ob_type(v_string, 'PyString_Type'):
             # We know it's a PyStringObject; the call will succeed:
+            returntype = stmt.fn.type.dereference.type
             v_ob_size = self.state.read_field_by_name(stmt,
+                                                      returntype,
                                                       v_op.region,
                                                       'ob_size')
             t_success = self.state.mktrans_assignment(stmt.lhs,
@@ -2459,6 +2464,7 @@ class CPython(Facet):
 
         # Range check:
         v_ob_size = self.state.read_field_by_name(stmt,
+                                                  None,
                                                   v_op.region,
                                                   'ob_size')
 
@@ -2505,8 +2511,11 @@ class CPython(Facet):
                                                  'PyTuple_Check'))
 
         # FIXME: cast:
-        v_ob_size = self.state.get_value_of_field_by_region(v_op.region,
-                                                      'ob_size')
+        v_ob_size = self.state.read_field_by_name(stmt,
+                                                  returntype,
+                                                  v_op.region,
+                                                  'ob_size')
+
         t_success = self.state.mktrans_assignment(stmt.lhs,
                                             v_ob_size,
                                             fnmeta.desc_when_call_returns_value('ob_size'))

@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -1685,7 +1685,7 @@ class State(object):
             return self.value_for_region.get(field_region, None)
         return None
 
-    def read_field_by_name(self, stmt, region, fieldname):
+    def read_field_by_name(self, stmt, gcctype, region, fieldname):
         """
         Lookup region->field, getting its AbstractValue.
 
@@ -1695,13 +1695,15 @@ class State(object):
         """
         log('read_field_by_name(%r, %r)', region, fieldname)
         check_isinstance(stmt, gcc.Gimple)
+        if gcctype:
+            check_isinstance(gcctype, gcc.Type)
         check_isinstance(region, Region)
         check_isinstance(fieldname, str)
 
         v_field = self.get_value_of_field_by_region(region,
                                                     fieldname)
         if v_field is None:
-            v_field = UnknownValue.make(stmt.lhs.type, stmt.loc)
+            v_field = UnknownValue.make(gcctype, stmt.loc)
             r_field = self.make_field_region(region,
                                              fieldname)
             self.value_for_region[r_field] = v_field
