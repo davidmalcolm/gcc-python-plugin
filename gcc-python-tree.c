@@ -25,6 +25,9 @@
 
 #include "cp/cp-tree.h" /* for TFF_* for use by gcc_FunctionDecl_get_fullname */
 
+#include "tree-flow.h" /* for op_symbol_code */
+
+
 /*
   Unfortunately, decl_as_string() is only available from the C++
   frontend: cc1plus (it's defined in gcc/cp/error.c).
@@ -137,6 +140,20 @@ PyObject *
 gcc_Tree_get_str_no_uid(struct PyGccTree *self, void *closure)
 {
     return do_pretty_print(self, 0, TDF_NOUID);
+}
+
+PyObject *
+gcc_Tree_get_symbol(PyObject *cls, PyObject *args)
+{
+    enum tree_code code;
+
+    if (-1 == gcc_python_tree_type_object_as_tree_code(cls, &code)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "no symbol associated with this type");
+        return NULL;
+    }
+
+    return gcc_python_string_from_string(op_symbol_code(code));
 }
 
 PyObject *

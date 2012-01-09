@@ -41,6 +41,7 @@ Contents:
    success.rst
    misc.rst
    release-notes.rst
+   appendices.rst
 
 This document describes the Python plugin I've written for GCC.  In theory the
 plugin allows you to write Python scripts that can run inside GCC as it

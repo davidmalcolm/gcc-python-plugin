@@ -602,6 +602,12 @@ Binary Expressions
 
       The :py:class:`gcc.Location` for this binary expression
 
+   .. py:classmethod:: get_symbol()
+
+      Get the symbol used in debug dumps for this :py:class:`gcc.Binary`
+      subclass, if any, as a `str`.  A table showing these strings can be
+      seen :ref:`here <get_symbols>`.
+
    Has subclasses for the various kinds of binary expression.  These
    include:
 
@@ -742,6 +748,12 @@ Unary Expressions
 
       The :py:class:`gcc.Location` for this unary expression
 
+   .. py:classmethod:: get_symbol()
+
+      Get the symbol used in debug dumps for this :py:class:`gcc.Unary`
+      subclass, if any, as a `str`.  A table showing these strings can be
+      seen :ref:`here <get_symbols>`.
+
    Subclasses include:
 
       ======================================  ==================================================
@@ -786,18 +798,24 @@ Comparisons
 
       The :py:class:`gcc.Location` for this comparison
 
+   .. py:classmethod:: get_symbol()
+
+      Get the symbol used in debug dumps for this :py:class:`gcc.Comparison`
+      subclass, if any, as a `str`.  A table showing these strings can be
+      seen :ref:`here <get_symbols>`.
+
    Subclasses include:
 
       =====================================  ======================
       Subclass                               C/C++ operators
       =====================================  ======================
-      .. py:class:: EqExpr
-      .. py:class:: GeExpr
-      .. py:class:: GtExpr
-      .. py:class:: LeExpr
-      .. py:class:: LtExpr
+      .. py:class:: EqExpr                   `==`
+      .. py:class:: GeExpr                   `>=`
+      .. py:class:: GtExpr                   `>`
+      .. py:class:: LeExpr                   `<=`
+      .. py:class:: LtExpr                   `<`
       .. py:class:: LtgtExpr
-      .. py:class:: NeExpr
+      .. py:class:: NeExpr                   `!=`
       .. py:class:: OrderedExpr
       .. py:class:: UneqExpr
       .. py:class:: UngeExpr
@@ -822,6 +840,12 @@ References to storage
    .. py:attribute:: location
 
       The :py:class:`gcc.Location` for this storage reference
+
+   .. py:classmethod:: get_symbol()
+
+      Get the symbol used in debug dumps for this :py:class:`gcc.Reference`
+      subclass, if any, as a `str`.  A table showing these strings can be
+      seen :ref:`here <get_symbols>`.
 
 .. py:class:: gcc.ArrayRef
 
@@ -925,6 +949,12 @@ Other expression subclasses
    .. py:attribute:: location
 
       The :py:class:`gcc.Location` for this expression
+
+   .. py:classmethod:: get_symbol()
+
+      Get the symbol used in debug dumps for this :py:class:`gcc.Expression`
+      subclass, if any, as a `str`.  A table showing these strings can be
+      seen :ref:`here <get_symbols>`.
 
    Subclasses include:
 

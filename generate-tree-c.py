@@ -136,13 +136,17 @@ def generate_intermediate_tree_classes():
 
         getsettable = PyGetSetDefTable('gcc_%s_getset_table' % localname, [])
 
+        methods = PyMethodTable('gcc_%s_methods' % localname, [])
+
         pytype = PyTypeObject(identifier = code_type,
                               localname = localname,
                               tp_name = 'gcc.%s' % localname,
                               struct_name = 'struct PyGccTree',
                               tp_new = 'PyType_GenericNew',
                               tp_base = '&gcc_TreeType',
-                              tp_getset = getsettable.identifier)
+                              tp_getset = getsettable.identifier,
+                              tp_methods = methods.identifier)
+
         if localname == 'Declaration':
             cu.add_defn("""
 PyObject *
@@ -195,9 +199,6 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   'gcc_Type_get_sizeof',
                                   None,
                                   'sizeof() this type, as a gcc.IntegerCst')
-
-            methods = PyMethodTable('gcc_Type_methods', [])
-
 
             def add_type(c_expr_for_node, typename):
                 # Expose the given global type node within the gcc.Tree API
@@ -264,9 +265,6 @@ PyObject*
                     name = ti[3:-5].lower()
                 add_type('global_trees[%s]' % ti, name)
 
-            pytype.tp_methods = methods.identifier
-            cu.add_defn(methods.c_defn())
-
         if localname == 'Unary':
             add_simple_getter('operand',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
@@ -281,6 +279,12 @@ PyObject*
                               'gcc_python_make_wrapper_location(EXPR_LOCATION(self->t))',
                               "The source location of this expression")
 
+            methods.add_method('get_symbol',
+                               'gcc_Tree_get_symbol', # they all share the implementation
+                               'METH_CLASS|METH_NOARGS',
+                               "FIXME")
+
+        cu.add_defn(methods.c_defn())
         cu.add_defn(getsettable.c_defn())            
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
@@ -555,6 +559,19 @@ def generate_tree_code_classes():
     for tree_type in tree_types:
         cu.add_defn('    &gcc_%sType, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
     cu.add_defn('};\n\n')
+
+    cu.add_defn('\n/* Map from PyTypeObject* to GCC tree codes*/\n')
+    cu.add_defn('int \n')
+    cu.add_defn('gcc_python_tree_type_object_as_tree_code(PyObject *cls, enum tree_code *out)\n')
+    cu.add_defn('{\n')
+    for tree_type in tree_types:
+        cu.add_defn('    if (cls == (PyObject*)&gcc_%sType) {\n'
+                    '        *out = %s; return 0;\n'
+                    '    }\n'
+                    % (tree_type.camel_cased_string(),
+                       tree_type.SYM))
+    cu.add_defn('    return -1;\n')
+    cu.add_defn('}\n')
 
     cu.add_defn("""
 PyTypeObject*

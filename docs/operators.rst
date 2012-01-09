@@ -1,5 +1,5 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -15,18 +15,16 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Miscellanea
-===========
+:py:class:`gcc.Tree` operators by symbol
+----------------------------------------
 
-The following odds and ends cover the more esoteric aspects of GCC, and are
-documented here for completeness.  They may or may not be useful when writing
-scripts.
+.. _get_symbols:
 
-.. toctree::
+The following shows the symbol used for each expression subclass in debug
+dumps, as returned by the various `get_symbol()` class methods.
 
-   callgraph.rst
-   options.rst
-   parameters.rst
-   preprocessor.rst
-   versions.rst
-   rtl.rst
+There are some duplicates (e.g. `-` is used for both :py:class:`gcc.MinusExpr`
+as an infix binary operator, and by :py:class:`gcc.NegateExpr` as a prefixed
+unary operator).
+
+.. include:: ../tests/plugin/expressions/get_symbol/stdout.txt

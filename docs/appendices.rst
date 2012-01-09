@@ -1,5 +1,5 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -15,18 +15,13 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Miscellanea
-===========
+Appendices
+==========
 
-The following odds and ends cover the more esoteric aspects of GCC, and are
-documented here for completeness.  They may or may not be useful when writing
-scripts.
+The following contain tables of reference material that may be useful
+when writing scripts.
 
 .. toctree::
 
-   callgraph.rst
-   options.rst
-   parameters.rst
-   preprocessor.rst
-   versions.rst
-   rtl.rst
+   tables-of-passes.rst
+   operators.rst
