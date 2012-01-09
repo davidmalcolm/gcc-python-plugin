@@ -323,7 +323,7 @@ Types
 
    .. py:attribute:: name
 
-      (gcc.Type or None) the name of the type
+      The :py:class:`gcc.IdentifierNode` for the name of the type, or `None`.
 
    .. py:attribute:: pointer
 
@@ -504,6 +504,31 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
 
       A tuple of :py:class:`gcc.Type` instances, representing the function's
       argument types
+
+.. py:class:: gcc.RecordType
+
+   A compound type, such as a C `struct`
+
+   .. py:attribute:: fields
+
+      The fields of this type, as a list of :py:class:`gcc.FieldDecl` instances
+
+   You can look up C structures by looking within the top-level
+   :py:class:`gcc.Block` within the current translation unit.  For example,
+   given this sample C code:
+
+    .. literalinclude:: ../tests/examples/c/struct/input.c
+      :lines: 20-30
+      :language: c
+
+  then the following Python code:
+
+    .. literalinclude:: ../tests/examples/c/struct/script.py
+      :lines: 21-40
+
+  will generate this output:
+
+    .. literalinclude:: ../tests/examples/c/struct/stdout.txt
 
 Constants
 ---------

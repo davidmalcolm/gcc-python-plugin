@@ -1,0 +1,16 @@
+fn: gcc.Function('foo')
+  type(decl): <type 'gcc.TypeDecl'>
+  type(decl.type): <type 'gcc.RecordType'>
+  decl.type.name: gcc.IdentifierNode(name='test_struct')
+    type(f): <type 'gcc.FieldDecl'>
+      f.name: 'a'
+      f.type: int
+      type(f.type): <type 'gcc.IntegerType'>
+    type(f): <type 'gcc.FieldDecl'>
+      f.name: 'b'
+      f.type: char
+      type(f.type): <type 'gcc.IntegerType'>
+    type(f): <type 'gcc.FieldDecl'>
+      f.name: 'c'
+      f.type: float
+      type(f.type): <type 'gcc.RealType'>
