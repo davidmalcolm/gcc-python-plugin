@@ -1,5 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 
 Gimple statements
 =================
-
-TODO
 
 .. py:class:: gcc.Gimple
 
@@ -84,9 +82,100 @@ TODO
       Otherwise, the traversal continues, and `walk_tree` eventually returns
       `None`.
 
+.. Note that gimple.def contains useful summaries of what each gimple code
+   means
+
+:py:class:`gcc.Gimple` has various subclasses, each corresponding to the
+one of the kinds of statement within GCC's internal representation.
+
+The following subclasses have been wrapped for use from Python scripts:
+
+=======================================  ===================================
+Subclass                                 Meaning
+=======================================  ===================================
+:py:class:`gcc.GimpleAssign`             An assignment of an expression to
+                                         an l-value::
+
+                                            LHS = RHS1 EXPRCODE RHS2;
+
+:py:class:`gcc.GimpleCall`               A function call::
+
+                                            [ LHS = ] FN(ARG1, ..., ARGN);
+
+:py:class:`gcc.GimpleCond`               A conditional jump, of the form::
+
+                                             if (LHS EXPRCODE RHS) goto TRUE_LABEL else goto FALSE_LABEL;
+
+:py:class:`gcc.GimpleLabel`              A label statement (jump target)::
+
+                                             LABEL:
+
+:py:class:`gcc.GimplePhi`                Used in the SSA passes::
+
+                                            LHS = PHI <ARG1, ..., ARGN>;
+
+:py:class:`gcc.GimpleReturn`             A "return" statement::
+
+                                            RETURN [RETVAL];
+
+:py:class:`gcc.GimpleSwitch`             A switch statement::
+
+                                            switch (INDEXVAR)
+                                            {
+                                              case LAB1: ...; break;
+                                              ...
+                                              case LABN: ...; break;
+                                              default: ...
+                                            }
+
+=======================================  ===================================
+
+There are some additional subclasses that have not yet been fully wrapped by
+the Python plugin (email the `gcc-python-plugin's mailing list
+<https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_ if you're
+interested in working with these):
+
+=======================================  ===================================
+Subclass                                 Meaning
+=======================================  ===================================
+:py:class:`gcc.GimpleAsm`                One or more inline assembly
+                                         statements
+:py:class:`gcc.GimpleBind`               A lexical scope
+:py:class:`gcc.GimpleCatch`              An exception handler
+:py:class:`gcc.GimpleDebug`              A debug statement
+:py:class:`gcc.GimpleEhDispatch`         Used in exception-handling
+:py:class:`gcc.GimpleEhFilter`           Used in exception-handling
+:py:class:`gcc.GimpleEhMustNotThrow`     Used in exception-handling
+:py:class:`gcc.GimpleErrorMark`          A dummy statement used for handling internal errors
+:py:class:`gcc.GimpleGoto`               An unconditional jump
+:py:class:`gcc.GimpleNop`                The "do nothing" statement
+:py:class:`gcc.GimpleOmpAtomicLoad`      Used for implementing OpenMP
+:py:class:`gcc.GimpleOmpAtomicStore`     (ditto)
+:py:class:`gcc.GimpleOmpContinue`        (ditto)
+:py:class:`gcc.GimpleOmpCritical`        (ditto)
+:py:class:`gcc.GimpleOmpFor`             (ditto)
+:py:class:`gcc.GimpleOmpMaster`          (ditto)
+:py:class:`gcc.GimpleOmpOrdered`         (ditto)
+:py:class:`gcc.GimpleOmpParallel`        (ditto)
+:py:class:`gcc.GimpleOmpReturn`          (ditto)
+:py:class:`gcc.GimpleOmpSection`         (ditto)
+:py:class:`gcc.GimpleOmpSections`        (ditto)
+:py:class:`gcc.GimpleOmpSectionsSwitch`  (ditto)
+:py:class:`gcc.GimpleOmpSingle`          (ditto)
+:py:class:`gcc.GimpleOmpTask`            (ditto)
+:py:class:`gcc.GimplePredict`            A hint for branch prediction
+:py:class:`gcc.GimpleResx`               Resumes execution after an exception
+:py:class:`gcc.GimpleTry`                A try/catch or try/finally statement
+:py:class:`gcc.GimpleWithCleanupExpr`    Internally used when generating GIMPLE
+=======================================  ===================================
+
+
 .. py:class:: gcc.GimpleAssign
 
-   Subclass of :py:class:`gcc.Gimple`: an assignment of an expression to an l-value
+   Subclass of :py:class:`gcc.Gimple`: an assignment of an expression to an
+   l-value::
+
+      LHS = RHS1 EXPRCODE RHS2;
 
    .. py:attribute:: lhs
 
@@ -95,7 +184,8 @@ TODO
    .. py:attribute:: rhs
 
       The operands on the right-hand-side of the expression, as a list of
-      :py:class:`gcc.Tree` instances
+      :py:class:`gcc.Tree` instances (either of length 1 or length 2,
+      depending on the expression).
 
    .. py:attribute:: exprcode
 
@@ -104,12 +194,14 @@ TODO
 
 .. py:class:: gcc.GimpleCall
 
-   Subclass of :py:class:`gcc.Gimple`: an invocation of a function, assigning
-   the result to an l-value
+   Subclass of :py:class:`gcc.Gimple`: an invocation of a function, potentially
+   assigning the result to an l-value::
+
+      [ LHS = ] FN(ARG1, ..., ARGN);
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a :py:class:`gcc.Tree`
+      Left-hand-side of the assignment, as a :py:class:`gcc.Tree`, or `None`
 
    .. py:attribute:: rhs
 
@@ -137,11 +229,13 @@ TODO
 .. py:class:: gcc.GimpleReturn
 
    Subclass of :py:class:`gcc.Gimple`: a "return" statement, signifying the end
-   of a :py:class:`gcc.BasicBlock`
+   of a :py:class:`gcc.BasicBlock`::
+
+       RETURN [RETVAL];
 
    .. py:attribute:: retval
 
-   The return value, as a :py:class:`gcc.Tree`
+   The return value, as a :py:class:`gcc.Tree`, or `None`.
 
 .. py:class:: gcc.GimpleCond
 
@@ -192,22 +286,32 @@ TODO
 
    Subclass of :py:class:`gcc.Gimple` used in the SSA passes: a "PHI" or
    "phoney" function, for merging the various possible values a variable can
-   have based on the edge that we entered this :py:class:`gcc.BasicBlock` on.
+   have based on the edge that we entered this :py:class:`gcc.BasicBlock` on::
+
+      LHS = PHI <ARG1, ..., ARGN>;
 
    .. py:attribute:: lhs
 
-      Left-hand-side of the assignment, as a :py:class:`gcc.Tree` (generally a
-      :py:class:`gcc.SsaName`, I believe)
+      Left-hand-side of the assignment, as a :py:class:`gcc.SsaName`
 
    .. py:attribute:: args
 
       A list of (:py:class:`gcc.Tree`, :py:class:`gcc.Edge`) pairs representing
-      the possible (expr, edge) inputs
+      the possible (expr, edge) inputs.  Each `expr` is either a
+      :py:class:`gcc.SsaName` or a :py:class:`gcc.Constant`
 
 .. py:class:: gcc.GimpleSwitch
 
    Subclass of :py:class:`gcc.Gimple`: a switch statement, signifying the end of a
-   :py:class:`gcc.BasicBlock`
+   :py:class:`gcc.BasicBlock`::
+
+      switch (INDEXVAR)
+      {
+        case LAB1: ...; break;
+        ...
+        case LABN: ...; break;
+        default: ...
+      }
 
    .. py:attribute:: indexvar
 
@@ -219,9 +323,25 @@ TODO
 
       The initial label in the list is always the default.
 
+.. py:class:: gcc.GimpleLabel
+
+   Subclass of :py:class:`gcc.Gimple`, representing a "label" statement::
+
+      LABEL:
+
+   .. FIXME: Label is a gcc.LabelDecl representing a jump target.
+
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Gimple
   ..        GimpleAsm
+  ..           /* GIMPLE_ASM <STRING, I1, ..., IN, O1, ... OM, C1, ..., CP>
+  ..              represents inline assembly statements.
+  ..              STRING is the string containing the assembly statements.
+  ..              I1 ... IN are the N input operands.
+  ..              O1 ... OM are the M output operands.
+  ..              C1 ... CP are the P clobber operands.
+  ..              L1 ... LQ are the Q label operands.  */
+
   ..        GimpleAssign
   ..        GimpleBind
   ..        GimpleCall
