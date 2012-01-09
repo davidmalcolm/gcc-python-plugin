@@ -404,7 +404,30 @@ Types
       `double`)
 
 .. py:class:: gcc.PointerType
+
+   Subclass of :py:class:`gcc.Type` representing a pointer type, such as
+   an `int *`
+
+   .. py:attribute:: dereference
+
+      The :py:class:`gcc.Type` that this type points to.  In the above
+      example (`int *`), this would be the `int` type.
+
 .. py:class:: gcc.ArrayType
+
+   Subclass of :py:class:`gcc.Type` representing an array type.  For example,
+   in a C declaration such as::
+
+      char buf[16]
+
+   we have a :py:class:`gcc.VarDecl` for `buf`, and its type is an instance of
+   :py:class:`gcc.ArrayType`, representing `char [16]`.
+
+   .. py:attribute:: dereference
+
+      The :py:class:`gcc.Type` that this type points to.  In the above
+      example, this would be the `char` type.
+
 .. py:class:: gcc.VectorType
 
    .. py:attribute:: dereference
