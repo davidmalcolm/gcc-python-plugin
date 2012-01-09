@@ -934,7 +934,7 @@ Statements
    Corresponds to the `tcc_statement` value of `enum tree_code_class` within
    GCC's own C sources.
 
-.. py:class:: CaseLabelExpr
+.. py:class:: gcc.CaseLabelExpr
 
    A subclass of :py:class:`gcc.Statement` for the `case` and `default` labels
    within a `switch` statement.
