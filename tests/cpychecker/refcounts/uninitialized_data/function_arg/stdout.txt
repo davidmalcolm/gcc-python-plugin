@@ -4,7 +4,7 @@ Trace 0:
     'taking False path'
     'when taking True path'
   error: UsageOfUninitializedData()
-  error: passing uninitialized data as argument 3 to function: gcc.VarDecl('item') at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41
+  error: passing uninitialized data (item) as argument 3 to function at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41
   PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34))
     str(): PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34

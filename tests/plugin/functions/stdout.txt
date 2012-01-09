@@ -37,7 +37,7 @@ fn.end: gcc.Location(file='tests/plugin/functions/input.c', line=31)
 gimple[0]:
   str(stmt): 'h = 1.0e+0;'
   repr(stmt): 'gcc.GimpleAssign()'
-  str(stmt.lhs): "gcc.VarDecl('h')"
+  str(stmt.lhs): 'h'
   [str(stmt.rhs)]: ['1.0e+0']
 gimple[1]:
   str(stmt): 'keywords[0] = "bar";'
@@ -52,7 +52,7 @@ gimple[2]:
 gimple[3]:
   str(stmt): 'd = 2.0e+0;'
   repr(stmt): 'gcc.GimpleAssign()'
-  str(stmt.lhs): "gcc.VarDecl('d')"
+  str(stmt.lhs): 'd'
   [str(stmt.rhs)]: ['2.0e+0']
 gimple[4]:
   str(stmt): 'return;'

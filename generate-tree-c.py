@@ -174,7 +174,6 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   None,
                                   'The gcc.Location for this declaration')
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
-            pytype.tp_str = '(reprfunc)gcc_Declaration_repr'
 
         def add_simple_getter(name, c_expression, doc):
             getsettable.add_gsdef(name,

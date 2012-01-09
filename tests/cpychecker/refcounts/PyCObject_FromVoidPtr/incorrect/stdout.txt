@@ -56,7 +56,7 @@ Trace 2:
   Transitions:
     'when PyCObject_FromVoidPtr() fails (when py3k deprecation warnings are enabled and configured to raise exceptions)'
   error: NullPtrArgument()
-  error: calling PyTuple_Pack with NULL (gcc.VarDecl('obj')) as argument 3 at tests/cpychecker/refcounts/PyCObject_FromVoidPtr/incorrect/input.c:44
+  error: calling PyTuple_Pack with NULL as argument 3 (obj) at tests/cpychecker/refcounts/PyCObject_FromVoidPtr/incorrect/input.c:44
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -74,7 +74,7 @@ Trace 3:
   Transitions:
     'when PyCObject_FromVoidPtr() fails'
   error: NullPtrArgument()
-  error: calling PyTuple_Pack with NULL (gcc.VarDecl('obj')) as argument 3 at tests/cpychecker/refcounts/PyCObject_FromVoidPtr/incorrect/input.c:44
+  error: calling PyTuple_Pack with NULL as argument 3 (obj) at tests/cpychecker/refcounts/PyCObject_FromVoidPtr/incorrect/input.c:44
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

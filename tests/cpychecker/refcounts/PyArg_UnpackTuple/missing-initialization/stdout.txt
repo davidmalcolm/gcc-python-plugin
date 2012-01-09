@@ -24,7 +24,7 @@ Trace 1:
     'when PyArg_UnpackTuple() successfully unpacks 1 argument(s)'
     'taking False path'
   error: UsageOfUninitializedData()
-  error: passing uninitialized data as argument 3 to function: gcc.VarDecl('b.1') at tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
+  error: passing uninitialized data (b.1) as argument 3 to function at tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")
@@ -48,7 +48,7 @@ Trace 2:
     'when PyArg_UnpackTuple() successfully unpacks 2 argument(s)'
     'taking False path'
   error: UsageOfUninitializedData()
-  error: passing uninitialized data as argument 4 to function: gcc.VarDecl('c.0') at tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
+  error: passing uninitialized data (c.0) as argument 4 to function at tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization/input.c:42
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

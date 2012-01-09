@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'when taking True path'
   error: UsageOfUninitializedData()
-  error: comparison against uninitialized data: gcc.VarDecl('j.0') at tests/cpychecker/absinterp/uninitialized-data/input.c:35
+  error: comparison against uninitialized data (j.0) at tests/cpychecker/absinterp/uninitialized-data/input.c:35
 
 Trace 1:
   Transitions:

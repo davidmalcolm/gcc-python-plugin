@@ -1,3 +1,3 @@
 tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c: In function 'test_read_through_uninitialized_pointer':
-tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:35:5: warning: dereferencing uninitialized pointer: coord_ptr->x at tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:35 [enabled by default]
+tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:35:5: warning: dereferencing uninitialized pointer (coord_ptr->x) at tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:35 [enabled by default]
 tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c:32:1: note: graphical error report for function 'test_read_through_uninitialized_pointer' written out to 'tests/cpychecker/absinterp/read-through-uninitialized-ptr/input.c.test_read_through_uninitialized_pointer-refcount-errors.html'

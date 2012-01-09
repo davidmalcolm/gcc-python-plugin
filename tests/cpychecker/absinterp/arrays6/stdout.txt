@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
   error: UsageOfUninitializedData()
-  error: usage of uninitialized data in right-hand side of <type 'gcc.PlusExpr'>: gcc.VarDecl(nnnn) at tests/cpychecker/absinterp/arrays6/input.c:35
+  error: usage of uninitialized data (D.nnnnn) on right-hand side of + at tests/cpychecker/absinterp/arrays6/input.c:35
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arrays6/input.c:26

@@ -36,7 +36,7 @@ Trace 2:
   Transitions:
     'when treating unknown void * from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:30 as NULL'
   error: NullPtrArgument()
-  error: possibly calling PyList_Append with NULL (gcc.VarDecl('list')) as argument 1 at tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
+  error: possibly calling PyList_Append with NULL as argument 1 (list) at tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
   Region("region-for-arg-gcc.ParmDecl('item')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('item')")
     str(): Region("region-for-arg-gcc.ParmDecl('item')")

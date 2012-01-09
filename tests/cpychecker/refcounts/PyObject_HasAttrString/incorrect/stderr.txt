@@ -1,3 +1,3 @@
 tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29:50: warning: calling PyObject_HasAttrString with NULL (0B) as argument 2 at tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29 [enabled by default]
+tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29:50: warning: calling PyObject_HasAttrString with NULL as argument 2 (0B) at tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:29 [enabled by default]
 tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect/input.c.test-refcount-errors.html'

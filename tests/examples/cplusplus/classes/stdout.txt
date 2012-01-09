@@ -1,7 +1,7 @@
 fn: gcc.Function('__base_dtor ')
   fn.decl.name: '__base_dtor '
   fn.decl.fullname: 'Example::Widget::~Widget()'
-  str(fn.decl): gcc.FunctionDecl('__base_dtor ')
+  str(fn.decl): __base_dtor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -37,7 +37,7 @@ fn: gcc.Function('__base_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('operator delete')
       stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
   block 5
     gimple[0]:
@@ -46,7 +46,7 @@ fn: gcc.Function('__base_dtor ')
 fn: gcc.Function('__base_dtor ')
   fn.decl.name: '__base_dtor '
   fn.decl.fullname: 'Example::Dialog::~Dialog()'
-  str(fn.decl): gcc.FunctionDecl('__base_dtor ')
+  str(fn.decl): __base_dtor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -68,7 +68,7 @@ fn: gcc.Function('__base_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('__base_dtor ')
       stmt.fn.operand.fullname: 'Example::Widget::~Widget()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
   block 3
     gimple[0]:
@@ -92,7 +92,7 @@ fn: gcc.Function('__base_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('operator delete')
       stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
   block 5
     gimple[0]:
@@ -101,7 +101,7 @@ fn: gcc.Function('__base_dtor ')
 fn: gcc.Function('foo')
   fn.decl.name: 'foo'
   fn.decl.fullname: 'void foo(const Example::Coord&)'
-  str(fn.decl): gcc.FunctionDecl('foo')
+  str(fn.decl): foo
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.FunctionType'>
@@ -121,7 +121,7 @@ fn: gcc.Function('foo')
       stmt.fn.operand: gcc.FunctionDecl('operator new')
       stmt.fn.operand.fullname: 'void* operator new(long unsigned int) throw (std::bad_alloc)'
     str(stmt.args[0]): '16'
-    str(stmt.lhs): gcc.VarDecl(nnnn)
+    str(stmt.lhs): D.nnnnn
     gimple[1]:
       str(stmt): 'dlg.0 = D.nnnnn;'
       repr(stmt): 'gcc.GimpleAssign()'
@@ -133,7 +133,7 @@ fn: gcc.Function('foo')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('__comp_ctor ')
       stmt.fn.operand.fullname: 'Example::Dialog::Dialog()'
-    str(stmt.args[0]): "gcc.VarDecl('dlg.0')"
+    str(stmt.args[0]): 'dlg.0'
     str(stmt.lhs): None
     gimple[3]:
       str(stmt): 'dlg = dlg.0;'
@@ -146,8 +146,8 @@ fn: gcc.Function('foo')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('set_location')
       stmt.fn.operand.fullname: 'void Example::Widget::set_location(const Example::Coord&)'
-    str(stmt.args[0]): "gcc.VarDecl('dlg')"
-    str(stmt.args[1]): "gcc.ParmDecl('coord')"
+    str(stmt.args[0]): 'dlg'
+    str(stmt.args[1]): 'coord'
     str(stmt.lhs): None
     gimple[5]:
       str(stmt): 'if (dlg != 0B)'
@@ -168,7 +168,7 @@ fn: gcc.Function('foo')
     type(stmt.fn): <type 'gcc.ObjTypeRef'>
     str(stmt.fn): 'OBJ_TYPE_REF(D.nnnnn;dlg->1)'
     stmt.fn: <gcc.ObjTypeRef object at 0xdeadbeef>
-    str(stmt.args[0]): "gcc.VarDecl('dlg')"
+    str(stmt.args[0]): 'dlg'
     str(stmt.lhs): None
   block 4
     gimple[0]:
@@ -177,7 +177,7 @@ fn: gcc.Function('foo')
 fn: gcc.Function('__base_ctor ')
   fn.decl.name: '__base_ctor '
   fn.decl.fullname: 'Example::Dialog::Dialog()'
-  str(fn.decl): gcc.FunctionDecl('__base_ctor ')
+  str(fn.decl): __base_ctor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -199,7 +199,7 @@ fn: gcc.Function('__base_ctor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('__base_ctor ')
       stmt.fn.operand.fullname: 'Example::Widget::Widget()'
-    str(stmt.args[0]): 'gcc.VarDecl(nnnn)'
+    str(stmt.args[0]): 'D.nnnnn'
     str(stmt.lhs): None
     gimple[2]:
       str(stmt): 'this->D.nnnnn._vptr.Widget = &_ZTVN7Example6DialogE[2];'
@@ -210,7 +210,7 @@ fn: gcc.Function('__base_ctor ')
 fn: gcc.Function('__base_ctor ')
   fn.decl.name: '__base_ctor '
   fn.decl.fullname: 'Example::Widget::Widget()'
-  str(fn.decl): gcc.FunctionDecl('__base_ctor ')
+  str(fn.decl): __base_ctor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -230,7 +230,7 @@ fn: gcc.Function('__base_ctor ')
 fn: gcc.Function('foo')
   fn.decl.name: 'foo'
   fn.decl.fullname: 'void foo(const char*)'
-  str(fn.decl): gcc.FunctionDecl('foo')
+  str(fn.decl): foo
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.FunctionType'>
@@ -250,7 +250,7 @@ fn: gcc.Function('foo')
 fn: gcc.Function('foo')
   fn.decl.name: 'foo'
   fn.decl.fullname: 'void foo()'
-  str(fn.decl): gcc.FunctionDecl('foo')
+  str(fn.decl): foo
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.FunctionType'>
@@ -270,7 +270,7 @@ fn: gcc.Function('foo')
 fn: gcc.Function('set_location')
   fn.decl.name: 'set_location'
   fn.decl.fullname: 'void Example::Widget::set_location(const Example::Coord&)'
-  str(fn.decl): gcc.FunctionDecl('set_location')
+  str(fn.decl): set_location
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -290,7 +290,7 @@ fn: gcc.Function('set_location')
 fn: gcc.Function('get_width')
   fn.decl.name: 'get_width'
   fn.decl.fullname: 'virtual int Example::Dialog::get_width()'
-  str(fn.decl): gcc.FunctionDecl('get_width')
+  str(fn.decl): get_width
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -310,7 +310,7 @@ fn: gcc.Function('get_width')
 fn: gcc.Function('__deleting_dtor ')
   fn.decl.name: '__deleting_dtor '
   fn.decl.fullname: 'virtual Example::Dialog::~Dialog()'
-  str(fn.decl): gcc.FunctionDecl('__deleting_dtor ')
+  str(fn.decl): __deleting_dtor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -329,7 +329,7 @@ fn: gcc.Function('__deleting_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('__comp_dtor ')
       stmt.fn.operand.fullname: 'virtual Example::Dialog::~Dialog()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
   block 3
     gimple[0]:
@@ -343,7 +343,7 @@ fn: gcc.Function('__deleting_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('operator delete')
       stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
     gimple[2]:
       str(stmt): 'return;'
@@ -351,7 +351,7 @@ fn: gcc.Function('__deleting_dtor ')
 fn: gcc.Function('__deleting_dtor ')
   fn.decl.name: '__deleting_dtor '
   fn.decl.fullname: 'virtual Example::Widget::~Widget()'
-  str(fn.decl): gcc.FunctionDecl('__deleting_dtor ')
+  str(fn.decl): __deleting_dtor 
     type(fn): <type 'gcc.Function'>
     type(fn.decl): <type 'gcc.FunctionDecl'>
     type(fn.decl.type): <type 'gcc.MethodType'>
@@ -370,7 +370,7 @@ fn: gcc.Function('__deleting_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('__comp_dtor ')
       stmt.fn.operand.fullname: 'virtual Example::Widget::~Widget()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
   block 3
     gimple[0]:
@@ -384,7 +384,7 @@ fn: gcc.Function('__deleting_dtor ')
     stmt.fn: <gcc.AddrExpr object at 0xdeadbeef>
       stmt.fn.operand: gcc.FunctionDecl('operator delete')
       stmt.fn.operand.fullname: 'void operator delete(void*) throw ()'
-    str(stmt.args[0]): "gcc.ParmDecl('this')"
+    str(stmt.args[0]): 'this'
     str(stmt.lhs): None
     gimple[2]:
       str(stmt): 'return;'

@@ -48,7 +48,7 @@ Trace 2:
   Transitions:
     'when PyDict_New() fails'
   error: NullPtrArgument()
-  error: calling PyTuple_Size with NULL (gcc.VarDecl('dict')) as argument 1 at tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:37
+  error: calling PyTuple_Size with NULL as argument 1 (dict) at tests/cpychecker/refcounts/PyTuple_Size/incorrect/input.c:37
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

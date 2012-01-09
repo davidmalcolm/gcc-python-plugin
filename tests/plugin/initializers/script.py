@@ -43,7 +43,7 @@ def on_pass_execution(p, data):
                     print('       value: %s' % value)
                     for k, (idx2, value2) in enumerate(value.elements):
                         print('       elements[%i].elements[%i]:' % (j, k))
-                        print('         idx2: %s' % idx2)
+                        print('         idx2: %r' % idx2)
                         print('         value2: %s' % value2)
                         if isinstance(idx2, gcc.Declaration):
                             print('         idx2.name: %r' % idx2.name)

@@ -46,7 +46,7 @@ Trace 2:
   Transitions:
     'when treating unknown char * from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:27 as NULL'
   error: NullPtrArgument()
-  error: possibly calling PyErr_NewException with NULL (gcc.ParmDecl('name')) as argument 1 at tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
+  error: possibly calling PyErr_NewException with NULL as argument 1 (name) at tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
   Region("region-for-arg-gcc.ParmDecl('base')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('base')")
     str(): Region("region-for-arg-gcc.ParmDecl('base')")

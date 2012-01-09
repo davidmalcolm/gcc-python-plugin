@@ -25,7 +25,7 @@ Trace 1:
   Transitions:
     'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:26 as NULL'
   error: NullPtrArgument()
-  error: possibly calling PyList_GetItem with NULL (gcc.VarDecl('some_list.0')) as argument 1 at tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:32
+  error: possibly calling PyList_GetItem with NULL as argument 1 (some_list.0) at tests/cpychecker/refcounts/PyList_GetItem/correct/input.c:32
   Region("region-for-arg-gcc.ParmDecl('self')"):
     repr(): Region("region-for-arg-gcc.ParmDecl('self')")
     str(): Region("region-for-arg-gcc.ParmDecl('self')")

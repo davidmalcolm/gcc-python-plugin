@@ -931,8 +931,8 @@ class UsageOfUninitializedData(PredictedValueError):
         self.desc = desc
 
     def __str__(self):
-        return ('%s: %s at %s'
-                    % (self.desc, self.expr, self.state.loc.get_stmt().loc))
+        return ('%s at %s'
+                % (self.desc, self.state.loc.get_stmt().loc))
 
 class NullPtrDereference(PredictedValueError):
     def __init__(self, state, expr, ptr, isdefinite):
@@ -966,13 +966,17 @@ class NullPtrArgument(PredictedValueError):
 
     def __str__(self):
         if self.isdefinite:
-            return ('calling %s with NULL (%s) as argument %i at %s'
-                    % (self.stmt.fn, self.expr,
-                       self.idx + 1, self.state.loc.get_stmt().loc))
+            return ('calling %s with NULL as argument %i (%s) at %s'
+                    % (self.stmt.fn,
+                       self.idx + 1,
+                       self.expr,
+                       self.state.loc.get_stmt().loc))
         else:
-            return ('possibly calling %s with NULL (%s) as argument %i at %s'
-                    % (self.stmt.fn, self.expr,
-                       self.idx + 1, self.state.loc.get_stmt().loc))
+            return ('possibly calling %s with NULL as argument %i (%s) at %s'
+                    % (self.stmt.fn,
+                       self.idx + 1,
+                       self.expr,
+                       self.state.loc.get_stmt().loc))
 
 
 
@@ -1756,7 +1760,7 @@ class State(object):
             self.region_for_var[parm] = region
             if idx in nonnull_args:
                 # Make a non-NULL ptr:
-                other = Region('region-for-arg-%s' % parm, None)
+                other = Region('region-for-arg-%r' % parm, None)
                 self.region_for_var[other] = other
                 self.value_for_region[region] = PointerToRegion(parm.type, parm.location, other)
             else:
@@ -1836,7 +1840,7 @@ class State(object):
 
         if isinstance(ptr, UninitializedData):
             raise UsageOfUninitializedData(self, expr, ptr,
-                                           'dereferencing uninitialized pointer')
+                      'dereferencing uninitialized pointer (%s)' % expr)
 
         if ptr.is_null_ptr():
             # Read through NULL
@@ -2038,7 +2042,7 @@ class State(object):
             if isinstance(arg, UninitializedData):
                 raise UsageOfUninitializedData(self, stmt.args[i],
                                                arg,
-                                               'passing uninitialized data as argument %i to function' % (i + 1))
+                                               'passing uninitialized data (%s) as argument %i to function' % (stmt.args[i], i + 1))
 
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
@@ -2267,10 +2271,10 @@ class State(object):
         # Detect usage of uninitialized data:
         if isinstance(lhs, UninitializedData):
             raise UsageOfUninitializedData(self, expr_lhs, lhs,
-                                           'comparison against uninitialized data')
+                                           'comparison against uninitialized data (%s)' % expr_lhs)
         if isinstance(rhs, UninitializedData):
             raise UsageOfUninitializedData(self, expr_rhs, rhs,
-                                           'comparison against uninitialized data')
+                                           'comparison against uninitialized data (%s)' % expr_rhs)
 
         # Specialcasing: comparison of unknown ptr with NULL:
         if (isinstance(expr_lhs, gcc.VarDecl)
@@ -2310,11 +2314,12 @@ class State(object):
             a, b = self.eval_binop_args(stmt)
             if isinstance(a, UninitializedData):
                 raise UsageOfUninitializedData(self, stmt.rhs[0], a,
-                                               'usage of uninitialized data in left-hand side of %s' % stmt.exprcode)
+                                               'usage of uninitialized data (%s) on left-hand side of %s'
+                                               % (stmt.rhs[0], stmt.exprcode.get_symbol()))
             if isinstance(b, UninitializedData):
                 raise UsageOfUninitializedData(self, stmt.rhs[1], b,
-                                               'usage of uninitialized data in right-hand side of %s' % stmt.exprcode)
-
+                                               'usage of uninitialized data (%s) on right-hand side of %s'
+                                               % (stmt.rhs[0], stmt.exprcode.get_symbol()))
             try:
                 c = a.eval_binop(stmt.exprcode, b, stmt.lhs.type, stmt.loc)
                 check_isinstance(c, AbstractValue)

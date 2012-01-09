@@ -1,3 +1,3 @@
 tests/cpychecker/absinterp/arrays6/input.c: In function 'test_arrays6':
-tests/cpychecker/absinterp/arrays6/input.c:35:5: warning: usage of uninitialized data in right-hand side of <type 'gcc.PlusExpr'>: gcc.VarDecl(nnnn) at tests/cpychecker/absinterp/arrays6/input.c:35 [enabled by default]
+tests/cpychecker/absinterp/arrays6/input.c:35:5: warning: usage of uninitialized data (D.nnnnn) on right-hand side of + at tests/cpychecker/absinterp/arrays6/input.c:35 [enabled by default]
 tests/cpychecker/absinterp/arrays6/input.c:26:1: note: graphical error report for function 'test_arrays6' written out to 'tests/cpychecker/absinterp/arrays6/input.c.test_arrays6-refcount-errors.html'

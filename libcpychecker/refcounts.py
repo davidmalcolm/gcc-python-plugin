@@ -274,7 +274,7 @@ class CPython(Facet):
                 # We have a PyObject* (or a derived class)
                 log('got python obj arg: %r', region)
                 # Assume it's a non-NULL ptr:
-                objregion = Region('region-for-arg-%s' % parm, None)
+                objregion = Region('region-for-arg-%r' % parm, None)
                 self.state.region_for_var[objregion] = objregion
                 self.state.value_for_region[region] = PointerToRegion(parm.type,
                                                                 parm.location,
@@ -285,7 +285,7 @@ class CPython(Facet):
 
                 # Assume it has a non-NULL ob_type:
                 ob_type = self.state.make_field_region(objregion, 'ob_type')
-                typeobjregion = Region('region-for-type-of-arg-%s' % parm, None)
+                typeobjregion = Region('region-for-type-of-arg-%r' % parm, None)
                 self.state.value_for_region[ob_type] = PointerToRegion(get_PyTypeObject().pointer,
                                                                  parm.location,
                                                                  typeobjregion)

@@ -30,16 +30,16 @@ def on_pass_execution(p, data):
         for v in u.block.vars:
             if v.name == 'test_typedef':
                 print('v.name: %r' % v.name)
-                print('type(v): %s' % v)
+                print('type(v): %r' % v)
 
             if v.name == 'test_var':
                 print('v.name: %r' % v.name)
-                print('type(v): %s' % v)
+                print('type(v): %r' % v)
         #print 'u.block: %s' % u.block
         #u.block.debug()
 
         td = get_global_typedef('test_typedef')
-        print('td: %s' % td)
+        print('td: %r' % td)
         print('td.name: %r' % td.name)
         print('type(td.type): %s' % type(td.type))
 

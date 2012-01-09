@@ -4,7 +4,7 @@ Trace 0:
     'taking False path'
     'when taking True path'
   error: UsageOfUninitializedData()
-  error: comparison against uninitialized data: gcc.VarDecl('item') at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41
+  error: comparison against uninitialized data (item) at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41
   PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:34:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/comparison/input.c', line=34))
     str(): PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:34
