@@ -81,6 +81,8 @@ class TestStream:
             if six.MAXSIZE == 0x7fffffff:
                 expdata = expdata.replace('"Py_ssize_t *" (pointing to 64 bits)',
                                           '"Py_ssize_t *" (pointing to 32 bits)')
+                expdata = expdata.replace('0x8000000000000000', '0x80000000')
+                expdata = expdata.replace('0x7fffffffffffffff', '0x7fffffff')
             self.expdata = expdata
         else:
             self.expdata = ''
@@ -136,6 +138,12 @@ class TestStream:
             line = re.sub(r'frozenset\(\[(.*)\]\)',
                           r'frozenset({\1})',
                           line)
+
+            # Avoid further 32-bit vs 64-bit differences due to int vs long
+            # overflow:
+            line = re.sub('0x7fffffffL', '0x7fffffff', line)
+            line = re.sub('0xffffffffL', '0xffffffff', line)
+
             result += line + '\n'
         return result
 
