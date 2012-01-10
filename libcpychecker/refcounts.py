@@ -414,6 +414,21 @@ class CPython(Facet):
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return (nonnull, t_success, t_failure)
 
+    def object_ctor_bytes(self, stmt):
+        """
+        As per self.object_ctor(stmt, typename, typeobjname), returning:
+          (r_newobj, t_success, t_failure)
+        where the API entrypoint returns:
+          * a PyStringObject in Python 2
+          * a PyBytesObject in Python 3
+        """
+        if is_py3k():
+            typename, typeobjname = 'PyBytesObject', 'PyBytes_Type'
+        else:
+            typename, typeobjname = 'PyStringObject', 'PyString_Type'
+        return self.object_ctor(stmt,
+                                typename, typeobjname)
+
     def steal_reference(self, region):
         log('steal_reference(%r)', region)
         check_isinstance(region, Region)
@@ -2587,9 +2602,7 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_unicode,
                           why=invokes_Py_TYPE_via_macro(fnmeta,
                                                         'PyUnicode_Check'))
-        r_newobj, t_success, t_failure = self.object_ctor(stmt,
-                                                          'PyStringObject',
-                                                          'PyString_Type')
+        r_newobj, t_success, t_failure = self.object_ctor_bytes(stmt)
         return [t_success, t_failure]
 
     ########################################################################

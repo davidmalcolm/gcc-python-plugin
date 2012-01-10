@@ -72,8 +72,10 @@ class TestStream:
                 # replace long literals with int literals:
                 expdata = re.sub('([0-9]+)L', '\g<1>', expdata)
                 expdata = re.sub('(0x[0-9a-f]+)L', '\g<1>', expdata)
-                expdata = expdata.replace('struct PyStringObject',
-                                          'struct PyBytesObject')
+                expdata = expdata.replace('PyStringObject',
+                                          'PyBytesObject')
+                expdata = expdata.replace('PyString_Type',
+                                          'PyBytes_Type')
             # The expected data is for 64-bit builds of Python
             # Fix it up for 32-bit builds as necessary:
             if six.MAXSIZE == 0x7fffffff:
