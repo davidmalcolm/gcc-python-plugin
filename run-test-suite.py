@@ -343,10 +343,18 @@ if six.PY3:
     # Similarly for the PyString_ API:
     exclude_tests_below('tests/cpychecker/refcounts/PyString_AsString')
     exclude_tests_below('tests/cpychecker/refcounts/PyString_FromStringAndSize')
+    exclude_tests_below('tests/cpychecker/refcounts/PyString_Size')
+
+    # The PyCObject_ API was removed in 3.2:
+    exclude_tests_below('tests/cpychecker/refcounts/PyCObject_FromVoidPtr')
 
     # The following tests happen to use PyInt or PyString APIs and thus we
     # exclude them for now:
+    exclude_test('tests/cpychecker/refcounts/function-that-exits') # PyString
+    exclude_test('tests/cpychecker/refcounts/GIL/correct') # PyString
     exclude_test('tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang') # PyString
+    exclude_test('tests/cpychecker/refcounts/PyObject_CallMethodObjArgs/correct') # PyString
+    exclude_test('tests/cpychecker/refcounts/PyObject_CallMethodObjArgs/incorrect') # PyString
     exclude_test('tests/cpychecker/refcounts/PyStructSequence/correct') # PyInt
     exclude_test('tests/cpychecker/refcounts/PySys_SetObject/correct') # PyString
     exclude_test('tests/cpychecker/refcounts/subclass/handling') # PyString
@@ -354,6 +362,9 @@ if six.PY3:
     # Module handling is very different in Python 2 vs 3.  For now, only run
     # this test for Python 2:
     exclude_test('tests/cpychecker/refcounts/module_handling')
+
+    # Uses METH_OLDARGS:
+    exclude_test('tests/cpychecker/refcounts/PyArg_Parse/correct_simple')
 
 # Certain tests don't work for debug builds of Python:
 if hasattr(sys, 'gettotalrefcount'):
