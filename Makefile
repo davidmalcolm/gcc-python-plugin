@@ -202,16 +202,64 @@ docs/passes.svg: plugin generate-passes-svg.py
 # Utility target, to help me to make releases
 #   - creates a tag in git, and pushes it
 #   - creates a tarball
-#   - publishes it below:
-#     https://fedorahosted.org/releases/g/c/gcc-python-plugin/
 #
 # The following assumes that VERSION has been set e.g.
-#   $ make release VERSION=0.4
-#
-# git push --tags
-# scp gcc-python-plugin-$(VERSION).tar.gz dmalcolm@fedorahosted.org:gcc-python-plugin
+#   $ make tarball VERSION=0.4
 
-release:
+tarball:
+	-git tag -d v$(VERSION)
 	git tag -a v$(VERSION) -m"$(VERSION)"
 	git archive --format=tar --prefix=gcc-python-plugin-$(VERSION)/ v$(VERSION) | gzip > gcc-python-plugin-$(VERSION).tar.gz
+	sha256sum gcc-python-plugin-$(VERSION).tar.gz
 	cp gcc-python-plugin-$(VERSION).tar.gz ~/rpmbuild/SOURCES/
+
+# Notes to self on making a release
+# ---------------------------------
+#
+#  Before tagging:
+#
+#     * update the version/release in docs/conf.py
+#
+#     * update the version in gcc-python-plugin.spec
+#
+#     * add release notes to docs
+#
+#  Test the candidate tarball via a scratch SRPM build in Koji (this
+#  achieves test coverage against python 2 and 3, on both i686 and x86_64)
+#
+#     $ make koji VERSION=fixme
+#
+#  After successful testing of a candidate tarball:
+#
+#   * push the tag:
+#
+#         $ git push --tags
+#
+#   * upload it to https://fedorahosted.org/releases/g/c/gcc-python-plugin/
+#    via:
+#
+#        $ scp gcc-python-plugin-$(VERSION).tar.gz dmalcolm@fedorahosted.org:gcc-python-plugin
+#
+#  * add version to Trac: https://fedorahosted.org/gcc-python-plugin/admin/ticket/versions
+#
+#  * update release info at https://fedorahosted.org/gcc-python-plugin/wiki#Code
+#
+#  * send release announcement:
+#
+#      To: gcc@gcc.gnu.org, gcc-python-plugin@lists.fedorahosted.org, python-announce-list@python.org
+#      Subject: ANN: gcc-python-plugin $(VERSION)
+#      (etc)
+
+# Utility target, for building test rpms:
+srpm:
+	rpmbuild -bs gcc-python-plugin.spec
+
+# Perform a test rpm build locally:
+rpm:
+	rpmbuild -ba gcc-python-plugin.spec
+
+# Perform a test (scratch) build in Koji:
+# f16: gcc 4.6
+# f17: gcc 4.7
+koji: srpm
+	koji build --scratch f16 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc15.src.rpm
