@@ -438,12 +438,21 @@ gcc_RealCst_get_constant(struct PyGccTree * self, void *closure)
     d = TREE_REAL_CST_PTR(self->t);
     real_to_decimal (buf, d, sizeof (buf), 0, 1);
 
-    str = PyString_FromString(buf);
+    str = gcc_python_string_from_string(buf);
     if (!str) {
         return NULL;
     }
 
+    /*
+      PyFloat_FromString API dropped its redundant second argument
+      in Python 3
+     */
+#if PY_MAJOR_VERSION == 3
+    result = PyFloat_FromString(str);
+#else
     result = PyFloat_FromString(str, NULL);
+#endif
+
     Py_DECREF(str);
     return result;
 }
