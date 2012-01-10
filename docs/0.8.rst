@@ -1,0 +1,213 @@
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+0.8
+~~~
+
+Thanks to David Narvaez and Tom Tromey for their code contributions to this
+release.
+
+Changes to the GCC Python Plugin
+================================
+
+Initial C++ support
+-------------------
+This release adds the beginnings of C++ support: :py:class:`gcc.FunctionDecl`
+instances now have a "fullname" attribute, along with "is_public",
+"is_private", "is_protected", "is_static" booleans.
+
+For example, given this code:
+
+      .. code-block:: c++
+
+         namespace Example {
+             struct Coord {
+                 int x;
+                 int y;
+             };
+
+             class Widget {
+             public:
+                 void set_location(const struct Coord& coord);
+             };
+         };
+
+`set_location`'s fullname is::
+
+   'void Example::Widget::set_location(const Example::Coord&)'
+
+This is only present when the plugin is invoked from the C++ frontend
+(`cc1plus`), gracefully handling the case when we're invoked from other
+language frontends.
+
+Similarly, :py:class:`gcc.MethodType` has gained an "argument_types" attribute.
+
+Unconditional warnings
+----------------------
+The :py:func:`gcc.warning()` function in previous versions of the plugin required an
+"option" argument, such as ``gcc.Option('-Wformat')``
+
+It's now possible to emit an unconditional warning, by supplying `None` for
+this argument, which is now the default value::
+
+   gcc.warning(func.start, 'this is an unconditional warning')
+
+.. code-block:: bash
+
+   $ ./gcc-with-python script.py input.c
+   input.c:25:1: warning: this is an unconditional warning [enabled by default]
+
+which will be an error if `-Werror` is supplied as a command-line argument to gcc:
+
+.. code-block:: bash
+
+   $ ./gcc-with-python script.py -Werror input.c
+   input.c:25:1: error: this is an unconditional warning [-Werror]
+
+Improvements to :doc:`gcc-with-cpychecker </cpychecker>`
+========================================================
+
+The :doc:`"libcpychecker" </cpychecker>` Python code is a large example of
+using the plugin: it extends GCC with code that tries to detect various bugs
+in CPython extension modules.
+
+As of this release, all of the errors emitted by the tool have been converted
+to warnings.  This should make `gcc-with-cpychecker` more usable as a drop-in
+replacement for `gcc`: the first source file with a refcounting error should
+no longer terminate the build (unless the program uses ``-Werror``, of
+course).
+
+Verification of PyMethodDef tables
+----------------------------------
+
+This release adds checking of tables of PyMethodDef initialization values, used
+by Python extension modules for binding C functions to Python methods.
+
+The checker will verify that the signatures of the callbacks match the
+flags, and that the such tables are NULL terminated::
+
+   input.c:48:22: warning: flags do not match callback signature for 'test' within PyMethodDef table
+   input.c:48:22: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)" (2 arguments)
+   input.c:48:22: note: actual type of underlying callback: struct PyObject * <Tc58> (struct PyObject *, struct PyObject *, struct PyObject *) (3 arguments)
+   input.c:48:22: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+
+Coverage of the CPython API
+---------------------------
+
+When the checker warns about code that can erroneously pass ``NULL`` to
+various CPython API entrypoints which are known to implicitly dereference
+those arguments, the checker will now add an explanatory note about why it
+is complaining.
+
+For example::
+
+      input.c: In function 'test':
+      input.c:38:33: warning: calling PyString_AsString with NULL (gcc.VarDecl('repr_args')) as argument 1 at input.c:38
+      input.c:31:15: note: when PyObject_Repr() fails at:     repr_args = PyObject_Repr(args);
+      input.c:38:33: note: PyString_AsString() invokes Py_TYPE() on the pointer via the PyString_Check() macro, thus accessing (NULL)->ob_type
+      input.c:27:1: note: graphical error report for function 'test' written out to 'input.c.test-refcount-errors.html'
+
+The checker will now verify the argument lists of invocations of
+`PyObject_CallFunctionObjArgs
+<http://docs.python.org/c-api/object.html#PyObject_CallFunctionObjArgs>`_ and
+`PyObject_CallMethodObjArgs
+<http://docs.python.org/c-api/object.html#PyObject_CallMethodObjArgs>`_,
+checking that all of the arguments are of the correct type
+(PyObject* or subclasses), and that the list is NULL-terminated::
+
+  input.c: In function 'test':
+  input.c:33:5: warning: argument 2 had type char[12] * but was expecting a PyObject* (or subclass)
+  input.c:33:5: warning: arguments to PyObject_CallFunctionObjArgs were not NULL-terminated
+
+This release also adds heuristics for the behavior of the following CPython API
+entrypoints:
+
+    * PyArg_Parse
+    * PyCObject_{As,From}VoidPtr
+    * PyCallable_Check
+    * PyCapsule_GetPointer
+    * PyErr_{NewException,SetNone,WarnEx}
+    * PyEval_CallObjectWithKeywords
+    * PyEval_{Save,Restore}Thread (and thus the Py_{BEGIN,END}_ALLOW_THREADS
+      macros)
+    * PyList_{GetItem,Size}
+    * PyLong_FromLongLong
+    * PyMapping_Size
+    * PyModule_GetDict
+    * PyObject_AsFileDescriptor
+    * PyObject_Call{Function,FunctionObjArgs,MethodObjArgs}
+    * PyObject_Generic{Get,Set}Attr
+    * PyString_Size
+    * PyTuple_Pack
+    * PyUnicode_AsUTF8String
+    * Py_AtExit
+
+Bug fixes
+---------
+
+* gcc-with-cpychecker will now try harder on functions that are too
+  complicated to fully handle.  Previously, when a function was too
+  complicated for the reference-count tracker to fully analyze, it would give
+  up, performing no analysis.  The checker will now try to obtain at least
+  some subset of the list of all traces through the function, and analyze
+  those.  It will still note that the function was too complicated to fully
+  analyze.
+
+  Given that we do a depth-first traversal of the tree, and that "success"
+  transitions are typically visited before "failure" transitions, this means
+  that it should at least analyze the trace in which all functions calls
+  succeed, together with traces in which some of the later calls fail.
+
+* the reference-count checker now correctly handles "static" `PyObject*` local
+  variables: a `static PyObject *` local preserves its value from call to call,
+  and can thus permanently own a reference.
+
+  Fixes a false-positive seen in psycopg2-2.4.2
+  (`psycopg/psycopgmodule.c:psyco_GetDecimalType`)
+  where the refcount checker erroneously reported that a reference was leaked.
+
+* the checker for Py_BuildValue("O") (and "S" and "N") was being too strict,
+  requiring a (PyObject*).  Although it's not explicitly documented, it's
+  clear that these can also accept pointers to any PyObject subclass.
+
+  Fixes a false positive seen when running gcc-with-cpychecker on
+  coverage-3.5.1b1.tar.gz, in which `coverage/tracer.c:Tracer_trace` passes a
+  PyFrameObject* as an argument to such a call.
+
+* the reference-count checker now correctly suppresses reports about "leaks"
+  for traces that call a function that never return (such as `abort()`).
+
+  Fixes a false positive seen in rpm-4.9.1.2 in a handler for fatal errors:
+  (in python/rpmts-py.c:die) where the checker erroneously reported that a
+  reference was leaked.
+
+* `tp_iternext` callbacks are allowed to return NULL without setting an
+  exception.  The reference-count checker will now notice if a function is
+  used in such a role, and suppress warnings about such behavior.
+
+* fixed various Python tracebacks (tickets
+  `#14 <https://fedorahosted.org/gcc-python-plugin/ticket/14>`_,
+  `#19 <https://fedorahosted.org/gcc-python-plugin/ticket/19>`_,
+  `#20 <https://fedorahosted.org/gcc-python-plugin/ticket/20>`_,
+  `#22 <https://fedorahosted.org/gcc-python-plugin/ticket/22>`_,
+  `#23 <https://fedorahosted.org/gcc-python-plugin/ticket/23>`_,
+  `#24 <https://fedorahosted.org/gcc-python-plugin/ticket/24>`_,
+  `#25 <https://fedorahosted.org/gcc-python-plugin/ticket/25>`_)
+
+* various other fixes
+
+
