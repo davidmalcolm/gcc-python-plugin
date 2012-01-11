@@ -17,8 +17,8 @@
 
 # Sample python script, to be run by our gcc plugin
 # Show all the passes that get executed
-
 import gcc
+
 def my_pass_execution_callback(*args, **kwargs):
     (optpass, fun) = args
     print(args)
