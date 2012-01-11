@@ -36,11 +36,12 @@ For example, it's possible to piggyback off of an existing GCC pass by using
    plugin passes a :py:class:`gcc.Function` instance as a parameter to your
    callback, so that you can work on it::
 
+     import gcc
+
      def my_pass_execution_callback(*args, **kwargs):
           print('my_pass_execution_callback was called: args=%r  kwargs=%r'
 	        % (args, kwargs))
 
-     import gcc
      gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                            my_pass_execution_callback)
 
@@ -129,6 +130,8 @@ ID                                               Meaning
 
    To connect to a specific pass, you can simply add a conditional based on the
    name of the pass::
+
+      import gcc
 
       def my_callback(ps, fun):
           if ps.name != '*warn_function_return':
