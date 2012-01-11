@@ -1,0 +1,19 @@
+Trace 0:
+  Transitions:
+    'when treating unknown char * * from tests/cpychecker/absinterp/arrays7/input.c:27 as non-NULL'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='char[4] *', loc=gcc.Location(file='tests/cpychecker/absinterp/arrays7/input.c', line=32), region=ArrayElementRegion('foo[0]'))
+    str(): (char[4] *)&ArrayElementRegion('foo[0]') from tests/cpychecker/absinterp/arrays7/input.c:32
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arrays7/input.c:28
+
+Trace 1:
+  Transitions:
+    'when treating unknown char * * from tests/cpychecker/absinterp/arrays7/input.c:27 as NULL'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (*arr) at tests/cpychecker/absinterp/arrays7/input.c:35
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/arrays7/input.c:28

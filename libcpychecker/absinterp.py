@@ -1532,6 +1532,9 @@ class State(object):
                 sizeof = t.sizeof
                 log('%s', sizeof)
                 index = b.value // sizeof
+            # Offset of zero? just reuse the existing pointer's region:
+            if index == 0:
+                return a.region
             # Are we offsetting within an array?
             if isinstance(parent, ArrayElementRegion):
                 return self._array_region(parent.parent, parent.index + index)
