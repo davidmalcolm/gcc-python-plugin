@@ -44,6 +44,9 @@ For example, it's possible to piggyback off of an existing GCC pass by using
      gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                            my_pass_execution_callback)
 
+   The exact arguments passed to your callback vary: consult the documentation
+   for the particular event you are wiring up to (see below).
+
    You can pass additional arguments when registering the callback - they will
    be passed to the callback after any normal arguments.  This is denoted in the
    descriptions of events below by `*extraargs`.
@@ -53,13 +56,25 @@ For example, it's possible to piggyback off of an existing GCC pass by using
    below by `**kwargs`.
 
 The various events are exposed as constants within the `gcc` module and
-directly wrap GCC's plugin mechanism.  The exact arguments you get aren't
-well-documented there, and may be subject to change.  I've tried to document
-what I've seen in GCC 4.6 here, but it's worth experimenting and printing args
-and kwargs as shown above.
+directly wrap GCC's plugin mechanism.
 
-Callback events
----------------
+The following GCC events are currently usable from the Python plugin via
+:py:func:`gcc.register_callback()`:
+
+===============================================  =========
+ID                                               Meaning
+===============================================  =========
+:py:data:`gcc.PLUGIN_ATTRIBUTES`                 For :doc:`creating custom GCC attributes <attributes>`
+
+:py:data:`gcc.PLUGIN_PRE_GENERICIZE`             For working with the AST in the C and C++ frontends
+
+:py:data:`gcc.PLUGIN_PASS_EXECUTION`             Called before each pass is executed
+
+:py:data:`gcc.PLUGIN_FINISH_UNIT`                At the end of working with a translation unit (aka source file)
+
+:py:data:`gcc.PLUGIN_FINISH_TYPE`                After a type has been parsed
+
+===============================================  =========
 
 .. py:data:: gcc.PLUGIN_PASS_EXECUTION
 
@@ -124,14 +139,36 @@ Callback events
 
       (`*extraargs`, `**kwargs`)
 
-.. Other callback events
-   ---------------------
+The remaining GCC events aren't yet usable from the plugin; an attempt to
+register a callback on them will lead to an exception being raised. Email
+the `gcc-python-plugin's mailing list
+<https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_ if you're
+interested in working with these):
 
-.. (Commented out for now; probably should finish this and move it to a
-   reference section)
+===============================================  =========
+ID                                               Meaning
+===============================================  =========
+:py:data:`gcc.PLUGIN_PASS_MANAGER_SETUP`         To hook into pass manager
+:py:data:`gcc.PLUGIN_FINISH`                     Called before GCC exits
+:py:data:`gcc.PLUGIN_INFO`                       Information about the plugin
+:py:data:`gcc.PLUGIN_GGC_START`                  For interacting with GCC's garbage collector
+:py:data:`gcc.PLUGIN_GGC_MARKING`                (ditto)
+:py:data:`gcc.PLUGIN_GGC_END`                    (ditto)
+:py:data:`gcc.PLUGIN_REGISTER_GGC_ROOTS`         (ditto)
+:py:data:`gcc.PLUGIN_REGISTER_GGC_CACHES`        (ditto)
+:py:data:`gcc.PLUGIN_START_UNIT`                 Called before processing a translation unit (aka source file)
+:py:data:`gcc.PLUGIN_PRAGMAS`                    For registering pragmas
+:py:data:`gcc.PLUGIN_ALL_PASSES_START`           Called before the first pass of the :ref:`"all other passes" gcc.Pass catchall <all_passes>`
+:py:data:`gcc.PLUGIN_ALL_PASSES_END`             Called after last pass of the :ref:`"all other passes" gcc.Pass catchall <all_passes>`
+:py:data:`gcc.PLUGIN_ALL_IPA_PASSES_START`       Called before the first IPA pass
+:py:data:`gcc.PLUGIN_ALL_IPA_PASSES_END`         Called after last IPA pass
+:py:data:`gcc.PLUGIN_OVERRIDE_GATE`              Provides a way to disable a built-in pass
+:py:data:`gcc.PLUGIN_EARLY_GIMPLE_PASSES_START`
+:py:data:`gcc.PLUGIN_EARLY_GIMPLE_PASSES_END`
+:py:data:`gcc.PLUGIN_NEW_PASS`
+===============================================  =========
 
-.. The following may need work before they're meaningfully usable from Python
-   scripts:
+.. Notes on the other callback events
 
    .. py:data:: gcc.PLUGIN_ATTRIBUTES
 
