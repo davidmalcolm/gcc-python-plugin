@@ -43,7 +43,7 @@ above custom attributes take a single string parameter.  A custom attribute can
 take more than one parameter, or none at all.
 
 To create custom attributes from Python, you need to wire up a callback
-response to the `gcc.PLUGIN_ATTRIBUTES` event:
+response to the :py:data:`gcc.PLUGIN_ATTRIBUTES` event:
 
    .. literalinclude:: ../tests/examples/attributes/script.py
     :lines: 39-40

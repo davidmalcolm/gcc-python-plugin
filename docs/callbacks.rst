@@ -76,6 +76,25 @@ ID                                               Meaning
 
 ===============================================  =========
 
+.. py:data:: gcc.PLUGIN_ATTRIBUTES
+
+   Called when GCC is creating attributes for use with its non-standard
+   `__attribute__(()) syntax
+   <http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html>`_.
+
+   If you want to create custom GCC attributes, you should register a callback
+   on this event and call :py:func:`gcc.register_attribute()` from within that
+   callback, so that they are created at the same time as the GCC's built-in
+   attributes.
+
+   No arguments are passed to your callback other than those that you supply
+   yourself when registering it:
+
+      (`*extraargs`, `**kwargs`)
+
+   See :doc:`creating custom GCC attributes <attributes>` for examples and
+   more information.
+
 .. py:data:: gcc.PLUGIN_PASS_EXECUTION
 
    Called when GCC is about to run one of its passes.
@@ -169,14 +188,6 @@ ID                                               Meaning
 ===============================================  =========
 
 .. Notes on the other callback events
-
-   .. py:data:: gcc.PLUGIN_ATTRIBUTES
-
-   Called from: init_attributes () at ../../gcc/attribs.c:187
-    However, it seems at this point to have initialized these::
-
-      static const struct attribute_spec *attribute_tables[4];
-      static htab_t attribute_hash;
 
    .. py:data:: gcc.PLUGIN_PRAGMAS
 
