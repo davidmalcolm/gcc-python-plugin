@@ -34,7 +34,8 @@ from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringWarning,\
     ConverterCallbackType, ConverterResultType
 from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \
     CodeSO, CodeN
-from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr
+from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr, \
+    get_Py_ssize_t
 from libcpychecker.utils import log
 
 def stmt_is_assignment_to_count(stmt):
@@ -291,6 +292,18 @@ class CPython(Facet):
                                                                  typeobjregion)
         self.state.verify()
 
+    def get_refcount(self, v_pyobjectptr, stmt):
+        """
+        Get the ob_refcnt of the given PyObject*, as an AbstractValue
+        """
+        check_isinstance(v_pyobjectptr, PointerToRegion)
+        check_isinstance(stmt, gcc.Gimple)
+        v_ob_refcnt = self.state.read_field_by_name(stmt,
+                                                    get_Py_ssize_t().type,
+                                                    v_pyobjectptr.region,
+                                                    'ob_refcnt')
+        return v_ob_refcnt
+
     def change_refcount(self, pyobjectptr, loc, fn):
         """
         Manipulate pyobjectptr's ob_refcnt.
@@ -353,6 +366,39 @@ class CPython(Facet):
                                            _decref_internal)
         # FIXME: potentially this destroys the object
 
+    def mktransitions_Py_DECREF(self, v_pyobjectptr, stmt):
+        """
+        Generate a transitions in which the equivalent to a Py_DECREF occurs:
+        decrement ob_refcnt, and if 0, call _Py_Dealloc((PyObject *)(op))
+
+        Does *not* take you to the next statement
+        """
+        if isinstance(v_pyobjectptr, UnknownValue):
+            self.state.raise_split_value(v_pyobjectptr, stmt.loc)
+        check_isinstance(v_pyobjectptr, PointerToRegion)
+        check_isinstance(stmt, gcc.Gimple)
+        s_new = self.state.copy()
+        s_new.cpython.dec_ref(v_pyobjectptr, stmt.loc)
+        v_ob_refcnt = s_new.cpython.get_refcount(v_pyobjectptr, stmt)
+        # print('ob_refcnt: %r' % v_ob_refcnt)
+        eq_zero = v_ob_refcnt.is_equal(ConcreteValue.from_int(1))
+        # print('eq_zero: %r' % eq_zero)
+        if eq_zero or eq_zero is None:
+            # tri-state; it might be zero:
+            s_dealloc = s_new.copy()
+            # FIXME: call _Py_Dealloc
+            return [Transition(self.state,
+                               s_new,
+                               'Py_DECREF() without deallocation'),
+                    Transition(self.state,
+                               s_dealloc,
+                               'Py_DECREF() with deallocation')]
+        else:
+            # ob_refcnt != 0, so it doesn't dealloc:
+            return [Transition(self.state,
+                               s_new,
+                               'Py_DECREF() without deallocation')]
+
     def set_exception(self, exc_name, loc):
         """
         Given the name of a (PyObject*) global for an exception class, such as
@@ -376,6 +422,22 @@ class CPython(Facet):
         """
         self.set_exception('PyExc_SystemError', loc)
 
+    def typeobjregion_by_name(self, typeobjname):
+        """
+        Given a type object string e.g. "PyString_Type", locate
+        the Region storing the PyTypeObject
+        """
+        check_isinstance(typeobjname, str)
+        # the C identifier of the global PyTypeObject for the type
+
+        # Get the gcc.VarDecl for the global PyTypeObject
+        typeobjdecl = gccutils.get_global_vardecl_by_name(typeobjname)
+        check_isinstance(typeobjdecl, gcc.VarDecl)
+
+        typeobjregion = self.state.var_region(typeobjdecl)
+        return typeobjregion
+
+
     def object_ctor(self, stmt, typename, typeobjname):
         """
         Given a gcc.GimpleCall to a Python API function that returns a
@@ -391,16 +453,12 @@ class CPython(Facet):
         check_isinstance(typeobjname, str)
         # the C identifier of the global PyTypeObject for the type
 
-        # Get the gcc.VarDecl for the global PyTypeObject
-        typeobjdecl = gccutils.get_global_vardecl_by_name(typeobjname)
-        check_isinstance(typeobjdecl, gcc.VarDecl)
-
         fnname = stmt.fn.operand.name
         returntype = stmt.fn.type.dereference.type
 
         # (the region hierarchy is shared by all states, so we can get the
         # var region from "self", rather than "success")
-        typeobjregion = self.state.var_region(typeobjdecl)
+        typeobjregion = self.typeobjregion_by_name(typeobjname)
 
         # The "success" case:
         s_success, nonnull = self.mkstate_new_ref(stmt, typename, typeobjregion)
@@ -2270,6 +2328,70 @@ class CPython(Facet):
                                             fnmeta.desc_when_call_fails())
         t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_success, t_failure]
+
+    def impl_PyString_Concat(self, stmt, v_pv, v_w):
+        fnmeta = FnMeta(name='PyString_Concat',
+                        prototype='void PyString_Concat(PyObject **string, PyObject *newpart)',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_Concat',
+                        defined_in='Objects/stringobject.c',
+                        notes='')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_pv,
+               why='%s unconditionally dereferences its first argument' % fnmeta.name)
+
+        # However, it can survive *pv being NULL; does nothing
+        v_star_pv = self.state.dereference(stmt.fn.operand,
+                                           v_pv,
+                                           stmt.loc)
+        if v_star_pv.is_null_ptr():
+            s_nop = self.state.mkstate_nop(stmt)
+            return [Transition(self.state,
+                               s_nop,
+                               fnmeta.desc_special('does nothing due to NULL *lhs'))]
+
+        # It can survive w being NULL: cleans up *pv
+        if v_w.is_null_ptr():
+            # Py_DECREF(*pv)
+            s_nop = self.state.mkstate_nop(stmt)
+            result = s_nop.cpython.mktransitions_Py_DECREF(v_star_pv,
+                                                           stmt)
+
+            # *pv = NULL, and set desc:
+            for t_new in result:
+                t_new.dest.value_for_region[v_pv.region] = \
+                    make_null_ptr(get_PyObjectPtr(), stmt.loc)
+                t_new.desc = fnmeta.desc_special(
+                    'cleans up due to NULL right-hand side (%s on *LHS)'
+                    % t_new.desc)
+            return result
+
+        # Try to allocate new string, which can fail:
+        s_success = self.state.mkstate_nop(stmt)
+        typeobjregion = self.typeobjregion_by_name('PyString_Type')
+        r_nonnull = s_success.cpython.make_sane_object(
+            stmt,
+            'result of %s' % fnmeta.name,
+            RefcountValue.new_ref())
+        s_failure = self.mkstate_exception(stmt)
+
+
+        # Handle Py_DECREF(*pv):
+        t_successes = s_success.cpython.mktransitions_Py_DECREF(v_star_pv,
+                                                                stmt)
+        t_failures = s_failure.cpython.mktransitions_Py_DECREF(v_star_pv,
+                                                               stmt)
+
+        # Handle *pv = v:
+        for t_success in t_successes:
+            t_success.dest.value_for_region[v_pv.region] = \
+                    PointerToRegion(get_PyObjectPtr(), stmt.loc, r_nonnull)
+            t_success.desc = fnmeta.desc_when_call_succeeds() + ' (%s on *LHS)' % t_success.desc
+
+        for t_failure in t_failures:
+            t_failure.dest.value_for_region[v_pv.region] = \
+                ConcreteValue(get_PyObjectPtr(), stmt.loc, 0)
+            t_failure.desc = fnmeta.desc_when_call_fails() + ' (%s on *LHS)' % t_failure.desc
+
+        return t_successes + t_failures
 
     def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
         fnmeta = FnMeta(name='PyString_FromFormat',

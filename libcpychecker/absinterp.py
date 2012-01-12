@@ -90,6 +90,15 @@ class FnMeta(object):
         else:
             return 'when %s() fails' % self.name
 
+    def desc_special(self, event):
+        """
+        Generate descriptive text for a Transition involving a call to this
+        function that does somthing unusual
+
+        e.g. "when PyString_Concat() does nothing due to NULL *lhs"
+        """
+        return 'when %s() %s' % (self.name, event)
+
 ############################################################################
 # Various kinds of r-value:
 ############################################################################
@@ -1750,6 +1759,22 @@ class State(object):
 
         return v_field
 
+    def dereference(self, expr, v_ptr, loc):
+        check_isinstance(v_ptr, AbstractValue)
+
+        if isinstance(v_ptr, UnknownValue):
+            self.raise_split_value(v_ptr, loc)
+        self.raise_any_null_ptr_deref(expr, v_ptr)
+
+        check_isinstance(v_ptr, PointerToRegion)
+        if v_ptr.region not in self.value_for_region:
+            # Add a new UnknownValue:
+            if v_ptr.gcctype:
+                gcctype = v_ptr.gcctype.dereference
+            else:
+                gcctype = None
+            self.value_for_region[v_ptr.region] = UnknownValue.make(gcctype, loc)
+        return self.value_for_region[v_ptr.region]
 
     def init_for_function(self, fun):
         log('State.init_for_function(%r)', fun)
@@ -1933,6 +1958,15 @@ class State(object):
         else:
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
+
+    def mkstate_nop(self, stmt):
+        """
+        Clone this state (at a function call), updating the location, for
+        functions with "void" return type
+        """
+        newstate = self.copy()
+        newstate.loc = self.loc.next_loc()
+        return newstate
 
     def mkstate_return_of(self, stmt, v_return):
         """

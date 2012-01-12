@@ -1,0 +1,203 @@
+Trace 0:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32)))
+    str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32)) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=Region('PyTypeObject for result of PyString_Concat'))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28
+
+Trace 1:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when PyString_Concat() succeeds (Py_DECREF() with deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32)))
+    str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32)) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=Region('PyTypeObject for result of PyString_Concat'))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28
+
+Trace 2:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when PyString_Concat() fails (Py_DECREF() without deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+
+Trace 3:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when PyString_Concat() fails (Py_DECREF() with deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+
+Trace 4:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() without deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+
+Trace 5:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() with deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+
+Trace 6:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyString_FromString with NULL as argument 1 (msg1) at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28
+
+Trace 7:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() succeeds'
+    'when PyString_Concat() does nothing due to NULL *lhs'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+  PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+
+Trace 8:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when PyString_Concat() does nothing due to NULL *lhs'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+
+Trace 9:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL'
+    'when PyString_FromString() fails'
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyString_FromString with NULL as argument 1 (msg1) at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+
+Trace 10:
+  Transitions:
+    'when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyString_FromString with NULL as argument 1 (msg0) at tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28

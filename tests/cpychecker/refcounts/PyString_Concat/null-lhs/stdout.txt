@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+  error: NullPtrArgument()
+  error: calling PyString_Concat with NULL as argument 1 (0B) at tests/cpychecker/refcounts/PyString_Concat/null-lhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_Concat/null-lhs/input.c:28
