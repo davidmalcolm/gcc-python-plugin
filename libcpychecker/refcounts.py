@@ -2393,6 +2393,35 @@ class CPython(Facet):
 
         return t_successes + t_failures
 
+    def impl_PyString_ConcatAndDel(self, stmt, v_pv, v_w):
+        fnmeta = FnMeta(name='PyString_ConcatAndDel',
+                        prototype='void PyString_ConcatAndDel(PyObject **string, PyObject *newpart)',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_ConcatAndDel',
+                        defined_in='Objects/stringobject.c',
+                        notes='Decrements the reference count of newpart')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_pv,
+               why='dereferences it unconditionally within PyString_Concat')
+        # However, it can survive *pv being NULL; does nothing
+
+        # It can survive w being NULL: cleans up *pv
+
+        if isinstance(v_w, UnknownValue):
+            self.raise_split_value(v_w, stmt.loc)
+
+        # Mostly implemented in terms of PyString_Concat:
+        results = self.impl_PyString_Concat(stmt, v_pv, v_w)
+        # decrefs the new *pv, if non-NULL
+        if not v_w.is_null_ptr():
+            new_results = []
+            for t_concat in results:
+                for t_withdecref in t_concat.dest.cpython.mktransitions_Py_DECREF(v_w,
+                                                                                  stmt):
+                    t_withdecref.desc = t_concat.desc + ' (%s on RHS)' % t_withdecref.desc
+                    new_results.append(t_withdecref)
+            return new_results
+        return results
+
     def impl_PyString_FromFormat(self, stmt, v_fmt, *v_args):
         fnmeta = FnMeta(name='PyString_FromFormat',
                         declared_in='stringobject.h',

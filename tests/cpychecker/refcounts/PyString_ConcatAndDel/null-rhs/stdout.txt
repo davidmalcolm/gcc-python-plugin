@@ -1,0 +1,43 @@
+Trace 0:
+  Transitions:
+    'when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as non-NULL'
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29 as non-NULL'
+    'when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() without deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28
+
+Trace 1:
+  Transitions:
+    'when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as non-NULL'
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29 as non-NULL'
+    'when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() with deallocation on *LHS)'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28
+
+Trace 2:
+  Transitions:
+    'when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as non-NULL'
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29 as NULL'
+    'when PyString_Concat() does nothing due to NULL *lhs'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28
+
+Trace 3:
+  Transitions:
+    'when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as NULL'
+  error: NullPtrArgument()
+  error: possibly calling PyString_ConcatAndDel with NULL as argument 1 (str) at tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28
