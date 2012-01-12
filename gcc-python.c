@@ -333,43 +333,6 @@ gcc_python_get_gcc_version(PyObject *self, PyObject *args)
     return gcc_version_to_object(actual_gcc_version);
 }
 
-static PyObject *
-gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
-{
-    PyObject *result;
-    struct cgraph_node *node;
-
-    /* For debugging, see GCC's dump of things: */
-    if (0) {
-        fprintf(stderr, "----------------BEGIN----------------\n");
-        dump_cgraph (stderr);
-        fprintf(stderr, "---------------- END ----------------\n");
-    }
-
-    result = PyList_New(0);
-    if (!result) {
-	goto error;
-    }
-
-    for (node = cgraph_nodes; node; node = node->next) {
-	PyObject *obj_var = gcc_python_make_wrapper_cgraph_node(node);
-	if (!obj_var) {
-	    goto error;
-	}
-	if (-1 == PyList_Append(result, obj_var)) {
-	    Py_DECREF(obj_var);
-	    goto error;
-	}
-        Py_DECREF(obj_var);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
-}
-
 /* Dump files */
 
 static PyObject *
