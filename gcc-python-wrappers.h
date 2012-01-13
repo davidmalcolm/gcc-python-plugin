@@ -305,6 +305,16 @@ gcc_python_tree_make_list_from_tree_list_chain(tree t);
 PyObject *
 gcc_python_tree_make_list_of_pairs_from_tree_list_chain(tree t);
 
+/* gcc-python-version.c: */
+void
+gcc_python_version_init(struct plugin_gcc_version *version);
+
+PyObject *
+gcc_python_get_plugin_gcc_version(PyObject *self, PyObject *args);
+
+PyObject *
+gcc_python_get_gcc_version(PyObject *self, PyObject *args);
+
 /*
   PEP-7
 Local variables:
