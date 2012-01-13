@@ -75,6 +75,8 @@ ID                                               Meaning
 
 :py:data:`gcc.PLUGIN_FINISH_TYPE`                After a type has been parsed
 
+:py:data:`gcc.PLUGIN_FINISH`                     Called before GCC exits
+
 ===============================================  =========
 
 .. py:data:: gcc.PLUGIN_ATTRIBUTES
@@ -161,6 +163,14 @@ ID                                               Meaning
 
       (`*extraargs`, `**kwargs`)
 
+.. py:data:: gcc.PLUGIN_FINISH
+
+   Called before GCC exits.
+
+   Arguments passed to the callback are:
+
+      (`*extraargs`, `**kwargs`)
+
 The remaining GCC events aren't yet usable from the plugin; an attempt to
 register a callback on them will lead to an exception being raised. Email
 the `gcc-python-plugin's mailing list
@@ -171,7 +181,6 @@ interested in working with these):
 ID                                               Meaning
 ===============================================  =========
 :py:data:`gcc.PLUGIN_PASS_MANAGER_SETUP`         To hook into pass manager
-:py:data:`gcc.PLUGIN_FINISH`                     Called before GCC exits
 :py:data:`gcc.PLUGIN_INFO`                       Information about the plugin
 :py:data:`gcc.PLUGIN_GGC_START`                  For interacting with GCC's garbage collector
 :py:data:`gcc.PLUGIN_GGC_MARKING`                (ditto)

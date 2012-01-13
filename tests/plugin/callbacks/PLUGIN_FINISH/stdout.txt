@@ -1,0 +1,9 @@
+my_callback:
+  args: ()
+  kwargs: {'order': 2}
+my_callback:
+  args: ()
+  kwargs: {'order': 1}
+my_callback:
+  args: ()
+  kwargs: {'order': 0}

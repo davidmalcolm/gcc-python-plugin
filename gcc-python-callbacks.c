@@ -89,10 +89,6 @@
     gcc_data=0x0
     Called from: compile_file () at ../../gcc/toplev.c:668
 
-  PLUGIN_FINISH
-    gcc_data=0x0
-    Called from: toplev_main (argc=17, argv=0x7fffffffdfc8) at ../../gcc/toplev.c:1970
-
   PLUGIN_FINISH_TYPE
     gcc_data=tree
     Called from c_parser_declspecs (parser=0x7fffef559730, specs=0x15296d0, scspec_ok=1 '\001', typespec_ok=1 '\001', start_attr_ok=<optimized out>, la=cla_nonabstract_decl) at ../../gcc/c-parser.c:2111
@@ -228,7 +224,22 @@ gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
 					user_data);
 }
 
+static void
+gcc_python_callback_for_FINISH(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
 
+    /* PLUGIN_FINISH:
+       gcc_data=0x0
+       called from: toplev_main at ../../gcc/toplev.c:1970
+    */
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+                                        0, NULL,
+                                        user_data);
+}
 
 static void
 gcc_python_callback_for_FINISH_UNIT(void *gcc_data, void *user_data)
@@ -284,6 +295,13 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  (enum plugin_event)event,
 			  gcc_python_callback_for_PLUGIN_PASS_EXECUTION,
 			  closure);
+	break;
+
+    case PLUGIN_FINISH:
+        register_callback("python", // FIXME
+                          (enum plugin_event)event,
+                          gcc_python_callback_for_FINISH,
+                          closure);
 	break;
 
     case PLUGIN_FINISH_UNIT:
