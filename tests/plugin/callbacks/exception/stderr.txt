@@ -1,0 +1,5 @@
+tests/plugin/callbacks/exception/input.c:1:0: error: Unhandled Python exception raised within callback
+Traceback (most recent call last):
+  File "tests/plugin/callbacks/exception/script.py", line 22, in my_callback
+    raise RuntimeError("This is a test of raising an exception")
+RuntimeError: This is a test of raising an exception
