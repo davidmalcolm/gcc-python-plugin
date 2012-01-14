@@ -253,6 +253,41 @@ gcc_python_callback_for_FINISH_UNIT(void *gcc_data, void *user_data)
 					user_data);
 }
 
+static void
+gcc_python_callback_for_GGC_START(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+					0, NULL,
+					user_data);
+}
+
+static void
+gcc_python_callback_for_GGC_MARKING(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+					0, NULL,
+					user_data);
+}
+
+static void
+gcc_python_callback_for_GGC_END(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    gstate = PyGILState_Ensure();
+
+    gcc_python_finish_invoking_callback(gstate,
+					0, NULL,
+					user_data);
+}
 
 
 PyObject*
@@ -317,6 +352,25 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  gcc_python_callback_for_tree,
 			  closure);
 	break;
+
+    case PLUGIN_GGC_START:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_GGC_START,
+			  closure);
+        break;
+    case PLUGIN_GGC_MARKING:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_GGC_MARKING,
+			  closure);
+        break;
+    case PLUGIN_GGC_END:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  gcc_python_callback_for_GGC_END,
+			  closure);
+        break;
 
     default:
         PyErr_Format(PyExc_ValueError, "event type %i invalid (or not wired up yet)", event);
