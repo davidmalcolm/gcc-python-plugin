@@ -64,10 +64,6 @@ within them, I've only wrapped properties that seemed useful to me.  There may
 well be plenty of interesting class and properties for instances that can be
 added (patches most welcome!).  I may also have misunderstood how things work.
 
-Caveat: I'm currently blithely ignoring GCC's garbage collector, which works for
-now, but will probably lead to crashes if the collector runs.  I hope to fix
-that soon.
-
 Most of my development has been against Python 2 (2.7, actually), but I've tried
 to make the source code of the plugin buildable against both Python 2 and
 Python 3 (3.2), giving separate python2.so and python3.so plugins.  (I suspect
