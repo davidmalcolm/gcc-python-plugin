@@ -115,7 +115,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
     assert(opt_obj);
 
     /* If a gcc.Option was given, extract the code: */
-    if (Py_TYPE(opt_obj) == &gcc_OptionType) {
+    if (Py_TYPE(opt_obj) == (PyTypeObject*)&gcc_OptionType) {
         opt_code = ((PyGccOption*)opt_obj)->opt_code;
 
         /* Ugly workaround; see this function: */

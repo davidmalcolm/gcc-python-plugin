@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -74,6 +74,17 @@ class NamedEntity:
             return '    .%s = %s,\n' % (name, val)
         else:
             return '    %s, /* %s */\n' % (val, name)
+
+    def c_src_field_value(self, name, val, cast=None):
+        if cast:
+            caststr = '(%s)' % cast
+        else:
+            caststr = ''
+        if with_gcc_extensions:
+            # Designate the initializer fields:
+            return '    .%s = %s%s,\n' % (name, caststr, val)
+        else:
+            return '    %s%s, /* %s */\n' % (caststr, val, name)
 
 class PyGetSetDef:
     def __init__(self, name, get, set, doc, closure=None):
@@ -229,7 +240,13 @@ class PyTypeObject(NamedEntity):
     def c_defn(self):
         result = '\n'
         result += 'PyTypeObject %(identifier)s = {\n' % self.__dict__
-        result += '    PyVarObject_HEAD_INIT(0, 0)\n'
+        result += self.c_initializer()
+        result += '};\n' % self.__dict__
+        result +='\n'
+        return result
+
+    def c_initializer(self):
+        result = '    PyVarObject_HEAD_INIT(0, 0)\n'
         result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
         result += '    0, /*tp_itemsize*/\n'
@@ -263,7 +280,7 @@ class PyTypeObject(NamedEntity):
         result += self.c_ptr_field('tp_methods')
         result += self.c_ptr_field('tp_members')
         result += self.c_ptr_field('tp_getset')
-        result += self.c_ptr_field('tp_base')
+        result += self.c_ptr_field('tp_base', 'PyTypeObject*')
         result += self.c_ptr_field('tp_dict')
         result += self.c_ptr_field('tp_descr_get')
         result += self.c_ptr_field('tp_descr_set')
@@ -282,12 +299,11 @@ class PyTypeObject(NamedEntity):
         result += '#if PY_VERSION_HEX >= 0x02060000\n' % self.__dict__
         result += '    0, /*tp_version_tag*/\n' % self.__dict__
         result += '#endif\n' % self.__dict__
-        result += '};\n' % self.__dict__
-        result +='\n'
+        result += '\n'
         return result
 
     def c_invoke_type_ready(self):
-        return ('    if (PyType_Ready(&%(identifier)s) < 0)\n'
+        return ('    if (PyType_Ready((PyTypeObject*)&%(identifier)s) < 0)\n'
                 '        goto error;\n'
                 '\n') % self.__dict__
 

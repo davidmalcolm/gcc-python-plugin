@@ -17,41 +17,37 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include <Python.h>
-#include "gcc-python.h"
-#include "gcc-python-wrappers.h"
+/*
+  Trivial example code to be compiled, for testing purposes
+ */
 
-PyObject *
-gcc_python_make_wrapper_variable(struct varpool_node *node)
+#include <stdio.h>
+
+int
+helper_function(void)
 {
-    struct PyGccVariable *var_obj = NULL;
-
-    if (NULL == node) {
-	Py_RETURN_NONE;
-    }
-  
-    var_obj = PyGccWrapper_New(struct PyGccVariable, &gcc_VariableType);
-    if (!var_obj) {
-        goto error;
-    }
-
-    var_obj->var = node;
-
-    return (PyObject*)var_obj;
-      
-error:
-    return NULL;
+    printf("I am a helper function\n");
+    return 42;
 }
 
-void
-wrtp_mark_for_PyGccVariable(PyGccVariable *wrapper)
+int
+main(int argc, char **argv)
 {
-    /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_varpool_node(wrapper->var);
+    int i;
+
+    printf("argc: %i\n", argc);
+
+    for (i = 0; i < argc; i++) {
+        printf("argv[%i]: %s\n", argv[i]);
+    }
+
+    helper_function();
+
+    return 0;
 }
 
 /*
-  PEP-7  
+  PEP-7
 Local variables:
 c-basic-offset: 4
 indent-tabs-mode: nil

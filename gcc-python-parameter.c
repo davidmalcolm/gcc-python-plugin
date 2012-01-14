@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ gcc_python_make_wrapper_param_num(compiler_param param_num)
 {
     struct PyGccParameter *param_obj = NULL;
 
-    param_obj = PyObject_New(struct PyGccParameter, &gcc_ParameterType);
+    param_obj = PyGccWrapper_New(struct PyGccParameter, &gcc_ParameterType);
     if (!param_obj) {
         goto error;
     }
@@ -42,6 +42,12 @@ gcc_python_make_wrapper_param_num(compiler_param param_num)
 
 error:
     return NULL;
+}
+
+void
+wrtp_mark_for_PyGccParameter(PyGccParameter *wrapper)
+{
+    /* empty */
 }
 
 /*

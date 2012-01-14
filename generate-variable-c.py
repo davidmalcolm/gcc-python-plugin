@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -48,10 +49,11 @@ def generate_variable():
 
     cu.add_defn(getsettable.c_defn())
     
-    pytype = PyTypeObject(identifier = 'gcc_VariableType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_VariableType',
                           localname = 'Variable',
                           tp_name = 'gcc.Variable',
-                          struct_name = 'struct PyGccVariable',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          struct_name = 'PyGccVariable',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           #tp_repr = '(reprfunc)gcc_Variable_repr',

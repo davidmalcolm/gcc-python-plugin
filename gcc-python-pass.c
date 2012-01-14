@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -164,6 +164,11 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
                         NULL};
     struct opt_pass *pass;
 
+    /*
+      We need to call _track manually as we're not using PyGccWrapper_New():
+    */
+    gcc_python_wrapper_track(&self->head);
+
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "s:gcc.Pass.__init__", keywords,
                                      &name)) {
@@ -195,7 +200,6 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
                                                  s)) {
         return -1;
     }
-
 
     self->pass = pass;
     return 0; // FIXME
@@ -438,7 +442,7 @@ gcc_Pass_replace(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
                          "s|i:replace");
 }
 
-static PyTypeObject *
+static PyGccWrapperTypeObject *
 get_type_for_pass_type(enum opt_pass_type pt)
 {
     switch (pt) {
@@ -463,7 +467,7 @@ static PyObject *
 real_make_pass_wrapper(void *p)
 {
     struct opt_pass *pass = (struct opt_pass *)p;
-    PyTypeObject *type_obj;
+    PyGccWrapperTypeObject *type_obj;
     struct PyGccPass *pass_obj = NULL;
 
     if (NULL == pass) {
@@ -472,7 +476,7 @@ real_make_pass_wrapper(void *p)
 
     type_obj = get_type_for_pass_type(pass->type);
 
-    pass_obj = PyObject_New(struct PyGccPass, type_obj);
+    pass_obj = PyGccWrapper_New(struct PyGccPass, type_obj);
     if (!pass_obj) {
         goto error;
     }
@@ -484,6 +488,16 @@ real_make_pass_wrapper(void *p)
       
 error:
     return NULL;
+}
+
+void
+wrtp_mark_for_PyGccPass(PyGccPass *wrapper)
+{
+    /*
+      This function is empty: struct opt_pass does not have a GTY()
+      and any (struct opt_pass*) is either statically-allocated, or
+      allocated by us within do_pass_init using PyMem_Malloc
+    */
 }
 
 PyObject *

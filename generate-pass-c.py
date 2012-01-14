@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -87,15 +88,17 @@ def generate_pass():
 
     cu.add_defn(methods.c_defn())
     
-    pytype = PyTypeObject(identifier = 'gcc_PassType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_PassType',
                           localname = 'Pass',
                           tp_name = 'gcc.Pass',
-                          struct_name = 'struct PyGccPass',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          struct_name = 'PyGccPass',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Pass_repr',
                           tp_str = '(reprfunc)gcc_Pass_repr',
                           tp_methods = methods.identifier,
+                          tp_flags = '(Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE)',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
@@ -110,10 +113,11 @@ def generate_pass_subclasses():
     for opt_pass_type in ('GIMPLE_PASS', 'RTL_PASS',
                           'SIMPLE_IPA_PASS', 'IPA_PASS'):
         cc = camel_case(opt_pass_type)
-        pytype = PyTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
-                              struct_name = 'struct PyGccPass',
+                              tp_dealloc = 'gcc_python_wrapper_dealloc',
+                              struct_name = 'PyGccPass',
                               tp_new = 'PyType_GenericNew',
                               tp_init = 'gcc_%s_init' % cc,
                               tp_base = '&gcc_PassType',

@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -50,14 +51,15 @@ def generate_callgraph_edge():
                                   'The gcc.GimpleCall statememt for the function call')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyTypeObject(identifier = 'gcc_CallgraphEdgeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphEdgeType',
                           localname = 'CallgraphEdge',
                           tp_name = 'gcc.CallgraphEdge',
-                          struct_name = 'struct PyGccCallgraphEdge',
+                          struct_name = 'PyGccCallgraphEdge',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_CallgraphEdge_repr',
                           tp_str = '(reprfunc)gcc_CallgraphEdge_str',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
@@ -92,14 +94,15 @@ def generate_callgraph_node():
 
     # see gcc/cgraph.c: dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
-    pytype = PyTypeObject(identifier = 'gcc_CallgraphNodeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphNodeType',
                           localname = 'CallgraphNode',
                           tp_name = 'gcc.CallgraphNode',
-                          struct_name = 'struct PyGccCallgraphNode',
+                          struct_name = 'PyGccCallgraphNode',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_CallgraphNode_repr',
                           tp_str = '(reprfunc)gcc_CallgraphNode_str',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

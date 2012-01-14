@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -66,15 +67,16 @@ gcc_Location_get_column(struct PyGccLocation *self, void *closure)
                                     ])
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyTypeObject(identifier = 'gcc_LocationType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_LocationType',
                           localname = 'Location',
                           tp_name = 'gcc.Location',
-                          struct_name = 'struct PyGccLocation',
+                          struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Location_repr',
                           tp_str = '(reprfunc)gcc_Location_str',
-                          tp_richcompare = 'gcc_Location_richcompare')
+                          tp_richcompare = 'gcc_Location_richcompare',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

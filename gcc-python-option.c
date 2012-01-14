@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -45,6 +45,11 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     const char *text;
     static char *kwlist[] = {"text", NULL};
     int i;
+
+    /*
+      We need to call _track manually as we're not using PyGccWrapper_New():
+    */
+    gcc_python_wrapper_track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist,
                                       &text)) {
@@ -152,7 +157,7 @@ gcc_python_make_wrapper_opt_code(enum opt_code opt_code)
 {
     struct PyGccOption *opt_obj = NULL;
 
-    opt_obj = PyObject_New(struct PyGccOption, &gcc_OptionType);
+    opt_obj = PyGccWrapper_New(struct PyGccOption, &gcc_OptionType);
     if (!opt_obj) {
         goto error;
     }
@@ -163,6 +168,12 @@ gcc_python_make_wrapper_opt_code(enum opt_code opt_code)
 
 error:
     return NULL;
+}
+
+void
+wrtp_mark_for_PyGccOption(PyGccOption *wrapper)
+{
+    /* empty */
 }
 
 /*

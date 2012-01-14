@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -56,9 +56,9 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     int cond;
     PyObject *result_obj;
 
-    assert(Py_TYPE(o1) == &gcc_LocationType);
+    assert(Py_TYPE(o1) == (PyTypeObject*)&gcc_LocationType);
     
-    if (Py_TYPE(o1) != &gcc_LocationType) {
+    if (Py_TYPE(o1) != (PyTypeObject*)&gcc_LocationType) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
@@ -95,18 +95,23 @@ gcc_python_make_wrapper_location(location_t loc)
 	Py_RETURN_NONE;
     }
   
-    location_obj = PyObject_New(struct PyGccLocation, &gcc_LocationType);
+    location_obj = PyGccWrapper_New(struct PyGccLocation, &gcc_LocationType);
     if (!location_obj) {
         goto error;
     }
 
     location_obj->loc = loc;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)location_obj;
       
 error:
     return NULL;
+}
+
+void
+wrtp_mark_for_PyGccLocation(PyGccLocation *wrapper)
+{
+    /* empty */
 }
 
 

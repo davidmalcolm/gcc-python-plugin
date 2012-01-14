@@ -42,19 +42,26 @@ gcc_python_make_wrapper_edge(edge e)
 	Py_RETURN_NONE;
     }
 
-    obj = PyObject_New(struct PyGccEdge, &gcc_EdgeType);
+    obj = PyGccWrapper_New(struct PyGccEdge, &gcc_EdgeType);
     if (!obj) {
         goto error;
     }
 
     obj->e = e;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
       
 error:
     return NULL;
 }
+
+void
+wrtp_mark_for_PyGccEdge(PyGccEdge *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_edge_def(wrapper->e);
+}
+
 
 /*
   "struct basic_block_def" is declared in basic-block.h, c.f:
@@ -348,7 +355,7 @@ real_make_basic_block_wrapper(void *ptr)
 	Py_RETURN_NONE;
     }
 
-    obj = PyObject_New(struct PyGccBasicBlock, &gcc_BasicBlockType);
+    obj = PyGccWrapper_New(struct PyGccBasicBlock, &gcc_BasicBlockType);
     if (!obj) {
         goto error;
     }
@@ -415,13 +422,20 @@ real_make_basic_block_wrapper(void *ptr)
 #endif
 
     obj->bb = bb;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
       
 error:
     return NULL;
 }
+
+void
+wrtp_mark_for_PyGccBasicBlock(PyGccBasicBlock *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_basic_block_def(wrapper->bb);
+}
+
 
 static PyObject *basic_block_wrapper_cache = NULL;
 PyObject *
@@ -507,13 +521,12 @@ gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
 	Py_RETURN_NONE;
     }
 
-    obj = PyObject_New(struct PyGccCfg, &gcc_CfgType);
+    obj = PyGccWrapper_New(struct PyGccCfg, &gcc_CfgType);
     if (!obj) {
         goto error;
     }
 
     obj->cfg = cfg;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
       
@@ -521,6 +534,12 @@ error:
     return NULL;
 }
 
+void
+wrtp_mark_for_PyGccCfg(PyGccCfg *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_control_flow_graph(wrapper->cfg);
+}
 
 /*
   PEP-7  

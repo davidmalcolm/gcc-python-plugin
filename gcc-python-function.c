@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -112,18 +112,24 @@ gcc_python_make_wrapper_function(struct function *fun)
  #endif
 #endif
 
-    obj = PyObject_New(struct PyGccFunction, &gcc_FunctionType);
+    obj = PyGccWrapper_New(struct PyGccFunction, &gcc_FunctionType);
     if (!obj) {
         goto error;
     }
 
     obj->fun = fun;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
       
 error:
     return NULL;
+}
+
+void
+wrtp_mark_for_PyGccFunction(PyGccFunction *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_function(wrapper->fun);
 }
 
 

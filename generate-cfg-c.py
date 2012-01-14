@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -61,10 +62,11 @@ def generate_edge():
                                       'Boolean, corresponding to flag %s' % flag)
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyTypeObject(identifier = 'gcc_EdgeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_EdgeType',
                           localname = 'Edge',
                           tp_name = 'gcc.Edge',
-                          struct_name = 'struct PyGccEdge',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          struct_name = 'PyGccEdge',
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_Edge_repr',
                           #tp_str = '(reprfunc)gcc_Edge_repr',
@@ -113,10 +115,11 @@ def generate_basic_block():
                                   None)
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyTypeObject(identifier = 'gcc_BasicBlockType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_BasicBlockType',
                           localname = 'BasicBlock',
                           tp_name = 'gcc.BasicBlock',
-                          struct_name = 'struct PyGccBasicBlock',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          struct_name = 'PyGccBasicBlock',
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_BasicBlock_repr',
                           #tp_str = '(reprfunc)gcc_BasicBlock_repr',
@@ -154,10 +157,11 @@ def generate_cfg():
                                                 'The final gcc.BasicBlock in this graph'),
                                     ])
     cu.add_defn(getsettable.c_defn())
-    pytype = PyTypeObject(identifier = 'gcc_CfgType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CfgType',
                           localname = 'Cfg',
                           tp_name = 'gcc.Cfg',
-                          struct_name = 'struct PyGccCfg',
+                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          struct_name = 'PyGccCfg',
                           tp_new = 'PyType_GenericNew',
                           #tp_repr = '(reprfunc)gcc_Cfg_repr',
                           #tp_str = '(reprfunc)gcc_Cfg_repr',

@@ -315,6 +315,16 @@ gcc_python_get_plugin_gcc_version(PyObject *self, PyObject *args);
 PyObject *
 gcc_python_get_gcc_version(PyObject *self, PyObject *args);
 
+/* gcc-python-wrappers.c: */
+void
+gcc_python_wrapper_init(void);
+
+PyObject *
+gcc_python__force_garbage_collection(PyObject *self, PyObject *args);
+
+PyObject *
+gcc_python__gc_selftest(PyObject *self, PyObject *args);
+
 /*
   PEP-7
 Local variables:

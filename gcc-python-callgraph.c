@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -120,19 +120,26 @@ gcc_python_make_wrapper_cgraph_edge(struct cgraph_edge * edge)
 {
     struct PyGccCallgraphEdge *obj = NULL;
 
-    obj = PyObject_New(struct PyGccCallgraphEdge, &gcc_CallgraphEdgeType);
+    obj = PyGccWrapper_New(struct PyGccCallgraphEdge, &gcc_CallgraphEdgeType);
     if (!obj) {
         goto error;
     }
 
     obj->edge = edge;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
 
 error:
     return NULL;
 }
+
+void
+wrtp_mark_for_PyGccCallgraphEdge(PyGccCallgraphEdge *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_cgraph_edge(wrapper->edge);
+}
+
 
 PyObject *
 real_make_cgraph_node_wrapper(void *ptr)
@@ -140,19 +147,27 @@ real_make_cgraph_node_wrapper(void *ptr)
     struct cgraph_node * node = (struct cgraph_node *)ptr;
     struct PyGccCallgraphNode *obj = NULL;
 
-    obj = PyObject_New(struct PyGccCallgraphNode, &gcc_CallgraphNodeType);
+    obj = PyGccWrapper_New(struct PyGccCallgraphNode,
+                           &gcc_CallgraphNodeType);
     if (!obj) {
         goto error;
     }
 
     obj->node = node;
-    /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)obj;
 
 error:
     return NULL;
 }
+
+void
+wrtp_mark_for_PyGccCallgraphNode(PyGccCallgraphNode *wrapper)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_cgraph_node(wrapper->node);
+}
+
 
 static PyObject *cgraph_node_wrapper_cache = NULL;
 PyObject *
