@@ -93,7 +93,7 @@ PYTHON_CONFIG=python-config
 PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
 PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
-CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
+CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -fno-strict-aliasing -O2 -Wall -Werror -g $(PYTHON_CFLAGS) $(PYTHON_LDFLAGS)
 ifneq "$(PLUGIN_PYTHONPATH)" ""
   CFLAGS+= -DPLUGIN_PYTHONPATH='"$(PLUGIN_PYTHONPATH)"'
 endif
