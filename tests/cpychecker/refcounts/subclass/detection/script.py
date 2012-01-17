@@ -63,6 +63,7 @@ def on_pass_execution(p, fn):
         check_typedef('PyTypeObject')
         check_struct('FooObject')
         check_struct('BarObject')
+        check_struct('BazObject')
         check_struct('NotAnObject')
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,

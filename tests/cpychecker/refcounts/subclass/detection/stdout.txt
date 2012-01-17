@@ -22,6 +22,11 @@ typename: 'BarObject'
   ptr_type: struct BarObject *
   is PyObject* subclass?: True
 
+typename: 'BazObject'
+  struct_type: struct BazObject
+  ptr_type: struct BazObject *
+  is PyObject* subclass?: True
+
 typename: 'NotAnObject'
   struct_type: struct NotAnObject
   ptr_type: struct NotAnObject *

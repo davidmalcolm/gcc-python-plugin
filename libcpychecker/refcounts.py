@@ -64,7 +64,14 @@ def type_is_pyobjptr_subclass(t):
     if not isinstance(t.dereference, gcc.RecordType):
         return False
 
-    fieldnames = [f.name for f in t.dereference.fields]
+    fields = t.dereference.fields
+
+    # if first field is a PyObject subclass, then we're good:
+    if type_is_pyobjptr_subclass(fields[0].type.pointer):
+        return True
+
+    fieldnames = [f.name for f in fields]
+
     if is_py3k():
         # For Python 3, the first field must be "ob_base", or it must be "PyObject":
         if str(t) == 'struct PyObject *':
