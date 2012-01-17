@@ -154,25 +154,42 @@ class RefcountValue(AbstractValue):
                 return RefcountValue(self.relvalue - rhs.value, self.min_external)
         return UnknownValue.make(gcctype, loc)
 
-    def is_equal(self, rhs):
-        if isinstance(rhs, ConcreteValue):
-            log('comparing refcount value %s with concrete value: %s', self, rhs)
-            # The actual value of ob_refcnt >= lhs.relvalue
-            if self.relvalue > rhs.value:
-                # (Equality is thus not possible for this case)
-                return False
+    def eval_comparison(self, opname, rhs):
+        """
+        opname is a string in opnames
+        Return a boolean, or None (meaning we don't know)
+        """
+        if opname == 'eq':
+            if isinstance(rhs, ConcreteValue):
+                log('comparing refcount value %s with concrete value: %s', self, rhs)
+                # The actual value of ob_refcnt >= lhs.relvalue
+                if self.relvalue > rhs.value:
+                    # (Equality is thus not possible for this case)
+                    return False
 
-    def impl_is_lt(self, rhs):
-        if isinstance(rhs, ConcreteValue):
-            log('comparing refcount value %s with concrete value: %s', self, rhs)
-            if self.get_min_value() >= rhs.value:
-                return False
+        elif opname == 'le':
+            if isinstance(rhs, ConcreteValue):
+                log('comparing refcount value %s with concrete value: %s', self, rhs)
+                if self.get_min_value() > rhs.value:
+                    return False
 
-    def impl_is_ge(self, rhs):
-        if isinstance(rhs, ConcreteValue):
-            log('comparing refcount value %s with concrete value: %s', self, rhs)
-            if self.get_min_value() >= rhs.value:
-                return True
+        elif opname == 'lt':
+            if isinstance(rhs, ConcreteValue):
+                log('comparing refcount value %s with concrete value: %s', self, rhs)
+                if self.get_min_value() >= rhs.value:
+                    return False
+
+        elif opname == 'ge':
+            if isinstance(rhs, ConcreteValue):
+                log('comparing refcount value %s with concrete value: %s', self, rhs)
+                if self.get_min_value() >= rhs.value:
+                    return True
+
+        elif opname == 'gt':
+            if isinstance(rhs, ConcreteValue):
+                log('comparing refcount value %s with concrete value: %s', self, rhs)
+                if self.get_min_value() > rhs.value:
+                    return True
 
 
 class GenericTpDealloc(AbstractValue):
@@ -381,7 +398,7 @@ class CPython(Facet):
         s_new.cpython.dec_ref(v_pyobjectptr, stmt.loc)
         v_ob_refcnt = s_new.cpython.get_refcount(v_pyobjectptr, stmt)
         # print('ob_refcnt: %r' % v_ob_refcnt)
-        eq_zero = v_ob_refcnt.is_equal(ConcreteValue.from_int(1))
+        eq_zero = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1))
         # print('eq_zero: %r' % eq_zero)
         if eq_zero or eq_zero is None:
             # tri-state; it might be zero:
@@ -2635,7 +2652,7 @@ class CPython(Facet):
         # Because of the way we store RefcountValue instances, we can't
         # easily prove that the refcount == 1, so only follow this path
         # if we can prove that refcount != 1
-        eq_one = v_ob_refcnt.is_equal(ConcreteValue.from_int(1))
+        eq_one = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1))
         if eq_one is False: # tri-state
             # FIXME: Py_XDECREF on newitem
             s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -2653,8 +2670,8 @@ class CPython(Facet):
                                                   v_op.region,
                                                   'ob_size')
 
-        lt_zero = v_i.is_lt(ConcreteValue.from_int(0))
-        lt_size = v_i.is_lt(v_ob_size)
+        lt_zero = v_i.eval_comparison('lt', ConcreteValue.from_int(0))
+        lt_size = v_i.eval_comparison('lt', v_ob_size)
         # The above could be None: signifying that we don't know, and that
         # False is possible.  Out-of-range is possible if either aren't known
         # to be non-False:

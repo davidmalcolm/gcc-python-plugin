@@ -3,7 +3,8 @@ Trace 0:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
     'taking False path'
     'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as non-NULL'
-    'when taking False path'
+    'when considering value == (const char)0 from tests/cpychecker/absinterp/custom-strdup/input.c:50'
+    'taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=45), region=Region('heap-region-0'))

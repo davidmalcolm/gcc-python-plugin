@@ -1,21 +1,44 @@
 Trace 0:
   Transitions:
-    'when taking True path'
-  error: UsageOfUninitializedData()
-  error: comparison against uninitialized data (j.0) at tests/cpychecker/absinterp/uninitialized-data/input.c:35
-
-Trace 1:
-  Transitions:
-    'when taking False path'
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking False path'
     'when taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=54), value=2)
     str(): (int)2 from tests/cpychecker/absinterp/uninitialized-data/input.c:54
 
+Trace 1:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking False path'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=46))
+    str(): unknown int * from tests/cpychecker/absinterp/uninitialized-data/input.c:46
+
 Trace 2:
   Transitions:
-    'when taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/uninitialized-data/input.c:26'
+    'taking True path'
+  error: UsageOfUninitializedData()
+  error: comparison against uninitialized data (j.0) at tests/cpychecker/absinterp/uninitialized-data/input.c:35
+
+Trace 3:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=54), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/uninitialized-data/input.c:54
+
+Trace 4:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking False path'
     'when taking False path'
     'returning'
   Return value:

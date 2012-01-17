@@ -1,6 +1,7 @@
 Trace 0:
   Transitions:
-    'when taking True path'
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=28), region=ArrayElementRegion('Hello[0]'))
@@ -12,11 +13,25 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/string-constants/input.c:25'
+    'taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='char[8] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=30), region=ArrayElementRegion('Goodbye[0]'))
     str(): (char[8] *)&ArrayElementRegion('Goodbye[0]') from tests/cpychecker/absinterp/string-constants/input.c:30
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/string-constants/input.c:26
+
+Trace 2:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='char[6] *', loc=gcc.Location(file='tests/cpychecker/absinterp/string-constants/input.c', line=28), region=ArrayElementRegion('Hello[0]'))
+    str(): (char[6] *)&ArrayElementRegion('Hello[0]') from tests/cpychecker/absinterp/string-constants/input.c:28
     r->ob_refcnt: None
     r->ob_type: None
   Exception:

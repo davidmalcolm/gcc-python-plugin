@@ -3,11 +3,12 @@ Trace 0:
     '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:32)'
     '__dump((int)val [0 <= val <= 255] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:37)'
     '__dump((int)val [0 <= val <= 7] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:41)'
-    'when taking True path'
+    'when considering range: -128 <= value <= 7'
+    'taking False path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/implicitly-correct/input.c', line=46), value=1)
-    str(): (int)1 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:46
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/implicitly-correct/input.c', line=48), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:48
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:33
 
@@ -16,7 +17,22 @@ Trace 1:
     '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:32)'
     '__dump((int)val [0 <= val <= 255] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:37)'
     '__dump((int)val [0 <= val <= 7] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:41)'
-    'when taking False path'
+    'when considering value == (char)8 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:45'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/implicitly-correct/input.c', line=46), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:46
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:33
+
+Trace 2:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:32)'
+    '__dump((int)val [0 <= val <= 255] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:37)'
+    '__dump((int)val [0 <= val <= 7] from tests/cpychecker/absinterp/array-range/implicitly-correct/input.c:41)'
+    'when considering range: 9 <= value <= 127'
+    'taking False path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/implicitly-correct/input.c', line=48), value=0)

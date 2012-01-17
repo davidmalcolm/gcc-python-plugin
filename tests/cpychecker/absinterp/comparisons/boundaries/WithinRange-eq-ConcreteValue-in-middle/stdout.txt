@@ -1,0 +1,32 @@
+Trace 0:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c', line=33), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:33
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:24
+
+Trace 1:
+  Transitions:
+    'when considering value == (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:23'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c', line=31), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:31
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:24
+
+Trace 2:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c', line=33), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:33
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/WithinRange-eq-ConcreteValue-in-middle/input.c:24

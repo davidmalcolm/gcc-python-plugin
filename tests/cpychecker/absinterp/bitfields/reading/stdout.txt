@@ -1,16 +1,22 @@
 Trace 0:
   Transitions:
-    'when taking True path'
+    'when considering range: 0 <= value <= 2'
+    'taking False path'
+    'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as non-NULL'
+    'when considering value == (unsigned char)0 from tests/cpychecker/absinterp/bitfields/reading/input.c:40'
+    'taking False path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=34), value=0)
-    str(): (int)0 from tests/cpychecker/absinterp/bitfields/reading/input.c:34
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=43), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/bitfields/reading/input.c:43
 
 Trace 1:
   Transitions:
-    'when taking False path'
+    'when considering range: 0 <= value <= 2'
+    'taking False path'
     'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as non-NULL'
-    'when taking True path'
+    'when considering range: 1 <= value <= 64'
+    'taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=41), value=1)
@@ -18,17 +24,49 @@ Trace 1:
 
 Trace 2:
   Transitions:
-    'when taking False path'
+    'when considering range: 0 <= value <= 2'
+    'taking False path'
+    'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as NULL'
+  error: NullPtrDereference()
+  error: possibly dereferencing NULL (foo->a) at tests/cpychecker/absinterp/bitfields/reading/input.c:36
+
+Trace 3:
+  Transitions:
+    'when considering value == (unsigned char)3 from tests/cpychecker/absinterp/bitfields/reading/input.c:33'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=34), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/bitfields/reading/input.c:34
+
+Trace 4:
+  Transitions:
+    'when considering range: 4 <= value <= 15'
+    'taking False path'
     'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as non-NULL'
-    'when taking False path'
+    'when considering value == (unsigned char)0 from tests/cpychecker/absinterp/bitfields/reading/input.c:40'
+    'taking False path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=43), value=2)
     str(): (int)2 from tests/cpychecker/absinterp/bitfields/reading/input.c:43
 
-Trace 3:
+Trace 5:
   Transitions:
-    'when taking False path'
+    'when considering range: 4 <= value <= 15'
+    'taking False path'
+    'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as non-NULL'
+    'when considering range: 1 <= value <= 64'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/bitfields/reading/input.c', line=41), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/bitfields/reading/input.c:41
+
+Trace 6:
+  Transitions:
+    'when considering range: 4 <= value <= 15'
+    'taking False path'
     'when treating unknown struct Foo * from tests/cpychecker/absinterp/bitfields/reading/input.c:31 as NULL'
   error: NullPtrDereference()
   error: possibly dereferencing NULL (foo->a) at tests/cpychecker/absinterp/bitfields/reading/input.c:36

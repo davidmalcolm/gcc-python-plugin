@@ -35,6 +35,12 @@ struct BarObject {
     char *str;
 };
 
+/* Likewise */
+struct BazObject {
+    struct FooObject baz_head;
+    int baz_int;
+};
+
 /* This isn't one: */
 struct NotAnObject {
     PyObject *array[10];

@@ -2,19 +2,8 @@ Trace 0:
   Transitions:
     'when considering range: -0x80000000 <= value <= 11'
     'taking True path'
-    'when taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/upper-checked/input.c', line=38), value=0)
-    str(): (int)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:38
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:31
-
-Trace 1:
-  Transitions:
-    'when considering range: -0x80000000 <= value <= 11'
-    'taking True path'
-    'when taking False path'
+    'when considering range: -128 <= value <= 7'
+    'taking False path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/upper-checked/input.c', line=40), value=1)
@@ -22,7 +11,33 @@ Trace 1:
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:31
 
+Trace 1:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= 11'
+    'taking True path'
+    'when considering value == (char)8 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:37'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/upper-checked/input.c', line=38), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:38
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:31
+
 Trace 2:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= 11'
+    'taking True path'
+    'when considering range: 9 <= value <= 127'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/upper-checked/input.c', line=40), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:40
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/upper-checked/input.c:31
+
+Trace 3:
   Transitions:
     'when considering range: 12 <= value <= 0x7fffffff'
     'taking False path'

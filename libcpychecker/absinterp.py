@@ -24,6 +24,8 @@ from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
 
+debug_comparisons = 0
+
 numeric_types = integer_types + (float, )
 
 # I found myself regularly getting State and Transition instances confused.  To
@@ -39,6 +41,66 @@ numeric_types = integer_types + (float, )
 #   the prefix "v_" means an AbstractValue
 #   the prefix "r_" means a Region
 #   the prefix "f_" means a Facet
+
+# Valid 'opname' parameters to eval_comparison hooks:
+opnames = frozenset(['eq', 'ge', 'gt', 'le', 'lt'])
+
+def raw_comparison(a, opname, b):
+    assert opname in opnames
+    if opname == 'eq':
+        return a == b
+    elif opname == 'ge':
+        return a >= b
+    elif opname == 'gt':
+        return a > b
+    elif opname == 'le':
+        return a <= b
+    elif opname == 'lt':
+        return a < b
+    else:
+        raise ValueError()
+
+def flip_opname(opname):
+    """
+    Given:
+      A op B
+    get the op' for:
+      B op' A
+    that has the same results
+    """
+    assert opname in opnames
+    if opname == 'eq':
+        return 'eq' # symmetric
+    elif opname == 'ge':
+        return 'le'
+    elif opname == 'gt':
+        return 'lt'
+    elif opname == 'le':
+        return 'ge'
+    elif opname == 'lt':
+        return 'gt'
+    else:
+        raise ValueError()
+
+if debug_comparisons:
+    debug_indent = 0
+    # Decorator for adding debug tracking to the various comparison operators
+    def dump_comparison(f):
+        def impl_fn(self, *args):
+            global debug_indent
+            print('%s%s.%s:' % ('  ' * debug_indent, self.__class__.__name__, f.__name__))
+            for arg in [self] + list(args):
+                print(' %s%s' % ('  ' * debug_indent, arg))
+            debug_indent += 1
+            r = f(self, *args)
+            debug_indent -= 1
+            print('%sreturned: %s' % ('  ' * debug_indent, r))
+            return r
+        return impl_fn
+else:
+    # empty decorator
+    def dump_comparison(f):
+        return f
 
 ########################################################################
 
@@ -172,66 +234,13 @@ class AbstractValue(object):
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         raise NotImplementedError
 
-    def is_equal(self, rhs):
+    @dump_comparison
+    def eval_comparison(self, opname, rhs):
         """
+        opname is a string in opnames
         Return a boolean, or None (meaning we don't know)
         """
-        raise NotImplementedError("is_equal for %s" % self)
-
-    def is_lt(self, rhs):
-        """
-        "lt" = "less-than"
-        Return a boolean, or None (meaning we don't know)
-        """
-        # First try "less-than":
-        lt_result = self.impl_is_lt(rhs)
-        if lt_result is not None:
-            return lt_result
-        # We don't know; try the other way around:
-        ge_result = rhs.impl_is_ge(self)
-        if ge_result is not None:
-            return not ge_result
-        # We don't know:
-        return None
-
-    def is_le(lhs, rhs):
-        # "less-than-or-equal"
-        # This is the default implementation, using is_equal() and is_lt(),
-        # but subclasses can override this if needed
-
-        # First try "less-than":
-        lt_result = lhs.is_lt(rhs)
-        if lt_result is not None:
-            if lt_result:
-                return True
-        # Either not less than, or we don't know
-        # Try equality:
-        eq_result = lhs.is_equal(rhs)
-        if eq_result is not None:
-            if eq_result:
-                # Definitely equal:
-                return eq_result
-            else:
-                # Definitely not equal
-                # If we have a definite result for less-than, use it:
-                if lt_result is not None:
-                    return lt_result
-        # We don't know:
-        return None
-
-    def impl_is_lt(self, rhs):
-        """
-        "lt" = "less-than"
-        Return a boolean, or None (meaning we don't know)
-        """
-        raise NotImplementedError("impl_is_lt for %s (with %s)" % (self, rhs))
-
-    def impl_is_ge(self, rhs):
-        """
-        "ge" = "greater-than-or-equal"
-        Return a boolean, or None (meaning we don't know)
-        """
-        raise NotImplementedError("impl_is_ge for %s (with %s" % (self, rhs))
+        raise NotImplementedError("eval_comparison for %s (%s)" % (self, opname))
 
     def extract_from_parent(self, region, gcctype, loc):
         """
@@ -310,16 +319,12 @@ class UnknownValue(AbstractValue):
     def eval_binop(self, exprcode, rhs, gcctype, loc):
         return UnknownValue.make(gcctype, loc)
 
-    def is_equal(self, rhs):
-        # If it's the *same* value, it's equal to itself:
-        if self is rhs:
-            return True
-        return None
-
-    def impl_is_lt(self, rhs):
-        return None
-
-    def impl_is_ge(self, rhs):
+    @dump_comparison
+    def eval_comparison(self, opname, rhs):
+        if opname == 'eq':
+            # If it's the *same* value, it's equal to itself:
+            if self is rhs:
+                return True
         return None
 
     def extract_from_parent(self, region, gcctype, loc):
@@ -409,12 +414,15 @@ class ConcreteValue(AbstractValue):
 
     def __str__(self):
         if self.loc:
-            return '(%s)%r from %s' % (self.gcctype, self.value, self.loc)
+            return ('(%s)%s from %s'
+                    % (self.gcctype, value_to_str(self.value), self.loc))
         else:
-            return '(%s)%r' % (self.gcctype, self.value)
+            return ('(%s)%s'
+                    % (self.gcctype, value_to_str(self.value)))
 
     def __repr__(self):
-        return 'ConcreteValue(gcctype=%r, loc=%r, value=%r)' % (str(self.gcctype), self.loc, self.value)
+        return ('ConcreteValue(gcctype=%r, loc=%r, value=%s)'
+                % (str(self.gcctype), self.loc, value_to_str(self.value)))
 
     def is_null_ptr(self):
         if isinstance(self.gcctype, gcc.PointerType):
@@ -470,22 +478,140 @@ class ConcreteValue(AbstractValue):
                 return ConcreteValue(gcctype, loc, newvalue)
         return UnknownValue.make(gcctype, loc)
 
-    def is_equal(self, rhs):
+    @dump_comparison
+    def eval_comparison(self, opname, rhs):
+        log('ConcreteValue.eval_comparison(%s, %s%s)', self, opname, rhs)
         if isinstance(rhs, ConcreteValue):
-            log('comparing concrete values: %s %s', self, rhs)
-            return self.value == rhs.value
-        return None
+            return raw_comparison(self.value, opname, rhs.value)
+        elif isinstance(rhs, WithinRange):
+            # Specialcase for equality:
+            if opname == 'eq':
+                if not rhs.contains(self.value):
+                    return False
+                # Split into 2 or 3 parts:
+                ranges = []
+                if rhs.minvalue < self.value:
+                    # subrange that's <
+                    ranges.append(WithinRange.make(rhs.gcctype,
+                                                   rhs.loc,
+                                                   rhs.minvalue,
+                                                   self.value-1))
+                ranges.append(WithinRange.make(rhs.gcctype,
+                                               rhs.loc,
+                                               self.value))
+                if self.value < rhs.maxvalue:
+                    # subrange that's >
+                    ranges.append(WithinRange.make(rhs.gcctype,
+                                                   rhs.loc,
+                                                   self.value+1,
+                                                   rhs.maxvalue))
+                rhs.raise_split(*ranges)
 
-    def impl_is_lt(self, rhs):
-        if isinstance(rhs, ConcreteValue):
-            log('comparing concrete values: %s %s', self, rhs)
-            return self.value < rhs.value
-        return None
+            # For everything else (inequalities), consider ranges:
+            self_vs_min = raw_comparison(self.value, opname, rhs.minvalue)
+            self_vs_max = raw_comparison(self.value, opname, rhs.maxvalue)
+            if self_vs_min == self_vs_max:
+                return self_vs_min
+            else:
+                # Prepare a split, autogenerating the appropriate
+                # boundaries:
+                class RangeOfComparison:
+                    """
+                    A range over which the comparison against the ConcreteValue
+                    has a constant value
+                    """
+                    __slots__ = ('rng', 'result')
+                    def __init__(self, rng, result):
+                        check_isinstance(rng, (ConcreteValue, WithinRange))
+                        check_isinstance(result, (bool, None))
+                        self.rng = rng
+                        self.result = result
+                    def __repr__(self):
+                        return ('RangeOfComparison(%r, %r)'
+                                % (self.rng, self.result))
 
-    def impl_is_ge(self, rhs):
-        if isinstance(rhs, ConcreteValue):
-            log('comparing concrete values: %s %s', self, rhs)
-            return self.value >= rhs.value
+                # Where are the boundary values?
+                raw_boundaries = sorted(list(set([self.value - 1,
+                                                  self.value,
+                                                  self.value + 1,
+                                                  rhs.minvalue,
+                                                  rhs.maxvalue])))
+                if debug_comparisons:
+                    print([value_to_str(v) for v in raw_boundaries])
+
+                # Calculate a minimal list of RangeOfComparison instances
+                # Within each one, the comparison against the ConcreteValue has
+                # a consistent result:
+                ranges = []
+                num_boundary_ranges = len(raw_boundaries)-1
+                if debug_comparisons:
+                    print('num_boundary_ranges: %r' % num_boundary_ranges)
+                for i in range(len(raw_boundaries)-1):
+                    minvalue = raw_boundaries[i]
+                    if minvalue < rhs.gcctype.min_value.constant:
+                        minvalue = rhs.gcctype.min_value.constant
+
+                    if i < num_boundary_ranges - 1:
+                        # Extend up to but not including the next range:
+                        maxvalue = raw_boundaries[i + 1] - 1
+                    else:
+                        # Final range: use full range:
+                        maxvalue = raw_boundaries[i + 1]
+
+                    if maxvalue > rhs.gcctype.max_value.constant:
+                        maxvalue = rhs.gcctype.max_value.constant
+
+                    if debug_comparisons:
+                        print('%i [%s..%s]'
+                              % (i,
+                                 value_to_str(minvalue),
+                                 value_to_str(maxvalue)))
+
+                    check_isinstance(minvalue, numeric_types)
+                    check_isinstance(maxvalue, numeric_types)
+
+                    # Only "proper" ranges:
+                    if minvalue <= maxvalue:
+                        self_vs_min = raw_comparison(self.value, opname, minvalue)
+                        self_vs_max = raw_comparison(self.value, opname, maxvalue)
+
+                        # All ranges should have identical value when compared
+                        # against the concrete value:
+                        assert self_vs_min == self_vs_max
+                        if debug_comparisons:
+                            print('  [%s..%s] %s %s ?: %s'
+                                  % (value_to_str(minvalue),
+                                     value_to_str(maxvalue),
+                                     opname, self.value,
+                                     self_vs_min))
+
+                        if ranges and ranges[-1].result == self_vs_min:
+                            # These ranges are adjacent and have the same result;
+                            # merge them:
+                            oldrange = ranges[-1].rng
+                            if isinstance(oldrange, ConcreteValue):
+                                newrange = WithinRange(oldrange.gcctype,
+                                                       oldrange.loc,
+                                                       oldrange.value,
+                                                       maxvalue)
+                            else:
+                                check_isinstance(oldrange, WithinRange)
+                                newrange = WithinRange(oldrange.gcctype,
+                                                       oldrange.loc,
+                                                       oldrange.minvalue,
+                                                       maxvalue)
+                            ranges[-1].rng = newrange
+                        else:
+                            # We have a range with a different value:
+                            roc = RangeOfComparison(WithinRange.make(rhs.gcctype, rhs.loc,
+                                                                     minvalue, maxvalue),
+                                                    self_vs_min)
+                            ranges.append(roc)
+
+                if debug_comparisons:
+                    from pprint import pprint
+                    pprint(ranges)
+                rhs.raise_split(*[roc.rng for roc in ranges])
         return None
 
     def extract_from_parent(self, region, gcctype, loc):
@@ -496,10 +622,10 @@ class ConcreteValue(AbstractValue):
         if isinstance(v_other, ConcreteValue):
             if self.value == v_other.value:
                 return self
-            return WithinRange(self.gcctype, self.loc,
+            return WithinRange.make(self.gcctype, self.loc,
                                self.value, v_other.value)
         if isinstance(v_other, WithinRange):
-            return WithinRange(self.gcctype, self.loc,
+            return WithinRange.make(self.gcctype, self.loc,
                                *(self.value, v_other.minvalue, v_other.maxvalue))
         raise NotImplementedError('%s.union(%s)'
                                   % (self.__class__.__name__, v_other))
@@ -551,6 +677,19 @@ class WithinRange(AbstractValue):
             self.maxvalue = gcctype.max_value.constant
 
     @classmethod
+    def make(cls, gcctype, loc, *values):
+        """
+        Generate a WithinRange instance, unless the range uniqely identifies
+        a value, in which case generate a ConcreteValue instance
+        """
+        minvalue = min(values)
+        maxvalue = max(values)
+        if minvalue == maxvalue:
+            return ConcreteValue(gcctype, loc, minvalue)
+        else:
+            return WithinRange(gcctype, loc, minvalue, maxvalue)
+
+    @classmethod
     def ge_zero(cls, gcctype, loc):
         """
         Make a WithinRange for the given type, assuming a value >= 0, up to
@@ -577,11 +716,11 @@ class WithinRange(AbstractValue):
         if exprcode == gcc.AbsExpr:
             values = [abs(val)
                       for val in (self.minvalue, self.maxvalue)]
-            return WithinRange(gcctype, loc, min(values), max(values))
+            return WithinRange.make(gcctype, loc, min(values), max(values))
         elif exprcode == gcc.BitNotExpr:
             return UnknownValue.make(gcctype, loc)
         elif exprcode == gcc.NegateExpr:
-            return WithinRange(gcctype, loc, -self.maxvalue, -self.minvalue)
+            return WithinRange.make(gcctype, loc, -self.maxvalue, -self.minvalue)
         elif exprcode == gcc.ConvertExpr:
             # Is the whole of this range fully expressible within the new type?
             # If not, we might lose information
@@ -589,7 +728,7 @@ class WithinRange(AbstractValue):
                 if (self.minvalue >= gcctype.min_value.constant
                     and self.maxvalue <= gcctype.max_value.constant):
                     # The old range will convert OK to the new type:
-                    return WithinRange(gcctype, loc,
+                    return WithinRange.make(gcctype, loc,
                                        self.minvalue, self.maxvalue)
             # We might lose information e.g. truncation; be pessimistic for now:
             return UnknownValue.make(gcctype, loc)
@@ -601,7 +740,7 @@ class WithinRange(AbstractValue):
         if isinstance(rhs, ConcreteValue):
             values = [eval_binop(exprcode, val, rhs.value, rhs)
                       for val in (self.minvalue, self.maxvalue)]
-            return WithinRange(gcctype, loc, min(values), max(values))
+            return WithinRange.make(gcctype, loc, min(values), max(values))
         elif isinstance(rhs, WithinRange):
             # Assume that the operations are "concave" in that the resulting
             # range is within that found by trying all four corners:
@@ -610,8 +749,8 @@ class WithinRange(AbstractValue):
             # (see https://fedorahosted.org/gcc-python-plugin/ticket/25 )
             if exprcode == gcc.TruncDivExpr or exprcode == gcc.TruncModExpr:
                 if rhs.minvalue == 0 and rhs.maxvalue > 0:
-                    zero_range = WithinRange(rhs.gcctype, rhs.loc, 0)
-                    gt_zero_range = WithinRange(rhs.gcctype, rhs.loc,
+                    zero_range = WithinRange.make(rhs.gcctype, rhs.loc, 0)
+                    gt_zero_range = WithinRange.make(rhs.gcctype, rhs.loc,
                                                 1, rhs.maxvalue)
                     rhs.raise_split(zero_range, gt_zero_range)
 
@@ -619,9 +758,9 @@ class WithinRange(AbstractValue):
             # (see https://fedorahosted.org/gcc-python-plugin/ticket/14 )
             if exprcode == gcc.LshiftExpr or exprcode == gcc.RshiftExpr:
                 if rhs.minvalue < 0 and rhs.maxvalue >= 0:
-                    neg_range = WithinRange(rhs.gcctype, rhs.loc,
+                    neg_range = WithinRange.make(rhs.gcctype, rhs.loc,
                                             rhs.minvalue, -1)
-                    ge_zero_range = WithinRange(rhs.gcctype, rhs.loc,
+                    ge_zero_range = WithinRange.make(rhs.gcctype, rhs.loc,
                                                 0, rhs.maxvalue)
                     rhs.raise_split(neg_range, ge_zero_range)
 
@@ -629,108 +768,54 @@ class WithinRange(AbstractValue):
                       eval_binop(exprcode, self.minvalue, rhs.maxvalue, rhs),
                       eval_binop(exprcode, self.maxvalue, rhs.minvalue, rhs),
                       eval_binop(exprcode, self.maxvalue, rhs.maxvalue, rhs))
-            return WithinRange(gcctype, loc,
+            return WithinRange.make(gcctype, loc,
                                min(values),
                                max(values))
         return UnknownValue.make(gcctype, loc)
 
     def contains(self, rawvalue):
+        check_isinstance(rawvalue, numeric_types)
         return self.minvalue <= rawvalue and rawvalue <= self.maxvalue
 
-    def is_equal(self, rhs):
-        log('is_equal(%s, %s)', self, rhs)
+    @dump_comparison
+    def eval_comparison(self, opname, rhs):
+        log('WithinRange.eval_comparison(%s, %s%s)', self, opname, rhs)
 
         # If it's the *same* value, it's equal to itself:
-        if self is rhs:
-            return True
+        if opname == 'eq':
+            if self is rhs:
+                return True
 
-        if isinstance(rhs, WithinRange):
-            # They can only be equal if there's an overlap:
-            if self.contains(rhs.minvalue) or self.contains(rhs.maxvalue):
-                # Maybe equal:
-                return None
-            else:
-                # No overlap: definitely non-equal:
-                return False
-        elif isinstance(rhs, ConcreteValue):
-            if self.contains(rhs.value):
-                # Maybe equal:
-                return None
-            else:
-                # Definitely non-equal:
-                return False
-        return None
+            if isinstance(rhs, WithinRange):
+                # They can only be equal if there's an overlap:
+                if self.contains(rhs.minvalue) or self.contains(rhs.maxvalue):
+                    # Maybe equal:
+                    return None
+                else:
+                    # No overlap: definitely non-equal:
+                    return False
 
-    def is_le(self, rhs):
-        # Overridden implementation of AbstractValue.is_le, to better capture
-        # the end conditions:
-        # A <= B?
-        if isinstance(rhs, WithinRange):
-            if self.maxvalue <= rhs.minvalue:
-                # A is definitely <= that B:
-                return True
-            if self.minvalue > rhs.maxvalue:
-                # A is definitely > B, hence A <= B is a definite falsehood:
-                return False
-            return None
-        elif isinstance(rhs, ConcreteValue):
-            if self.maxvalue <= rhs.value:
-                # A is definitely <= that B:
-                return True
-            if self.minvalue > rhs.value:
-                # A is definitely > B, hence A <= B is a definite falsehood:
-                return False
-            if isinstance(self.gcctype, gcc.IntegerType):
-                # Split the range against the concrete value, into the True and
-                # False cases:
-                true_range = WithinRange(self.gcctype, self.loc,
-                                         self.minvalue,
-                                         rhs.value)
-                false_range = WithinRange(self.gcctype, self.loc,
-                                          rhs.value + 1,
-                                          self.maxvalue)
-                self.raise_split(true_range, false_range)
-            return None
-        return None
+        if isinstance(rhs, ConcreteValue):
+            # to implement WithinRange op ConcreteValue, use:
+            #   ConcreteValue flip(op) WithinRange
+            return rhs.eval_comparison(flip_opname(opname), self)
 
-    def impl_is_lt(self, rhs):
-        # Is A < B ?
-        if isinstance(rhs, WithinRange):
-            if self.maxvalue < rhs.minvalue:
-                # A is definitely less that B:
-                return True
-            if self.minvalue >= rhs.maxvalue:
-                # A is definitely >= B, hence A < B is a definite falsehood:
-                return False
-            return None
-        elif isinstance(rhs, ConcreteValue):
-            if self.maxvalue < rhs.value:
-                # A is definitely less that B:
-                return True
-            if self.minvalue >= rhs.value:
-                # A is definitely >= B, hence A < B is a definite falsehood:
-                return False
-            if isinstance(self.gcctype, gcc.IntegerType):
-                # Split the range against the concrete value, into the True and
-                # False cases:
-                true_range = WithinRange(self.gcctype, self.loc,
-                                         self.minvalue,
-                                         rhs.value - 1)
-                false_range = WithinRange(self.gcctype, self.loc,
-                                          rhs.value,
-                                          self.maxvalue)
-                self.raise_split(true_range, false_range)
-            return None
         return None
 
     def raise_split(self, *new_ranges):
         """
         Raise a SplitValue exception to subdivide this range into subranges
         """
-        descriptions = ['when considering range: %s <= value <= %s' %
-                        (value_to_str(r.minvalue),
-                         value_to_str(r.maxvalue))
-                        for r in new_ranges]
+        descriptions = []
+        for r in new_ranges:
+            if isinstance(r, WithinRange):
+                descriptions.append('when considering range: %s <= value <= %s' %
+                                    (value_to_str(r.minvalue),
+                                     value_to_str(r.maxvalue)))
+            elif isinstance(r, ConcreteValue):
+                descriptions.append('when considering value == %s' % r)
+            else:
+                raise TypeError('unrecognized type: %r' % r)
         raise SplitValue(self, new_ranges, descriptions)
 
     def raise_as_concrete(self, loc, value, desc):
@@ -750,36 +835,16 @@ class WithinRange(AbstractValue):
                               value)
         raise SplitValue(self, [v_new], [desc])
 
-    def impl_is_ge(self, rhs):
-        # Is A >= B ?
-        if isinstance(rhs, WithinRange):
-            if self.minvalue >= rhs.maxvalue:
-                # A is definitely >= B:
-                return True
-            if self.maxvalue <= rhs.minvalue:
-                # A is definitely not >= B:
-                return False
-            return None
-        elif isinstance(rhs, ConcreteValue):
-            if self.minvalue >= rhs.value:
-                # A is definitely >= B:
-                return True
-            if self.maxvalue <= rhs.value:
-                # A is definitely not >= B:
-                return False
-            return None
-        return None
-
     def extract_from_parent(self, region, gcctype, loc):
-        return WithinRange(gcctype, self.loc, self.minvalue, self.maxvalue)
+        return WithinRange.make(gcctype, self.loc, self.minvalue, self.maxvalue)
 
     def union(self, v_other):
         check_isinstance(v_other, AbstractValue)
         if isinstance(v_other, ConcreteValue):
-            return WithinRange(self.gcctype, self.loc,
+            return WithinRange.make(self.gcctype, self.loc,
                                *(self.minvalue, self.maxvalue, v_other.value))
         if isinstance(v_other, WithinRange):
-            return WithinRange(self.gcctype, self.loc,
+            return WithinRange.make(self.gcctype, self.loc,
                                *(self.minvalue, self.maxvalue,
                                  v_other.minvalue, v_other.maxvalue))
         raise NotImplementedError('%s.union(%s)'
@@ -803,23 +868,20 @@ class PointerToRegion(AbstractValue):
     def __repr__(self):
         return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
 
-    def is_equal(self, rhs):
-        if isinstance(rhs, ConcreteValue) and rhs.value == 0:
-            log('ptr to region vs 0: %s is definitely not equal to %s', self, rhs)
-            return False
+    def eval_comparison(self, opname, rhs):
+        log('PointerToRegion.eval_comparison:(%s, %s%s)', self, opname, rhs)
 
-        if isinstance(rhs, PointerToRegion):
-            log('comparing regions: %s %s', self, rhs)
-            return self.region == rhs.region
+        if opname == 'eq':
+            if isinstance(rhs, ConcreteValue) and rhs.value == 0:
+                log('ptr to region vs 0: %s is definitely not equal to %s', self, rhs)
+                return False
 
-        # We don't know:
-        return None
+            if isinstance(rhs, PointerToRegion):
+                log('comparing regions: %s %s', self, rhs)
+                return self.region == rhs.region
 
-    def impl_is_lt(self, rhs):
-        return None
-
-    def impl_is_ge(self, rhs):
-        return None
+            # We don't know:
+            return None
 
     def eval_unary_op(self, exprcode, gcctype, loc):
         if exprcode == gcc.ConvertExpr:
@@ -853,16 +915,6 @@ class UninitializedData(AbstractValue):
             return 'uninitialized data at %s' % self.loc
         else:
             return 'uninitialized data'
-
-    def is_equal(self, rhs):
-        # We don't know:
-        return None
-
-    def impl_is_lt(self, rhs):
-        return None
-
-    def impl_is_ge(self, rhs):
-        return None
 
     def get_transitions_for_function_call(self, state, stmt):
         check_isinstance(state, State)
@@ -2260,51 +2312,6 @@ class State(object):
         check_isinstance(lhs, AbstractValue)
         check_isinstance(rhs, AbstractValue)
 
-        def is_equal(lhs, rhs):
-            log('is_equal(%s, %s)', lhs, rhs)
-            check_isinstance(lhs, AbstractValue)
-            check_isinstance(rhs, AbstractValue)
-            return lhs.is_equal(rhs)
-
-        def is_lt(lhs, rhs):
-            # "less-than"
-            log('is_lt(%s, %s)', lhs, rhs)
-            check_isinstance(lhs, AbstractValue)
-            check_isinstance(rhs, AbstractValue)
-            return lhs.is_lt(rhs)
-
-        def is_le(lhs, rhs):
-            # "less-than-or-equal"
-            log('is_le(%s, %s)', lhs, rhs)
-            return lhs.is_le(rhs)
-
-        if exprcode == gcc.EqExpr:
-            result = is_equal(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.NeExpr:
-            result = is_equal(lhs, rhs)
-            if result is not None:
-                return not result
-        elif exprcode == gcc.LtExpr:
-            result = is_lt(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.LeExpr:
-            result = is_le(lhs, rhs)
-            if result is not None:
-                return result
-        elif exprcode == gcc.GeExpr:
-            # Implement "A >= B" as "not(A < B)":
-            result = is_lt(lhs, rhs)
-            if result is not None:
-                return not result
-        elif exprcode == gcc.GtExpr:
-            # Implement "A > B " as "not(A <= B)":
-            result = is_le(lhs, rhs)
-            if result is not None:
-                return not result
-
         # Detect usage of uninitialized data:
         if isinstance(lhs, UninitializedData):
             raise UsageOfUninitializedData(self, expr_lhs, lhs,
@@ -2312,6 +2319,31 @@ class State(object):
         if isinstance(rhs, UninitializedData):
             raise UsageOfUninitializedData(self, expr_rhs, rhs,
                                            'comparison against uninitialized data (%s)' % expr_rhs)
+
+        if exprcode == gcc.EqExpr:
+            result = lhs.eval_comparison('eq', rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.NeExpr:
+            result = lhs.eval_comparison('eq', rhs)
+            if result is not None:
+                return not result
+        elif exprcode == gcc.LtExpr:
+            result = lhs.eval_comparison('lt', rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.LeExpr:
+            result = lhs.eval_comparison('le', rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.GeExpr:
+            result = lhs.eval_comparison('ge', rhs)
+            if result is not None:
+                return result
+        elif exprcode == gcc.GtExpr:
+            result = lhs.eval_comparison('gt', rhs)
+            if result is not None:
+                return result
 
         # Specialcasing: comparison of unknown ptr with NULL:
         if (isinstance(expr_lhs, gcc.VarDecl)

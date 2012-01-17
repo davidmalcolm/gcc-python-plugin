@@ -1,8 +1,8 @@
 Trace 0:
   Transitions:
-    'when considering range: 0 <= value <= 0'
+    'when considering value == (unsigned int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28'
   error: PredictedArithmeticError()
-  error: possible integer division or modulo by zero with right-hand-side (unsigned int)val [0 <= val <= 0] from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28
+  error: possible integer division or modulo by zero with right-hand-side (unsigned int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:29
 

@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    'when considering range: 0 <= value <= 0xfffffffe'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c', line=37), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c:37
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c:26
+
+Trace 1:
+  Transitions:
+    'when considering value == (const unsigned int)0xffffffff from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c:22'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c', line=39), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c:39
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-max-of-WithinRange/input.c:26

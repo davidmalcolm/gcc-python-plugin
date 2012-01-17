@@ -21,11 +21,12 @@ Trace 1:
     'taking False path'
     '__dump((int)val [0 <= val <= 11] from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:30)'
     '__dump((char)val [1 <= val <= 8] from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:32)'
-    'when taking True path'
+    'when considering range: 1 <= value <= 7'
+    'taking False path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c', line=72), value=2)
-    str(): (int)2 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:72
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c', line=74), value=3)
+    str(): (int)3 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:74
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:31
 
@@ -39,11 +40,12 @@ Trace 2:
     'taking False path'
     '__dump((int)val [0 <= val <= 11] from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:30)'
     '__dump((char)val [1 <= val <= 8] from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:32)'
-    'when taking False path'
+    'when considering value == (char)8 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:32'
+    'taking True path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c', line=74), value=3)
-    str(): (int)3 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:74
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c', line=72), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:72
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/fully-checked-on-stack/input.c:31
 

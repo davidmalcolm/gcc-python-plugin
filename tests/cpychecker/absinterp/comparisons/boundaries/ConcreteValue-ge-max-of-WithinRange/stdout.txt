@@ -1,0 +1,9 @@
+Trace 0:
+  Transitions:
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-ge-max-of-WithinRange/input.c', line=35), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-ge-max-of-WithinRange/input.c:35
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-ge-max-of-WithinRange/input.c:26

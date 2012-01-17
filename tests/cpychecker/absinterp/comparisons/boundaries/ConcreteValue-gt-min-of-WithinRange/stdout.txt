@@ -1,0 +1,9 @@
+Trace 0:
+  Transitions:
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-min-of-WithinRange/input.c', line=38), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-min-of-WithinRange/input.c:38
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-gt-min-of-WithinRange/input.c:26

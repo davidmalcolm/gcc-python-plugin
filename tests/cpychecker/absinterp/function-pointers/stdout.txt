@@ -1,7 +1,8 @@
 Trace 0:
   Transitions:
-    'when taking True path'
-    "calling (int (*<T513>) (int))&RegionForGlobal(gcc.FunctionDecl('foo')) from tests/cpychecker/absinterp/function-pointers/input.c:32"
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking True path'
+    "calling (int (*<Tnnn>) (int))&RegionForGlobal(gcc.FunctionDecl('foo')) from tests/cpychecker/absinterp/function-pointers/input.c:32"
     'returning'
   Return value:
     repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/function-pointers/input.c', line=45), minvalue=-0x80000000, maxvalue=0x7fffffff)
@@ -9,14 +10,37 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when taking False path'
-    'when taking True path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/function-pointers/input.c:27'
+    'taking False path'
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking True path'
   error: CallOfNullFunctionPtr()
-  error: call of NULL function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: (int (*<T513>) (int))0 from tests/cpychecker/absinterp/function-pointers/input.c:39
+  error: call of NULL function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: (int (*<Tnnn>) (int))0 from tests/cpychecker/absinterp/function-pointers/input.c:39
 
 Trace 2:
   Transitions:
-    'when taking False path'
-    'when taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/function-pointers/input.c:27'
+    'taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/function-pointers/input.c:27'
+    'taking False path'
   error: CallOfUninitializedFunctionPtr()
   error: call of uninitialized function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: uninitialized data at tests/cpychecker/absinterp/function-pointers/input.c:28
+
+Trace 3:
+  Transitions:
+    'when considering value == (int)0 from tests/cpychecker/absinterp/function-pointers/input.c:27'
+    'taking False path'
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking True path'
+  error: CallOfNullFunctionPtr()
+  error: call of NULL function pointer at tests/cpychecker/absinterp/function-pointers/input.c:45: (int (*<Tnnn>) (int))0 from tests/cpychecker/absinterp/function-pointers/input.c:39
+
+Trace 4:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking True path'
+    "calling (int (*<Tnnn>) (int))&RegionForGlobal(gcc.FunctionDecl('foo')) from tests/cpychecker/absinterp/function-pointers/input.c:32"
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/function-pointers/input.c', line=45), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/function-pointers/input.c:45

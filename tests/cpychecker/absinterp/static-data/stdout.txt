@@ -1,6 +1,7 @@
 Trace 0:
   Transitions:
-    'when taking True path'
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking True path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/static-data/input.c', line=35), value=42)
@@ -8,8 +9,18 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/static-data/input.c:24'
+    'taking False path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/static-data/input.c', line=37), value=43)
     str(): (int)43 from tests/cpychecker/absinterp/static-data/input.c:37
+
+Trace 2:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/static-data/input.c', line=35), value=42)
+    str(): (int)42 from tests/cpychecker/absinterp/static-data/input.c:35

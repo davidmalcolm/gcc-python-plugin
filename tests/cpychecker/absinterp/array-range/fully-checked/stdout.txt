@@ -20,11 +20,12 @@ Trace 1:
     'when considering range: 0 <= value <= 11'
     'taking False path'
     '__dump((int)val [0 <= val <= 11] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
-    'when taking True path'
+    'when considering range: -128 <= value <= 7'
+    'taking False path'
     'returning'
   Return value:
-    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked/input.c', line=54), value=2)
-    str(): (int)2 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:54
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked/input.c', line=56), value=3)
+    str(): (int)3 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:56
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:33
 
@@ -37,7 +38,26 @@ Trace 2:
     'when considering range: 0 <= value <= 11'
     'taking False path'
     '__dump((int)val [0 <= val <= 11] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
-    'when taking False path'
+    'when considering value == (char)8 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:53'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked/input.c', line=54), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:54
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:33
+
+Trace 3:
+  Transitions:
+    '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
+    'when considering range: 0 <= value <= 0x7fffffff'
+    'taking False path'
+    '__dump((int)val [0 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
+    'when considering range: 0 <= value <= 11'
+    'taking False path'
+    '__dump((int)val [0 <= val <= 11] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
+    'when considering range: 9 <= value <= 127'
+    'taking False path'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/array-range/fully-checked/input.c', line=56), value=3)
@@ -45,7 +65,7 @@ Trace 2:
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/array-range/fully-checked/input.c:33
 
-Trace 3:
+Trace 4:
   Transitions:
     '__dump((int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/absinterp/array-range/fully-checked/input.c:32)'
     'when considering range: 0 <= value <= 0x7fffffff'
