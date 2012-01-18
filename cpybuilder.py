@@ -246,7 +246,11 @@ class PyTypeObject(NamedEntity):
         return result
 
     def c_initializer(self):
-        result = '    PyVarObject_HEAD_INIT(0, 0)\n'
+        if hasattr(self, 'ob_type'):
+            ob_type_str = getattr(self, 'ob_type')
+        else:
+            ob_type_str = 'NULL'
+        result = '    PyVarObject_HEAD_INIT(%s, 0)\n' % ob_type_str
         result += '    "%(tp_name)s", /*tp_name*/\n' % self.__dict__
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
         result += '    0, /*tp_itemsize*/\n'

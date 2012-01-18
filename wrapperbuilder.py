@@ -28,15 +28,20 @@ class PyGccWrapperTypeObject(PyTypeObject):
     A PyTypeObject that's also a PyGccWrapperTypeObject
     (with metaclass PyGccWrapperMetaType)
     """
+    def __init__(self, *args, **kwargs):
+        PyTypeObject.__init__(self, *args, **kwargs)
+        self.ob_type = '&PyGccWrapperMetaType'
+
     def c_defn(self):
         result = '\n'
         result += 'PyGccWrapperTypeObject %(identifier)s = {\n' % self.__dict__
         result += self.c_src_field_value('wrtp_base',
-                                         '{\n%s}' % indent(self.c_initializer()))
+                                         '{\n        .ht_type = {\n%s}' % indent(indent(self.c_initializer())))
+        result += '    },\n'
         result += self.c_src_field_value('wrtp_mark',
                                          'wrtp_mark_for_%s' % self.struct_name,
                                          cast='wrtp_marker')
-        result += '};\n' % self.__dict__
+        result += '};\n'
         result +='\n'
         return result
 

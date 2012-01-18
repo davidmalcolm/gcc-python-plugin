@@ -24,7 +24,7 @@ class CallgraphNode(__builtin__.object)
  |  ----------------------------------------------------------------------
  |  Data and other attributes defined here:
  |  
- |  __new__ = <built-in method __new__ of type object>
+ |  __new__ = <built-in method __new__ of gcc.WrapperMeta object>
  |      T.__new__(S, ...) -> a new object with type S, a subtype of T
 
 Help on class CallgraphEdge in module gcc:
@@ -53,7 +53,7 @@ class CallgraphEdge(__builtin__.object)
  |  ----------------------------------------------------------------------
  |  Data and other attributes defined here:
  |  
- |  __new__ = <built-in method __new__ of type object>
+ |  __new__ = <built-in method __new__ of gcc.WrapperMeta object>
  |      T.__new__(S, ...) -> a new object with type S, a subtype of T
 
 cgn:

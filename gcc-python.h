@@ -79,7 +79,7 @@ typedef void (*wrtp_marker) (PyGccWrapper *wrapper);
 
 typedef struct PyGccWrapperTypeObject
 {
-    PyTypeObject wrtp_base;
+    PyHeapTypeObject wrtp_base;
 
     /* Callback for marking the wrapped objects when GCC's garbage
        collector runs: */
@@ -107,6 +107,7 @@ gcc_python_wrapper_track(PyGccWrapper *obj);
 extern void
 gcc_python_wrapper_dealloc(PyObject *obj);
 
+extern PyTypeObject PyGccWrapperMetaType;
 /*
   Macro DECLARE_SIMPLE_WRAPPER():
     ARG_structname:
