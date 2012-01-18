@@ -350,6 +350,8 @@ if six.PY3:
 
     # Similarly for the PyString_ API:
     exclude_tests_below('tests/cpychecker/refcounts/PyString_AsString')
+    exclude_tests_below('tests/cpychecker/refcounts/PyString_Concat')
+    exclude_tests_below('tests/cpychecker/refcounts/PyString_ConcatAndDel')
     exclude_tests_below('tests/cpychecker/refcounts/PyString_FromStringAndSize')
     exclude_tests_below('tests/cpychecker/refcounts/PyString_Size')
 
