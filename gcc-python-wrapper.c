@@ -108,10 +108,11 @@ static int debug_gcc_python_wrapper = 0;
 static PyObject*
 gcc_python_wrapper_meta_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    PyTypeObject *new_type;
+    PyGccWrapperTypeObject* new_type;
+    PyGccWrapperTypeObject* base_type;
 
-    /* Use PyType_Type's tp_new */
-    new_type = (PyTypeObject*)PyType_Type.tp_new(type, args, kwds);
+    /* Use PyType_Type's tp_new to do most of the work: */
+    new_type = (PyGccWrapperTypeObject*)PyType_Type.tp_new(type, args, kwds);
     if (!new_type) {
         return NULL;
     }
@@ -120,9 +121,12 @@ gcc_python_wrapper_meta_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwd
        will thus be large enough for our extra information: */
     assert(Py_TYPE(new_type)->tp_basicsize >= sizeof(PyGccWrapperTypeObject));
 
+    base_type = (PyGccWrapperTypeObject*)((PyTypeObject*)new_type)->tp_base;
+    assert(base_type);
+
     /* Inherit wrtp_mark: */
-    ((PyGccWrapperTypeObject*)new_type)->wrtp_mark = \
-        ((PyGccWrapperTypeObject*)new_type->tp_base)->wrtp_mark;
+    assert(base_type->wrtp_mark);
+    new_type->wrtp_mark = base_type->wrtp_mark;
 
     return (PyObject*)new_type;
 }
