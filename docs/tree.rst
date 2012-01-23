@@ -459,6 +459,24 @@ Types
       The :py:class:`gcc.Type` that this type points to.  In the above
       example, this would be the `char` type.
 
+   .. py:attribute:: range
+
+      The :py:class:`gcc.Type` that represents the range of the
+      array's indices.  If the array has a known range, then this will
+      ordinarily be an :py:class:`gcc.IntegerType` whose `min_value`
+      and `max_value` are the (inclusive) bounds of the array.  If the
+      array does not have a known range, then this attribute will be
+      `None`.
+
+      That is, in the example above, `range.min_val` is `0`, and
+      `range.max_val` is `15`.
+
+      But, for a C declaration like::
+
+         extern char array[];
+
+      the type's `range` would be `None`.
+
 .. py:class:: gcc.VectorType
 
    .. py:attribute:: dereference

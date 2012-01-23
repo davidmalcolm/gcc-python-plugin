@@ -399,6 +399,11 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(TREE_TYPE(self->t))',
                               "The gcc.Type that this type points to'")
 
+        if tree_type.SYM == 'ARRAY_TYPE':
+            add_simple_getter('range',
+                              'gcc_python_make_wrapper_tree(TYPE_DOMAIN(self->t))',
+                              "The gcc.Type that is the range of this array type")
+
         if tree_type.SYM == 'ARRAY_REF':
             add_simple_getter('array',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
