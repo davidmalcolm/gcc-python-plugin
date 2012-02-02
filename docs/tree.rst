@@ -425,6 +425,16 @@ Types
 
       The gcc.IntegerType for the unsigned version of this type
 
+   .. py:attribute:: max_value
+
+      The maximum possible value for this type, as a
+      :py:class:`gcc.IntegerCst`
+
+   .. py:attribute:: min_value
+
+      The minimum possible value for this type, as a
+      :py:class:`gcc.IntegerCst`
+
 .. py:class:: gcc.FloatType
 
    Subclass of :py:class:`gcc.Type` representing C's `float` and `double` types
