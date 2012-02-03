@@ -49,7 +49,6 @@ def get_variables_as_dict():
 def get_global_vardecl_by_name(name):
     # Look up a variable in global scope by name, returning a gcc.VarDecl,
     # or None if not found
-    result = {}
     for u in gcc.get_translation_units():
         for v in u.block.vars:
             if isinstance(v, gcc.VarDecl):
