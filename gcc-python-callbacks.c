@@ -372,6 +372,16 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  closure);
         break;
 
+    /* PLUGIN_FINISH_DECL was added in gcc 4.7 onwards: */
+#ifdef GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL
+    case PLUGIN_FINISH_DECL:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+                          gcc_python_callback_for_tree,
+			  closure);
+	break;
+#endif /* GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL */
+
     default:
         PyErr_Format(PyExc_ValueError, "event type %i invalid (or not wired up yet)", event);
 	return NULL;

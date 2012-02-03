@@ -75,6 +75,8 @@ ID                                               Meaning
 
 :py:data:`gcc.PLUGIN_FINISH_TYPE`                After a type has been parsed
 
+:py:data:`gcc.PLUGIN_FINISH_DECL`                After a declaration has been parsed (GCC 4.7 or later)
+
 :py:data:`gcc.PLUGIN_FINISH`                     Called before GCC exits
 
 ===============================================  =========
@@ -162,6 +164,19 @@ ID                                               Meaning
    Arguments passed to the callback are:
 
       (`*extraargs`, `**kwargs`)
+
+.. py:data:: gcc.PLUGIN_FINISH_DECL
+
+   .. note:: Only available in GCC 4.7 onwards.
+
+   Called when GCC has finished compiling a declaration (variables,
+   functions, parameters to functions, types, etc)
+
+   Arguments passed to the callback are:
+
+      (`decl`, `*extraargs`, `**kwargs`)
+
+   where `decl` is a :py:class:`gcc.Declaration`.
 
 .. py:data:: gcc.PLUGIN_FINISH
 
