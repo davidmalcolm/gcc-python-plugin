@@ -18,6 +18,7 @@
 # Code for handling compatibility between different GCC versions
 
 import gcc
+import gccutils
 
 # The checker need to be able to access global declarations for exception
 # objects, such as:
