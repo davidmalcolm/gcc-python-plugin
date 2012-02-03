@@ -21,6 +21,7 @@ from subprocess import Popen, PIPE, check_output
 import sys
 
 def indent(prefix, text):
+    text = str(text)
     return '\n'.join([prefix + line
                       for line in text.splitlines()])
 
@@ -137,8 +138,8 @@ class ConfigBuilder:
                '-c', # don't run the linker (no main)
                '-o', outpath,
                srcpath] + extraargs
-        p = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate(src)
+        p = Popen(args, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
         c = p.wait()
         if c != 0:
             class CompilationError(ConfigurationFailure):
@@ -158,6 +159,7 @@ class ConfigBuilder:
                       mandatory=True) as test:
             out = check_output(cmd,
                                shell=True) # input must be trusted
+            out = str(out.decode())
         sys.stdout.write('%s\n' % out.strip())
         return out
 
