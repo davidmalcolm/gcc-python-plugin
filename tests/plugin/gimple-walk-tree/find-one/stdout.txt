@@ -9,7 +9,7 @@ fun: gcc.Function('main')
   stmt: D.nnnnn = *D.nnnnn;
   stmt: D.nnnnn = (const char * restrict) &"argv[%i]: %s\n"[0];
     node: gcc.StringCst('argv[%i]: %s\n') ("argv[%i]: %s\n")
-  stmt: printf (D.nnnnn, D.nnnnn);
+  stmt: printf (D.nnnnn, i, D.nnnnn);
   stmt: i = i + 1;
   stmt: if (i < argc)
   stmt: helper_function ();

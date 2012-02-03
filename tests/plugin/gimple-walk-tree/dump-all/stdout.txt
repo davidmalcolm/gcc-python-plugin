@@ -35,10 +35,11 @@ fun: gcc.Function('main')
     node: gcc.StringCst('argv[%i]: %s\n') ("argv[%i]: %s\n")
     node: gcc.IntegerCst(0) (0)
     node: gcc.VarDecl(nnnn) (D.nnnnn)
-  stmt: printf (D.nnnnn, D.nnnnn);
+  stmt: printf (D.nnnnn, i, D.nnnnn);
     node: <gcc.AddrExpr object at 0xdeadbeef> (printf)
     node: gcc.FunctionDecl('printf') (printf)
     node: gcc.VarDecl(nnnn) (D.nnnnn)
+    node: gcc.VarDecl('i') (i)
     node: gcc.VarDecl(nnnn) (D.nnnnn)
   stmt: i = i + 1;
     node: gcc.VarDecl('i') (i)

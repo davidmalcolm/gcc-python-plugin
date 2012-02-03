@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ main(int argc, char **argv)
     printf("argc: %i\n", argc);
 
     for (i = 0; i < argc; i++) {
-        printf("argv[%i]: %s\n", argv[i]);
+        printf("argv[%i]: %s\n", i, argv[i]);
     }
 
     helper_function();
