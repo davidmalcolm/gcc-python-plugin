@@ -21,6 +21,8 @@ from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
 from libcpychecker.attributes import register_our_attributes
 from libcpychecker.initializers import check_initializers
+if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
+    from libcpychecker.compat import on_finish_decl
 
 class CpyCheckerGimplePass(gcc.GimplePass):
     """
@@ -83,6 +85,11 @@ def main(**kwargs):
     # Register our custom attributes:
     gcc.register_callback(gcc.PLUGIN_ATTRIBUTES,
                           register_our_attributes)
+
+    # Hook for GCC 4.7 and later:
+    if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
+        gcc.register_callback(gcc.PLUGIN_FINISH_DECL,
+                              on_finish_decl)
 
     # Register our GCC passes:
     gimple_ps = CpyCheckerGimplePass(**kwargs)

@@ -37,6 +37,7 @@ from libcpychecker.Py_BuildValue import PyBuildValueFmt, ObjectFormatUnit, \
 from libcpychecker.types import is_py3k, is_debug_build, get_PyObjectPtr, \
     get_Py_ssize_t
 from libcpychecker.utils import log
+from libcpychecker import compat
 
 def stmt_is_assignment_to_count(stmt):
     if hasattr(stmt, 'lhs'):
@@ -433,7 +434,7 @@ class CPython(Facet):
           http://docs.python.org/c-api/exceptions.html#standard-exceptions
         """
         check_isinstance(exc_name, str)
-        exc_decl = gccutils.get_global_vardecl_by_name(exc_name)
+        exc_decl = compat.get_exception_decl_by_name(exc_name)
         check_isinstance(exc_decl, gcc.VarDecl)
         r_exception = self.state.var_region(exc_decl)
         v_exception = PointerToRegion(get_PyObjectPtr(), loc, r_exception)
@@ -455,7 +456,7 @@ class CPython(Facet):
         # the C identifier of the global PyTypeObject for the type
 
         # Get the gcc.VarDecl for the global PyTypeObject
-        typeobjdecl = gccutils.get_global_vardecl_by_name(typeobjname)
+        typeobjdecl = compat.get_typeobject_decl_by_name(typeobjname)
         check_isinstance(typeobjdecl, gcc.VarDecl)
 
         typeobjregion = self.state.var_region(typeobjdecl)
