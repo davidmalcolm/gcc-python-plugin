@@ -75,6 +75,9 @@ class BuiltModule:
                        '-I' + sc.get_python_inc(plat_specific=True)]
         self.args += sc.get_config_var('CFLAGS').split()
         self.args += ['-Wall',  '-Werror'] # during testing
+        # on some builds of Python, CFLAGS does not contain -fPIC, but it
+        # appears to still be necessary:
+        self.args += ['-fPIC']
         self.args += ['-shared'] # not sure why this is necessary
         if extra_cflags:
             self.args += extra_cflags
