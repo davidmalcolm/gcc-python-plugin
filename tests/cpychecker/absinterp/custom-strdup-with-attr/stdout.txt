@@ -2,7 +2,9 @@ Trace 0:
   Transitions:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as non-NULL'
     'taking False path'
-    'when taking False path'
+    'when taking True path'
+    'when considering value == (const char)0 from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:53'
+    'taking False path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup-with-attr/input.c', line=48), region=Region('heap-region-0'))
@@ -13,6 +15,20 @@ Trace 0:
     (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:42
 
 Trace 1:
+  Transitions:
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as non-NULL'
+    'taking False path'
+    'when taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup-with-attr/input.c', line=48), region=Region('heap-region-0'))
+    str(): (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:48
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:42
+
+Trace 2:
   Transitions:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup-with-attr/input.c:46 as NULL'
     'taking True path'

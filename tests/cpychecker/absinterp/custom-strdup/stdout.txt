@@ -3,6 +3,8 @@ Trace 0:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
     'taking False path'
     'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as non-NULL'
+    'when considering range: -128 <= value <= -1'
+    'taking True path'
     'when considering value == (const char)0 from tests/cpychecker/absinterp/custom-strdup/input.c:50'
     'taking False path'
     'returning'
@@ -18,13 +20,47 @@ Trace 1:
   Transitions:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
     'taking False path'
+    'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as non-NULL'
+    'when considering value == (const char)0 from tests/cpychecker/absinterp/custom-strdup/input.c:50'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=45), region=Region('heap-region-0'))
+    str(): (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39
+
+Trace 2:
+  Transitions:
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
+    'taking False path'
+    'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as non-NULL'
+    'when considering range: 1 <= value <= 127'
+    'taking True path'
+    'when considering value == (const char)0 from tests/cpychecker/absinterp/custom-strdup/input.c:50'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/absinterp/custom-strdup/input.c', line=45), region=Region('heap-region-0'))
+    str(): (void *)&Region('heap-region-0') from tests/cpychecker/absinterp/custom-strdup/input.c:45
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39
+
+Trace 3:
+  Transitions:
+    'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL'
+    'taking False path'
     'when treating unknown const char * from tests/cpychecker/absinterp/custom-strdup/input.c:38 as NULL'
   error: NullPtrDereference()
   error: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/custom-strdup/input.c:39
 
-Trace 2:
+Trace 4:
   Transitions:
     'when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as NULL'
     'taking True path'

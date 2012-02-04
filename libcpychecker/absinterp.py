@@ -2596,15 +2596,17 @@ class Trace(object):
         self.transitions = []
         self.err = None
 
-        # A list of (src Location, dest Location) pairs
+        # A list of (src gcc.BasicBlock, dest gcc.BasicBlock) pairs
+        # where the basic blocks are different
         self.paths_taken = []
 
     def add(self, transition):
         check_isinstance(transition, Transition)
         self.states.append(transition.dest)
         self.transitions.append(transition)
-        self.paths_taken.append( (transition.src.loc,
-                                  transition.dest.loc) )
+        if transition.src.loc.bb != transition.dest.loc.bb:
+            self.paths_taken.append( (transition.src.loc.bb,
+                                      transition.dest.loc.bb) )
         return self
 
     def add_error(self, err):
@@ -2656,8 +2658,11 @@ class Trace(object):
                        'src, loc: %s' % ((endtransition.src.loc, endtransition.dest.loc),))
 
         # Is this a path we've followed before?
-        if (endtransition.src.loc, endtransition.dest.loc) in self.paths_taken[0:-1]:
-            return True
+        src_bb = endtransition.src.loc.bb
+        dest_bb = endtransition.dest.loc.bb
+        if src_bb != dest_bb:
+            if (src_bb, dest_bb) in self.paths_taken[0:-1]:
+                return True
 
     def get_all_var_region_pairs(self):
         """
