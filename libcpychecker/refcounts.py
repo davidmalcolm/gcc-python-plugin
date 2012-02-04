@@ -668,6 +668,27 @@ class CPython(Facet):
                     if v_ob_type.region.vardecl.name == vardecl_name:
                         return True
 
+    def iter_python_refcounts(self):
+        # yield a sequence of (Region, AbstractValue) pairs:
+        #  [...., (r_obj, v_ob_refcnt), ....]
+        # corresponding to all of the PyObject* memory regions that we know
+        # about, and their ob_refcnt values
+        for var in self.state.region_for_var:
+            check_isinstance(self.state.region_for_var[var], Region)
+            r_obj = self.state.region_for_var[var]
+
+            log('considering ob_refcnt of %r', r_obj)
+            check_isinstance(r_obj, Region)
+
+            # Consider those for which we know something about an "ob_refcnt"
+            # field:
+            if 'ob_refcnt' not in r_obj.fields:
+                continue
+
+            v_ob_refcnt = self.state.get_value_of_field_by_region(r_obj,
+                                                                  'ob_refcnt')
+            yield (r_obj, v_ob_refcnt)
+
     # Treat calls to various function prefixed with __cpychecker as special,
     # to help with debugging, and when writing selftests:
 
@@ -2999,6 +3020,137 @@ def function_is_tp_iternext_callback(fun):
         if fun.decl == tp_iternext:
             return True
 
+# Helper function for when ob_refcnt is wrong:
+def emit_refcount_warning(msg,
+                          exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                          trace, endstate, fun, rep):
+    w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
+    w.add_note(endstate.get_gcc_loc(fun),
+               ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
+                % exp_refcnt))
+    if exp_refcnt > 0:
+        w.add_note(endstate.get_gcc_loc(fun),
+                   ('due to object being referenced by: %s'
+                    % ', '.join(exp_refs)))
+    w.add_note(endstate.get_gcc_loc(fun),
+               ('but final ob_refcnt is N + %i'
+                % ob_refcnt.relvalue))
+    # For dynamically-allocated objects, indicate where they
+    # were allocated:
+    if isinstance(region, RegionOnHeap):
+        alloc_loc = region.alloc_stmt.loc
+        if alloc_loc:
+            w.add_note(region.alloc_stmt.loc,
+                         ('%s allocated at: %s'
+                          % (region.name,
+                             get_src_for_loc(alloc_loc))))
+
+    # Summarize the control flow we followed through the function:
+    if 1:
+        annotator = RefcountAnnotator(region, desc)
+    else:
+        # Debug help:
+        from libcpychecker.diagnostics import TestAnnotator
+        annotator = TestAnnotator()
+    w.add_trace(trace, annotator)
+
+    if 0:
+        # Handy for debugging:
+        w.add_note(endstate.get_gcc_loc(fun),
+                   'this was trace %i' % i)
+    return w
+
+
+# Inner loop of check_refcounts() below, split out to keep the
+# function a more manageable length.
+# Performs refcount-checking on a single object within one end State
+# of a Trace
+def check_refcount_for_one_object(region, ob_refcnt, return_value,
+                                  trace, endstate, fun, rep):
+
+    # If it's the return value, it should have a net refcnt delta of
+    # 1; all other PyObject should have a net delta of 0:
+    if isinstance(return_value, PointerToRegion) and region == return_value.region:
+        is_return_value = True
+        desc = 'return value'
+        if fun.decl.name in fnnames_returning_borrowed_refs:
+            # ...then this function has been marked as returning a
+            # borrowed reference, rather than a new one:
+            exp_refs = []
+        else:
+            exp_refs = ['return value']
+    else:
+        is_return_value = False
+        # Try to get a descriptive name for the region:
+        desc = trace.get_description_for_region(region)
+        # print('desc: %r' % desc)
+        exp_refs = []
+
+    # The reference count should also reflect any non-stack pointers
+    # that point at this object:
+    exp_refs += [ref.name
+                 for ref in endstate.get_persistent_refs_for_region(region)]
+    exp_refcnt = len(exp_refs)
+    log('exp_refs: %r', exp_refs)
+
+    if fun.decl.name in stolen_refs_by_fnname:
+        # Then this function is marked as stealing references to one or
+        # more of its arguments:
+        for argindex in stolen_refs_by_fnname[fun.decl.name]:
+            # Get argument's value (in initial state of trace):
+            parm = fun.decl.arguments[argindex - 1]
+            v_parm = trace.states[0].eval_rvalue(parm, None)
+            if isinstance(v_parm, PointerToRegion):
+                if region == v_parm.region:
+                    exp_refcnt -= 1
+
+    # Here's where we verify the refcount:
+    if isinstance(ob_refcnt, RefcountValue):
+        if ob_refcnt.relvalue > exp_refcnt:
+            # Refcount is too high:
+            w = emit_refcount_warning('ob_refcnt of %s is %i too high'
+                                      % (desc,
+                                         ob_refcnt.relvalue - exp_refcnt),
+                                      exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                                      trace, endstate, fun, rep)
+        elif ob_refcnt.relvalue < exp_refcnt:
+            # Refcount is too low:
+            w = emit_refcount_warning('ob_refcnt of %s is %i too low'
+                                      % (desc,
+                                         exp_refcnt - ob_refcnt.relvalue),
+                                      exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                                      trace, endstate, fun, rep)
+            # Special-case hint for when None has too low a refcount:
+            if is_return_value:
+                if isinstance(return_value.region, RegionForGlobal):
+                    if return_value.region.vardecl.name == '_Py_NoneStruct':
+                        w.add_note(endstate.get_gcc_loc(fun),
+                                   'consider using "Py_RETURN_NONE;"')
+
+# Detect failure to set exceptions when returning NULL:
+def warn_about_NULL_without_exception(return_value,
+                                      trace, endstate, fun, rep):
+    if not trace.err:
+        if (isinstance(return_value, ConcreteValue)
+            and return_value.value == 0
+            and str(return_value.gcctype)=='struct PyObject *'):
+
+            if (isinstance(endstate.cpython.exception_rvalue,
+                          ConcreteValue)
+                and endstate.cpython.exception_rvalue.value == 0):
+
+                # Don't emit the error for functions that are a
+                # PyTypeObject's tp_iternext callback, as it's
+                # legitimate to return NULL from them:
+                # http://docs.python.org/c-api/typeobj.html#tp_iternext
+                if function_is_tp_iternext_callback(fun):
+                    return
+
+                w = rep.make_warning(fun,
+                                     endstate.get_gcc_loc(fun),
+                                     'returning (PyObject*)NULL without setting an exception')
+                w.add_trace(trace, ExceptionStateAnnotator())
+
 def check_refcounts(fun, dump_traces=False, show_traces=False,
                     show_possible_null_derefs=False,
                     show_timings=False):
@@ -3130,116 +3282,11 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # going away
             continue
 
-        # Consider all regions of memory we know about:
-        for k in endstate.region_for_var:
-            if not isinstance(endstate.region_for_var[k], Region):
-                continue
-            region = endstate.region_for_var[k]
-
-            log('considering ob_refcnt of %r', region)
-            check_isinstance(region, Region)
-
-            # Consider those for which we know something about an "ob_refcnt"
-            # field:
-            if 'ob_refcnt' not in region.fields:
-                continue
-
-            ob_refcnt = endstate.get_value_of_field_by_region(region,
-                                                              'ob_refcnt')
-            log('ob_refcnt: %r', ob_refcnt)
-
-            # If it's the return value, it should have a net refcnt delta of
-            # 1; all other PyObject should have a net delta of 0:
-            if isinstance(return_value, PointerToRegion) and region == return_value.region:
-                is_return_value = True
-                desc = 'return value'
-                if fun.decl.name in fnnames_returning_borrowed_refs:
-                    # ...then this function has been marked as returning a
-                    # borrowed reference, rather than a new one:
-                    exp_refs = []
-                else:
-                    exp_refs = ['return value']
-            else:
-                is_return_value = False
-                # Try to get a descriptive name for the region:
-                desc = trace.get_description_for_region(region)
-                # print('desc: %r' % desc)
-                exp_refs = []
-
-            # The reference count should also reflect any non-stack pointers
-            # that point at this object:
-            exp_refs += [ref.name
-                         for ref in endstate.get_persistent_refs_for_region(region)]
-            exp_refcnt = len(exp_refs)
-            log('exp_refs: %r', exp_refs)
-
-            if fun.decl.name in stolen_refs_by_fnname:
-                # Then this function is marked as stealing references to one or
-                # more of its arguments:
-                for argindex in stolen_refs_by_fnname[fun.decl.name]:
-                    # Get argument's value (in initial state of trace):
-                    parm = fun.decl.arguments[argindex - 1]
-                    v_parm = trace.states[0].eval_rvalue(parm, None)
-                    if isinstance(v_parm, PointerToRegion):
-                        if region == v_parm.region:
-                            exp_refcnt -= 1
-
-            # Helper function for when ob_refcnt is wrong:
-            def emit_refcount_warning(msg):
-                w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
-                w.add_note(endstate.get_gcc_loc(fun),
-                           ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
-                            % exp_refcnt))
-                if exp_refcnt > 0:
-                    w.add_note(endstate.get_gcc_loc(fun),
-                               ('due to object being referenced by: %s'
-                                % ', '.join(exp_refs)))
-                w.add_note(endstate.get_gcc_loc(fun),
-                           ('but final ob_refcnt is N + %i'
-                            % ob_refcnt.relvalue))
-                # For dynamically-allocated objects, indicate where they
-                # were allocated:
-                if isinstance(region, RegionOnHeap):
-                    alloc_loc = region.alloc_stmt.loc
-                    if alloc_loc:
-                        w.add_note(region.alloc_stmt.loc,
-                                     ('%s allocated at: %s'
-                                      % (region.name,
-                                         get_src_for_loc(alloc_loc))))
-
-                # Summarize the control flow we followed through the function:
-                if 1:
-                    annotator = RefcountAnnotator(region, desc)
-                else:
-                    # Debug help:
-                    from libcpychecker.diagnostics import TestAnnotator
-                    annotator = TestAnnotator()
-                w.add_trace(trace, annotator)
-
-                if 0:
-                    # Handy for debugging:
-                    w.add_note(endstate.get_gcc_loc(fun),
-                               'this was trace %i' % i)
-                return w
-
-            # Here's where we verify the refcount:
-            if isinstance(ob_refcnt, RefcountValue):
-                if ob_refcnt.relvalue > exp_refcnt:
-                    # Refcount is too high:
-                    w = emit_refcount_warning('ob_refcnt of %s is %i too high'
-                                              % (desc,
-                                                 ob_refcnt.relvalue - exp_refcnt))
-                elif ob_refcnt.relvalue < exp_refcnt:
-                    # Refcount is too low:
-                    w = emit_refcount_warning('ob_refcnt of %s is %i too low'
-                                              % (desc,
-                                                 exp_refcnt - ob_refcnt.relvalue))
-                    # Special-case hint for when None has too low a refcount:
-                    if is_return_value:
-                        if isinstance(return_value.region, RegionForGlobal):
-                            if return_value.region.vardecl.name == '_Py_NoneStruct':
-                                w.add_note(endstate.get_gcc_loc(fun),
-                                           'consider using "Py_RETURN_NONE;"')
+        # Check the refcount of all Python objects we know about:
+        if hasattr(endstate, 'cpython'):
+            for region, ob_refcnt in endstate.cpython.iter_python_refcounts():
+                check_refcount_for_one_object(region, ob_refcnt, return_value,
+                                              trace, endstate, fun, rep)
 
         # Detect returning a deallocated object:
         if return_value:
@@ -3253,29 +3300,8 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     w.add_note(rvalue.loc,
                                'memory deallocated here')
 
-        # Detect failure to set exceptions when returning NULL:
-        def warn_about_NULL_without_exception():
-            if not trace.err:
-                if (isinstance(return_value, ConcreteValue)
-                    and return_value.value == 0
-                    and str(return_value.gcctype)=='struct PyObject *'):
-
-                    if (isinstance(endstate.cpython.exception_rvalue,
-                                  ConcreteValue)
-                        and endstate.cpython.exception_rvalue.value == 0):
-
-                        # Don't emit the error for functions that are a
-                        # PyTypeObject's tp_iternext callback, as it's
-                        # legitimate to return NULL from them:
-                        # http://docs.python.org/c-api/typeobj.html#tp_iternext
-                        if function_is_tp_iternext_callback(fun):
-                            return
-
-                        w = rep.make_warning(fun,
-                                             endstate.get_gcc_loc(fun),
-                                             'returning (PyObject*)NULL without setting an exception')
-                        w.add_trace(trace, ExceptionStateAnnotator())
-        warn_about_NULL_without_exception()
+        warn_about_NULL_without_exception(return_value,
+                                          trace, endstate, fun, rep)
 
     # (all traces analysed)
 
