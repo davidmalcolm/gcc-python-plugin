@@ -3022,7 +3022,7 @@ def function_is_tp_iternext_callback(fun):
 
 # Helper function for when ob_refcnt is wrong:
 def emit_refcount_warning(msg,
-                          exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                          exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
                           trace, endstate, fun, rep):
     w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
     w.add_note(endstate.get_gcc_loc(fun),
@@ -3034,20 +3034,20 @@ def emit_refcount_warning(msg,
                     % ', '.join(exp_refs)))
     w.add_note(endstate.get_gcc_loc(fun),
                ('but final ob_refcnt is N + %i'
-                % ob_refcnt.relvalue))
+                % v_ob_refcnt.relvalue))
     # For dynamically-allocated objects, indicate where they
     # were allocated:
-    if isinstance(region, RegionOnHeap):
-        alloc_loc = region.alloc_stmt.loc
+    if isinstance(r_obj, RegionOnHeap):
+        alloc_loc = r_obj.alloc_stmt.loc
         if alloc_loc:
-            w.add_note(region.alloc_stmt.loc,
+            w.add_note(r_obj.alloc_stmt.loc,
                          ('%s allocated at: %s'
-                          % (region.name,
+                          % (r_obj.name,
                              get_src_for_loc(alloc_loc))))
 
     # Summarize the control flow we followed through the function:
     if 1:
-        annotator = RefcountAnnotator(region, desc)
+        annotator = RefcountAnnotator(r_obj, desc)
     else:
         # Debug help:
         from libcpychecker.diagnostics import TestAnnotator
@@ -3065,12 +3065,12 @@ def emit_refcount_warning(msg,
 # function a more manageable length.
 # Performs refcount-checking on a single object within one end State
 # of a Trace
-def check_refcount_for_one_object(region, ob_refcnt, return_value,
+def check_refcount_for_one_object(r_obj, v_ob_refcnt, v_return,
                                   trace, endstate, fun, rep):
 
     # If it's the return value, it should have a net refcnt delta of
     # 1; all other PyObject should have a net delta of 0:
-    if isinstance(return_value, PointerToRegion) and region == return_value.region:
+    if isinstance(v_return, PointerToRegion) and r_obj == v_return.region:
         is_return_value = True
         desc = 'return value'
         if fun.decl.name in fnnames_returning_borrowed_refs:
@@ -3082,14 +3082,14 @@ def check_refcount_for_one_object(region, ob_refcnt, return_value,
     else:
         is_return_value = False
         # Try to get a descriptive name for the region:
-        desc = trace.get_description_for_region(region)
+        desc = trace.get_description_for_region(r_obj)
         # print('desc: %r' % desc)
         exp_refs = []
 
     # The reference count should also reflect any non-stack pointers
     # that point at this object:
     exp_refs += [ref.name
-                 for ref in endstate.get_persistent_refs_for_region(region)]
+                 for ref in endstate.get_persistent_refs_for_region(r_obj)]
     exp_refcnt = len(exp_refs)
     log('exp_refs: %r', exp_refs)
 
@@ -3101,39 +3101,39 @@ def check_refcount_for_one_object(region, ob_refcnt, return_value,
             parm = fun.decl.arguments[argindex - 1]
             v_parm = trace.states[0].eval_rvalue(parm, None)
             if isinstance(v_parm, PointerToRegion):
-                if region == v_parm.region:
+                if r_obj == v_parm.region:
                     exp_refcnt -= 1
 
     # Here's where we verify the refcount:
-    if isinstance(ob_refcnt, RefcountValue):
-        if ob_refcnt.relvalue > exp_refcnt:
+    if isinstance(v_ob_refcnt, RefcountValue):
+        if v_ob_refcnt.relvalue > exp_refcnt:
             # Refcount is too high:
             w = emit_refcount_warning('ob_refcnt of %s is %i too high'
                                       % (desc,
-                                         ob_refcnt.relvalue - exp_refcnt),
-                                      exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                                         v_ob_refcnt.relvalue - exp_refcnt),
+                                      exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
                                       trace, endstate, fun, rep)
-        elif ob_refcnt.relvalue < exp_refcnt:
+        elif v_ob_refcnt.relvalue < exp_refcnt:
             # Refcount is too low:
             w = emit_refcount_warning('ob_refcnt of %s is %i too low'
                                       % (desc,
-                                         exp_refcnt - ob_refcnt.relvalue),
-                                      exp_refcnt, exp_refs, ob_refcnt, region, desc,
+                                         exp_refcnt - v_ob_refcnt.relvalue),
+                                      exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
                                       trace, endstate, fun, rep)
             # Special-case hint for when None has too low a refcount:
             if is_return_value:
-                if isinstance(return_value.region, RegionForGlobal):
-                    if return_value.region.vardecl.name == '_Py_NoneStruct':
+                if isinstance(v_return.region, RegionForGlobal):
+                    if v_return.region.vardecl.name == '_Py_NoneStruct':
                         w.add_note(endstate.get_gcc_loc(fun),
                                    'consider using "Py_RETURN_NONE;"')
 
 # Detect failure to set exceptions when returning NULL:
-def warn_about_NULL_without_exception(return_value,
+def warn_about_NULL_without_exception(v_return,
                                       trace, endstate, fun, rep):
     if not trace.err:
-        if (isinstance(return_value, ConcreteValue)
-            and return_value.value == 0
-            and str(return_value.gcctype)=='struct PyObject *'):
+        if (isinstance(v_return, ConcreteValue)
+            and v_return.value == 0
+            and str(v_return.gcctype)=='struct PyObject *'):
 
             if (isinstance(endstate.cpython.exception_rvalue,
                           ConcreteValue)
@@ -3262,7 +3262,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
-        return_value = trace.return_value()
+        v_return = trace.return_value()
         log('trace.return_value(): %s', trace.return_value())
 
         # Ideally, we should "own" exactly one reference, and it should be
@@ -3272,7 +3272,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         # Locate all PyObject that we touched
         endstate = trace.states[-1]
         endstate.log(log)
-        log('return_value: %r', return_value)
+        log('return_value: %r', v_return)
         log('endstate.region_for_var: %r', endstate.region_for_var)
         log('endstate.value_for_region: %r', endstate.value_for_region)
 
@@ -3284,14 +3284,14 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
         # Check the refcount of all Python objects we know about:
         if hasattr(endstate, 'cpython'):
-            for region, ob_refcnt in endstate.cpython.iter_python_refcounts():
-                check_refcount_for_one_object(region, ob_refcnt, return_value,
+            for r_obj, v_ob_refcnt in endstate.cpython.iter_python_refcounts():
+                check_refcount_for_one_object(r_obj, v_ob_refcnt, v_return,
                                               trace, endstate, fun, rep)
 
         # Detect returning a deallocated object:
-        if return_value:
-            if isinstance(return_value, PointerToRegion):
-                rvalue = endstate.value_for_region.get(return_value.region, None)
+        if v_return:
+            if isinstance(v_return, PointerToRegion):
+                rvalue = endstate.value_for_region.get(v_return.region, None)
                 if isinstance(rvalue, DeallocatedMemory):
                     w = rep.make_warning(fun,
                                          endstate.get_gcc_loc(fun),
@@ -3300,7 +3300,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                     w.add_note(rvalue.loc,
                                'memory deallocated here')
 
-        warn_about_NULL_without_exception(return_value,
+        warn_about_NULL_without_exception(v_return,
                                           trace, endstate, fun, rep)
 
     # (all traces analysed)
