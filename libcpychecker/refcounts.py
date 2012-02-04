@@ -225,17 +225,8 @@ class GenericTpDealloc(AbstractValue):
         s_new = state.copy()
         s_new.loc = state.loc.next_loc()
 
-        # Mark the region as deallocated
-        # Since regions are shared with other states, we have to set this up
-        # for this state by assigning it with a special "DeallocatedMemory"
-        # value
-        # Clear the value for any fields within the region:
-        for k, v in region.fields.items():
-            if v in s_new.value_for_region:
-                del s_new.value_for_region[v]
-        # Set the default value for the whole region to be "DeallocatedMemory"
-        s_new.region_for_var[region] = region
-        s_new.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
+        # Mark the region as deallocated:
+        s_new.deallocate_region(stmt, region)
 
         return [Transition(state, s_new, desc)]
 

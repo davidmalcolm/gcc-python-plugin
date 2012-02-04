@@ -1052,6 +1052,20 @@ class ReadFromDeallocatedMemory(PredictedError):
         return ('reading from deallocated memory at %s: %s'
                 % (self.stmt.loc, self.value))
 
+class PassingPointerToDeallocatedMemory(PredictedError):
+    def __init__(self, argidx, fnname, stmt, value):
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(value, DeallocatedMemory)
+        self.argidx = argidx
+        self.fnname = fnname
+        self.stmt = stmt
+        self.value = value
+
+    def __str__(self):
+        return ('passing pointer to deallocated memory as argument %i of %s at %s: %s'
+                % (self.argidx + 1, self.fnname, self.stmt.loc, self.value))
+
+
 def describe_stmt(stmt):
     if isinstance(stmt, gcc.GimpleCall):
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
@@ -1973,6 +1987,19 @@ class State(object):
                          [("when treating %s as non-NULL" % ptr_rvalue),
                           ("when treating %s as NULL" % ptr_rvalue)])
 
+    def deallocate_region(self, stmt, region):
+        # Mark the region as deallocated
+        # Since regions are shared with other states, we have to set this up
+        # for this state by assigning it with a special "DeallocatedMemory"
+        # value
+        # Clear the value for any fields within the region:
+        for k, v in region.fields.items():
+            if v in self.value_for_region:
+                del self.value_for_region[v]
+        # Set the default value for the whole region to be "DeallocatedMemory"
+        self.region_for_var[region] = region
+        self.value_for_region[region] = DeallocatedMemory(None, stmt.loc)
+
     def get_transitions(self):
         # Return a list of Transition instances, based on input State
         stmt = self.loc.get_stmt()
@@ -2126,12 +2153,16 @@ class State(object):
         # Evaluate the arguments:
         args = self.eval_stmt_args(stmt)
 
-        # Check for uninitialized data:
+        # Check for uninitialized and deallocated data:
         for i, arg in enumerate(args):
             if isinstance(arg, UninitializedData):
                 raise UsageOfUninitializedData(self, stmt.args[i],
                                                arg,
                                                'passing uninitialized data (%s) as argument %i to function' % (stmt.args[i], i + 1))
+            if isinstance(arg, PointerToRegion):
+                rvalue = self.value_for_region.get(arg.region, None)
+                if isinstance(rvalue, DeallocatedMemory):
+                    raise PassingPointerToDeallocatedMemory(i, 'function', stmt, rvalue)
 
         if isinstance(stmt.fn.operand, gcc.FunctionDecl):
             log('dir(stmt.fn.operand): %s', dir(stmt.fn.operand))
