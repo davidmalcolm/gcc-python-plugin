@@ -1,0 +1,147 @@
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+.. covers up to 4642a564e03c9e2c8114bca206205ad9c8fbc308
+
+0.9
+~~~
+
+Changes to the GCC Python Plugin
+================================
+
+The plugin now works with GCC 4.7 prereleases (ticket `#21 <https://fedorahosted.org/gcc-python-plugin/ticket/21>`_).
+
+The plugin is now integrated with GCC's garbage collector: Python wrapper
+objects keep their underlying GCC objects alive when GCC's garbage collector
+runs, preventing segfaults that could occur if the underlying objects were
+swept away from under us
+(ticket `#1 <https://fedorahosted.org/gcc-python-plugin/ticket/1>`_).
+
+It's now possible to attach Python callbacks to more GCC events:
+:py:data:`gcc.PLUGIN_FINISH`, :py:data:`gcc.PLUGIN_GGC_START`,
+:py:data:`gcc.PLUGIN_GGC_MARKING`, :py:data:`gcc.PLUGIN_GGC_FINISH`,
+:py:data:`gcc.PLUGIN_FINISH_DECL` (gcc 4.7)
+
+:py:class:`gcc.ArrayType` has gained a "range" attribute, allowing scripts
+to detect out-of-bounds conditions in array-handling.
+
+A number of memory leaks were fixed: these were found by
+`running the plugin on itself
+<http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=4642a564e03c9e2c8114bca206205ad9c8fbc308>`_.
+
+Various documentation improvements
+(ticket `#6 <https://fedorahosted.org/gcc-python-plugin/ticket/6>`_,
+ticket `#31 <https://fedorahosted.org/gcc-python-plugin/ticket/31>`_).
+
+
+Improvements to :doc:`gcc-with-cpychecker </cpychecker>`
+========================================================
+
+The :doc:`gcc-with-cpychecker </cpychecker>` tool has received some deep
+internal improvements in this release.
+
+The logic for analyzing the outcome of comparisons has been rewritten for this
+release, fixing some significant bugs that could lead to the analyzer
+incorrectly deciding whether or not a block of code was reachable.
+
+Similarly, the logic for detecting loops has been rewritten, elimininating a
+bug in which the checker would prematurely stop analyzing loops with
+complicated termination conditions, and not analyze the body of the loop.
+
+Doing so extended the reach of the checker, and enabled it to find the memory
+leaks referred to above.
+
+In addition, the checker now emits more detailed information on the ranges of
+possible values it's considering when a comparison occurs against an unknown
+value::
+
+   input.c: In function 'test':
+   input.c:41:5: warning: comparison against uninitialized data (item) at    input.c:41 [enabled by default]
+   input.c:34:12: note: when PyList_New() succeeds at:     result = PyList_New(len);
+   input.c:35:8: note: taking False path at:     if (!result) {
+   input.c:39:12: note: reaching:     for (i = 0; i < len; i++) {
+   input.c:39:5: note: when considering range: 1 <= value <= 0x7fffffff at:     for (i = 0; i < len; i++) {
+   input.c:39:5: note: taking True path at:     for (i = 0; i < len; i++) {
+   input.c:41:5: note: reaching: 	if (!item) {
+
+The checker should do a better job of identifying PyObject subclasses. 
+Previously it was treating any struct beginning with "ob_refcnt" and "ob_type"
+as a Python object (with some tweaks for python 3 and debug builds).  It now
+also covers structs that begin with a field that's a PyObject (or subclass),
+since these are likely to also be PyObject subclasses.
+
+
+Usage of deallocated memory
+---------------------------
+Previously, the checker would warn about paths through a function that could
+return a pointer to deallocated memory, or which tried to read through such
+a pointer.  With this release, the checker will now also warn about paths
+through a function in which a pointer to deallocated memory is passed to a
+function.
+
+For example, given this buggy code:
+
+.. code-block:: c
+
+   extern void some_function(PyObject *);
+
+   void
+   test(PyObject *self, PyObject *args)
+   {
+       /* Create an object: */
+       PyObject *tmp = PyLong_FromLong(0x1000);
+
+       if (!tmp) {
+           return;
+       }
+
+       /*
+         Now decref the object.  Depending on what other references are owned
+         on the object, it can reach a refcount of zero, and thus be deallocated:
+       */
+       Py_DECREF(tmp);
+
+       /* BUG: the object being returned may have been deallocated */
+       some_function(tmp);
+   }
+
+the checker will emit this warning::
+
+   input.c: In function 'test':
+   input.c:45: warning: passing pointer to deallocated memory as argument 1 of function at input.c:45: memory deallocated at input.c:42 [enabled by default]
+   input.c:32: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
+   input.c:34: note: taking False path at:     if (!tmp) {
+   input.c:42: note: reaching:     Py_DECREF(tmp);
+   input.c:42: note: when taking False path at:     Py_DECREF(tmp);
+   input.c:42: note: reaching:     Py_DECREF(tmp);
+   input.c:42: note: calling tp_dealloc on PyLongObject allocated at input.c:32 at:     Py_DECREF(tmp);
+   input.c:45: note: reaching:     foo(tmp);
+   input.c:30: note: graphical error report for function 'passing_dead_object_to_function' written out to 'input.c.test-refcount-errors.html'
+
+
+Coverage of the CPython API
+---------------------------
+
+This release adds heuristics for the behavior of the following CPython API
+entrypoints:
+
+   * PyString_Concat
+   * PyString_ConcatAndDel
+
+along with various other bugfixes and documentation improvements.
+
+..

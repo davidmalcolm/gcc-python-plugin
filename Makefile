@@ -231,8 +231,19 @@ tarball:
 #
 #     * add release notes to docs
 #
+#  Test the candidate tarball via a scratch SRPM build locally (this
+#  achieves test coverage against python 2 and 3, for both debug and
+#  optimized python, on one arch, against the locally-installed version of
+#  gcc):
+#
+#     $ make srpm VERSION=fixme
+#
+#     $ make rpm VERSION=fixme
+#
 #  Test the candidate tarball via a scratch SRPM build in Koji (this
-#  achieves test coverage against python 2 and 3, on both i686 and x86_64)
+#  achieves test coverage against python 2 and 3, for both debug and
+#  optimized python, on both i686 and x86_64, against another version of
+#  gcc):
 #
 #     $ make koji VERSION=fixme
 #
@@ -256,6 +267,8 @@ tarball:
 #      To: gcc@gcc.gnu.org, gcc-python-plugin@lists.fedorahosted.org, python-announce-list@python.org
 #      Subject: ANN: gcc-python-plugin $(VERSION)
 #      (etc)
+#
+#  * build it into Fedora
 
 # Utility target, for building test rpms:
 srpm:
