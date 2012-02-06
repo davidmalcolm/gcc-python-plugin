@@ -390,6 +390,8 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
 	    Py_DECREF(obj_index);
 	    goto error;
 	}
+        Py_DECREF(obj_value);
+        Py_DECREF(obj_index);
 
 	if (-1 == PyList_SetItem(result, cnt, obj_pair)) {
 	    Py_DECREF(obj_pair);

@@ -124,6 +124,8 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
 
     closure = gcc_python_closure_new_generic(callback, extraargs, kwargs);
     if (!closure) {
+        Py_DECREF(callback);
+        Py_DECREF(extraargs);
         return NULL;
     }
 

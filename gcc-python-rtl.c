@@ -81,6 +81,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
                     Py_DECREF(list);
                     return NULL;
                 }
+                Py_DECREF(item);
             }
             return list;
         }

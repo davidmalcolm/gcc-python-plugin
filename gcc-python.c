@@ -140,6 +140,7 @@ gcc_python_get_option_list(PyObject *self, PyObject *args)
 	    Py_DECREF(opt_obj);
 	    goto error;
 	}
+        Py_DECREF(opt_obj);
     }
 
     return result;
@@ -171,6 +172,7 @@ gcc_python_get_option_dict(PyObject *self, PyObject *args)
 	    Py_DECREF(opt_obj);
 	    goto error;
 	}
+        Py_DECREF(opt_obj);
     }
 
     return dict;
@@ -202,6 +204,7 @@ gcc_python_get_parameters(PyObject *self, PyObject *args)
 	    Py_DECREF(param_obj);
 	    goto error;
 	}
+        Py_DECREF(param_obj);
     }
 
     return dict;
