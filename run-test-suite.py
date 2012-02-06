@@ -113,6 +113,7 @@ class TestStream:
             # (e.g. from "D.12021->fieldA" to "D.nnnnn->fieldA"):
             line = re.sub('D.([0-9]+)', 'D.nnnnn', line)
             line = re.sub('VarDecl\(([0-9]+)\)', 'VarDecl(nnnn)', line)
+            line = re.sub('ParmDecl\(([0-9]+)\)', 'ParmDecl(nnnn)', line)
             line = re.sub('LabelDecl\(([0-9]+)\)', 'LabelDecl(nnnn)', line)
 
             # Remove exact numbers from types
@@ -146,7 +147,9 @@ class TestStream:
             # Avoid further 32-bit vs 64-bit differences due to int vs long
             # overflow:
             line = re.sub('0x7fffffffL', '0x7fffffff', line)
+            line = re.sub('0x7ffffffeL', '0x7ffffffe', line)
             line = re.sub('0xffffffffL', '0xffffffff', line)
+            line = re.sub('0xfffffffeL', '0xfffffffe', line)
 
             # GCC 4.7 tracks macro expansions, and this can change the column
             # numbers in error reports:
