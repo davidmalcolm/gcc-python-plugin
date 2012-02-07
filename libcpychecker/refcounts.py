@@ -2588,6 +2588,24 @@ class CPython(Facet):
     ########################################################################
     # PySys_*
     ########################################################################
+    def impl_PySys_GetObject(self, stmt, v_name):
+        fnmeta = FnMeta(name='PySys_GetObject',
+                        declared_in='sysmodule.h',
+                        defined_in='Python/sysmodule.c',
+                        prototype='PyAPI_FUNC(PyObject *) PySys_GetObject(char *);',
+                        docurl='http://docs.python.org/c-api/sys.html#PySys_GetObject')
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_name,
+                          why='%s() invokes PyString_FromString()' % fnmeta.name)
+
+        s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
+        t_notfound = self.state.mktrans_assignment(stmt.lhs,
+                                             make_null_pyobject_ptr(stmt),
+                                             '%s does not find string' % fnmeta.name)
+        return [self.state.mktrans_from_fncall_state(stmt, s_success,
+                                                     'succeeds', True),
+                t_notfound]
+
     def impl_PySys_SetObject(self, stmt, v_name, v_value):
         fnmeta = FnMeta(name='PySys_SetObject',
                         declared_in='sysmodule.h',
