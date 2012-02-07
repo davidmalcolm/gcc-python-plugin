@@ -1,0 +1,5 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/subclass/opaque-struct/input.c:29

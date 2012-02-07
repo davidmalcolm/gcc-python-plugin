@@ -67,6 +67,11 @@ def type_is_pyobjptr_subclass(t):
 
     fields = t.dereference.fields
 
+    if len(fields) == 0:
+        # Opaque struct: there's nothing we can do.
+        # Assume it's *not* a PyObject subclass:
+        return False
+
     # if first field is a PyObject subclass, then we're good:
     if type_is_pyobjptr_subclass(fields[0].type.pointer):
         return True
