@@ -2166,6 +2166,22 @@ class CPython(Facet):
 
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
+    def impl_PyObject_CallObject(self, stmt, v_o, v_args):
+        fnmeta = FnMeta(name='PyObject_CallObject',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_CallObject',
+                        defined_in='Objects/abstract.c',
+                        prototype=('PyAPI_FUNC(PyObject *) PyObject_CallObject(PyObject *callable_object,\n'
+                                   '                                           PyObject *args);'))
+        # internally, is just:
+        #    return PyEval_CallObjectWithKeywords(o, a, NULL);
+
+        # args can be NULL, but the callable obj can't be:
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+                                               why=('%s() looks up func->ob_type (within PyObject_Call'
+                                                    ' within PyEval_CallObjectWithKeywords)'
+                                                    % fnmeta.name))
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
     def impl_PyObject_GetAttrString(self, stmt, v_v, v_name):
         fnmeta = FnMeta(name='PyObject_GetAttrString',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_GetAttrString',

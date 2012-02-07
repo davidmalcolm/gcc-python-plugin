@@ -1,0 +1,41 @@
+Trace 0:
+  Transitions:
+    'when PyObject_CallObject() succeeds'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=29), region=RegionOnHeap('new ref from call to PyObject_CallObject', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=29)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from call to PyObject_CallObject', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=29)) from tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c:29
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=29), region=Region('PyTypeObject for new ref from call to PyObject_CallObject'))
+  Region("region-for-arg-gcc.ParmDecl('callable')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('callable')")
+    str(): Region("region-for-arg-gcc.ParmDecl('callable')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('callable')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c:28
+
+Trace 1:
+  Transitions:
+    'when PyObject_CallObject() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c:29
+  Region("region-for-arg-gcc.ParmDecl('callable')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('callable')")
+    str(): Region("region-for-arg-gcc.ParmDecl('callable')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('callable')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyObject_CallObject/correct/input.c:29
