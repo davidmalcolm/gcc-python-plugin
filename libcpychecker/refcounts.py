@@ -2327,6 +2327,18 @@ class CPython(Facet):
     ########################################################################
     # PySequence_*
     ########################################################################
+    def impl_PySequence_Concat(self, stmt, v_o1, v_o2):
+        fnmeta = FnMeta(name='PySequence_Concat',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_Concat',
+                        declared_in='abstract.h',
+                        prototype='PyAPI_FUNC(PyObject *) PySequence_Concat(PyObject *o1, PyObject *o2);',
+                        defined_in='Objects/abstract.c')
+        # safely handles NULL for either argument via null_error(), with PyExc_SystemError
+
+        return self.make_transitions_for_new_ref_or_fail(stmt,
+                                                         fnmeta,
+                                                         'new ref from %s' % fnmeta.name)
+
     def impl_PySequence_GetItem(self, stmt, v_o, v_i):
         fnmeta = FnMeta(name='PySequence_GetItem',
                         docurl='http://docs.python.org/c-api/sequence.html#PySequence_GetItem',
@@ -2343,6 +2355,18 @@ class CPython(Facet):
         # When it succeeds, it returns a new reference; see e.g.
         # Objects/listobject.c: list_item (the sq_item callback for
         # PyList_Type): it Py_INCREFs the returned item.
+
+        return self.make_transitions_for_new_ref_or_fail(stmt,
+                                                         fnmeta,
+                                                         'new ref from %s' % fnmeta.name)
+
+    def impl_PySequence_GetSlice(self, stmt, v_o, v_i1, v_i2):
+        fnmeta = FnMeta(name='PySequence_GetSlice',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_GetSlice',
+                        declared_in='abstract.h',
+                        prototype='PyAPI_FUNC(PyObject *) PySequence_GetSlice(PyObject *o, Py_ssize_t i1, Py_ssize_t i2);',
+                        defined_in='Objects/abstract.c')
+        # safely handles NULL for the obj via null_error(), with PyExc_SystemError
 
         return self.make_transitions_for_new_ref_or_fail(stmt,
                                                          fnmeta,
