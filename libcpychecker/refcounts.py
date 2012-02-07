@@ -2135,6 +2135,19 @@ class CPython(Facet):
 
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
+    def impl_PyObject_GetAttrString(self, stmt, v_v, v_name):
+        fnmeta = FnMeta(name='PyObject_GetAttrString',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_GetAttrString',
+                        defined_in='Objects/object.c',
+                        prototype='PyObject* PyObject_GetAttrString(PyObject *v, const char *name)')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_v,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
+                                               why=('%s() can call PyString_InternFromString(), '
+                                                    'which calls PyString_FromString(), '
+                                                    'which requires a non-NULL pointer' % fnmeta.name))
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
     def impl_PyObject_GenericGetAttr(self, stmt, v_o, v_name):
         fnmeta = FnMeta(name='PyObject_GenericGetAttr',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_GenericGetAttr',

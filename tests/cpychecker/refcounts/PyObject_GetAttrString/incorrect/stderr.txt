@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c:29:nn: warning: calling PyObject_GetAttrString with NULL as argument 2 (0B) at tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c:29 [enabled by default]
+tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c:29:nn: note: PyObject_GetAttrString() can call PyString_InternFromString(), which calls PyString_FromString(), which requires a non-NULL pointer
+tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect/input.c.test-refcount-errors.html'
