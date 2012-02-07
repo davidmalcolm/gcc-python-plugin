@@ -1154,6 +1154,23 @@ class CPython(Facet):
                 self.mktrans_cobject_deprecation_warning(fnmeta, stmt),
                 t_failure]
 
+    def impl_PyCObject_FromVoidPtrAndDesc(self, stmt, v_cobj, v_desc, v_destr):
+        fnmeta = FnMeta(name='PyCObject_FromVoidPtrAndDesc',
+                        docurl='http://docs.python.org/c-api/cobject.html#PyCObject_FromVoidPtrAndDesc',
+                        declared_in='cobject.h',
+                        prototype=('PyAPI_FUNC(PyObject *) PyCObject_FromVoidPtrAndDesc(\n'
+                                   '        void *cobj, void *desc, void (*destruct)(void*,void*));'),
+                        defined_in='Objects/cobject.c',
+                        notes='Deprecated API')
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyCObject',
+                                                          'PyCObject_Type')
+        return [t_success,
+                # Prioritize the more interesting failure over regular malloc
+                # failure, so that it doesn't disapper in de-duplication:
+                self.mktrans_cobject_deprecation_warning(fnmeta, stmt),
+                t_failure]
+
     ########################################################################
     # PyDict_*
     ########################################################################

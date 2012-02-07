@@ -1,0 +1,15 @@
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: warning: ob_refcnt of '*obj' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: but final ob_refcnt is N + 1
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: PyCObject allocated at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: when PyCObject_FromVoidPtrAndDesc() succeeds at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: when PyTuple_Pack() succeeds at:     return PyTuple_Pack(2, self, obj);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: returning at:     return PyTuple_Pack(2, self, obj);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: found 1 similar trace(s) to this
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: warning: calling PyTuple_Pack with NULL as argument 3 (obj) at tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44 [enabled by default]
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: when PyCObject_FromVoidPtrAndDesc() fails (when py3k deprecation warnings are enabled and configured to raise exceptions) at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: PyTuple_Pack() invokes Py_INCREF() on the pointer, thus accessing (NULL)->ob_refcnt
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: found 1 similar trace(s) to this
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:37:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c.test-refcount-errors.html'
