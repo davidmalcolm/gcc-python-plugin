@@ -1166,6 +1166,12 @@ class CPython(Facet):
                         notes=('Returns a borrowed reference, or NULL if not'
                                ' found.  It does *not* set an exception (for'
                                ' historical reasons)'''))
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_mp,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                        'PyDict_Check'))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                        'PyString_CheckExact'))
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
@@ -1181,6 +1187,14 @@ class CPython(Facet):
                         defined_in='Objects/dictobject.c',
                         notes=('Returns a borrowed ref, or NULL if not found'
                                ' (can also return NULL and set MemoryError)'))
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_dp,
+                          why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                        'PyDict_Check'))
+        # (within PyDict_GetItem)
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_key,
+                          why='%s() invokes PyString_FromString()' % fnmeta.name)
+
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
         t_notfound = self.state.mktrans_assignment(stmt.lhs,
                                              make_null_pyobject_ptr(stmt),
