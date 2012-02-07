@@ -2613,6 +2613,19 @@ class CPython(Facet):
     ########################################################################
     # PyTuple_*
     ########################################################################
+    def impl_PyTuple_GetItem(self, stmt, v_op, v_i):
+        fnmeta = FnMeta(name='PyTuple_GetItem',
+                        docurl='http://docs.python.org/c-api/tuple.html#PyTuple_GetItem',
+                        defined_in='Objects/tupleobject.c')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_op,
+                   why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                 'PyTuple_Check'))
+        # FIXME: for now, simply return a borrowed ref, rather than
+        # trying to track indices and the array:
+        s_success = self.mkstate_borrowed_ref(stmt,
+                                              fnmeta)
+        return [Transition(self.state, s_success, None)]
+
     def impl_PyTuple_New(self, stmt, v_len):
         fnmeta = FnMeta(name='PyTuple_New',
                         docurl='http://docs.python.org/c-api/tuple.html#PyTuple_New')
