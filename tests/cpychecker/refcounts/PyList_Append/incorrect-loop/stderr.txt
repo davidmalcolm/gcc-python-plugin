@@ -1,26 +1,26 @@
 tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c: In function 'test':
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:1: warning: ob_refcnt of '*item' is 1 too high [enabled by default]
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:1: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:1: note: due to object being referenced by: PyListObject.ob_item[0]
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:1: note: but final ob_refcnt is N + 2
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:14: note: new ref from (unknown) item_ctor allocated at:         item = item_ctor();
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:10: note: when PyList_New() succeeds at:     list = PyList_New(0);
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:35:8: note: taking False path at:     if (!list) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:12: note: reaching:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:5: note: when considering range: 1 <= value <= 0x7fffffff at:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:5: note: taking True path at:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:14: note: reaching:         item = item_ctor();
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:14: note: when item_ctor() succeeds at:         item = item_ctor();
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:14: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:42:12: note: taking False path at:         if (!item) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:26: note: reaching:         if (PyList_Append(list, item)) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:26: note: when PyList_Append() succeeds at:         if (PyList_Append(list, item)) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:26: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:26: note: '*item' is now referenced by 1 non-stack value(s): PyListObject.ob_item[0]
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:12: note: taking False path at:         if (PyList_Append(list, item)) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:25: note: reaching:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:5: note: when considering range: 0 <= value <= 1 at:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:5: note: taking False path at:     for (i = 0; i < n; i++) {
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:59:5: note: reaching:     return list;
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:1: note: returning
-tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:30:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c.test-refcount-errors.html'
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:nn: warning: ob_refcnt of '*item' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:nn: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:nn: note: due to object being referenced by: PyListObject.ob_item[0]
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:nn: note: but final ob_refcnt is N + 2
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:nn: note: new ref from (unknown) item_ctor allocated at:         item = item_ctor();
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:34:nn: note: when PyList_New() succeeds at:     list = PyList_New(0);
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:35:nn: note: taking False path at:     if (!list) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: reaching:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: when considering range: 1 <= value <= 0x7fffffff at:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: taking True path at:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:nn: note: reaching:         item = item_ctor();
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:nn: note: when item_ctor() succeeds at:         item = item_ctor();
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:41:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:42:nn: note: taking False path at:         if (!item) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:nn: note: reaching:         if (PyList_Append(list, item)) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:nn: note: when PyList_Append() succeeds at:         if (PyList_Append(list, item)) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:nn: note: ob_refcnt is now refs: 2 + N where N >= 0
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:nn: note: '*item' is now referenced by 1 non-stack value(s): PyListObject.ob_item[0]
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:47:nn: note: taking False path at:         if (PyList_Append(list, item)) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: reaching:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: when considering value == (int)1 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:29 at:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:38:nn: note: taking False path at:     for (i = 0; i < n; i++) {
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:59:nn: note: reaching:     return list;
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:60:nn: note: returning
+tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:30:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c.test-refcount-errors.html'

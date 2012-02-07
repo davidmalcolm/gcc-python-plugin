@@ -1,0 +1,20 @@
+Trace 0:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= 0'
+    'taking False path'
+    'taking False path'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/two-loops/input.c:28
+
+Trace 1:
+  Transitions:
+    'when considering range: 1 <= value <= 0x7fffffff'
+    'taking True path'
+    'when considering value == (int)1 from tests/cpychecker/absinterp/two-loops/input.c:27'
+    'taking False path'
+    'taking True path'
+    'taking False path'
+    'returning'
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/two-loops/input.c:28

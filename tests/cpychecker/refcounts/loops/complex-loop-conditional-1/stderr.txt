@@ -19,7 +19,7 @@ tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:43:nn: note:
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:43:nn: note: '*item' is now referenced by 1 non-stack value(s): PyListObject.ob_item[0]
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:43:nn: note: taking False path at: 	if (-1 == PyList_Append(result, item)) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: reaching:     for (i = 0; i < unknown_unsigned_val; i++) {
-tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: when considering range: 0 <= value <= 1 at:     for (i = 0; i < unknown_unsigned_val; i++) {
+tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: when considering value == (const unsigned int)1 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22 at:     for (i = 0; i < unknown_unsigned_val; i++) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: taking False path at:     for (i = 0; i < unknown_unsigned_val; i++) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:57:nn: note: reaching:     return result;
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:62:nn: note: returning

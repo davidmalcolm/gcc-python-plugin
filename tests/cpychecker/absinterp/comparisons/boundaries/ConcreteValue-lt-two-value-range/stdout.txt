@@ -1,0 +1,53 @@
+Trace 0:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= -1'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c', line=27), value=0)
+    str(): (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:27
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:24
+
+Trace 1:
+  Transitions:
+    'when considering range: 0 <= value <= 0x7fffffff'
+    'taking False path'
+    'when considering range: 0 <= value <= 1'
+    'taking False path'
+    'when considering value == (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c', line=43), value=3)
+    str(): (int)3 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:43
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:24
+
+Trace 2:
+  Transitions:
+    'when considering range: 0 <= value <= 0x7fffffff'
+    'taking False path'
+    'when considering range: 0 <= value <= 1'
+    'taking False path'
+    'when considering value == (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c', line=41), value=2)
+    str(): (int)2 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:41
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:24
+
+Trace 3:
+  Transitions:
+    'when considering range: 0 <= value <= 0x7fffffff'
+    'taking False path'
+    'when considering range: 2 <= value <= 0x7fffffff'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c', line=30), value=1)
+    str(): (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:30
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:24

@@ -33,7 +33,7 @@ Trace 1:
     'taking False path'
     'when PyList_Append() succeeds'
     'taking False path'
-    'when considering range: 0 <= value <= 1'
+    'when considering value == (const unsigned int)1 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22'
     'taking False path'
     'returning'
   Return value:

@@ -97,6 +97,8 @@ if debug_comparisons:
             print('%sreturned: %s' % ('  ' * debug_indent, r))
             return r
         return impl_fn
+    def debug_comparison(msg):
+        print('%s%s' % ('  ' * debug_indent, msg))
 else:
     # empty decorator
     def dump_comparison(f):
@@ -536,17 +538,21 @@ class ConcreteValue(AbstractValue):
                                                   self.value + 1,
                                                   rhs.minvalue,
                                                   rhs.maxvalue])))
+                # Filter them to be within the existing range:
+                raw_boundaries = [v
+                                  for v in raw_boundaries
+                                  if rhs.contains(v)]
                 if debug_comparisons:
-                    print([value_to_str(v) for v in raw_boundaries])
+                    debug_comparison([value_to_str(v) for v in raw_boundaries])
 
                 # Calculate a minimal list of RangeOfComparison instances
                 # Within each one, the comparison against the ConcreteValue has
                 # a consistent result:
                 ranges = []
-                num_boundary_ranges = len(raw_boundaries)-1
+                num_boundary_ranges = len(raw_boundaries)
                 if debug_comparisons:
-                    print('num_boundary_ranges: %r' % num_boundary_ranges)
-                for i in range(len(raw_boundaries)-1):
+                    debug_comparison('num_boundary_ranges: %r' % num_boundary_ranges)
+                for i in range(num_boundary_ranges):
                     minvalue = raw_boundaries[i]
                     if minvalue < rhs.gcctype.min_value.constant:
                         minvalue = rhs.gcctype.min_value.constant
@@ -556,16 +562,16 @@ class ConcreteValue(AbstractValue):
                         maxvalue = raw_boundaries[i + 1] - 1
                     else:
                         # Final range: use full range:
-                        maxvalue = raw_boundaries[i + 1]
+                        maxvalue = rhs.maxvalue
 
                     if maxvalue > rhs.gcctype.max_value.constant:
                         maxvalue = rhs.gcctype.max_value.constant
 
                     if debug_comparisons:
-                        print('%i [%s..%s]'
-                              % (i,
-                                 value_to_str(minvalue),
-                                 value_to_str(maxvalue)))
+                        debug_comparison('%i [%s..%s]'
+                                         % (i,
+                                            value_to_str(minvalue),
+                                            value_to_str(maxvalue)))
 
                     check_isinstance(minvalue, numeric_types)
                     check_isinstance(maxvalue, numeric_types)
@@ -579,11 +585,11 @@ class ConcreteValue(AbstractValue):
                         # against the concrete value:
                         assert self_vs_min == self_vs_max
                         if debug_comparisons:
-                            print('  [%s..%s] %s %s ?: %s'
-                                  % (value_to_str(minvalue),
-                                     value_to_str(maxvalue),
-                                     opname, self.value,
-                                     self_vs_min))
+                            debug_comparison('  [%s..%s] %s %s ?: %s'
+                                             % (value_to_str(minvalue),
+                                                value_to_str(maxvalue),
+                                                opname, self.value,
+                                                self_vs_min))
 
                         if ranges and ranges[-1].result == self_vs_min:
                             # These ranges are adjacent and have the same result;

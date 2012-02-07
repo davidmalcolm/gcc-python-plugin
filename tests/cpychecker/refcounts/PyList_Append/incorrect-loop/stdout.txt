@@ -23,7 +23,7 @@ Trace 1:
     'taking False path'
     'when PyList_Append() succeeds'
     'taking False path'
-    'when considering range: 0 <= value <= 1'
+    'when considering value == (int)1 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:29'
     'taking False path'
     'returning'
   Return value:
