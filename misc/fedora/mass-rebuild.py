@@ -91,7 +91,19 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     if 1:
         run_mock(['--init'])
     run_mock(['--installdeps', srpmpath])
+
+    # Install the pre-built plugin:
     run_mock(['install', PLUGIN_PATH]) # this doesn't work when cleaned: can't open state.log
+
+    # Copy up latest version of the libcpychecker code from this working copy
+    # overriding the copy from the pre-built plugin:
+    if 1:
+        for module in glob.glob('../../libcpychecker/*.py'):
+            HACKED_PATH='/usr/lib/gcc/x86_64-redhat-linux/4.6.2/plugin/python2/libcpychecker'
+            # FIXME: ^^ this will need changing
+            run_mock(['--copyin', module, HACKED_PATH])
+
+    # Locate existing __global_cflags so that we can prepend our flags to it:
     out, err = run_mock(['--chroot',  'rpm --eval "%{__global_cflags}"'],
                         captureOut=True)
     global_cflags = out.strip()
