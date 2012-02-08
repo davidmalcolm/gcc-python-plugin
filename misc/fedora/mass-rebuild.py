@@ -68,7 +68,7 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     code in RPM form; gathering the results to a subdir within "LOGS"
     """
     def run_mock(commands, captureOut=False, captureErr=False):
-        cmds = ['mock', '-r', mockcfg] + commands
+        cmds = ['mock', '-r', mockcfg, '--disable-plugin=ccache'] + commands
         print('--------------------------------------------------------------')
         print(' '.join(cmds))
         print('--------------------------------------------------------------')
@@ -116,6 +116,29 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     # Extract build logs:
     shutil.copy('/var/lib/mock/%s/result/build.log' % mockcfg,
                 resultdir)
+
+    # Scrape out *refcount-errors.html:
+    BUILD_PREFIX='/builddir/build/BUILD'
+    out, err = run_mock(['chroot',
+                         'find %s -name *-refcount-errors.html' % BUILD_PREFIX],
+                        captureOut=True)
+    for line in out.splitlines():
+        if line.endswith('-refcount-errors.html'):
+            # Convert from e.g.
+            #    '/builddir/build/BUILD/gst-python-0.10.19/gst/.libs/gstmodule.c.init_gst-refcount-errors.html'
+            # to:
+            #    'gst-python-0.10.19/gst/.libs/gstmodule.c.init_gst-refcount-errors.html"
+            dstPath = line[len(BUILD_PREFIX)+1:]
+
+            # Place it within resultdir:
+            dstPath = os.path.join(resultdir, dstPath)
+
+            # Lazily construct directory hierarchy:
+            dirPath = os.path.dirname(dstPath)
+            if not os.path.exists(dirPath):
+                os.makedirs(dirPath)
+            # Copy the file from the chroot to our result location:
+            run_mock(['--copyout', line, dstPath])
 
 PLUGIN_PATH='gcc-python2-plugin-0.9-1.fc16.x86_64.rpm'
 MOCK_CONFIG='fedora-16-x86_64'
