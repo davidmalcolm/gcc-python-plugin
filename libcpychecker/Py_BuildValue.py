@@ -63,6 +63,28 @@ def _type_of_simple_arg(arg):
         'k': gcc.Type.unsigned_long,
         # 'L' covered below
         # 'K' covered below
+        # 'u': covered in from_string() below
+
+        'f': gcc.Type.double,
+        # (although documented as "[float]", 'f' accepts a "va_double" in
+        # modsupport.c)
+
+        'd': gcc.Type.double,
+        # 'D' covered below
+
+        'c': gcc.Type.int,
+        # (although documented as "[char]", 'c' accepts an "int" in
+        # modsupport.c)
+
+        # 's': covered in from_string() below
+        # 'z': covered in from_string() below
+        # 'N': covered in from_string() below
+        # 'S': covered in from_string() below
+        # 'O': covered in from_string() below
+        # ':': covered in from_string() below
+        # ',': covered in from_string() below
+        # ' ': covered in from_string() below
+        # '\t': covered in from_string() below
         }
     if arg in simple:
         # FIXME: ideally this shouldn't need calling; it should just be an
@@ -75,6 +97,8 @@ def _type_of_simple_arg(arg):
         return get_PY_LONG_LONG()
     elif arg == 'K':
         return get_PY_LONG_LONG().unsigned_equivalent
+    elif arg == 'D':
+        return get_Py_complex().pointer
 
 class AnyPyObjectPtr(AwkwardType):
     """
@@ -215,11 +239,22 @@ class PyBuildValueFmt(ParsedFormatString):
                 if next == '#':
                     result.add_argument(c + '#',
                                         [get_char_ptr(),
-                                         get_hash_size_type(with_size_t).pointer])
+                                         get_hash_size_type(with_size_t)])
                     i += 1
                 else:
                     result.add_argument(c,
                                         [get_char_ptr()])
+                continue
+
+            if c == 'u':
+                if next == '#':
+                    result.add_argument(c + '#',
+                                        [Py_UNICODE().pointer,
+                                         get_hash_size_type(with_size_t)])
+                    i += 1
+                else:
+                    result.add_argument(c,
+                                        [Py_UNICODE().pointer])
                 continue
 
             if c in 'NSO':

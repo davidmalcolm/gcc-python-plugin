@@ -1,0 +1,7 @@
+tests/cpychecker/Py_BuildValue/code_D/incorrect/input.c: In function 'test':
+tests/cpychecker/Py_BuildValue/code_D/incorrect/input.c:25:nn: warning: Mismatching type in call to Py_BuildValue with format code "D" [enabled by default]
+  argument 2 ("d") had type
+    "double"
+  but was expecting
+    "struct Py_complex *"
+  for format code "D"
