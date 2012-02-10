@@ -25,9 +25,22 @@ import re
 from BeautifulSoup import BeautifulSoup
 
 class ErrorReport(namedtuple('ErrorReport',
-                             ('htmlpath', 'htmlid', 'filename', 'function', 'errmsg'))):
+                             ('htmlpath', 'htmlid', 'filename', 'function', 'errmsg', 'htmlpre'))):
     def href(self):
         return '%s#%s' % (self.htmlpath, self.htmlid)
+
+    def contains_failure(self):
+        # Does this appear to be within an error-handling path?
+        print('htmlpre: %s' % self.htmlpre)
+        m = re.match('.*when (\S+) fails.*',
+                     str(self.htmlpre),
+                     re.MULTILINE|re.DOTALL)
+        if m:
+            print m.groups()
+            return True
+        else:
+            print 'not matched'
+            return False
 
 def get_errors_from_file(htmlpath):
     """
@@ -53,11 +66,14 @@ def get_errors_from_file(htmlpath):
             rows = table('tr')
             def get_second_col(row):
                 return row('td')[1].b.string
+            # Capture the marked up source code and notes from the report:
+            htmlpre = div.div.pre
             yield ErrorReport(htmlpath=htmlpath,
                               htmlid=div['id'],
                               filename=get_second_col(rows[0]),
                               function = get_second_col(rows[1]),
-                              errmsg = get_second_col(rows[2]))
+                              errmsg = get_second_col(rows[2]),
+                              htmlpre = htmlpre)
 
 class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
     """
@@ -68,17 +84,28 @@ class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
 
 (PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
  PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
+ PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
  PRIORITY__REFERENCE_LEAK,
  PRIORITY__REFERENCE_COUNT_TOO_LOW,
- PRIORITY__SEGFAULT,
+ PRIORITY__SEGFAULT_IN_NORMAL_USE,
  PRIORITY__UNCLASSIFIED,
- ) = range(6)
+ ) = range(7)
 
 class Triager:
     """
     Classify ErrorReport instances into various severity levels, identified by
     Severity instances
     """
+    def _classify_segfault(self, report):
+        if report.contains_failure():
+            return Severity(priority=PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
+                            title='Segfaults within error-handling paths',
+                            description='')
+        else:
+            return Severity(priority=PRIORITY__SEGFAULT_IN_NORMAL_USE,
+                            title='Segfaults in normal paths',
+                            description='')
+
     def classify(self, report):
         m = re.match('ob_refcnt of (.+) too high', report.errmsg)
         if m:
@@ -109,24 +136,15 @@ class Triager:
 
         m = re.match('calling (.+) with NULL as argument (.*)', report.errmsg)
         if m:
-            # FIXME: is it just on the error-handling path?
-            return Severity(priority=PRIORITY__SEGFAULT,
-                            title='Segfaults',
-                            description='')
+            return self._classify_segfault(report)
 
         m = re.match('dereferencing NULL (.*)', report.errmsg)
         if m:
-            # FIXME: is it just on the error-handling path?
-            return Severity(priority=PRIORITY__SEGFAULT,
-                            title='Segfaults',
-                            description='')
+            return self._classify_segfault(report)
 
         m = re.match('reading from deallocated memory (.*)', report.errmsg)
         if m:
-            # FIXME: is it just on the error-handling path?
-            return Severity(priority=PRIORITY__SEGFAULT,
-                            title='Segfaults',
-                            description='')
+            return self._classify_segfault(report)
 
         return Severity(priority=PRIORITY__UNCLASSIFIED,
                         title='Unclassified errors',
