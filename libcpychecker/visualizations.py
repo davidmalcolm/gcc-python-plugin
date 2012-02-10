@@ -290,9 +290,9 @@ pre {
         return result
 
     def make_report(self, report):
-
+        result = '<div id="report-%i">\n' % self.trace_idx
         # Heading:
-        result = '<table>\n'
+        result += '<table>\n'
         result += '  <tr><td>File:</td> <td><b>%s</b></td></tr>\n' % self.fun.start.file
         result += '  <tr><td>Function:</td> <td><b>%s</b></td></tr>\n' % self.fun.decl.name
         result += '  <tr><td>Error:</td> <td><b>%s</b></td></tr>\n' % report.msg
@@ -302,6 +302,8 @@ pre {
         if report.trace:
             result += self.make_html_for_trace(report, report.trace)
             result += '<hr/>'
+
+        result += '</div>\n'
         return result
 
     def make_html_for_trace(self, report, trace):
@@ -383,6 +385,7 @@ pre {
                 if note.loc and note.loc.line == linenum:
                     result += '<span class="transition">%s</span>\n' % note.msg
 
+        result += '</pre></div>\n'
         result += '\n'
         result += '<script type="text/javascript">\n'
         result += '  jsPlumb.bind("ready", function() {\n'
