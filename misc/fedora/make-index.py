@@ -123,11 +123,11 @@ class Triager:
         if report.contains_failure():
             return Severity(priority=PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
                             title='Segfaults within error-handling paths',
-                            description='')
+                            description='Code paths in error-handling that will lead to a segmentatation fault (e.g. under low memory conditions)')
         else:
             return Severity(priority=PRIORITY__SEGFAULT_IN_NORMAL_USE,
                             title='Segfaults in normal paths',
-                            description='')
+                            description='Code paths that will lead to a segmentatation fault')
 
     def classify(self, report):
         m = re.match('ob_refcnt of (.+) too high', report.errmsg)
@@ -156,16 +156,16 @@ class Triager:
             if report.is_within_initialization():
                 return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_INITIALIZATION,
                                 title='Reference count too low within an initialization routine',
-                                description='The reference count of an object is too low, but this is within an initialization routine, and thus likely to only happen once')
+                                description='Code paths in which the reference count of an object is too low, but within an initialization routine, and thus likely to only happen once')
             else:
                 return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_NORMAL_USE,
                                 title='Reference count too low',
-                                description='The reference count of an object is left too low.  Over time, this could accumulate and lead to the object being deallocated too early, triggering segfaults when accessed later.')
+                                description='Code paths in which the reference count of an object is left too low.   This could lead to the object being deallocated too early, triggering segfaults when later accessed.   Over repeated calls, these errors could accumulate, increasing the likelihood of a segfault.')
 
         if report.errmsg == 'returning (PyObject*)NULL without setting an exception':
             return Severity(priority=PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
                             title='Returning (PyObject*)NULL without setting an exception',
-                            description='These messages are often false-positives')
+                            description='These messages are often false-positives: the analysis tool has no knowledge about internal API calls that can lead to an exception being set')
 
         m = re.match('calling (.+) with NULL as argument (.*)', report.errmsg)
         if m:
@@ -183,11 +183,15 @@ class Triager:
                         title='Unclassified errors',
                         description="The triager didn't know how to classify these ones")
 
-def gather_html_reports(path):
+def gather_html_reports(path, title):
     outpath = os.path.join(path, 'index.html')
     with open(outpath, 'w') as f:
-        f.write('<html><head><title>%s</title></head>\n' % path)
+        f.write('<html><head><title>%s</title></head>\n' % title)
         f.write('  <body>\n')
+
+        f.write('  <h1>%s</h1>\n' % title)
+        f.write("  <p>This is a summary of errors seen when compiling with <a href='https://fedorahosted.org/gcc-python-plugin/'>an experimental static analysis tool</a></p>")
+        f.write('  <p>Raw build logs can be seen <a href="build.log">here</a></p>\n')
 
         # Gather the ErrorReport by severity
         triager = Triager()
@@ -233,4 +237,4 @@ def gather_html_reports(path):
 for resultdir in os.listdir('LOGS'):
     resultpath = os.path.join('LOGS', resultdir)
     print(resultpath)
-    gather_html_reports(resultpath)
+    gather_html_reports(resultpath, 'Errors seen in %s' % resultdir)
