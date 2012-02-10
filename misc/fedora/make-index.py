@@ -42,6 +42,27 @@ class ErrorReport(namedtuple('ErrorReport',
             print 'not matched'
             return False
 
+    def is_within_initialization(self):
+        # Does this appear to be within an initialization function?
+        # (and thus called only once)
+        htmlpre = str(self.htmlpre)
+
+        # The following functions typically only appear in one-time
+        # initialization code:
+        initfns = (
+            # there are various init functions with this prefix:
+            'Py_InitModule',
+            # Other init functions:
+            'PyErr_NewException', 'PyType_Ready', 'PyCFunction_NewEx',
+            'PyImport_ImportModule',
+            )
+
+        for fnname in initfns:
+            if fnname in htmlpre:
+                return True
+        return False
+
+
 def get_errors_from_file(htmlpath):
     """
     Scrape metadata from out of a -refcount-errors.html file,
@@ -85,11 +106,13 @@ class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
 (PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
  PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
  PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
- PRIORITY__REFERENCE_LEAK,
- PRIORITY__REFERENCE_COUNT_TOO_LOW,
+ PRIORITY__REFERENCE_LEAK_IN_INITIALIZATION,
+ PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_INITIALIZATION,
+ PRIORITY__REFERENCE_LEAK_IN_NORMAL_USE,
+ PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_NORMAL_USE,
  PRIORITY__SEGFAULT_IN_NORMAL_USE,
  PRIORITY__UNCLASSIFIED,
- ) = range(7)
+ ) = range(9)
 
 class Triager:
     """
@@ -119,15 +142,25 @@ class Triager:
                                 description=('Code paths in which the reference count of a singleton object will be left too large.  '
                                              'Technically incorrect, but unlikely to cause problems'))
             else:
-                return Severity(priority=PRIORITY__REFERENCE_LEAK,
-                                title='Reference leaks',
-                                description='')
+                if report.is_within_initialization():
+                    return Severity(priority=PRIORITY__REFERENCE_LEAK_IN_INITIALIZATION,
+                                    title='Reference leak within initialization',
+                                    description='Code paths in which the reference count of an object is left too high, but within an initialization routine, and thus likely to only happen once')
+                else:
+                    return Severity(priority=PRIORITY__REFERENCE_LEAK_IN_NORMAL_USE,
+                                    title='Reference leaks',
+                                    description='Code paths in which the reference count of an object is left too high, leading to memory leaks')
 
         m = re.match('ob_refcnt of (.+) too low', report.errmsg)
         if m:
-            return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW,
-                            title='Reference count too low',
-                            description='')
+            if report.is_within_initialization():
+                return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_INITIALIZATION,
+                                title='Reference count too low within an initialization routine',
+                                description='The reference count of an object is too low, but this is within an initialization routine, and thus likely to only happen once')
+            else:
+                return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_NORMAL_USE,
+                                title='Reference count too low',
+                                description='The reference count of an object is left too low.  Over time, this could accumulate and lead to the object being deallocated too early, triggering segfaults when accessed later.')
 
         if report.errmsg == 'returning (PyObject*)NULL without setting an exception':
             return Severity(priority=PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
