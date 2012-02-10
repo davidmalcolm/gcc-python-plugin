@@ -20,41 +20,129 @@
 
 from collections import namedtuple
 import os
+import re
 
 from BeautifulSoup import BeautifulSoup
 
 class ErrorReport(namedtuple('ErrorReport',
-                             ('filename', 'function', 'errmsg'))):
-    pass
+                             ('htmlpath', 'htmlid', 'filename', 'function', 'errmsg'))):
+    def href(self):
+        return '%s#%s' % (self.htmlpath, self.htmlid)
 
-def get_errors_from_file(path):
+def get_errors_from_file(htmlpath):
     """
     Scrape metadata from out of a -refcount-errors.html file,
     yielding a sequence of ErrorReport
     """
-    with open(path) as f:
+    with open(htmlpath) as f:
         soup = BeautifulSoup(f)
-        # Look within top-level <table> elements for result summaries that
+        # Look within top-level <div> elements for result summaries that
         # look like this:
+        #  <div id="report-0">
         #   <table>
         #     <tr><td>File:</td> <td><b>gstmodule.c</b></td></tr>
         #     <tr><td>Function:</td> <td><b>init_gst</b></td></tr>
         #     <tr><td>Error:</td> <td><b>ob_refcnt of new ref from (unknown) pygobject_init is 1 too high</b></td></tr>
         #   </table>
-        for table in soup.html.body.findAll('table'):
+        for div in soup.html.body.findAll('div'):
+            table = div.table
+            if not table:
+                continue
+            print div['id']
+            #print 'div: %r' % div
             rows = table('tr')
             def get_second_col(row):
                 return row('td')[1].b.string
-            yield ErrorReport(filename=get_second_col(rows[0]),
+            yield ErrorReport(htmlpath=htmlpath,
+                              htmlid=div['id'],
+                              filename=get_second_col(rows[0]),
                               function = get_second_col(rows[1]),
                               errmsg = get_second_col(rows[2]))
+
+class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
+    """
+    priority: the int values are in asending severity (so that e.g. priority 5
+    is more severe than severity 4).  This should give us a useful sort order
+    for Severity instances
+    """
+
+(PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
+ PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
+ PRIORITY__REFERENCE_LEAK,
+ PRIORITY__REFERENCE_COUNT_TOO_LOW,
+ PRIORITY__SEGFAULT,
+ PRIORITY__UNCLASSIFIED,
+ ) = range(6)
+
+class Triager:
+    """
+    Classify ErrorReport instances into various severity levels, identified by
+    Severity instances
+    """
+    def classify(self, report):
+        m = re.match('ob_refcnt of (.+) too high', report.errmsg)
+        if m:
+            if 'PyBool_FromLong' in report.errmsg:
+                is_singleton = True
+            else:
+                is_singleton = False
+            if is_singleton:
+                return Severity(priority=PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
+                                title='Reference leaks of a singleton',
+                                description=('Code paths in which the reference count of a singleton object will be left too large.  '
+                                             'Technically incorrect, but unlikely to cause problems'))
+            else:
+                return Severity(priority=PRIORITY__REFERENCE_LEAK,
+                                title='Reference leaks',
+                                description='')
+
+        m = re.match('ob_refcnt of (.+) too low', report.errmsg)
+        if m:
+            return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW,
+                            title='Reference count too low',
+                            description='')
+
+        if report.errmsg == 'returning (PyObject*)NULL without setting an exception':
+            return Severity(priority=PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
+                            title='Returning (PyObject*)NULL without setting an exception',
+                            description='These messages are often false-positives')
+
+        m = re.match('calling (.+) with NULL as argument (.*)', report.errmsg)
+        if m:
+            # FIXME: is it just on the error-handling path?
+            return Severity(priority=PRIORITY__SEGFAULT,
+                            title='Segfaults',
+                            description='')
+
+        m = re.match('dereferencing NULL (.*)', report.errmsg)
+        if m:
+            # FIXME: is it just on the error-handling path?
+            return Severity(priority=PRIORITY__SEGFAULT,
+                            title='Segfaults',
+                            description='')
+
+        m = re.match('reading from deallocated memory (.*)', report.errmsg)
+        if m:
+            # FIXME: is it just on the error-handling path?
+            return Severity(priority=PRIORITY__SEGFAULT,
+                            title='Segfaults',
+                            description='')
+
+        return Severity(priority=PRIORITY__UNCLASSIFIED,
+                        title='Unclassified errors',
+                        description="The triager didn't know how to classify these ones")
 
 def gather_html_reports(path):
     outpath = os.path.join(path, 'index.html')
     with open(outpath, 'w') as f:
         f.write('<html><head><title>%s</title></head>\n' % path)
         f.write('  <body>\n')
-        f.write('    <table>\n')
+
+        # Gather the ErrorReport by severity
+        triager = Triager()
+
+        # mapping from Severity to list of ErrorReport
+        severities = {}
 
         for dirpath, dirnames, filenames in os.walk(path):
             #print dirpath, dirnames, filenames
@@ -66,12 +154,25 @@ def gather_html_reports(path):
                         print(er.filename)
                         print(er.function)
                         print(er.errmsg)
-                        href = os.path.relpath(htmlpath, path)
-                        f.write('      <tr> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> </tr>'
-                                % (href, er.filename,
-                                   href, er.function,
-                                   href, er.errmsg))
-        f.write('    </table>\n')
+                        sev = triager.classify(er)
+                        print(sev)
+                        if sev in severities:
+                            severities[sev].append(er)
+                        else:
+                            severities[sev] = [er]
+
+            for sev in sorted(severities.keys())[::-1]:
+                f.write('    <h2>%s</h2>\n' % sev.title)
+                f.write('    <p>%s</p>\n' % sev.description)
+                f.write('    <table>\n')
+                for er in severities[sev]:
+                    href = os.path.relpath(er.href(), path)
+                    f.write('      <tr> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> </tr>'
+                            % (href, er.filename,
+                               href, er.function,
+                               href, er.errmsg))
+                f.write('    </table>\n')
+
         f.write('  </body>\n')
         f.write('</html>\n')
 
