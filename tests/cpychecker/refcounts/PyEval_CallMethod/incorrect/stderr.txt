@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c:30:nn: warning: calling PyEval_CallMethod with NULL as argument 1 (0B) at tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c:30 [enabled by default]
+tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c:30:nn: note: PyEval_CallMethod() invokes Py_TYPE() on the pointer within PyObject_GetAttrString(), thus accessing (NULL)->ob_type
+tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyEval_CallMethod/incorrect/input.c.test-refcount-errors.html'

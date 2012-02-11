@@ -240,10 +240,14 @@ class GenericTpDealloc(AbstractValue):
 # Helper functions to generate meaningful explanations of why a NULL
 # argument is a bug:
 ########################################################################
-def invokes_Py_TYPE(fnmeta):
+def invokes_Py_TYPE(fnmeta, within=None):
     check_isinstance(fnmeta, FnMeta)
-    return ('%s() invokes Py_TYPE() on the pointer, thus accessing'
-            ' (NULL)->ob_type' % fnmeta.name)
+    if within:
+        return ('%s() invokes Py_TYPE() on the pointer within %s(), thus accessing'
+                ' (NULL)->ob_type' % (fnmeta.name, within))
+    else:
+        return ('%s() invokes Py_TYPE() on the pointer, thus accessing'
+                ' (NULL)->ob_type' % fnmeta.name)
 
 def invokes_Py_TYPE_via_macro(fnmeta, macro):
     """
@@ -1447,6 +1451,22 @@ class CPython(Facet):
     # PyEval_InitThreads()
     ########################################################################
 
+    def impl_PyEval_CallMethod(self, stmt, v_obj, v_method, v_fmt, *v_varargs):
+        fnmeta = FnMeta(name='PyEval_CallMethod',
+                        prototype=('PyObject *\n'
+                                   'PyEval_CallMethod(PyObject *obj, const char *methodname, const char *format, ...)'),
+                        declared_in='ceval.h',
+                        defined_in='Python/modsupport.c')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_obj,
+               why=invokes_Py_TYPE(fnmeta,
+                                   within='PyObject_GetAttrString'))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_method)
+
+        # not affected by PY_SSIZE_T_CLEAN
+        return self._handle_PyObject_CallMethod(stmt, fnmeta,
+                                                v_obj, v_fmt, v_varargs,
+                                                with_size_t=False)
+
     def impl_PyEval_CallObjectWithKeywords(self, stmt, v_func, v_arg, v_kw):
         fnmeta = FnMeta(name='PyEval_CallObjectWithKeywords',
                         prototype=('PyObject *\n'
@@ -1999,6 +2019,7 @@ class CPython(Facet):
         For functions in Objects/abstract.c that use Py_VaBuildValue or
         _Py_VaBuildValue_SizeT, then use call_function_tail
         (e.g. handles PyObject_CallFunction also)
+        Also used by PyEval_CallMethod
         """
         check_isinstance(v_o, AbstractValue)
         check_isinstance(v_fmt, AbstractValue)
