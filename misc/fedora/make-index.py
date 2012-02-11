@@ -62,6 +62,22 @@ class ErrorReport(namedtuple('ErrorReport',
                 return True
         return False
 
+    def might_be_borrowed_ref(self):
+        htmlpre = str(self.htmlpre)
+
+        if 'new ref from (unknown)' in htmlpre:
+            # The reference that we're complaining about comes from
+            # an unknown function, for which we assumed it was a new
+            # ref - but it could be a borrowed ref, in which case it isn't
+            # a problem
+            return True
+
+        if 'new ref from call through function pointer' in htmlpre:
+            # Similar: we can't know the semantics of function pointers
+            # in user-supplied code:
+            return True
+
+        return False
 
 def get_errors_from_file(htmlpath):
     """
@@ -104,6 +120,7 @@ class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
     """
 
 (PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
+ PRIORITY__POSSIBLE_REFERENCE_LEAK,
  PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
  PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
  PRIORITY__REFERENCE_LEAK_IN_INITIALIZATION,
@@ -112,7 +129,7 @@ class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
  PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_NORMAL_USE,
  PRIORITY__SEGFAULT_IN_NORMAL_USE,
  PRIORITY__UNCLASSIFIED,
- ) = range(9)
+ ) = range(10)
 
 class Triager:
     """
@@ -123,15 +140,26 @@ class Triager:
         if report.contains_failure():
             return Severity(priority=PRIORITY__SEGFAULT_IN_ERROR_HANDLING,
                             title='Segfaults within error-handling paths',
-                            description='Code paths in error-handling that will lead to a segmentatation fault (e.g. under low memory conditions)')
+                            description='<p>Code paths in error-handling that will lead to a segmentatation fault (e.g. under low memory conditions)</p>')
         else:
             return Severity(priority=PRIORITY__SEGFAULT_IN_NORMAL_USE,
                             title='Segfaults in normal paths',
-                            description='Code paths that will lead to a segmentatation fault')
+                            description='<p>Code paths that will lead to a segmentatation fault</p>')
 
     def classify(self, report):
         m = re.match('ob_refcnt of (.+) too high', report.errmsg)
         if m:
+            if report.might_be_borrowed_ref():
+                return Severity(priority=PRIORITY__POSSIBLE_REFERENCE_LEAK,
+                                title='Possible reference leaks',
+                                description=("""
+<p>Code paths in which the reference count of an object might too large - but in
+which the reference in question came from a function not known to the
+analyzer.</p>
+
+<p>The analyzer assumes such references are new references, but if the function
+returns a borrowed reference instead, it's probably not a bug</p>"""
+                                             ))
             if 'PyBool_FromLong' in report.errmsg:
                 is_singleton = True
             else:
@@ -139,33 +167,52 @@ class Triager:
             if is_singleton:
                 return Severity(priority=PRIORITY__REFERENCE_LEAK_OF_SINGLETON,
                                 title='Reference leaks of a singleton',
-                                description=('Code paths in which the reference count of a singleton object will be left too large.  '
-                                             'Technically incorrect, but unlikely to cause problems'))
+                                description=('''
+<p>Code paths in which the reference count of a singleton object will be
+left too large.</p>
+
+<p>Technically incorrect, but unlikely to cause problems</p>
+'''
+                                             ))
             else:
                 if report.is_within_initialization():
                     return Severity(priority=PRIORITY__REFERENCE_LEAK_IN_INITIALIZATION,
                                     title='Reference leak within initialization',
-                                    description='Code paths in which the reference count of an object is left too high, but within an initialization routine, and thus likely to only happen once')
+                                    description='''
+<p>Code paths in which the reference count of an object is left too high,
+but within an initialization routine, and thus likely to only happen
+once</p>''')
                 else:
                     return Severity(priority=PRIORITY__REFERENCE_LEAK_IN_NORMAL_USE,
                                     title='Reference leaks',
-                                    description='Code paths in which the reference count of an object is left too high, leading to memory leaks')
-
+                                    description='''
+<p>Code paths in which the reference count of an object is left too high,
+leading to memory leaks</p>''')
         m = re.match('ob_refcnt of (.+) too low', report.errmsg)
         if m:
             if report.is_within_initialization():
                 return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_INITIALIZATION,
                                 title='Reference count too low within an initialization routine',
-                                description='Code paths in which the reference count of an object is too low, but within an initialization routine, and thus likely to only happen once')
+                                description='''
+<p>Code paths in which the reference count of an object is too low, but
+within an initialization routine, and thus likely to only happen once</p>
+'''
+                                )
             else:
                 return Severity(priority=PRIORITY__REFERENCE_COUNT_TOO_LOW_IN_NORMAL_USE,
                                 title='Reference count too low',
-                                description='Code paths in which the reference count of an object is left too low.   This could lead to the object being deallocated too early, triggering segfaults when later accessed.   Over repeated calls, these errors could accumulate, increasing the likelihood of a segfault.')
+                                description='''
+<p>Code paths in which the reference count of an object is left too low.
+This could lead to the object being deallocated too early, triggering
+segfaults when later accessed.   Over repeated calls, these errors could
+accumulate, increasing the likelihood of a segfault.</p>''')
 
         if report.errmsg == 'returning (PyObject*)NULL without setting an exception':
             return Severity(priority=PRIORITY__RETURNING_NULL_WITHOUT_SETTING_EXCEPTION,
                             title='Returning (PyObject*)NULL without setting an exception',
-                            description='These messages are often false-positives: the analysis tool has no knowledge about internal API calls that can lead to an exception being set')
+                            description='''
+<p>These messages are often false-positives: the analysis tool has no knowledge
+about internal API calls that can lead to an exception being set''')
 
         m = re.match('calling (.+) with NULL as argument (.*)', report.errmsg)
         if m:
@@ -181,7 +228,9 @@ class Triager:
 
         return Severity(priority=PRIORITY__UNCLASSIFIED,
                         title='Unclassified errors',
-                        description="The triager didn't know how to classify these ones")
+                        description='''
+<p>The triager didn't know how to classify these ones</p>
+''')
 
 def gather_html_reports(path, title):
     outpath = os.path.join(path, 'index.html')
@@ -218,7 +267,7 @@ def gather_html_reports(path, title):
 
             for sev in sorted(severities.keys())[::-1]:
                 f.write('    <h2>%s</h2>\n' % sev.title)
-                f.write('    <p>%s</p>\n' % sev.description)
+                f.write('    %s\n' % sev.description)
                 f.write('    <table>\n')
                 for er in severities[sev]:
                     href = os.path.relpath(er.href(), path)
