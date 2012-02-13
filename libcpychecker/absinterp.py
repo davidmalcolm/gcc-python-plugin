@@ -2093,6 +2093,14 @@ class State(object):
         newstate.loc = self.loc.next_loc()
         return Transition(self, newstate, 'calling %s()' % fnname)
 
+
+    def mktrans_not_returning(self, desc):
+        # The function being called does not return e.g. "exit(0);"
+        # Transition to a special noreturn state:
+        s_new = self.copy()
+        s_new.not_returning = True
+        return Transition(self, s_new, desc)
+
     def mktrans_from_fncall_state(self, stmt, state, partialdesc, has_siblings):
         """
         Given a function call here, convert a State instance into a Transition
@@ -2145,11 +2153,8 @@ class State(object):
         if stmt.noreturn:
             # The function being called does not return e.g. "exit(0);"
             # Transition to a special noreturn state:
-            newstate = self.copy()
-            newstate.not_returning = True
-            return [Transition(self,
-                               newstate,
-                               'not returning from %s' % stmt.fn)]
+            return [self.mktrans_not_returning('not returning from %s'
+                                               % stmt.fn)]
 
         if isinstance(stmt.fn, (gcc.VarDecl, gcc.ParmDecl, gcc.SsaName)):
             # Calling through a function pointer:

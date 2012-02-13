@@ -1513,6 +1513,17 @@ class CPython(Facet):
         return [t_success]
 
     ########################################################################
+    # Py_FatalError()
+    ########################################################################
+    def impl_Py_FatalError(self, stmt, v_message):
+        fnmeta = FnMeta(name='Py_FatalError',
+                        docurl='http://docs.python.org/c-api/sys.html#Py_FatalError',
+                        prototype='void Py_FatalError(const char *message)')
+        # Terminates the process; no further transitions:
+        return [self.state.mktrans_not_returning('calling %s() and exiting'
+                                                 % fnmeta.name)]
+
+    ########################################################################
     # Py_Finalize()
     ########################################################################
     def impl_Py_Finalize(self, stmt):
