@@ -93,6 +93,9 @@ The following subclasses have been wrapped for use from Python scripts:
 =======================================  ===================================
 Subclass                                 Meaning
 =======================================  ===================================
+:py:class:`gcc.GimpleAsm`                One or more inline assembly
+                                         statements
+
 :py:class:`gcc.GimpleAssign`             An assignment of an expression to
                                          an l-value::
 
@@ -138,8 +141,6 @@ interested in working with these):
 =======================================  ===================================
 Subclass                                 Meaning
 =======================================  ===================================
-:py:class:`gcc.GimpleAsm`                One or more inline assembly
-                                         statements
 :py:class:`gcc.GimpleBind`               A lexical scope
 :py:class:`gcc.GimpleCatch`              An exception handler
 :py:class:`gcc.GimpleDebug`              A debug statement
@@ -169,6 +170,23 @@ Subclass                                 Meaning
 :py:class:`gcc.GimpleWithCleanupExpr`    Internally used when generating GIMPLE
 =======================================  ===================================
 
+
+
+.. py:class:: gcc.GimpleAsm
+
+   Subclass of :py:class:`gcc.Gimple`: a fragment of `inline assembler code
+   <http://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html>`_.
+
+   .. py:attribute:: string
+
+      The inline assembler code, as a `str`.
+
+   .. GIMPLE_ASM <STRING, I1, ..., IN, O1, ... OM, C1, ..., CP>
+   ..              STRING is the string containing the assembly statements.
+   ..              I1 ... IN are the N input operands.
+   ..              O1 ... OM are the M output operands.
+   ..              C1 ... CP are the P clobber operands.
+   ..              L1 ... LQ are the Q label operands.  */
 
 .. py:class:: gcc.GimpleAssign
 
@@ -331,17 +349,33 @@ Subclass                                 Meaning
 
    .. FIXME: Label is a gcc.LabelDecl representing a jump target.
 
+.. py:class:: gcc.GimpleAssign
+
+   Subclass of :py:class:`gcc.Gimple`: an assignment of an expression to an
+   l-value::
+
+      LHS = RHS1 EXPRCODE RHS2;
+
+   .. py:attribute:: lhs
+
+      Left-hand-side of the assignment, as a :py:class:`gcc.Tree`
+
+   .. py:attribute:: rhs
+
+      The operands on the right-hand-side of the expression, as a list of
+      :py:class:`gcc.Tree` instances (either of length 1 or length 2,
+      depending on the expression).
+
+   .. py:attribute:: exprcode
+
+      The kind of the expression, as an :py:class:`gcc.Tree` subclass (the type
+      itself, not an instance)
+
+
+
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Gimple
   ..        GimpleAsm
-  ..           /* GIMPLE_ASM <STRING, I1, ..., IN, O1, ... OM, C1, ..., CP>
-  ..              represents inline assembly statements.
-  ..              STRING is the string containing the assembly statements.
-  ..              I1 ... IN are the N input operands.
-  ..              O1 ... OM are the M output operands.
-  ..              C1 ... CP are the P clobber operands.
-  ..              L1 ... LQ are the Q label operands.  */
-
   ..        GimpleAssign
   ..        GimpleBind
   ..        GimpleCall

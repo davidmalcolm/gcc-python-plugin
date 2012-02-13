@@ -1,0 +1,12 @@
+fn: gcc.Function('helper_function')
+CFG:
+  BLOCK 0
+  BLOCK 1
+  BLOCK 2
+  gimple[0]:
+    str(stmt): '__asm__ __volatile__("");'
+    repr(stmt): 'gcc.GimpleAsm()'
+     stmt.string: ''
+  gimple[1]:
+    str(stmt): 'return;'
+    repr(stmt): 'gcc.GimpleReturn()'

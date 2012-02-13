@@ -2040,6 +2040,8 @@ class State(object):
             return self._get_transitions_for_GimpleAssign(stmt)
         elif isinstance(stmt, gcc.GimpleSwitch):
             return self._get_transitions_for_GimpleSwitch(stmt)
+        elif isinstance(stmt, gcc.GimpleAsm):
+            return self._get_transitions_for_GimpleAsm(stmt)
         else:
             raise NotImplementedError("Don't know how to cope with %r (%s) at %s"
                                       % (stmt, stmt, stmt.loc))
@@ -2545,6 +2547,18 @@ class State(object):
                                      newstate,
                                      desc))
         return result
+
+    def _get_transitions_for_GimpleAsm(self, stmt):
+        log('stmt: %r %s', stmt, stmt)
+
+        if stmt.string == '':
+            # Empty fragment of inline assembler:
+            s_next = self.copy()
+            s_next.loc = self.loc.next_loc()
+            return [Transition(self, s_next, None)]
+
+        raise NotImplementedError('Unable to handle inline assembler: %s'
+                                  % stmt.string)
 
     def get_persistent_refs_for_region(self, dst_region):
         # Locate all regions containing pointers that point at the given region

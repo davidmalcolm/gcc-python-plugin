@@ -259,6 +259,17 @@ def generate_gimple_subclasses():
                              None,
                              'The operands on the right-hand-side of the expression, as a list of gcc.Tree instances')
 
+    def make_getset_Asm():
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [exprcode_getter],
+                                       'gcc_GimpleAsm',
+                                       'PyGccGimple')
+        getsettable.add_simple_getter(cu,
+                                      'string',
+                                      'gcc_python_string_from_string(gimple_asm_string(self->stmt))',
+                                      'The inline assembler as a string')
+        return getsettable
+
     def make_getset_Assign():
         return PyGetSetDefTable('gcc_%s_getset_table' % cc,
                                 [PyGetSetDef('lhs',
@@ -373,7 +384,9 @@ def generate_gimple_subclasses():
         cc = gt.camel_cased_string()
 
         getsettable = None
-        if cc == 'GimpleAssign':
+        if cc == 'GimpleAsm':
+            getsettable = make_getset_Asm()
+        elif cc == 'GimpleAssign':
             getsettable = make_getset_Assign()
         elif cc == 'GimpleCall':
             getsettable = make_getset_Call()
