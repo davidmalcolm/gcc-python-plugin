@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c: In function 'test':
+tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c:29:nn: warning: calling PyObject_GetAttr with NULL as argument 2 (0B) at tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c:29 [enabled by default]
+tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c:29:nn: note: PyObject_GetAttr() invokes Py_TYPE() on the pointer via the PyString_Check() macro, thus accessing (NULL)->ob_type
+tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyObject_GetAttr/incorrect/input.c.test-refcount-errors.html'

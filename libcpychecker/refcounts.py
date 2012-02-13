@@ -2219,6 +2219,17 @@ class CPython(Facet):
                                                     % fnmeta.name))
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
+    def impl_PyObject_GetAttr(self, stmt, v_v, v_name):
+        fnmeta = FnMeta(name='PyObject_GetAttr',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_GetAttr',
+                        defined_in='Objects/object.c',
+                        prototype='PyObject* PyObject_GetAttr(PyObject *o, PyObject *attr_name)')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_v,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
+               why=invokes_Py_TYPE_via_macro(fnmeta, 'PyString_Check'))
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
     def impl_PyObject_GetAttrString(self, stmt, v_v, v_name):
         fnmeta = FnMeta(name='PyObject_GetAttrString',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_GetAttrString',
