@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyErr_NoMemory()'
+    'PyErr_NoMemory() returns NULL, raising MemoryError'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NoMemory/correct/input.c', line=29), value=0)

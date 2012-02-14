@@ -26,7 +26,7 @@ Trace 1:
   Transitions:
     'when PyMem_Malloc() fails'
     'taking True path'
-    'PyErr_NoMemory()'
+    'PyErr_NoMemory() returns NULL, raising MemoryError'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyMem_Malloc/correct/alloc-and-free/input.c', line=34), value=0)

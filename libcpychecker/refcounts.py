@@ -1359,7 +1359,8 @@ class CPython(Facet):
                         notes='Always returns NULL',)
         t_next = self.state.mktrans_assignment(stmt.lhs,
                                          make_null_pyobject_ptr(stmt),
-                                         'PyErr_NoMemory()')
+                                         ('PyErr_NoMemory() returns NULL,'
+                                          ' raising MemoryError'))
         t_next.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
         return [t_next]
 
