@@ -2629,7 +2629,7 @@ class CPython(Facet):
         # It can survive w being NULL: cleans up *pv
 
         if isinstance(v_w, UnknownValue):
-            self.raise_split_value(v_w, stmt.loc)
+            self.state.raise_split_value(v_w, stmt.loc)
 
         # Mostly implemented in terms of PyString_Concat:
         results = self.impl_PyString_Concat(stmt, v_pv, v_w)
