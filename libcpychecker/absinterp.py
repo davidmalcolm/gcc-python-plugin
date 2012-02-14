@@ -2234,6 +2234,14 @@ class State(object):
                                                                  'new ref from (unknown) %s' % fnname),
                     stmt)
 
+            # GCC builtins:
+            if fnname == '__builtin_expect':
+                # http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+                # The return value of:
+                #    __builtin_expect(long exp, long c)
+                # is "exp" (the 0-th argument):
+                return [self.mktrans_assignment(stmt.lhs, stmt.args[0], None)]
+
             # Unknown function of other type:
             log('Invocation of unknown function: %r', fnname)
             return self.apply_fncall_side_effects(
