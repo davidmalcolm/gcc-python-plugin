@@ -21,6 +21,7 @@ from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
 from libcpychecker.attributes import register_our_attributes
 from libcpychecker.initializers import check_initializers
+from libcpychecker.types import get_PyObject
 if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
     from libcpychecker.compat import on_finish_decl
 
@@ -34,19 +35,27 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                  show_traces=False,
                  verify_pyargs=True,
                  verify_refcounting=False,
-                 show_possible_null_derefs=False):
+                 show_possible_null_derefs=False,
+                 only_on_python_code=True):
         gcc.GimplePass.__init__(self, 'cpychecker-gimple')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.verify_pyargs = verify_pyargs
         self.verify_refcounting = verify_refcounting
         self.show_possible_null_derefs = show_possible_null_derefs
+        self.only_on_python_code = only_on_python_code
 
     def execute(self, fun):
         if fun:
             log('%s', fun)
             if self.verify_pyargs:
                 check_pyargs(fun)
+
+            if self.only_on_python_code:
+                # Only run the refcount checker on code that
+                # includes <Python.h>:
+                if not get_PyObject():
+                    return
 
             # The refcount code is too buggy for now to be on by default:
             if self.verify_refcounting:

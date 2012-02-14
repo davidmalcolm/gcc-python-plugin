@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -19,4 +19,5 @@
 from libcpychecker import main
 
 main(verify_refcounting=True,
-     dump_traces=True)
+     dump_traces=True,
+     only_on_python_code=False)
