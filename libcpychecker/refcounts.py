@@ -2459,8 +2459,13 @@ class CPython(Facet):
                         declared_in='abstract.h',
                         prototype='PyAPI_FUNC(PyObject *) PySequence_Concat(PyObject *o1, PyObject *o2);',
                         defined_in='Objects/abstract.c')
-        # safely handles NULL for either argument via null_error(), with PyExc_SystemError
-
+        # safely handles NULL for either argument via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o1)
+        if t_err:
+            return [t_err]
+        t_err = self.handle_null_error(stmt, 1, v_o2)
+        if t_err:
+            return [t_err]
         return self.make_transitions_for_new_ref_or_fail(stmt,
                                                          fnmeta,
                                                          'new ref from %s' % fnmeta.name)
@@ -2492,8 +2497,10 @@ class CPython(Facet):
                         declared_in='abstract.h',
                         prototype='PyAPI_FUNC(PyObject *) PySequence_GetSlice(PyObject *o, Py_ssize_t i1, Py_ssize_t i2);',
                         defined_in='Objects/abstract.c')
-        # safely handles NULL for the obj via null_error(), with PyExc_SystemError
-
+        # safely handles NULL for the obj via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o)
+        if t_err:
+            return [t_err]
         return self.make_transitions_for_new_ref_or_fail(stmt,
                                                          fnmeta,
                                                          'new ref from %s' % fnmeta.name)
