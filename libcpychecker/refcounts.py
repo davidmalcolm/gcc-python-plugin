@@ -2054,6 +2054,28 @@ class CPython(Facet):
         return [Transition(self.state, s_success, None)]
 
     ########################################################################
+    # PyNumber_*
+    ########################################################################
+    def impl_PyNumber_Int(self, stmt, v_o):
+        fnmeta = FnMeta(name='PyNumber_Int',
+                        docurl='http://docs.python.org/c-api/number.html#PyNumber_Int',
+                        prototype='PyObject * PyNumber_Int(PyObject *o)')
+        t_err = self.handle_null_error(stmt, 0, v_o)
+        if t_err:
+            return [t_err]
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
+    def impl_PyNumber_Remainer(self, stmt, v_v, v_w):
+        fnmeta = FnMeta(name='PyNumber_Remainder',
+                        docurl='http://docs.python.org/c-api/number.html#PyNumber_Remainder',
+                        prototype='PyObject * PyNumber_Remainder(PyObject *v, PyObject *w)')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_v,
+                       why='%s() reads though v->ob_type within binary_op1()' % fnmeta.name)
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_w,
+                       why='%s() reads though w->ob_type within binary_op1()' % fnmeta.name)
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
+    ########################################################################
     # PyObject_*
     ########################################################################
     def _handle_PyObject_CallMethod(self, stmt, fnmeta,
