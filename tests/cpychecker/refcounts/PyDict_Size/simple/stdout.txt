@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    'when treating unknown void * from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:27 as non-NULL'
+    'when PyDict_Size() returns ma_used'
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_Size/simple/input.c', line=29), minvalue=-0x8000000000000000, maxvalue=0x7fffffffffffffff)
+    str(): (Py_ssize_t)val [-0x8000000000000000 <= val <= 0x7fffffffffffffff] from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:29
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:28
+
+Trace 1:
+  Transitions:
+    'when treating unknown void * from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:27 as NULL'
+    'when PyDict_Size raises SystemError (via PyErr_BadInternalCall) due to NULL as argument 1 at tests/cpychecker/refcounts/PyDict_Size/simple/input.c:29'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_Size/simple/input.c', line=29), value=-1)
+    str(): (Py_ssize_t)-1 from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:29
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_SystemError')) from tests/cpychecker/refcounts/PyDict_Size/simple/input.c:29

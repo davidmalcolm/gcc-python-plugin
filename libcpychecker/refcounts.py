@@ -698,7 +698,6 @@ class CPython(Facet):
         if isinstance(ptr, UnknownValue):
             self.state.raise_split_value(ptr, stmt.loc)
         if ptr.is_null_ptr():
-            # safely handles NULL for either argument via null_error(), with PyExc_SystemError
             if stmt.lhs:
                 value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
             else:
@@ -717,6 +716,30 @@ class CPython(Facet):
                 t_failure.desc = ('when %s fails due to'
                                   ' NULL as argument %i at %s'
                                   % (stmt.fn, idx + 1, stmt.loc))
+            return t_failure
+        # otherwise, implicit return of None to signify no problems
+
+    def handle_BadInternalCall_on_null(self, stmt, idx, ptr, v_return):
+        # various API calls have code of the form:
+        #   if (ptr == NULL) {
+        #      PyErr_BadInternalCall();
+        #      return NULL;
+        #   }
+        # idx is the 0-based index of the argument
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(idx, int)
+        check_isinstance(ptr, AbstractValue)
+        if isinstance(ptr, UnknownValue):
+            self.state.raise_split_value(ptr, stmt.loc)
+        if ptr.is_null_ptr():
+            t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                                      v_return,
+                                                      None)
+            t_failure.desc = ('when %s raises SystemError (via'
+                              ' PyErr_BadInternalCall) due to'
+                              ' NULL as argument %i at %s'
+                              % (stmt.fn, idx + 1, stmt.loc))
+            t_failure.dest.cpython.bad_internal_call(stmt.loc)
             return t_failure
         # otherwise, implicit return of None to signify no problems
 
@@ -1321,6 +1344,30 @@ class CPython(Facet):
 
         return self._handle_PyDict_SetItem(stmt, fnmeta,
                                            v_dp, v_key, v_item)
+
+    def impl_PyDict_Size(self, stmt, v_mp):
+        fnmeta = FnMeta(name='PyDict_Size',
+                        declared_in='dictobject.h',
+                        prototype='Py_ssize_t PyDict_Size(PyObject *mp);',
+                        defined_in='Objects/dictobject.c',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_Size')
+        # Explicitly checks for NULL (or not a dict)
+        # with PyErr_BadInternalCall(); return -1
+        t_err = self.handle_BadInternalCall_on_null(stmt, 0, v_mp,
+                       ConcreteValue(stmt.lhs.type, stmt.loc, -1))
+        if t_err:
+            return [t_err]
+        # FIXME: doesn't yet handle the !PyDict_Check(mp) case
+
+        returntype = stmt.fn.type.dereference.type
+        v_ma_used = self.state.read_field_by_name(stmt,
+                                                  returntype,
+                                                  v_mp.region, 'ma_used')
+
+        t_return = self.state.mktrans_assignment(stmt.lhs,
+                          v_ma_used,
+                          fnmeta.desc_when_call_returns_value('ma_used'))
+        return [t_return]
 
     ########################################################################
     # PyErr_*
