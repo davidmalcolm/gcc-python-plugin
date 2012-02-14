@@ -1,0 +1,114 @@
+Trace 0:
+  Transitions:
+    'when PyString_FromString() succeeds'
+    'when PyObject_GetItem() succeeds'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), region=RegionOnHeap('new ref from call to PyObject_GetItem', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from call to PyObject_GetItem', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38)) from tests/cpychecker/refcounts/handle_null_error/input.c:38
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), region=Region('PyTypeObject for new ref from call to PyObject_GetItem'))
+  Region("region-for-arg-gcc.ParmDecl('mapping')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    str(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('mapping')"))
+  PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/handle_null_error/input.c:28
+
+Trace 1:
+  Transitions:
+    'when PyString_FromString() succeeds'
+    'when PyObject_GetItem() succeeds'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), region=RegionOnHeap('new ref from call to PyObject_GetItem', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38)))
+    str(): (struct PyObject *)&RegionOnHeap('new ref from call to PyObject_GetItem', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38)) from tests/cpychecker/refcounts/handle_null_error/input.c:38
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), region=Region('PyTypeObject for new ref from call to PyObject_GetItem'))
+  Region("region-for-arg-gcc.ParmDecl('mapping')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    str(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('mapping')"))
+  PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/handle_null_error/input.c:28
+
+Trace 2:
+  Transitions:
+    'when PyString_FromString() succeeds'
+    'when PyObject_GetItem() fails'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/handle_null_error/input.c:38
+  Region("region-for-arg-gcc.ParmDecl('mapping')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    str(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('mapping')"))
+  PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/handle_null_error/input.c:38
+
+Trace 3:
+  Transitions:
+    'when PyString_FromString() succeeds'
+    'when PyObject_GetItem() fails'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/handle_null_error/input.c:38
+  Region("region-for-arg-gcc.ParmDecl('mapping')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    str(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('mapping')"))
+  PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33:
+    repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=33))
+    str(): PyStringObject allocated at tests/cpychecker/refcounts/handle_null_error/input.c:33
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/handle_null_error/input.c:38
+
+Trace 4:
+  Transitions:
+    'when PyString_FromString() fails'
+    'when PyObject_GetItem fails due to NULL as argument 2 at tests/cpychecker/refcounts/handle_null_error/input.c:38'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=38), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/handle_null_error/input.c:38
+  Region("region-for-arg-gcc.ParmDecl('mapping')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    str(): Region("region-for-arg-gcc.ParmDecl('mapping')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/handle_null_error/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('mapping')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/handle_null_error/input.c:33

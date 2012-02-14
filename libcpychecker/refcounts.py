@@ -689,6 +689,37 @@ class CPython(Facet):
                                                                   'ob_refcnt')
             yield (r_obj, v_ob_refcnt)
 
+    def handle_null_error(self, stmt, idx, ptr):
+        # Handle Objects/abstract.c's null_error()
+        # idx is the 0-based index of the argument
+        check_isinstance(stmt, gcc.Gimple)
+        check_isinstance(idx, int)
+        check_isinstance(ptr, AbstractValue)
+        if isinstance(ptr, UnknownValue):
+            self.state.raise_split_value(ptr, stmt.loc)
+        if ptr.is_null_ptr():
+            # safely handles NULL for either argument via null_error(), with PyExc_SystemError
+            if stmt.lhs:
+                value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
+            else:
+                value = None
+            t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                                      value,
+                                                      None)
+            # null_error() sets PyExc_SystemError if (!PyErr_Occurred()):
+            if t_failure.dest.cpython.exception_rvalue.is_null_ptr():
+                t_failure.desc = ('when %s raises SystemError due to'
+                                  ' NULL as argument %i at %s'
+                                  % (stmt.fn, idx + 1, stmt.loc))
+                t_failure.dest.cpython.set_exception('PyExc_SystemError',
+                                                     stmt.loc)
+            else:
+                t_failure.desc = ('when %s fails due to'
+                                  ' NULL as argument %i at %s'
+                                  % (stmt.fn, idx + 1, stmt.loc))
+            return t_failure
+        # otherwise, implicit return of None to signify no problems
+
     # Treat calls to various function prefixed with __cpychecker as special,
     # to help with debugging, and when writing selftests:
 
@@ -2241,6 +2272,20 @@ class CPython(Facet):
                                                why=('%s() can call PyString_InternFromString(), '
                                                     'which calls PyString_FromString(), '
                                                     'which requires a non-NULL pointer' % fnmeta.name))
+        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+
+    def impl_PyObject_GetItem(self, stmt, v_o, v_key):
+        fnmeta = FnMeta(name='PyObject_GetItem',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_GetItem',
+                        defined_in='Objects/abstract.c',
+                        prototype='PyObject* PyObject_GetItem(PyObject *o, PyObject *key)')
+        # safely handles NULL for either argument via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o)
+        if t_err:
+            return [t_err]
+        t_err = self.handle_null_error(stmt, 1, v_key)
+        if t_err:
+            return [t_err]
         return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
 
     def impl_PyObject_GenericGetAttr(self, stmt, v_o, v_name):
