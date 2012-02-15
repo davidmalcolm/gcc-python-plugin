@@ -1,0 +1,49 @@
+# Contains a series of lines of the form
+#
+# (1) Filed bugs:
+#       FEDORA-SRPM-NAME-VERSION-RELEASE   rhbz#FEDORA-BUG-ID  RESULT-URL
+#     e.g.:
+#       "gstreamer-python-0.10.19-2.fc15 789467 http://people.fedoraproject.org/~dmalcolm/gcc-python-plugin/2012-02-10/gstreamer-python-0.10.19-2.fc15/"
+#
+# meaning that fedora bug 789467 covers the bugs found when running
+# gstreamer-python-0.10.19-2.fc15 under the checker, and giving the URL
+# of the full results
+#
+# (2) SRPMs that haven't had a bug filed:
+#       FEDORA-SRPM-NAME-VERSION-RELEASE   NOTES
+#     e.g.
+#       "PyYAML-3.10-2.fc17                Only false positives"
+
+
+
+# This list is in historical order (by bug ID, and also by version of the
+# checker)
+
+# 2012-02-10
+gstreamer-python-0.10.19-2.fc15      rhbz#789467      http://people.fedoraproject.org/~dmalcolm/gcc-python-plugin/2012-02-10/gstreamer-python-0.10.19-2.fc15/
+
+# 2012-02-14
+python-crypto-2.5-1.fc17             rhbz#790584      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-14/python-crypto-2.5-1.fc17/
+
+# 2012-02-15
+sssd-1.6.2-5.fc16                    rhbz#790693      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/sssd-1.6.2-5.fc16/
+python-krbV-1.0.90-4.fc15            rhbz#790973      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/python-krbV-1.0.90-4.fc15/
+python-imaging-1.1.7-4.fc16          rhbz#790976      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/python-imaging-1.1.7-4.fc16/
+rpm-4.9.1.2-12.fc17                  rhbz#790979      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/rpm-4.9.1.2-12.fc17/
+libxml2-2.7.8-6.fc16                 rhbz#790983      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/libxml2-2.7.8-6.fc16/
+
+# False positives:
+PyYAML-3.10-2.fc17                   Only false positives
+dbus-python-0.83.0-9.fc17            Only false positives
+python-pycurl-7.19.0-9.fc15          Only false positives
+
+# FIXMEs:
+libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
+MySQL-python-1.2.3-3.fc16.src.rpm    FIXME
+PyQt4-4.8.4-4.fc16.src.rpm           FIXME
+python-lxml-2.3-1.fc16.src.rpm       FIXME: all appear to be bugs in the checker
+
+# TODOs: not being built with correct flags:
+python-cheetah-2.4.4-2.fc17.src.rpm  TODO: isn't being built with the correct build flags, so plugin is not run
+python-ldap-2.3.12-2.fc15.src.rpm    TODO: isn't being built with the correct build flags, so plugin is not run
+python-ldap-2.4.6-2.fc17.src.rpm     TODO: isn't being built with the correct build flags, so plugin is not run

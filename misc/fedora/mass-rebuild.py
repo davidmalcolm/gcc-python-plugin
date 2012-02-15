@@ -15,12 +15,17 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import datetime
 import glob
 import os
 import re
 import shutil
 from subprocess import check_output, Popen, PIPE
 import sys
+import webbrowser
+
+from bugreporting import NewBug, BugReportDb
+from makeindex import gather_html_reports
 
 def nvr_from_srpm_path(path):
     filename = os.path.basename(path)
@@ -61,6 +66,10 @@ for srpmname in get_local_python_srpms():
     p.communicate()
 """
 
+def get_result_dir(srpmpath):
+    n, v, r = nvr_from_srpm_path(srpmpath)
+    resultdir = 'LOGS/%s-%s-%s' % (n, v, r)
+    return resultdir
 
 def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     """
@@ -81,8 +90,7 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
         out, err = p.communicate()
         return out, err
 
-    n, v, r = nvr_from_srpm_path(srpmpath)
-    resultdir = 'LOGS/%s-%s-%s' % (n, v, r)
+    resultdir = get_result_dir(srpmpath)
     if os.path.exists(resultdir):
         shutil.rmtree(resultdir)
     os.mkdir(resultdir)
@@ -155,7 +163,86 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
 PLUGIN_PATH='gcc-python2-plugin-0.9-1.fc16.x86_64.rpm'
 MOCK_CONFIG='fedora-16-x86_64'
 
-# Rebuild all src.rpm files found in "SRPMS":
-for srpmpath in glob.glob('SRPMS/*.src.rpm'):
-    local_rebuild_of_srpm_in_mock(srpmpath, MOCK_CONFIG)
+def prepare_bug_report(srpmpath):
+    srpmname, version, release = nvr_from_srpm_path(srpmpath)
 
+    resultdir = get_result_dir(srpmpath)
+    # Open local copy of results for manual inspection:
+    webbrowser.open(os.path.join(resultdir, 'index.html'))
+
+    today = datetime.date.today()
+    datestr = today.isoformat() # e.g. "2012-02-15"
+
+    # Emit shell commands to be run.
+    # These aren't yet done automatically, since we really ought to have the
+    # manual review from above.
+    mkdircmd = 'ssh dmalcolm@fedorapeople.org mkdir public_html/gcc-python-plugin/%(datestr)s' % locals()
+    print(mkdircmd)
+    scpcmd = 'scp -r %(resultdir)s dmalcolm@fedorapeople.org:public_html/gcc-python-plugin/%(datestr)s' % locals()
+    print(scpcmd)
+
+    reporturl = 'http://fedorapeople.org/~dmalcolm/gcc-python-plugin/%(datestr)s/%(srpmname)s-%(version)s-%(release)s/' % locals()
+
+    # FIXME:
+    gitversion='073d390de53ef52136bd90e5ac06f1ef833d047d'
+
+    comment = """
+Description of problem:
+I've been writing an experimental static analysis tool to detect bugs commonly occurring within C Python extension modules:
+  https://fedorahosted.org/gcc-python-plugin/
+  http://gcc-python-plugin.readthedocs.org/en/latest/cpychecker.html
+  http://fedoraproject.org/wiki/Features/StaticAnalysisOfPythonRefcounts
+
+I ran the latest version of the tool (in git master; post 0.9) on
+%(srpmname)s-%(version)s-%(release)s.src.rpm, and it reports various errors.
+
+You can see a list of errors here, triaged into categories (from most significant to least significant):
+%(reporturl)s
+
+FIXME: add notes on the bugs here
+
+There may of course be other bugs in my checker tool.
+
+Hope this is helpful; let me know if you need help reading the logs that the tool generates - I know that it could use some improvement.
+
+Version-Release number of selected component (if applicable):
+%(srpmname)s-%(version)s-%(release)s
+gcc-python-plugin post-0.9 git %(gitversion)s running the checker in an *f16* chroot
+""" % locals()
+
+    bug = NewBug(product='Fedora',
+                 version='rawhide',
+                 component=srpmname,
+                 summary=('Bugs found in %s-%s-%s using gcc-with-cpychecker'
+                          ' static analyzer' % (srpmname, version, release)),
+                 comment=comment,
+                 blocked=['cpychecker'],
+                 bug_file_loc=reporturl)
+    bugurl = bug.make_url()
+    webbrowser.open(bugurl)
+
+# Rebuild all src.rpm files found in "SRPMS" as necessary:
+if 1:
+    for srpmpath in sorted(glob.glob('SRPMS/*.src.rpm')):
+
+        srpmname, version, release = nvr_from_srpm_path(srpmpath)
+
+        bugdb = BugReportDb()
+        # print(bugdb.bugs)
+        statuses = bugdb.find(srpmname)
+        if statuses:
+            for status in statuses:
+                print(status.get_status())
+            continue
+
+        resultdir = get_result_dir(srpmpath)
+        if not os.path.exists(resultdir):
+            local_rebuild_of_srpm_in_mock(srpmpath, MOCK_CONFIG)
+        gather_html_reports(resultdir, 'Errors seen in %s' % resultdir)
+        prepare_bug_report(srpmpath)
+        break
+
+# TODO:
+# - automate grabbing the src.rpms; see e.g.:
+#     http://download.fedora.devel.redhat.com/pub/fedora/linux/releases/16/Everything/source/SRPMS/
+#     http://download.fedora.devel.redhat.com/pub/fedora/linux/development/17/source/SRPMS/
