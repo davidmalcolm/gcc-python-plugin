@@ -280,10 +280,14 @@ def gather_html_reports(path, title):
         f.write('  </body>\n')
         f.write('</html>\n')
 
+def main():
+    # locate .html
+    # iterate over toplevel in "LOGS":
+    for resultdir in os.listdir('LOGS'):
+        resultpath = os.path.join('LOGS', resultdir)
+        print(resultpath)
+        gather_html_reports(resultpath, 'Errors seen in %s' % resultdir)
 
-# locate .html
-# iterate over toplevel in "LOGS":
-for resultdir in os.listdir('LOGS'):
-    resultpath = os.path.join('LOGS', resultdir)
-    print(resultpath)
-    gather_html_reports(resultpath, 'Errors seen in %s' % resultdir)
+if __name__ == '__main__':
+    main()
+
