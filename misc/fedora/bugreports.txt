@@ -16,8 +16,10 @@
 
 
 
+############################################################################
 # This list is in historical order (by bug ID, and also by version of the
 # checker)
+############################################################################
 
 # 2012-02-10
 gstreamer-python-0.10.19-2.fc15      rhbz#789467      http://people.fedoraproject.org/~dmalcolm/gcc-python-plugin/2012-02-10/gstreamer-python-0.10.19-2.fc15/
@@ -32,10 +34,34 @@ python-imaging-1.1.7-4.fc16          rhbz#790976      http://fedorapeople.org/~d
 rpm-4.9.1.2-12.fc17                  rhbz#790979      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/rpm-4.9.1.2-12.fc17/
 libxml2-2.7.8-6.fc16                 rhbz#790983      http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-15/libxml2-2.7.8-6.fc16/
 
+# 2012-02-16
+PyPAM-0.5.0-12.fc17                  rhbz#791168     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/PyPAM-0.5.0-12.fc17/
+PySBIG-0.04-8.fc17                   rhbz#791171     (not-uploaded)
+PyX-0.11.1-2.fc17                    rhbz#791175     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/PyX-0.11.1-2.fc17/
+anaconda-17.8-1.fc17                 rhbz#791180     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/anaconda-17.8-1.fc17/
+bluefish-2.2.1-2.fc17                rhbz#791186     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/bluefish-2.2.1-2.fc17/
+canto-0.7.4-4.fc17                   rhbz#791255     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/canto-0.7.4-4.fc17/
+claws-mail-plugins-3.8.0-4.fc17      rhbz#791264     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/claws-mail-plugins-3.8.0-4.fc17/
+clearsilver-0.10.5-17.fc17           rhbz#791278     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/clearsilver-0.10.5-17.fc17/
+cmusphinx3-0.8-10.fc17               rhbz#791280     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/cmusphinx3-0.8-10.fc17/
+
+
+############################################################################
+# The following are grouped by rough category:
+############################################################################
+
 # False positives:
+Mayavi-3.4.0-2.fc15                  Only false positives
 PyYAML-3.10-2.fc17                   Only false positives
+ScientificPython-2.8-15.fc17         Intended behavior of PyNetCDFFile_GetVariable unknown; may well be just a false positive
 dbus-python-0.83.0-9.fc17            Only false positives
 python-pycurl-7.19.0-9.fc15          Only false positives
+brltty-4.3-4.fc17                    Only false positives
+
+
+# Not worth fixing:
+calibre-0.8.39-1.fc17                Only when module initialization fails
+
 
 # FIXMEs:
 libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
@@ -43,7 +69,65 @@ MySQL-python-1.2.3-3.fc16.src.rpm    FIXME
 PyQt4-4.8.4-4.fc16.src.rpm           FIXME
 python-lxml-2.3-1.fc16.src.rpm       FIXME: all appear to be bugs in the checker
 
+
 # TODOs: not being built with correct flags:
 python-cheetah-2.4.4-2.fc17.src.rpm  TODO: isn't being built with the correct build flags, so plugin is not run
 python-ldap-2.3.12-2.fc15.src.rpm    TODO: isn't being built with the correct build flags, so plugin is not run
 python-ldap-2.4.6-2.fc17.src.rpm     TODO: isn't being built with the correct build flags, so plugin is not run
+
+Cython-0.15.1-2.fc16                 TODO: isn't being built with the correct build flags, so plugin is not run
+Io-language-20080330-8.fc17.2        TODO: usage appears to be just within addons/Python/source/IoPython.c, and this isn't being built with the correct flags
+PyAmanith-0.3.35-12.fc17             TODO: isn't being built with the correct build flags, so plugin is not run
+PyMca-4.4.1-3.p1.fc16                TODO: isn't being built with the correct build flags, so plugin is not run
+PyQuante-1.6.4-3.fc17                TODO: isn't being built with the correct build flags, so plugin is not run
+
+
+# FIXME: checker fails completely on C++, with errors of the form:
+#   Traceback (most recent call last):
+#     File "/usr/lib/gcc/x86_64-redhat-linux/4.6.2/plugin/python2/libcpychecker/__init__.py", line 57, in execute
+#       if not get_PyObject():
+#     File "/usr/lib/gcc/x86_64-redhat-linux/4.6.2/plugin/python2/libcpychecker/types.py", line 57, in get_PyObject
+#       return get_global_typedef('PyObject')
+#     File "/usr/lib/gcc/x86_64-redhat-linux/4.6.2/plugin/python2/gccutils.py", line 38, in get_global_typedef
+#       for v in u.block.vars:
+#   AttributeError: 'NoneType' object has no attribute 'vars'
+OpenImageIO-0.10.4-2.fc17  FIXME: C++
+adonthell-0.3.5-0.12.fc17  FIXME: C++
+afflib-3.6.15-2.fc17       FIXME: C++
+airinv-0.1.2-2.fc17        FIXME: C++
+airrac-0.2.3-2.fc17        FIXME: C++
+airsched-0.1.4-2.fc17      FIXME: C++
+avogadro-1.0.3-7.fc17      FIXME: C++
+bacula-5.2.5-3.fc17        FIXME: failing in same way, even for C files
+bacula2-2.4.4-9.fc17       FIXME: failing in same way, even for C files
+boost-1.48.0-9.fc17        FIXME: C++
+boost141-1.41.0-2.fc17     FIXME: C++
+
+
+# Other C++ issues:
+bro-1.5.1-4.fc17    FIXME: configure: error: C++ compiler cannot create executables
+cegui-0.7.6-2.fc17  FIXME: configure: error: C++ compiler cannot create executables
+
+
+# Other issues:
+anjuta-3.3.4-1.fc17        FIXME: build failed for some reason
+
+
+# To be reported:
+PyGreSQL-4.0-4.fc17        FIXME: to be reported
+PyXML-0.8.4-27.fc17        FIXME: for some reason the HTML is missing in places
+
+
+# Is this a false positive?
+#    return Py_BuildValue("N", pygobject_new((GObject *)icon));
+# when Py_Py_BuildValue() fails
+autobuild-applet-1.0.3-14.fc17   FIXME: false positive?
+
+
+# FIXME:
+#  False positives for "Returning (PyObject*)NULL without setting an exception"
+#  in Cython generated code: Cython seems to call __Pyx_Raise to set an
+#  exception
+
+
+bzr-2.5-0.2.b5.fc17   FIXME: various false positives (I think) in Cython-generated code
