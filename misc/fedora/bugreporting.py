@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from collections import OrderedDict, namedtuple
+import glob
 import re
 import urllib
 
@@ -99,6 +100,34 @@ class BugReportDb:
             if srpmname == status.srpm.name:
                 result.append(status)
         return result
+
+    def summary(self):
+        num_bugs = 0
+        fixmes = 0
+        others = 0
+        for status in self.statuses:
+            if isinstance(status, BugReport):
+                num_bugs += 1
+            elif isinstance(status, Unreported):
+                if 'FIXME' in status.notes or 'TODO' in status.notes:
+                    fixmes += 1
+                else:
+                    others += 1
+        num_src_rpms = len(glob.glob('SRPMS/*.src.rpm'))
+        return num_bugs, fixmes, others, num_src_rpms
+
+    def print_summary(self):
+        num_bugs, fixmes, others, num_src_rpms = self.summary()
+        def print_amount(desc, count):
+            print('* %i %s (%i%%)'
+                  % (count, desc, count * 100 / num_src_rpms))
+        print_amount('bugs filed for src.rpms, where the checker found genuine problems', num_bugs)
+        print_amount('src.rpms not requiring a bug to be filed', others)
+        print_amount('src.rpms requiring followup work', fixmes)
+        print_amount('src.rpms not yet processed',
+                     num_src_rpms - (num_bugs + fixmes +others))
+        print('out of %i total src.rpms (that link against libpython2.7)'
+              % num_src_rpms)
 
 def main():
     # Test code: open the user's webbrowser to a page with various fields

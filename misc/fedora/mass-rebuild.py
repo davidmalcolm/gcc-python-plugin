@@ -229,6 +229,7 @@ if 1:
 
         bugdb = BugReportDb()
         # print(bugdb.bugs)
+        bugdb.print_summary()
         statuses = bugdb.find(srpmname)
         if statuses:
             for status in statuses:
