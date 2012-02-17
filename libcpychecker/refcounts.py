@@ -3028,6 +3028,20 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyTraceback_*
+    ########################################################################
+    def impl_PyTraceBack_Here(self, stmt, v_frame):
+        fnmeta = FnMeta(name='PyTraceBack_Here',
+                        prototype='int PyTraceBack_Here(PyFrameObject *frame)',
+                        declared_in='traceback.h',
+                        defined_in='Python/traceback.c')
+        # (used in cython-generated code __Pyx_AddTraceback)
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
+    ########################################################################
     # PyTuple_*
     ########################################################################
     def impl_PyTuple_GetItem(self, stmt, v_op, v_i):
