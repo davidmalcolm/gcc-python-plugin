@@ -24,6 +24,8 @@ import re
 
 from BeautifulSoup import BeautifulSoup
 
+from bugreporting import BugReportDb, Srpm
+
 class ErrorReport(namedtuple('ErrorReport',
                              ('htmlpath', 'htmlid', 'filename', 'function', 'errmsg', 'htmlpre'))):
     def href(self):
@@ -31,15 +33,17 @@ class ErrorReport(namedtuple('ErrorReport',
 
     def contains_failure(self):
         # Does this appear to be within an error-handling path?
-        print('htmlpre: %s' % self.htmlpre)
+        if 0: #self.function == 'clawsmail_compose_new':
+            if self.errmsg == 'calling PyObject_Call with NULL as argument 1 (class) at composewindowtype.c:523':
+                print('htmlpre: %s' % self.htmlpre)
         m = re.match('.*when (\S+) fails.*',
                      str(self.htmlpre),
                      re.MULTILINE|re.DOTALL)
         if m:
-            print m.groups()
+            #print m.groups()
             return True
         else:
-            print 'not matched'
+            #print 'not matched'
             return False
 
     def is_within_initialization(self):
@@ -98,7 +102,7 @@ def get_errors_from_file(htmlpath):
             table = div.table
             if not table:
                 continue
-            print div['id']
+            #print div['id']
             #print 'div: %r' % div
             rows = table('tr')
             def get_second_col(row):
@@ -237,6 +241,7 @@ class BuildLog:
     def __init__(self, path):
         self.seen_plugin = False
         self.unimplemented_functions = set()
+        self.cplusplus_failure = False
 
         buildlog = os.path.join(path, 'build.log')
         with open(buildlog) as f:
@@ -249,6 +254,9 @@ class BuildLog:
                              line)
                 if m:
                     self.unimplemented_functions.add(m.group(1))
+
+                if "AttributeError: 'NoneType' object has no attribute 'vars'" in line:
+                    self.cplusplus_failure = True
 
 def generate_index_html(path, title):
     outpath = os.path.join(path, 'index.html')
@@ -265,25 +273,34 @@ def generate_index_html(path, title):
             f.write('    <p>The GCC arguments for invoking the plugin were\n'
                     '       not seen in the build logs: did the plugin actually\n'
                     '       get run?</p>')
+            srpm = Srpm.from_path(path)
+            BugReportDb.add_status(srpm,
+                                   "TODO: isn't being built with the correct build flags, so plugin is not run")
+
+        if buildlog.cplusplus_failure:
+            f.write('    <p>C++ failure</p>\n')
+            srpm = Srpm.from_path(path)
+            BugReportDb.add_status(srpm, "FIXME: C++")
 
         # Gather the ErrorReport by severity
         triager = Triager()
 
         # mapping from Severity to list of ErrorReport
         severities = {}
+        num_reports = 0
 
         for dirpath, dirnames, filenames in os.walk(path):
             #print dirpath, dirnames, filenames
             for filename in filenames:
                 if filename.endswith('-refcount-errors.html'):
-                    print '  ', os.path.join(dirpath, filename)
+                    #print '  ', os.path.join(dirpath, filename)
                     htmlpath = os.path.join(dirpath, filename)
                     for er in get_errors_from_file(htmlpath):
-                        print(er.filename)
-                        print(er.function)
-                        print(er.errmsg)
+                        #print(er.filename)
+                        #print(er.function)
+                        #print(er.errmsg)
                         sev = triager.classify(er)
-                        print(sev)
+                        #print(sev)
                         if sev in severities:
                             severities[sev].append(er)
                         else:
@@ -294,6 +311,7 @@ def generate_index_html(path, title):
                 f.write('    %s\n' % sev.description)
                 f.write('    <table>\n')
                 for er in severities[sev]:
+                    num_reports += 1
                     href = os.path.relpath(er.href(), path)
                     f.write('      <tr> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> </tr>'
                             % (href, er.filename,
@@ -309,6 +327,9 @@ def generate_index_html(path, title):
             for fnname in sorted(buildlog.unimplemented_functions):
                 f.write('      <li><pre>%s</pre></li>\n' % fnname)
             f.write('    </ul>\n')
+
+        if num_reports == 0 and not buildlog.unimplemented_functions:
+            f.write('    <p>Nothing was reported; did the plugin run correctly?\n')
 
         f.write('  </body>\n')
         f.write('</html>\n')

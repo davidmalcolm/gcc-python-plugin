@@ -94,6 +94,76 @@ ghmm-0.7-7.svn2286.fc17              TODO: isn't being built with the correct bu
 gnumeric-1.11.1-1.fc17               TODO: isn't being built with the correct build flags, so plugin is not run
 graphviz-2.28.0-14.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
 ice-3.4.2-8.fc17                     TODO: isn't being built with the correct build flags, so plugin is not run
+kig-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+kross-interpreters-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+libldb-1.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+libreoffice-3.5.0.3-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+libselinux-2.1.9-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+libssh2-python-0.7.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+libtevent-0.9.15-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+listen-0.6.5-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+marble-4.8.0-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+mercurial-2.1-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+policycoreutils-2.1.10-21.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+py-bcrypt-0.2-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+py-radix-0.5-9.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pyaudio-0.2.3-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pycdio-0.17-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pyicu-1.2-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pykde4-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pyliblzma-0.5.3-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pyodbc-2.1.5-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pyparted-3.8-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pypop-0.7.0-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pystatgrab-0.5-9.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-PSI-0.3-0.4.b2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-arm4-1.2-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-basemap-0.99.4-13.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-coverage-3.5.1-0.1.b1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-cryptsetup-0.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-ctags-1.0.5-4.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
+python-cvxopt-1.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-dmidecode-3.10.13-3.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
+python-ethtool-0.7-2.fc16  TODO: isn't being built with the correct build flags, so plugin is not run
+python-genshi-0.6-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-guppy-0.1.9-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-igraph-0.5.4-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-imdb-4.7-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-iptables-0.1.0-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-iwlib-1.1-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-kerberos-1.1-8.1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-kinterbasdb-3.3.0-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-matplotlib-1.0.1-18.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-mecab-0.991-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-msgpack-0.1.12-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-netifaces-0.5-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-numeric-24.2-17.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-numexpr-2.0.1-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-poppler-qt4-0.16.2-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-psycopg2-2.4.4-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-ptrace-0.6.3-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-pywt-0.2.0-3.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
+python-schedutils-0.2-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-shapely-1.2.13-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-simplejson-2.3.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-simpleparse-2.1.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-storm-0.19-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-sybase-0.39-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-sysv_ipc-0.4.2-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-tables-2.3.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+python-twisted-runner-11.1.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+pywcs-1.11-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+qmtest-2.4.1-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+quodlibet-2.3.92-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+rdiff-backup-1.2.8-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+setools-3.3.7-21.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+superkaramba-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+texworks-0.4.3-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+wxPython-2.8.12.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+yum-metadata-parser-1.1.4-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
+
+
+
 
 # FIXME: checker fails completely on C++, with errors of the form:
 #   Traceback (most recent call last):
@@ -126,6 +196,45 @@ gnome-commander-1.2.8.15-2.fc16  FIXME: C++
 groonga-1.3.0-2.fc17       FIXME: C++
 hugin-2011.4.0-3.fc17      FIXME: C++
 k3d-0.8.0.2-6.fc17         FIXME: C++
+kvirc-4.0.4-3.fc17  FIXME: C++
+lcms-1.19-5.fc17  FIXME: C++
+libdigidocpp-0.3.0-13.fc17  FIXME: C++
+libimobiledevice-1.1.1-5.fc17  FIXME: C++
+libprelude-1.0.0-11.fc17  FIXME: C++
+mapserver-6.0.1-5.fc17  FIXME: C++
+matahari-0.6.0-3.fc17  FIXME: C++
+natus-0.1.5-2.fc15  FIXME: C++
+openbabel-2.3.1-1.fc17  FIXME: C++
+opencv-2.3.1-7.fc17  FIXME: C++
+paraview-3.12.0-7.fc17  FIXME: C++
+pcapy-0.10.5-10.fc17  FIXME: C++
+picard-0.16-2.fc17  FIXME: C++
+picviz-0.6-7.fc17  FIXME: C++
+plplot-5.9.9-5.svn12161.fc17  FIXME: C++
+portmidi-217-5.fc17  FIXME: C++
+pybox2d-2.0.2b2-7.fc17  FIXME: C++
+pycryptopp-0.5.29-3.fc17  FIXME: C++
+pymilia-0.3.0-11.fc17  FIXME: C++
+pymol-1.4.1-7.20110502svn3947.fc17  FIXME: C++
+python-pyside-1.1.0-1.fc17  FIXME: C++
+python-tag-0.94.8-3.fc17  FIXME: C++
+qgis-1.7.3-1.fc17  FIXME: C++
+rekall-2.4.6-18.fc17  FIXME: C++
+rmol-0.25.3-3.fc17  FIXME: C++
+root-5.32.00-1.fc17  FIXME: C++
+scim-python-0.1.13rc1-10.fc17  FIXME: C++
+scribus-1.4.0-3.fc17  FIXME: C++
+semantik-0.7.3-3.fc17  FIXME: C++
+sevmgr-0.2.0-1.fc17  FIXME: C++
+shiboken-1.1.0-1.fc17  FIXME: C++
+simfqt-0.1.3-2.fc17  FIXME: C++
+stdair-0.45.1-1.fc17  FIXME: C++
+trademgen-0.2.2-2.fc17  FIXME: C++
+travelccm-0.5.3-2.fc17  FIXME: C++
+vigra-1.8.0-2.fc17  FIXME: C++
+vtk-5.8.0-3.fc17  FIXME: C++
+xmms2-0.8-3.fc17  FIXME: C++
+zorba-2.1.0-4.fc17  FIXME: C++
 
 # Other C++ issues:
 bro-1.5.1-4.fc17    FIXME: configure: error: C++ compiler cannot create executables
@@ -203,3 +312,4 @@ iscsi-initiator-utils-6.2.0.872-18.fc17  TODO
 ibus-anthy-1.2.6-5.fc17  TODO: SWIG-built
 input-pad-1.0.1-3.fc17   TODO: SWIG-built
 
+ldns-1.6.12-1.fc17       FIXME: many errors

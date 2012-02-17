@@ -17,6 +17,7 @@
 
 from collections import OrderedDict, namedtuple
 import glob
+import os
 import re
 import urllib
 
@@ -45,6 +46,12 @@ class NewBug:
 
 class Srpm(namedtuple('Srpm',
                       ('name', 'version', 'release'))):
+    @classmethod
+    def from_path(cls, path):
+        m = re.match('(\S+)-(\S+)-(\S+)', os.path.basename(path))
+        n, v, r = m.groups()
+        return cls(n, v, r)
+
     def __str__(self):
         return '%s-%s-%s' % (self.name, self.version, self.release)
 
@@ -128,6 +135,11 @@ class BugReportDb:
                      num_src_rpms - (num_bugs + fixmes +others))
         print('out of %i total src.rpms (that link against libpython2.7)'
               % num_src_rpms)
+
+    @classmethod
+    def add_status(cls, srpm, notes):
+        with open('bugreports.txt', 'a') as f:
+            f.write('%s  %s\n' % (srpm, notes))
 
 def main():
     # Test code: open the user's webbrowser to a page with various fields

@@ -224,12 +224,12 @@ gcc-python-plugin post-0.9 git %(gitversion)s running the checker in an *f16* ch
 # Rebuild all src.rpm files found in "SRPMS" as necessary:
 if 1:
     for srpmpath in sorted(glob.glob('SRPMS/*.src.rpm')):
-
         srpmname, version, release = nvr_from_srpm_path(srpmpath)
 
         bugdb = BugReportDb()
         # print(bugdb.bugs)
         bugdb.print_summary()
+        print('Processing %s' % srpmname)
         statuses = bugdb.find(srpmname)
         if statuses:
             for status in statuses:
