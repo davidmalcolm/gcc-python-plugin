@@ -1720,6 +1720,13 @@ class CPython(Facet):
     ########################################################################
     # PyImport_*
     ########################################################################
+    def impl_PyImport_AddModule(self, stmt, v_name):
+        fnmeta = FnMeta(name='PyImport_AddModule',
+                        docurl='http://docs.python.org/c-api/import.html#PyImport_AddModule')
+        # used by cython-generated modules
+        # returns a borrowed ref (or NULL+exc)
+        return self.make_transitions_for_borrowed_ref_or_fail(stmt, fnmeta)
+
     def impl_PyImport_AppendInittab(self, stmt, v_name, v_initfunc):
         fnmeta = FnMeta(name='PyImport_AppendInittab',
                         docurl='http://docs.python.org/c-api/import.html#PyImport_AppendInittab')
