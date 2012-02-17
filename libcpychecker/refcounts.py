@@ -1665,6 +1665,41 @@ class CPython(Facet):
         return [self.state.mktrans_nop(stmt, 'Py_Finalize')]
 
     ########################################################################
+    # PyFrame_*
+    ########################################################################
+    def impl_PyFrame_New(self, stmt,
+                         v_tstate, v_code, v_globals, v_locals):
+        fnmeta = FnMeta(name='PyFrame_New',
+                        declared_in='frameobject.h',
+                        prototype=('PyFrameObject *\n'
+                                   'PyFrame_New(PyThreadState *tstate, PyCodeObject *code, PyObject *globals,\n'
+                                   'PyObject *locals'),
+                        defined_in='Objects/frameobject.c')
+        # (used by Cython-generated code in static void __Pyx_AddTraceback in
+        # each file)
+        # For now, ignore the effects on the input variables:
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyFrameObject',
+                                                          'PyFrame_Type')
+        return [t_success, t_failure]
+
+    ########################################################################
+    # Py_GetVersion
+    ########################################################################
+    def impl_Py_GetVersion(self, stmt):
+        fnmeta = FnMeta(name='Py_GetVersion',
+                        docurl='http://docs.python.org/c-api/init.html#Py_GetVersion',
+                        defined_in='Python/getversion.c')
+        # Returns a non-NULL pointer
+        returntype = stmt.fn.type.dereference.type
+        r_result = Region('region-for-sys-version', None)
+        self.state.region_for_var[r_result] = r_result
+        v_nonnull = PointerToRegion(returntype, stmt.loc, r_result)
+        return [self.state.mktrans_assignment(stmt.lhs,
+                                              v_nonnull,
+                                              fnmeta.name)]
+
+    ########################################################################
     # PyGILState_*
     ########################################################################
     def impl_PyGILState_Ensure(self, stmt):
