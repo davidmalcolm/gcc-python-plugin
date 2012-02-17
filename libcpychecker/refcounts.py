@@ -2901,6 +2901,20 @@ class CPython(Facet):
                                                           'PyString_Type')
         return [t_success, t_failure]
 
+    def impl_PyString_InternFromString(self, stmt, v_v):
+        fnmeta = FnMeta(name='PyString_InternFromString',
+                        declared_in='stringobject.h',
+                        prototype='PyObject* PyString_InternFromString(const char *v)',
+                        defined_in='Objects/stringobject.c',
+                        docurl='http://docs.python.org/c-api/string.html#PyString_InternFromString')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_v,
+               why=('%s() calls PyString_FromString(), '
+                    'which requires a non-NULL pointer' % fnmeta.name))
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyStringObject',
+                                                          'PyString_Type')
+        return [t_success, t_failure]
+
     def impl_PyString_Size(self, stmt, v_string):
         fnmeta = FnMeta(name='PyString_Size',
                         docurl='http://docs.python.org/c-api/string.html#PyString_Size',
