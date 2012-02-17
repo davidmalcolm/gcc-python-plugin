@@ -2629,6 +2629,19 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyOS_*
+    ########################################################################
+    def impl_PyOS_snprintf(self, stmt, v_str, v_size, v_format, *v_args):
+        fnmeta = FnMeta(name='PyOS_snprintf',
+                        docurl='http://docs.python.org/c-api/conversion.html#PyOS_snprintf',
+                        prototype='int PyOS_snprintf(char *str, size_t size, const char *format, ...)')
+        returntype = stmt.fn.type.dereference.type
+        return [self.state.mktrans_assignment(stmt.lhs,
+                                              UnknownValue.make(returntype,
+                                                                stmt.loc),
+                                              None)]
+
+    ########################################################################
     # PyRun_*
     ########################################################################
     def impl_PyRun_SimpleFileExFlags(self, stmt, v_fp, v_filename,
