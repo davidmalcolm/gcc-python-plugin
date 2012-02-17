@@ -1235,6 +1235,34 @@ class CPython(Facet):
                 t_failure]
 
     ########################################################################
+    # PyCode_*
+    ########################################################################
+    def impl_PyCode_New(self, stmt,
+                        v_argcount, v_nlocals, v_stacksize, v_flags,
+                        v_code, v_consts, v_names,
+                        v_varnames, v_freevars, v_cellvars,
+                        v_filename, v_name, v_firstlineno,
+                        v_lnotab):
+        fnmeta = FnMeta(name='PyCode_New',
+                        docurl='http://docs.python.org/c-api/code.html#PyCode_New',
+                        declared_in='code.h',
+                        prototype=('PyCodeObject *\n'
+                                   'PyCode_New(int argcount, int nlocals, int stacksize, int flags,\n'
+                                   '           PyObject *code, PyObject *consts, PyObject *names,\n'
+                                   '           PyObject *varnames, PyObject *freevars, PyObject *cellvars,\n'
+                                   '           PyObject *filename, PyObject *name, int firstlineno,\n'
+                                   '           PyObject *lnotab);'),
+                        defined_in='Objects/codeobject.c')
+        # (used by Cython-generated code in static void __Pyx_AddTraceback in
+        # each file)
+        # For now, ignore the effects on the input variables:
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyCodeObject',
+                                                          'PyCode_Type')
+        return [t_success, t_failure]
+
+
+    ########################################################################
     # PyDict_*
     ########################################################################
     def impl_PyDict_GetItem(self, stmt, v_mp, v_key):
