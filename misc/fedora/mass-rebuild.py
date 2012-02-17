@@ -25,7 +25,7 @@ import sys
 import webbrowser
 
 from bugreporting import NewBug, BugReportDb
-from makeindex import gather_html_reports
+from makeindex import generate_index_html
 
 def nvr_from_srpm_path(path):
     filename = os.path.basename(path)
@@ -239,7 +239,7 @@ if 1:
         resultdir = get_result_dir(srpmpath)
         if not os.path.exists(resultdir):
             local_rebuild_of_srpm_in_mock(srpmpath, MOCK_CONFIG)
-        gather_html_reports(resultdir, 'Errors seen in %s' % resultdir)
+        generate_index_html(resultdir, 'Errors seen in %s' % resultdir)
         prepare_bug_report(srpmpath)
         break
 

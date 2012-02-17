@@ -232,7 +232,25 @@ about internal API calls that can lead to an exception being set''')
 <p>The triager didn't know how to classify these ones</p>
 ''')
 
-def gather_html_reports(path, title):
+class BuildLog:
+    # Wrapper around a "build.log" scraped from the mock build
+    def __init__(self, path):
+        self.seen_plugin = False
+        self.unimplemented_functions = set()
+
+        buildlog = os.path.join(path, 'build.log')
+        with open(buildlog) as f:
+            for line in f.readlines():
+                if 0:
+                    print repr(line)
+                if '-fplugin=python2 -fplugin-arg-python2-script=/test.py' in line:
+                    self.seen_plugin = True
+                m = re.match('NotImplementedError: not yet implemented: (\S+)',
+                             line)
+                if m:
+                    self.unimplemented_functions.add(m.group(1))
+
+def generate_index_html(path, title):
     outpath = os.path.join(path, 'index.html')
     with open(outpath, 'w') as f:
         f.write('<html><head><title>%s</title></head>\n' % title)
@@ -241,6 +259,12 @@ def gather_html_reports(path, title):
         f.write('  <h1>%s</h1>\n' % title)
         f.write("  <p>This is a summary of errors seen when compiling with <a href='https://fedorahosted.org/gcc-python-plugin/'>an experimental static analysis tool</a></p>")
         f.write('  <p>Raw build logs can be seen <a href="build.log">here</a></p>\n')
+
+        buildlog = BuildLog(path)
+        if not buildlog.seen_plugin:
+            f.write('    <p>The GCC arguments for invoking the plugin were\n'
+                    '       not seen in the build logs: did the plugin actually\n'
+                    '       get run?</p>')
 
         # Gather the ErrorReport by severity
         triager = Triager()
@@ -277,6 +301,15 @@ def gather_html_reports(path, title):
                                href, er.errmsg))
                 f.write('    </table>\n')
 
+        if buildlog.unimplemented_functions:
+            f.write('    <h2>Implementation notes for gcc-with-cpychecker</h2>\n')
+            f.write('    <p>The following "Py" functions were used but aren\'t\n'
+                    '       yet explicitly handled by gcc-with-cpychecker</p>\n'
+                    '    <ul>\n')
+            for fnname in sorted(buildlog.unimplemented_functions):
+                f.write('      <li><pre>%s</pre></li>\n' % fnname)
+            f.write('    </ul>\n')
+
         f.write('  </body>\n')
         f.write('</html>\n')
 
@@ -286,7 +319,7 @@ def main():
     for resultdir in os.listdir('LOGS'):
         resultpath = os.path.join('LOGS', resultdir)
         print(resultpath)
-        gather_html_reports(resultpath, 'Errors seen in %s' % resultdir)
+        generate_index_html(resultpath, 'Errors seen in %s' % resultdir)
 
 if __name__ == '__main__':
     main()
