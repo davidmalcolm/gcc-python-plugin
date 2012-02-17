@@ -3250,6 +3250,20 @@ class CPython(Facet):
         r_newobj, t_success, t_failure = self.object_ctor_bytes(stmt)
         return [t_success, t_failure]
 
+    def impl_PyUnicodeUCS4_DecodeUTF8(self, stmt, v_s, v_size, v_errors):
+        fnmeta = FnMeta(name='PyUnicodeUCS4_DecodeUTF8',
+                        docurl='http://docs.python.org/c-api/unicode.html#PyUnicode_DecodeUTF8',
+                        prototype=('PyObject *\n'
+                                   'PyUnicode_DecodeUTF8(const char *s,\n'
+                                   '                     Py_ssize_t size,\n'
+                                   '                     const char *errors)'),
+                        defined_in='Objects/unicodeobject.c')
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyUnicodeObject',
+                                                          'PyUnicode_Type')
+        return [t_success, t_failure]
+
+
     ########################################################################
     # (end of Python API implementations)
     ########################################################################
