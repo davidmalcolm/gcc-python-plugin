@@ -44,7 +44,9 @@ canto-0.7.4-4.fc17                   rhbz#791255     http://fedorapeople.org/~dm
 claws-mail-plugins-3.8.0-4.fc17      rhbz#791264     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/claws-mail-plugins-3.8.0-4.fc17/
 clearsilver-0.10.5-17.fc17           rhbz#791278     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/clearsilver-0.10.5-17.fc17/
 cmusphinx3-0.8-10.fc17               rhbz#791280     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/cmusphinx3-0.8-10.fc17/
-
+deltarpm-3.6-0.7.20110223git.fc17    rhbz#791359     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/deltarpm-3.6-0.7.20110223git.fc17/
+font-manager-0.5.7-4.fc17            rhbz#794528     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/font-manager-0.5.7-4.fc17/
+ganglia-3.1.7-5.fc17                 rhbz#794532     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-16/ganglia-3.1.7-5.fc17/
 
 ############################################################################
 # The following are grouped by rough category:
@@ -57,11 +59,14 @@ ScientificPython-2.8-15.fc17         Intended behavior of PyNetCDFFile_GetVariab
 dbus-python-0.83.0-9.fc17            Only false positives
 python-pycurl-7.19.0-9.fc15          Only false positives
 brltty-4.3-4.fc17                    Only false positives
-
+dracut-modules-olpc-0.6.1-2.fc17     Appear to all be false positives
 
 # Not worth fixing:
 calibre-0.8.39-1.fc17                Only when module initialization fails
-
+cwiid-0.6.00-18.20100505gitfadf11e.fc17  Only in module initialization
+fonttools-2.3-4.fc17                 Only in module initialization
+freeipa-2.1.90-0.1.fc17              Only in module initialization
+glade3-3.10.2-3.fc17                 Only in module initialization
 
 # FIXMEs:
 libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
@@ -80,7 +85,15 @@ Io-language-20080330-8.fc17.2        TODO: usage appears to be just within addon
 PyAmanith-0.3.35-12.fc17             TODO: isn't being built with the correct build flags, so plugin is not run
 PyMca-4.4.1-3.p1.fc16                TODO: isn't being built with the correct build flags, so plugin is not run
 PyQuante-1.6.4-3.fc17                TODO: isn't being built with the correct build flags, so plugin is not run
-
+coccinelle-1.0.0-0.rc9.6.fc17        TODO: isn't being built with the correct build flags, so plugin is not run
+duplicity-0.6.17-2.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
+fuse-python-0.2.1-4.fc17             TODO: isn't being built with the correct build flags, so plugin is not run
+gcc-python-plugin-0.9-1.fc17         TODO: ironically, it isn't being built with the correct build flags, so plugin is not run
+gdb-7.4.50.20120120-17.fc17          TODO: isn't being built with the correct build flags, so plugin is not run
+ghmm-0.7-7.svn2286.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
+gnumeric-1.11.1-1.fc17               TODO: isn't being built with the correct build flags, so plugin is not run
+graphviz-2.28.0-14.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
+ice-3.4.2-8.fc17                     TODO: isn't being built with the correct build flags, so plugin is not run
 
 # FIXME: checker fails completely on C++, with errors of the form:
 #   Traceback (most recent call last):
@@ -102,21 +115,55 @@ bacula-5.2.5-3.fc17        FIXME: failing in same way, even for C files
 bacula2-2.4.4-9.fc17       FIXME: failing in same way, even for C files
 boost-1.48.0-9.fc17        FIXME: C++
 boost141-1.41.0-2.fc17     FIXME: C++
-
+coot-0.6.2-12.20110715svn3566.fc17  FIXME: C++
+csound-5.13.0-7.fc17       FIXME: C++
+fife-0.3.2-11.r2.fc17      FIXME: C++
+fontmatrix-0.9.99-2.r1218.fc17  FIXME: C++
+gdcm-2.0.18-2.fc17         FIXME: C++
+geos-3.3.2-1.fc17          FIXME: C++
+gnofract4d-3.13-2.fc15     FIXME: C++
+gnome-commander-1.2.8.15-2.fc16  FIXME: C++
+groonga-1.3.0-2.fc17       FIXME: C++
+hugin-2011.4.0-3.fc17      FIXME: C++
+k3d-0.8.0.2-6.fc17         FIXME: C++
 
 # Other C++ issues:
 bro-1.5.1-4.fc17    FIXME: configure: error: C++ compiler cannot create executables
 cegui-0.7.6-2.fc17  FIXME: configure: error: C++ compiler cannot create executables
+cyphesis-0.5.26-5.fc17  FIMXE: configure: error: C++ compiler cannot create executables
+gdl-0.9.2-3.fc17    FIXME: configure: error: C++ compiler cannot create executables
+glom-1.18.6-1.fc17  FIXME: configure: error: Failed to compile test program for Python embedding.
+inkscape-0.48.2-1.fc17   FIXME: configure: error: C++ compiler cannot create executables
 
+# Fortran support:
+getdata-0.7.3-2.fc17  FIXME: configure: error: cannot compile a simple Fortran program
+
+gnatcoll-2011-6.fc17  FIXME: gnat1: fatal error: -iplugindir <dir> option not passed from the gcc driver
 
 # Other issues:
 anjuta-3.3.4-1.fc17        FIXME: build failed for some reason
+frepple-0.9.0-3.fc17       FIXME: build failed for some reason
+kalzium-4.8.0-1.fc17       FIXME: build failed for some reason
+
+cryptsetup-1.4.1-2.fc17    FIXME: checker got confused by PyObjectResult, and some tracebacks
+
+ekg-1.8-0.9.rc1.fc16       FIXME: lots of tracebacks during build
+fontforge-20110222-7.fc17  FIXME: lots of tracebacks during build
+freeradius-2.1.12-5.fc17   FIXME: some tracebacks during build
+gcompris-12.01-1.fc17      FIXME: lots of tracebacks during build
+gnome-hearts-0.3-10.fc17   FIXME: some tracebacks during build
+gtkparasite-0-0.8.20090120git928494e5.fc17  FIXME: some tracebacks during build
 
 
 # To be reported:
 PyGreSQL-4.0-4.fc17        FIXME: to be reported
 PyXML-0.8.4-27.fc17        FIXME: for some reason the HTML is missing in places
-
+collectd-4.10.4-2.fc17     FIXME: to be reported
+crossfire-1.60.0-2.fc17    FIXME: to be reported
+distcc-3.1-5.fc17          FIXME: to be reported
+ekg2-0.3.1-2.fc17          FIXME: to be reported
+gammu-1.26.1-7.fc17        FIXME: to be reported
+gmpy-1.15-1.fc17           FIXME: false positives?
 
 # Is this a false positive?
 #    return Py_BuildValue("N", pygobject_new((GObject *)icon));
@@ -131,3 +178,28 @@ autobuild-applet-1.0.3-14.fc17   FIXME: false positive?
 
 
 bzr-2.5-0.2.b5.fc17   FIXME: various false positives (I think) in Cython-generated code
+
+gdal-1.7.3-12.fc17    FIXME:
+# it's confused by the /test.py in the build flags:
+#  + sed -i -e 's/$(LD)/g++ -L..\/..\/.libs\/ -fplugin=python2 -fplugin-arg-python2-script=/test.py -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic/g' swig/ruby/RubyMakefile.mk
+#  sed: -e expression #1, char 77: unknown option to `s'
+
+
+kernel-3.3.0-0.rc3.git5.1.fc17  FIXME:
+#  only reference to python seems to be:
+#   + make -j4 -C tools/perf -s V=1 EXTRA_CFLAGS=-Wno-error=array-bounds HAVE_CPLUS_DEMANGLE=1 prefix=/usr DESTDIR=/builddir/build/BUILDROOT/kernel-3.3.0-0.rc3.git5.1.fc16.x86_64 install-python_ext
+#  and:
+#   extracting debug info from /builddir/build/BUILDROOT/kernel-3.3.0-0.rc3.git5.1.fc16.x86_64/usr/lib64/python2.7/site-packages/perf.so
+# and it's not clear if this used the python plugin or not
+
+gnome-python2-2.28.1-8.fc17           TODO
+gnome-python2-extras-2.25.3-38.fc17   TODO
+gnubg-0.9.0.1-14.fc17    FIXME: wrong mock config?  configure: error: Package requirements (libpng15) were not met
+guake-0.4.2-6.fc17    TODO
+h5py-2.0.1-1.fc17     TODO
+iscsi-initiator-utils-6.2.0.872-18.fc17  TODO
+
+
+ibus-anthy-1.2.6-5.fc17  TODO: SWIG-built
+input-pad-1.0.1-3.fc17   TODO: SWIG-built
+
