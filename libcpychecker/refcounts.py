@@ -2581,6 +2581,42 @@ class CPython(Facet):
                                                           'PyString_Type')
         return [t_success, t_failure]
 
+    def impl_PyObject_SetAttr(self, stmt,
+                              v_o, v_attr_name, v_v):
+        fnmeta = FnMeta(name='PyObject_SetAttr',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_SetAttr',
+                        defined_in='Objects/object.c',
+                        prototype='int PyObject_SetAttr(PyObject *o, PyObject *attr_name, PyObject *v)')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name,
+               why=invokes_Py_TYPE_via_macro(fnmeta, 'PyString_Check'))
+        # v_v can be NULL: clears the attribute
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc) # e.g.
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
+    def impl_PyObject_SetAttrString(self, stmt,
+                                    v_o, v_attr_name, v_v):
+        fnmeta = FnMeta(name='PyObject_SetAttrString',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_SetAttrString',
+                        defined_in='Objects/object.c',
+                        prototype='int PyObject_SetAttrString(PyObject *o, const char *attr_name, PyObject *v)')
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+               why=invokes_Py_TYPE(fnmeta))
+        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name,
+                                               why=('%s() can call PyString_InternFromString(), '
+                                                    'which calls PyString_FromString(), '
+                                                    'which requires a non-NULL pointer' % fnmeta.name))
+        # v_v can be NULL: clears the attribute
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc) # e.g.
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
     def impl_PyObject_Str(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_Str',
                         declared_in='object.h')
