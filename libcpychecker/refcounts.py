@@ -644,8 +644,6 @@ class CPython(Facet):
         function that either:
           - returns either a borrowed ref, or
           - fails with NULL and sets an exception
-        Optionally, a name for the new object can be supplied; otherwise
-        a sane default will be used.
         """
         check_isinstance(fnmeta, FnMeta)
         s_success = self.mkstate_borrowed_ref(stmt, fnmeta)
