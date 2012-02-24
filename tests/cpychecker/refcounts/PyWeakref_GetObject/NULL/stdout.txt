@@ -1,0 +1,9 @@
+Trace 0:
+  Transitions:
+    'PyWeakref_GetObject() fails due to NULL argument'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/NULL/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyWeakref_GetObject/NULL/input.c:29
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_SystemError')) from tests/cpychecker/refcounts/PyWeakref_GetObject/NULL/input.c:29

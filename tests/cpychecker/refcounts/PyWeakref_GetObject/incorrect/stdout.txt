@@ -1,0 +1,44 @@
+Trace 0:
+  Transitions:
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:26 as non-NULL'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=32), region=RegionOnHeap('borrowed reference returned by PyWeakref_GetObject()', gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=32)))
+    str(): (struct PyObject *)&RegionOnHeap('borrowed reference returned by PyWeakref_GetObject()', gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=32)) from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=32), region=Region('PyTypeObject for borrowed reference returned by PyWeakref_GetObject()'))
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:30
+
+Trace 1:
+  Transitions:
+    'when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:26 as NULL'
+    'PyWeakref_GetObject() fails due to NULL argument'
+    'taking False path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=37), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:37
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_SystemError')) from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32

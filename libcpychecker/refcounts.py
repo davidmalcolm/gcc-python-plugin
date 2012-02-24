@@ -3263,6 +3263,26 @@ class CPython(Facet):
                                                           'PyUnicode_Type')
         return [t_success, t_failure]
 
+    ########################################################################
+    # PyWeakref_*
+    ########################################################################
+
+    def impl_PyWeakref_GetObject(self, stmt, v_op):
+        fnmeta = FnMeta(name='PyWeakref_GetObject',
+                        docurl='http://docs.python.org/c-api/weakref.html#PyWeakref_GetObject',
+                        defined_in='Objects/weakrefobject.c')
+        if isinstance(v_op, UnknownValue):
+            self.state.raise_split_value(v_op, stmt.loc)
+        if v_op.is_null_ptr():
+            s_failure = self.state.mkstate_concrete_return_of(stmt, 0)
+            s_failure.cpython.bad_internal_call(stmt.loc)
+            return [Transition(self.state,
+                               s_failure,
+                               '%s() fails due to NULL argument' % fnmeta.name)]
+        s_success = self.mkstate_borrowed_ref(stmt,
+                                              fnmeta)
+        return [Transition(self.state, s_success, None)]
+
 
     ########################################################################
     # (end of Python API implementations)
