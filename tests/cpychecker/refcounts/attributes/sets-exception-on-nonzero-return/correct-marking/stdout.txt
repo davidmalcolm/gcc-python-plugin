@@ -1,0 +1,34 @@
+Trace 0:
+  Transitions:
+    'when considering range: -0x80000000 <= value <= 41'
+    'taking False path'
+    'calling PyErr_SetString()'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c', line=44), value=-1)
+    str(): (int)-1 from tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c:44
+  Exception:
+    unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
+
+Trace 1:
+  Transitions:
+    'when considering value == (int)42 from tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c:38'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c', line=41), value=0)
+    str(): (int)0 from tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c:41
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c:39
+
+Trace 2:
+  Transitions:
+    'when considering range: 43 <= value <= 0x7fffffff'
+    'taking False path'
+    'calling PyErr_SetString()'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c', line=44), value=-1)
+    str(): (int)-1 from tests/cpychecker/refcounts/attributes/sets-exception-on-nonzero-return/correct-marking/input.c:44
+  Exception:
+    unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn

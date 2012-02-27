@@ -2300,6 +2300,36 @@ class State(object):
                     if isinstance(v_arg, PointerToRegion):
                         t_iter.dest.cpython.steal_reference(v_arg.region)
 
+        # cpython: handle functions that have been marked as setting the
+        # exception state when they return a negative value:
+        from libcpychecker.attributes import fnnames_setting_exception_on_negative_result
+        if fnname in fnnames_setting_exception_on_negative_result:
+
+            def handle_negative_return(t_iter):
+                check_isinstance(t_iter, Transition)
+                check_isinstance(t_iter.src, State)
+                check_isinstance(stmt, gcc.GimpleCall)
+                if stmt.lhs:
+                    v_returnval = t_iter.dest.eval_rvalue(stmt.lhs, stmt.loc)
+                    # This could raise a SplitValue exception:
+                    # the split value affects State instances that are already
+                    # within the trace, whereas we're splitting on a new value
+                    # that only exists within a new State.
+                    # Hence we have to do this within
+                    #  process_splittable_transitions
+                    # so that we can split the new state:
+                    eqzero = v_returnval.eval_comparison(
+                        'lt',
+                        ConcreteValue.from_int(0))
+                    if eqzero is True:
+                        # Mark the global exception state (with an arbitrary
+                        # error):
+                        t_iter.dest.cpython.set_exception('PyExc_MemoryError',
+                                                          stmt.loc)
+
+            transitions = process_splittable_transitions(transitions,
+                                                         handle_negative_return)
+
         for t_iter in transitions:
             check_isinstance(t_iter, Transition)
             for v_arg in args:
@@ -2776,6 +2806,31 @@ def false_edge(bb):
     for e in bb.succs:
         if e.false_value:
             return e
+
+
+def process_splittable_transitions(transitions, callback):
+    """
+    Apply a processing function to each Transition in transitions,
+    handling the case where a SplitValue exception is raised by
+    splitting the destination states.
+
+    Return a new list of Transition instances: which will be the
+    old Transition objects, potentially with additional Transition
+    instances if any have been split
+    """
+    newtransitions = []
+    for t_iter in transitions:
+        try:
+            callback(t_iter)
+            newtransitions.append(t_iter)
+        except SplitValue:
+            err = sys.exc_info()[1]
+            splittransitions = err.split(t_iter.dest)
+            check_isinstance(splittransitions, list)
+            # Recurse:
+            newtransitions += process_splittable_transitions(splittransitions,
+                                                             callback)
+    return newtransitions
 
 class Resources:
     # Resource tracking for a state
