@@ -2723,6 +2723,35 @@ class CPython(Facet):
                                                          fnmeta,
                                                          'new ref from %s' % fnmeta.name)
 
+    def impl_PySequence_SetItem(self, stmt, v_o, v_i, v_item):
+        fnmeta = FnMeta(name='PySequence_SetItem',
+                        prototype='int PySequence_SetItem(PyObject *o, Py_ssize_t i, PyObject *item)',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_SetItem',
+                        defined_in='Objects/abstract.c')
+        # safely handles NULL for the obj via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o, rawreturnvalue=-1)
+        if t_err:
+            return [t_err]
+
+        result = []
+
+        s_success  = self.state.mkstate_concrete_return_of(stmt, 0)
+        # The function *doesn't* steal a reference to item
+
+        # For now, this only covers the "success" case.  The call can fail
+        # returning -1:
+        #   * raising TypeError if passed a non-sequence, or if the type's
+        #     PySequenceMethods table lacks a sq_ass_item callback
+        #   * if the call to sq_length fails, propagating some exception
+        #   * if the call to sq_ass_item fails, propagating some exception
+        # but we don't track these possibilities yet.
+
+        result.append(Transition(self.state,
+                                 s_success,
+                                 '%s() succeeds' % fnmeta.name))
+
+        return result
+
     ########################################################################
     # PyString_*
     ########################################################################
