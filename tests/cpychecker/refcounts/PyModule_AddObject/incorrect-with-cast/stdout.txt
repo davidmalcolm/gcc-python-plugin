@@ -1,0 +1,39 @@
+Trace 0:
+  Transitions:
+    'when PyModule_AddObject() succeeds'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=31), value=0)
+    str(): (int)0 from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31
+  Region("region-for-arg-gcc.ParmDecl('module')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('module')")
+    str(): Region("region-for-arg-gcc.ParmDecl('module')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('module')"))
+  RegionForGlobal(gcc.VarDecl('fooType')):
+    repr(): RegionForGlobal(gcc.VarDecl('fooType'))
+    str(): RegionForGlobal(gcc.VarDecl('fooType'))
+    r->ob_refcnt: refs: -1 + N where N >= 2
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:30
+
+Trace 1:
+  Transitions:
+    'when PyModule_AddObject() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=31), value=-1)
+    str(): (int)-1 from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31
+  Region("region-for-arg-gcc.ParmDecl('module')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('module')")
+    str(): Region("region-for-arg-gcc.ParmDecl('module')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('module')"))
+  RegionForGlobal(gcc.VarDecl('fooType')):
+    repr(): RegionForGlobal(gcc.VarDecl('fooType'))
+    str(): RegionForGlobal(gcc.VarDecl('fooType'))
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31

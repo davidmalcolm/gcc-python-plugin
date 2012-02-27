@@ -512,18 +512,18 @@ class CPython(Facet):
         return self.object_ctor(stmt,
                                 typename, typeobjname)
 
-    def steal_reference(self, region):
-        log('steal_reference(%r)', region)
-        check_isinstance(region, Region)
-        ob_refcnt = self.state.make_field_region(region, 'ob_refcnt')
-        value = self.state.value_for_region[ob_refcnt]
-        if isinstance(value, RefcountValue):
+    def steal_reference(self, pyobjectptr, loc):
+        def _steal_ref(v_old):
             # We have a value known relative to all of the refs owned by the
             # rest of the program.  Given that the rest of the program is
             # stealing a ref, that is increasing by one, hence our value must
             # go down by one:
-            self.state.value_for_region[ob_refcnt] = RefcountValue(value.relvalue - 1,
-                                                                   value.min_external + 1)
+            return RefcountValue(v_old.relvalue - 1,
+                                 v_old.min_external + 1)
+        check_isinstance(pyobjectptr, PointerToRegion)
+        self.change_refcount(pyobjectptr,
+                             loc,
+                             _steal_ref)
 
     def make_sane_object(self, stmt, name, v_refcount, r_typeobj=None):
         """
@@ -1078,7 +1078,7 @@ class CPython(Facet):
                         if isinstance(unit, CodeSO):
                             t_success.dest.cpython.add_external_ref(v_vararg, stmt.loc)
                         else:
-                            t_success.dest.cpython.steal_reference(v_vararg.region)
+                            t_success.dest.cpython.steal_reference(v_vararg, stmt.loc)
             return True
 
         t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
@@ -1981,8 +1981,7 @@ class CPython(Facet):
             # FIXME: update refcounts
             # "Steal" a reference to item:
             if isinstance(v_item, PointerToRegion):
-                check_isinstance(v_item.region, Region)
-                s_success.cpython.steal_reference(v_item.region)
+                s_success.cpython.steal_reference(v_item, stmt.loc)
 
             # and discards a
             # reference to an item already in the list at the affected position.
@@ -2167,7 +2166,7 @@ class CPython(Facet):
 
         # On success, steals a ref from v_value:
         s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_success.cpython.steal_reference(v_value.region)
+        s_success.cpython.steal_reference(v_value, stmt.loc)
 
         # Can fail with memory error, overflow error:
         s_failure = self.state.mkstate_concrete_return_of(stmt, -1)

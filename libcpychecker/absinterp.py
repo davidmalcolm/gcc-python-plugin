@@ -2298,7 +2298,7 @@ class State(object):
                 for argindex in stolen_refs_by_fnname[stmt.fn.operand.name]:
                     v_arg = args[argindex-1]
                     if isinstance(v_arg, PointerToRegion):
-                        t_iter.dest.cpython.steal_reference(v_arg.region)
+                        t_iter.dest.cpython.steal_reference(v_arg, stmt.loc)
 
         # cpython: handle functions that have been marked as setting the
         # exception state when they return a negative value:
