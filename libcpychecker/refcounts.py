@@ -687,7 +687,7 @@ class CPython(Facet):
                                                                   'ob_refcnt')
             yield (r_obj, v_ob_refcnt)
 
-    def handle_null_error(self, stmt, idx, ptr):
+    def handle_null_error(self, stmt, idx, ptr, rawreturnvalue=0):
         # Handle Objects/abstract.c's null_error()
         # idx is the 0-based index of the argument
         check_isinstance(stmt, gcc.Gimple)
@@ -697,7 +697,13 @@ class CPython(Facet):
             self.state.raise_split_value(ptr, stmt.loc)
         if ptr.is_null_ptr():
             if stmt.lhs:
-                value = ConcreteValue(stmt.lhs.type, stmt.loc, 0)
+                # null_error() returns a NULL PyObject*
+                # some callsites where the fn returns a PyObject* have:
+                #    return null_error()
+                # but others where the fn returns an int have:
+                #    null_error()
+                #    return -1
+                value = ConcreteValue(stmt.lhs.type, stmt.loc, rawreturnvalue)
             else:
                 value = None
             t_failure = self.state.mktrans_assignment(stmt.lhs,
