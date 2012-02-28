@@ -177,7 +177,7 @@ class RefcountValue(AbstractValue):
             if isinstance(rhs, ConcreteValue):
                 log('comparing refcount value %s with concrete value: %s', self, rhs)
                 # The actual value of ob_refcnt >= lhs.relvalue
-                if self.relvalue > rhs.value:
+                if self.get_min_value() > rhs.value:
                     # (Equality is thus not possible for this case)
                     return False
 

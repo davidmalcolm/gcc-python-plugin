@@ -9,7 +9,7 @@ Trace 0:
     'when PyDict_SetItem() succeeds'
     'taking False path'
     'when taking True path'
-    'when taking True path'
+    'taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)))
@@ -49,51 +49,9 @@ Trace 1:
     'taking False path'
     'when PyDict_SetItem() succeeds'
     'taking False path'
-    'when taking True path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
-    'returning'
-  Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)))
-    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:28
-
-Trace 2:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyDict_SetItem() succeeds'
-    'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
-    'when taking True path'
+    'taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)))
@@ -123,50 +81,7 @@ Trace 2:
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:28
 
-Trace 3:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyDict_SetItem() succeeds'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
-    'returning'
-  Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)))
-    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33)) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:28
-
-Trace 4:
+Trace 2:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -206,6 +121,104 @@ Trace 4:
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:48
+
+Trace 3:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyDict_SetItem() fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:48
+
+Trace 4:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyDict_SetItem() fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -227,7 +240,8 @@ Trace 5:
     'taking False path'
     'when taking True path'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
@@ -253,8 +267,8 @@ Trace 5:
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -274,10 +288,10 @@ Trace 6:
     'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
-    'taking False path'
     'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
+    'taking False path'
+    'when taking True path'
     'taking False path'
     'when taking True path'
     'returning'
@@ -297,13 +311,13 @@ Trace 6:
   PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -323,10 +337,10 @@ Trace 7:
     'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
-    'taking False path'
     'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
+    'taking False path'
+    'when taking True path'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
@@ -347,13 +361,13 @@ Trace 7:
   PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -376,7 +390,8 @@ Trace 8:
     'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
     'taking False path'
     'when taking True path'
     'returning'
@@ -401,8 +416,8 @@ Trace 8:
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -425,7 +440,8 @@ Trace 9:
     'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
@@ -451,8 +467,8 @@ Trace 9:
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
@@ -462,107 +478,6 @@ Trace 9:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:48
 
 Trace 10:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyDict_SetItem() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
-    'taking False path'
-    'when taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:48
-
-Trace 11:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyDict_SetItem() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=43))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:48
-
-Trace 12:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -594,6 +509,88 @@ Trace 12:
     str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
+
+Trace 11:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
+
+Trace 12:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() fails'
+    'taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
+    'taking False path'
+    'when taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
@@ -611,7 +608,8 @@ Trace 13:
     'when PyLong_FromLong() fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
@@ -633,8 +631,8 @@ Trace 13:
   PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
@@ -647,89 +645,6 @@ Trace 14:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
-    'taking False path'
-    'when taking True path'
-    'taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-
-Trace 15:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38'
-    'taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=65), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:65
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
-    r->ob_refcnt: refs: 0 + N where N >= 1
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
-  PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=33))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:33
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c', line=38))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:43
-
-Trace 16:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
     'when PyLong_FromLong() fails'
     'taking True path'
     'taking False path'
@@ -758,7 +673,7 @@ Trace 16:
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
 
-Trace 17:
+Trace 15:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -791,7 +706,7 @@ Trace 17:
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyDict_SetItem/correct/input.c:38
 
-Trace 18:
+Trace 16:
   Transitions:
     'when PyDict_New() fails'
     'taking True path'

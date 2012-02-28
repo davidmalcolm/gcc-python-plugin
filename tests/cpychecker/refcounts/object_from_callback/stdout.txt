@@ -9,7 +9,7 @@ Trace 0:
     'when PyDict_SetItem() succeeds'
     'taking False path'
     'when taking True path'
-    'when taking True path'
+    'taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)))
@@ -39,41 +39,9 @@ Trace 1:
     'taking False path'
     'when PyDict_SetItem() succeeds'
     'taking False path'
-    'when taking True path'
-    'when taking False path'
-    'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
-    'returning'
-  Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)))
-    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)) from tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
-    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
-    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:29
-
-Trace 2:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call succeeds'
-    'taking False path'
-    'when PyDict_SetItem() succeeds'
-    'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
-    'when taking True path'
+    'taking True path'
     'returning'
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)))
@@ -93,40 +61,7 @@ Trace 2:
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:29
 
-Trace 3:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call succeeds'
-    'taking False path'
-    'when PyDict_SetItem() succeeds'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
-    'when taking False path'
-    'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
-    'returning'
-  Return value:
-    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)))
-    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34)) from tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: refs: 1 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
-  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
-    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
-    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:29
-
-Trace 4:
+Trace 2:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -156,6 +91,84 @@ Trace 4:
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
+    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
+    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48), region=Region('PyTypeObject for new ref from call through function pointer'))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:54
+
+Trace 3:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when call succeeds'
+    'taking False path'
+    'when PyDict_SetItem() fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
+  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
+    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
+    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:54
+
+Trace 4:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when call succeeds'
+    'taking False path'
+    'when PyDict_SetItem() fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
+  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
+    r->ob_refcnt: None
+    r->ob_type: None
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -177,7 +190,8 @@ Trace 5:
     'taking False path'
     'when taking True path'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
@@ -193,8 +207,8 @@ Trace 5:
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -214,10 +228,10 @@ Trace 6:
     'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
-    'taking False path'
     'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
+    'taking False path'
+    'when taking True path'
     'taking False path'
     'when taking True path'
     'returning'
@@ -227,13 +241,13 @@ Trace 6:
   PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -253,10 +267,10 @@ Trace 7:
     'when PyDict_SetItem() fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
-    'taking False path'
     'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
+    'taking False path'
+    'when taking True path'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
@@ -267,13 +281,13 @@ Trace 7:
   PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -296,7 +310,8 @@ Trace 8:
     'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
     'taking False path'
     'when taking True path'
     'returning'
@@ -311,8 +326,8 @@ Trace 8:
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -335,7 +350,8 @@ Trace 9:
     'when taking False path'
     'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
@@ -351,8 +367,8 @@ Trace 9:
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
     repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
     str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
@@ -362,87 +378,6 @@ Trace 9:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:54
 
 Trace 10:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call succeeds'
-    'taking False path'
-    'when PyDict_SetItem() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
-    'taking False path'
-    'when taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
-  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
-  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
-    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
-    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48), region=Region('PyTypeObject for new ref from call through function pointer'))
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:54
-
-Trace 11:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call succeeds'
-    'taking False path'
-    'when PyDict_SetItem() fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
-  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
-  new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48:
-    repr(): RegionOnHeap('new ref from call through function pointer', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=48))
-    str(): new ref from call through function pointer allocated at tests/cpychecker/refcounts/object_from_callback/input.c:48
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:54
-
-Trace 12:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -464,6 +399,68 @@ Trace 12:
     str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
     r->ob_refcnt: refs: 0 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:48
+
+Trace 11:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when call fails'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
+  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
+    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
+    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:48
+
+Trace 12:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyLong_FromLong() succeeds'
+    'taking False path'
+    'when call fails'
+    'taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
+    'taking False path'
+    'when taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
+  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
@@ -481,7 +478,8 @@ Trace 13:
     'when call fails'
     'taking True path'
     'taking False path'
-    'when taking True path'
+    'when taking False path'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
     'taking False path'
     'when taking False path'
     'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
@@ -493,8 +491,8 @@ Trace 13:
   PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
     repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
     str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+    r->ob_refcnt: None
+    r->ob_type: None
   PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
     repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
     str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
@@ -507,69 +505,6 @@ Trace 14:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
-    'taking False path'
-    'when taking True path'
-    'taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
-  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
-    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:48
-
-Trace 15:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
-    'when PyLong_FromLong() succeeds'
-    'taking False path'
-    'when call fails'
-    'taking True path'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34'
-    'taking False path'
-    'when taking False path'
-    'calling tp_dealloc on PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39'
-    'taking True path'
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=71), value=0)
-    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/object_from_callback/input.c:71
-  PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34:
-    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=34))
-    str(): PyDictObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:34
-    r->ob_refcnt: None
-    r->ob_type: None
-  PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39:
-    repr(): RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/object_from_callback/input.c', line=39))
-    str(): PyLongObject allocated at tests/cpychecker/refcounts/object_from_callback/input.c:39
-    r->ob_refcnt: None
-    r->ob_type: None
-  Exception:
-    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:48
-
-Trace 16:
-  Transitions:
-    'when PyDict_New() succeeds'
-    'taking False path'
     'when PyLong_FromLong() fails'
     'taking True path'
     'taking False path'
@@ -588,7 +523,7 @@ Trace 16:
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:39
 
-Trace 17:
+Trace 15:
   Transitions:
     'when PyDict_New() succeeds'
     'taking False path'
@@ -611,7 +546,7 @@ Trace 17:
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/object_from_callback/input.c:39
 
-Trace 18:
+Trace 16:
   Transitions:
     'when PyDict_New() fails'
     'taking True path'
