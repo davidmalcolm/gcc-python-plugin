@@ -887,6 +887,7 @@ class CPython(Facet):
 
     def impl_PyArg_Parse(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='PyArg_Parse',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_Parse',
                         declared_in='modsupport.h',
                         prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
@@ -896,6 +897,7 @@ class CPython(Facet):
 
     def impl__PyArg_Parse_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='_PyArg_Parse_SizeT',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_Parse',
                         declared_in='modsupport.h',
                         prototype='PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
@@ -905,6 +907,7 @@ class CPython(Facet):
 
     def impl_PyArg_ParseTuple(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='PyArg_ParseTuple',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_ParseTuple',
                         declared_in='modsupport.h',
                         prototype='PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
@@ -915,6 +918,7 @@ class CPython(Facet):
 
     def impl__PyArg_ParseTuple_SizeT(self, stmt, v_args, v_fmt, *v_varargs):
         fnmeta = FnMeta(name='_PyArg_ParseTuple_SizeT',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_ParseTuple',
                         declared_in='modsupport.h',
                         prototype='PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...) Py_FORMAT_PARSETUPLE(PyArg_ParseTuple, 2, 3);',)
         # Also, with #ifdef PY_SSIZE_T_CLEAN
@@ -926,6 +930,7 @@ class CPython(Facet):
     def impl_PyArg_ParseTupleAndKeywords(self, stmt, v_args, v_kwargs,
                                          v_fmt, v_keywords, *v_varargs):
         fnmeta = FnMeta(name='PyArg_ParseTupleAndKeywords',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_ParseTupleAndKeywords',
                         declared_in='modsupport.h',
                         prototype=('PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,\n'
                                    '                                            const char *, char **, ...);'),)
@@ -939,6 +944,7 @@ class CPython(Facet):
     def impl__PyArg_ParseTupleAndKeywords_SizeT(self, stmt, v_args, v_kwargs,
                                                 v_fmt, v_keywords, *v_varargs):
         fnmeta = FnMeta(name='_PyArg_ParseTupleAndKeywords_SizeT',
+                        docurl='http://docs.python.org/c-api/arg.html#PyArg_ParseTupleAndKeywords',
                         declared_in='modsupport.h',
                         prototype=('PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,\n'
                                    '                                            const char *, char **, ...);'),)
@@ -1028,6 +1034,7 @@ class CPython(Facet):
     ########################################################################
     def impl_PyBool_FromLong(self, stmt, v_long):
         fnmeta = FnMeta(name='PyBool_FromLong',
+                        docurl='http://docs.python.org/c-api/bool.html#PyBool_FromLong',
                         declared_in='boolobject.h',
                         prototype='PyAPI_FUNC(PyObject *) PyBool_FromLong(long);',
                         defined_in='Objects/boolobject.c',
@@ -1295,6 +1302,7 @@ class CPython(Facet):
 
     def impl_PyDict_GetItemString(self, stmt, v_dp, v_key):
         fnmeta = FnMeta(name='PyDict_GetItemString',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_GetItemString',
                         declared_in='dictobject.h',
                         prototype='PyAPI_FUNC(PyObject *) PyDict_GetItemString(PyObject *dp, const char *key);',
                         defined_in='Objects/dictobject.c',
@@ -1322,7 +1330,8 @@ class CPython(Facet):
                 #t_memoryexc]
 
     def impl_PyDict_New(self, stmt):
-        fnmeta = FnMeta(name='PyDict_New')
+        fnmeta = FnMeta(name='PyDict_New',
+                        docurl='http://docs.python.org/c-api/dict.html#PyDict_New')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyDictObject',
                                                           'PyDict_Type')
@@ -1407,6 +1416,7 @@ class CPython(Facet):
     ########################################################################
     def impl_PyErr_Format(self, stmt, v_exc, v_fmt, *v_args):
         fnmeta = FnMeta(name='PyErr_Format',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_Format',
                         declared_in='pyerrors.h',
                         prototype='PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);',
                         defined_in='Python/errors.c',
@@ -1433,6 +1443,7 @@ class CPython(Facet):
 
     def impl_PyErr_NoMemory(self, stmt):
         fnmeta = FnMeta(name='PyErr_NoMemory',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_NoMemory',
                         declared_in='pyerrors.h',
                         prototype='PyAPI_FUNC(PyObject *) PyErr_NoMemory(void);',
                         defined_in='Python/errors.c',
@@ -1458,6 +1469,7 @@ class CPython(Facet):
 
     def impl_PyErr_Print(self, stmt):
         fnmeta = FnMeta(name='PyErr_Print',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_Print',
                         declared_in='pythonrun.h',
                         prototype='PyAPI_FUNC(void) PyErr_Print(void);',
                         defined_in='Python/pythonrun.c',)
@@ -1469,6 +1481,7 @@ class CPython(Facet):
 
     def impl_PyErr_PrintEx(self, stmt, v_int):
         fnmeta = FnMeta(name='PyErr_PrintEx',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_PrintEx',
                         declared_in='pythonrun.h',
                         prototype='PyAPI_FUNC(void) PyErr_PrintEx(int);',
                         defined_in='Python/pythonrun.c',)
@@ -1538,6 +1551,7 @@ class CPython(Facet):
 
     def impl_PyErr_SetString(self, stmt, v_exc, v_string):
         fnmeta = FnMeta(name='PyErr_SetString',
+                        docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetString',
                         declared_in='pyerrors.h',
                         prototype='PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);',
                         defined_in='Python/errors.c',)
@@ -1819,6 +1833,7 @@ class CPython(Facet):
 
     def impl_PyInt_FromLong(self, stmt, v_ival):
         fnmeta = FnMeta(name='PyInt_FromLong',
+                        docurl='http://docs.python.org/c-api/int.html#PyInt_FromLong',
                         declared_in='intobject.h',
                         prototype='PyAPI_FUNC(PyObject *) PyInt_FromLong(long);',
                         defined_in='Objects/intobject.c')
@@ -1923,6 +1938,7 @@ class CPython(Facet):
 
     def impl_PyList_New(self, stmt, v_len):
         fnmeta = FnMeta(name='PyList_New',
+                        docurl='http://docs.python.org/c-api/list.html#PyList_New',
                         prototype='PyObject* PyList_New(Py_ssize_t len)',
                         notes='Returns a new reference, or raises MemoryError')
 
@@ -2016,7 +2032,8 @@ class CPython(Facet):
     # PyLong_*
     ########################################################################
     def impl_PyLong_FromLong(self, stmt, v_long):
-        fnmeta = FnMeta(name='PyLong_FromLong')
+        fnmeta = FnMeta(name='PyLong_FromLong',
+                        docurl='http://docs.python.org/c-api/long.html#PyLong_FromLong')
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyLongObject',
                                                           'PyLong_Type')
@@ -2623,6 +2640,7 @@ class CPython(Facet):
 
     def impl_PyObject_Str(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_Str',
+                        docurl='http://docs.python.org/c-api/object.html#PyObject_Str',
                         declared_in='object.h')
         #  PyAPI_FUNC(PyObject *) PyObject_Str(PyObject *);
         # also with:
