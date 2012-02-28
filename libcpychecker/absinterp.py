@@ -211,8 +211,9 @@ class AbstractValue(object):
         check_isinstance(stmt, gcc.GimpleCall)
         returntype = stmt.fn.type.dereference.type
 
-        if str(returntype) == 'struct PyObject *':
-            log('Invocation of function pointer returning PyObject *')
+        from libcpychecker.refcounts import type_is_pyobjptr_subclass
+        if type_is_pyobjptr_subclass(returntype):
+            log('Invocation of function pointer returning PyObject * (or subclass)')
             # Assume that all such functions either:
             #   - return a new reference, or
             #   - return NULL and set an exception (e.g. MemoryError)
@@ -2212,8 +2213,9 @@ class State(object):
                     raise NotImplementedError('not yet implemented: %s' % fnname)
 
             # Unknown function returning (PyObject*):
-            if str(stmt.fn.operand.type.type) == 'struct PyObject *':
-                log('Invocation of unknown function returning PyObject *: %r' % fnname)
+            from libcpychecker.refcounts import type_is_pyobjptr_subclass
+            if type_is_pyobjptr_subclass(stmt.fn.operand.type.type):
+                log('Invocation of unknown function returning PyObject * (or subclass): %r' % fnname)
 
                 fnmeta = FnMeta(name=fnname)
 
