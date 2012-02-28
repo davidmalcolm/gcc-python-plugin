@@ -1,0 +1,4 @@
+tests/cpychecker/refcounts/attributes/sets-exception/incorrect-marking/input.c: In function 'test':
+tests/cpychecker/refcounts/attributes/sets-exception/incorrect-marking/input.c:44:nn: warning: function is marked with __attribute__((cpychecker_sets_exception)) but can return without setting an exception [enabled by default]
+tests/cpychecker/refcounts/attributes/sets-exception/incorrect-marking/input.c:44:nn: note: returning at:     return 0;
+tests/cpychecker/refcounts/attributes/sets-exception/incorrect-marking/input.c:39:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/attributes/sets-exception/incorrect-marking/input.c.test-refcount-errors.html'

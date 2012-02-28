@@ -1,0 +1,6 @@
+Trace 0:
+  Transitions:
+    'calling PyErr_SetString()'
+    'returning'
+  Exception:
+    unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn

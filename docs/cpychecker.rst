@@ -301,11 +301,36 @@ behavior is acceptable.  Currently this covers functions used as `tp_iternext
 <http://docs.python.org/c-api/typeobj.html#tp_iternext>`_ callbacks of a
 ``PyTypeObject``.
 
-Many functions within the CPython API return negative values to signify an
-error, setting the exception state, and the checker knows about these.
+If you have a helper function that always sets an exception, you can mark this
+property using a custom GCC attribute:
 
-If you have a function that behaves in a similar way, you can inform the
-checker of this behavior by marking it with a custom GCC attribute:
+.. code-block:: c
+
+    __attribute__((cpychecker_sets_exception))
+
+which can be used to mark function declarations.
+
+.. code-block:: c
+
+  /* The checker automatically defines this preprocessor name when creating
+     the custom attribute: */
+   #if defined(WITH_CPYCHECKER_SETS_EXCEPTION_ATTRIBUTE)
+     #define CPYCHECKER_SETS_EXCEPTION \
+        __attribute__((cpychecker_sets_exception))
+   #else
+     #define CPYCHECKER_SETS_EXCEPTION
+   #endif
+
+   extern void raise_error(const char *msg)
+     CPYCHECKER_SETS_EXCEPTION;
+
+Given the above, the checker will know that an exception is set whenever a
+call to `raise_error()` occurs.  It will also verify that `raise_error()`
+actually behaves this way when compiling the implementation of `raise_error`.
+
+There is an analogous attribute for the case where a function returns a
+negative value to signify an error, where the exception state is set whenever
+a **negative** value is returned:
 
 .. code-block:: c
 
@@ -318,19 +343,21 @@ which can be used to mark function declarations.
   /* The checker automatically defines this preprocessor name when creating
      the custom attribute: */
    #if defined(WITH_CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION_ATTRIBUTE)
-     #define CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION() \
+     #define CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION \
         __attribute__((cpychecker_negative_result_sets_exception))
    #else
-     #define CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION()
+     #define CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION
    #endif
 
    extern int foo(void)
-     CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION();
+     CPYCHECKER_NEGATIVE_RESULT_SETS_EXCEPTION;
 
 Given the above, the checker will know that an exception is raised whenever a
 call to `foo` returns a negative value.  It will also verify that `foo`
 actually behaves this way when compiling the implementation of `foo`.
 
+The checker already knows about many of the functions within the CPython API
+which behave this way.
 
 Format string checking
 ----------------------

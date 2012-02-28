@@ -2301,6 +2301,16 @@ class State(object):
                         t_iter.dest.cpython.steal_reference(v_arg, stmt.loc)
 
         # cpython: handle functions that have been marked as setting the
+        # exception state:
+        from libcpychecker.attributes import fnnames_setting_exception
+        if fnname in fnnames_setting_exception:
+            for t_iter in transitions:
+                # Mark the global exception state (with an arbitrary
+                # error):
+                t_iter.dest.cpython.set_exception('PyExc_MemoryError',
+                                                  stmt.loc)
+
+        # cpython: handle functions that have been marked as setting the
         # exception state when they return a negative value:
         from libcpychecker.attributes import fnnames_setting_exception_on_negative_result
         if fnname in fnnames_setting_exception_on_negative_result:
