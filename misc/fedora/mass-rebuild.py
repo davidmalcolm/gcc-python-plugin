@@ -112,26 +112,18 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
             # FIXME: ^^ this will need changing
             run_mock(['--copyin', module, HACKED_PATH])
 
-    # Locate existing __global_cflags so that we can prepend our flags to it:
-    out, err = run_mock(['--chroot',  'rpm --eval "%{__global_cflags}"'],
-                        captureOut=True)
-    global_cflags = out.strip()
-    # print('global_cflags: %r' % global_cflags)
-
-    # Create script within chroot:
-    SCRIPT_PATH='/test.py'
-    run_mock(['--copyin', 'test.py', SCRIPT_PATH])
+    # Override the real gcc/g++ with our fake ones, which add the necessary flags
+    # and then invokes the real one:
+    run_mock(['--chroot', 'mv /usr/bin/gcc /usr/bin/the-real-gcc'])
+    run_mock(['--chroot', 'mv /usr/bin/g++ /usr/bin/the-real-g++'])
+    run_mock(['--copyin', 'fake-gcc.py', '/usr/bin/gcc'])
+    run_mock(['--copyin', 'fake-g++.py', '/usr/bin/g++'])
 
     # Rebuild src.rpm, using the script:
     run_mock(['--rebuild', srpmpath,
 
               '--no-clean',
 
-              # setting revised cflags so as to use the script:
-              # FIXME: calling this repeatedly with --init disabled leads to
-              # an accumulation of multiple copies of our flags at the front of __global_cflags
-              ('--define=__global_cflags -fplugin=python2 -fplugin-arg-python2-script=%s %s'
-               % (SCRIPT_PATH, global_cflags))
               ])
 
     # Extract build logs:
