@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -19,8 +19,10 @@ import gcc
 from gccutils import check_isinstance
 from libcpychecker.types import register_type_object
 
-# Recorded attribute data:
-fnnames_returning_borrowed_refs = set()
+# Recorded attribute data, primed with some special-case knowledge about
+# the code that Cython generates:
+fnnames_returning_borrowed_refs = set(['__Pyx_GetStdout'])
+
 fnnames_setting_exception = set()
 fnnames_setting_exception_on_negative_result = set()
 
