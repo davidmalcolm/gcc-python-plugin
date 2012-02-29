@@ -1662,6 +1662,22 @@ class CPython(Facet):
                                               UnknownValue.make(returntype, stmt.loc),
                                               fnmeta.name)]
 
+    def impl_PyFile_WriteObject(self, stmt, v_obj, v_p, v_flags):
+        fnmeta = FnMeta(name='PyFile_WriteObject',
+                        docurl='http://docs.python.org/c-api/file.html#PyFile_WriteObject',
+                        prototype='int PyFile_WriteObject(PyObject *obj, PyObject *p, int flags)',
+                        defined_in='Objects/fileobject.c')
+        # used in Cython-generated code, in static int __Pyx_Print()
+        returntype = stmt.fn.type.dereference.type
+
+        # FIXME: gracefully handles NULL for second argument, but not for first
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        # Various errors can happen; this is just one:
+        s_failure.cpython.set_exception('PyExc_IOError', stmt.loc)
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
     def impl_PyFile_WriteString(self, stmt, v_s, v_p):
         fnmeta = FnMeta(name='PyFile_WriteString',
                         docurl='http://docs.python.org/c-api/file.html#PyFile_WriteString',

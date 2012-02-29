@@ -637,6 +637,7 @@ known to the checker are:
 `PyEval_SaveThread <http://docs.python.org/c-api/init.html#PyEval_SaveThread>`_,
 `Py_FatalError <http://docs.python.org/c-api/sys.html#Py_FatalError>`_,
 `PyFile_SoftSpace <http://docs.python.org/c-api/file.html#PyFile_SoftSpace>`_,
+`PyFile_WriteObject <http://docs.python.org/c-api/file.html#PyFile_WriteObject>`_,
 `PyFile_WriteString <http://docs.python.org/c-api/file.html#PyFile_WriteString>`_,
 `Py_Finalize <http://docs.python.org/c-api/init.html#Py_Finalize>`_,
 `PyFrame_New`,
