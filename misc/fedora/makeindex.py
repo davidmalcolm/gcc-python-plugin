@@ -258,60 +258,61 @@ class BuildLog:
                 if "AttributeError: 'NoneType' object has no attribute 'vars'" in line:
                     self.cplusplus_failure = True
 
-def generate_index_html(path, title):
-    outpath = os.path.join(path, 'index.html')
-    with open(outpath, 'w') as f:
-        f.write('<html><head><title>%s</title></head>\n' % title)
-        f.write('  <body>\n')
+class Index:
+    def __init__(self, path, title):
+        outpath = os.path.join(path, 'index.html')
+        with open(outpath, 'w') as f:
+            f.write('<html><head><title>%s</title></head>\n' % title)
+            f.write('  <body>\n')
 
-        f.write('  <h1>%s</h1>\n' % title)
-        f.write("  <p>This is a summary of errors seen when compiling with <a href='https://fedorahosted.org/gcc-python-plugin/'>an experimental static analysis tool</a></p>")
-        f.write('  <p>Raw build logs can be seen <a href="build.log">here</a></p>\n')
+            f.write('  <h1>%s</h1>\n' % title)
+            f.write("  <p>This is a summary of errors seen when compiling with <a href='https://fedorahosted.org/gcc-python-plugin/'>an experimental static analysis tool</a></p>")
+            f.write('  <p>Raw build logs can be seen <a href="build.log">here</a></p>\n')
 
-        buildlog = BuildLog(path)
-        if not buildlog.seen_plugin:
-            f.write('    <p>The GCC arguments for invoking the plugin were\n'
-                    '       not seen in the build logs: did the plugin actually\n'
-                    '       get run?</p>')
-            srpm = Srpm.from_path(path)
-            BugReportDb.add_status(srpm,
-                                   "TODO: isn't being built with the correct build flags, so plugin is not run")
+            buildlog = BuildLog(path)
+            if not buildlog.seen_plugin:
+                f.write('    <p>The GCC arguments for invoking the plugin were\n'
+                        '       not seen in the build logs: did the plugin actually\n'
+                        '       get run?</p>')
+                srpm = Srpm.from_path(path)
+                BugReportDb.add_status(srpm,
+                                       "TODO: isn't being built with the correct build flags, so plugin is not run")
 
-        if buildlog.cplusplus_failure:
-            f.write('    <p>C++ failure</p>\n')
-            srpm = Srpm.from_path(path)
-            BugReportDb.add_status(srpm, "FIXME: C++")
+            if buildlog.cplusplus_failure:
+                f.write('    <p>C++ failure</p>\n')
+                srpm = Srpm.from_path(path)
+                BugReportDb.add_status(srpm, "FIXME: C++")
 
-        # Gather the ErrorReport by severity
-        triager = Triager()
+            # Gather the ErrorReport by severity
+            triager = Triager()
 
-        # mapping from Severity to list of ErrorReport
-        severities = {}
-        num_reports = 0
+            # mapping from Severity to list of ErrorReport
+            self.severities = {}
+            self.num_reports = 0
 
-        for dirpath, dirnames, filenames in os.walk(path):
-            #print dirpath, dirnames, filenames
-            for filename in filenames:
-                if filename.endswith('-refcount-errors.html'):
-                    #print '  ', os.path.join(dirpath, filename)
-                    htmlpath = os.path.join(dirpath, filename)
-                    for er in get_errors_from_file(htmlpath):
-                        #print(er.filename)
-                        #print(er.function)
-                        #print(er.errmsg)
-                        sev = triager.classify(er)
-                        #print(sev)
-                        if sev in severities:
-                            severities[sev].append(er)
-                        else:
-                            severities[sev] = [er]
+            for dirpath, dirnames, filenames in os.walk(path):
+                #print dirpath, dirnames, filenames
+                for filename in filenames:
+                    if filename.endswith('-refcount-errors.html'):
+                        #print '  ', os.path.join(dirpath, filename)
+                        htmlpath = os.path.join(dirpath, filename)
+                        for er in get_errors_from_file(htmlpath):
+                            #print(er.filename)
+                            #print(er.function)
+                            #print(er.errmsg)
+                            sev = triager.classify(er)
+                            #print(sev)
+                            if sev in self.severities:
+                                self.severities[sev].append(er)
+                            else:
+                                self.severities[sev] = [er]
 
-            for sev in sorted(severities.keys())[::-1]:
+            for sev, issues in self.iter_severities():
                 f.write('    <h2>%s</h2>\n' % sev.title)
                 f.write('    %s\n' % sev.description)
                 f.write('    <table>\n')
-                for er in severities[sev]:
-                    num_reports += 1
+                for er in issues:
+                    self.num_reports += 1
                     href = os.path.relpath(er.href(), path)
                     f.write('      <tr> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> <td><a href=%s>%s</a></td> </tr>'
                             % (href, er.filename,
@@ -319,20 +320,24 @@ def generate_index_html(path, title):
                                href, er.errmsg))
                 f.write('    </table>\n')
 
-        if buildlog.unimplemented_functions:
-            f.write('    <h2>Implementation notes for gcc-with-cpychecker</h2>\n')
-            f.write('    <p>The following "Py" functions were used but aren\'t\n'
-                    '       yet explicitly handled by gcc-with-cpychecker</p>\n'
-                    '    <ul>\n')
-            for fnname in sorted(buildlog.unimplemented_functions):
-                f.write('      <li><pre>%s</pre></li>\n' % fnname)
-            f.write('    </ul>\n')
+            if buildlog.unimplemented_functions:
+                f.write('    <h2>Implementation notes for gcc-with-cpychecker</h2>\n')
+                f.write('    <p>The following "Py" functions were used but aren\'t\n'
+                        '       yet explicitly handled by gcc-with-cpychecker</p>\n'
+                        '    <ul>\n')
+                for fnname in sorted(buildlog.unimplemented_functions):
+                    f.write('      <li><pre>%s</pre></li>\n' % fnname)
+                f.write('    </ul>\n')
 
-        if num_reports == 0 and not buildlog.unimplemented_functions:
-            f.write('    <p>Nothing was reported; did the plugin run correctly?\n')
+            if self.num_reports == 0 and not buildlog.unimplemented_functions:
+                f.write('    <p>Nothing was reported; did the plugin run correctly?\n')
 
-        f.write('  </body>\n')
-        f.write('</html>\n')
+            f.write('  </body>\n')
+            f.write('</html>\n')
+
+    def iter_severities(self):
+        for sev in sorted(self.severities.keys())[::-1]:
+            yield sev, self.severities[sev]
 
 def main():
     # locate .html
@@ -340,7 +345,7 @@ def main():
     for resultdir in os.listdir('LOGS'):
         resultpath = os.path.join('LOGS', resultdir)
         print(resultpath)
-        generate_index_html(resultpath, 'Errors seen in %s' % resultdir)
+        index = Index(resultpath, 'Errors seen in %s' % resultdir)
 
 if __name__ == '__main__':
     main()

@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import commands
 import datetime
 import glob
 import os
@@ -25,7 +26,7 @@ import sys
 import webbrowser
 
 from bugreporting import NewBug, BugReportDb
-from makeindex import generate_index_html
+from makeindex import Index
 
 def nvr_from_srpm_path(path):
     filename = os.path.basename(path)
@@ -163,7 +164,7 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
 PLUGIN_PATH='gcc-python2-plugin-0.9-1.fc16.x86_64.rpm'
 MOCK_CONFIG='fedora-16-x86_64'
 
-def prepare_bug_report(srpmpath):
+def prepare_bug_report(srpmpath, index):
     srpmname, version, release = nvr_from_srpm_path(srpmpath)
 
     resultdir = get_result_dir(srpmpath)
@@ -183,8 +184,16 @@ def prepare_bug_report(srpmpath):
 
     reporturl = 'http://fedorapeople.org/~dmalcolm/gcc-python-plugin/%(datestr)s/%(srpmname)s-%(version)s-%(release)s/' % locals()
 
+    gitversion = commands.getoutput('git rev-parse HEAD')
+
     # FIXME:
-    gitversion='073d390de53ef52136bd90e5ac06f1ef833d047d'
+    categorized_notes = ''
+    for sev, issues in index.iter_severities():
+        categorized_notes += ('Within the category "%s" the %i issues reported\n'
+                              % (sev.title, len(issues)))
+        for er in issues:
+            categorized_notes += ('%s:%s:%s\n' % (er.filename, er.function, er.errmsg))
+        categorized_notes += '\n'
 
     comment = """
 Description of problem:
@@ -199,7 +208,10 @@ I ran the latest version of the tool (in git master; post 0.9) on
 You can see a list of errors here, triaged into categories (from most significant to least significant):
 %(reporturl)s
 
-FIXME: add notes on the bugs here
+I've manually reviewed the issues reported by the tool.
+
+FIXME:
+%(categorized_notes)s
 
 There may of course be other bugs in my checker tool.
 
