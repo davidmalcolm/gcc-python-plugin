@@ -243,8 +243,8 @@ if 1:
         resultdir = get_result_dir(srpmpath)
         if not os.path.exists(resultdir):
             local_rebuild_of_srpm_in_mock(srpmpath, MOCK_CONFIG)
-        generate_index_html(resultdir, 'Errors seen in %s' % resultdir)
-        prepare_bug_report(srpmpath)
+        index = Index(resultdir, 'Errors seen in %s' % resultdir)
+        prepare_bug_report(srpmpath, index)
         break
 
 # TODO:
