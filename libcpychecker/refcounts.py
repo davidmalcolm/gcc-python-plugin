@@ -879,7 +879,7 @@ class CPython(Facet):
             try:
                 fmt = PyArgParseFmt.from_string(fmt_string, with_size_t)
                 _handle_successful_parse(fmt)
-            except FormatStringError:
+            except FormatStringWarning:
                 pass
 
         return self.state.make_transitions_for_fncall(stmt, fnmeta,
@@ -1097,7 +1097,7 @@ class CPython(Facet):
                 fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
                 if not _handle_successful_parse(fmt):
                     return [t_failure]
-            except FormatStringError:
+            except FormatStringWarning:
                 pass
 
         return [t_success, t_failure]
@@ -2306,7 +2306,7 @@ class CPython(Facet):
                 fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
                 if not _handle_successful_parse(fmt):
                     return [t_failure]
-            except FormatStringError:
+            except FormatStringWarning:
                 pass
 
         return [t_success, t_failure]
