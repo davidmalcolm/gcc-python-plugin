@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'when considering value == (const unsigned int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-eq-min-of-WithinRange/input.c:22'
+    'when considering j.1 == (const unsigned int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-eq-min-of-WithinRange/input.c:22'
     'taking True path'
     'returning'
   Return value:
@@ -11,7 +11,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= j.1 <= 0xffffffff'
     'taking False path'
     'returning'
   Return value:

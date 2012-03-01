@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'when considering value == (unsigned int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28'
+    'when considering j == (unsigned int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28'
   error: PredictedArithmeticError()
   error: possible integer division or modulo by zero with right-hand-side (unsigned int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c:28
   Exception:
@@ -8,7 +8,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= j <= 0xffffffff'
     'returning'
   Return value:
     repr(): WithinRange(gcctype='unsigned int', loc=gcc.Location(file='tests/cpychecker/absinterp/arithmetic/division-by-zero/possible/input.c', line=30), minvalue=0, maxvalue=0x7fffffff)

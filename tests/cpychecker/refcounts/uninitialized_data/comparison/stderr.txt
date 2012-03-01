@@ -1,9 +1,9 @@
 tests/cpychecker/refcounts/uninitialized_data/comparison/input.c: In function 'test':
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41:5: warning: comparison against uninitialized data (item) at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41 [enabled by default]
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:34:12: note: when PyList_New() succeeds at:     result = PyList_New(len);
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:35:8: note: taking False path at:     if (!result) {
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:12: note: reaching:     for (i = 0; i < len; i++) {
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:5: note: when considering range: 1 <= value <= 0x7fffffff at:     for (i = 0; i < len; i++) {
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:5: note: taking True path at:     for (i = 0; i < len; i++) {
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41:5: note: reaching: 	if (!item) {
-tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:29:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/uninitialized_data/comparison/input.c.test-refcount-errors.html'
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41:nn: warning: comparison against uninitialized data (item) at tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41 [enabled by default]
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:34:nn: note: when PyList_New() succeeds at:     result = PyList_New(len);
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:35:nn: note: taking False path at:     if (!result) {
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:nn: note: reaching:     for (i = 0; i < len; i++) {
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:nn: note: when considering range: 1 <= len <= 0x7fffffff at:     for (i = 0; i < len; i++) {
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:39:nn: note: taking True path at:     for (i = 0; i < len; i++) {
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:41:nn: note: reaching: 	if (!item) {
+tests/cpychecker/refcounts/uninitialized_data/comparison/input.c:29:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/uninitialized_data/comparison/input.c.test-refcount-errors.html'

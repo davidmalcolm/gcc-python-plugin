@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: -0x80000000 <= value <= 0'
+    'when considering range: -0x80000000 <= n <= 0'
     'taking False path'
     'returning'
   Return value:
@@ -17,13 +17,13 @@ Trace 1:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() succeeds'
     'taking False path'
     'when PyList_Append() succeeds'
     'taking False path'
-    'when considering value == (int)1 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:29'
+    'when considering n == (int)1 from tests/cpychecker/refcounts/PyList_Append/incorrect-loop/input.c:29'
     'taking False path'
     'returning'
   Return value:
@@ -43,7 +43,7 @@ Trace 2:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() succeeds'
     'taking False path'
@@ -72,7 +72,7 @@ Trace 3:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() succeeds'
     'taking False path'
@@ -102,7 +102,7 @@ Trace 4:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() succeeds'
     'taking False path'
@@ -132,7 +132,7 @@ Trace 5:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() succeeds'
     'taking False path'
@@ -163,7 +163,7 @@ Trace 6:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() fails'
     'taking True path'
@@ -184,7 +184,7 @@ Trace 7:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= n <= 0x7fffffff'
     'taking True path'
     'when item_ctor() fails'
     'taking True path'

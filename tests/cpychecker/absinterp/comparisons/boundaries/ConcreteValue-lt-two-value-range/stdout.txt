@@ -15,7 +15,7 @@ Trace 1:
     'taking False path'
     'when considering range: 0 <= value <= 1'
     'taking False path'
-    'when considering value == (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
+    'when considering j == (int)0 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
     'taking False path'
     'returning'
   Return value:
@@ -30,7 +30,7 @@ Trace 2:
     'taking False path'
     'when considering range: 0 <= value <= 1'
     'taking False path'
-    'when considering value == (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
+    'when considering j == (int)1 from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-lt-two-value-range/input.c:23'
     'taking True path'
     'returning'
   Return value:

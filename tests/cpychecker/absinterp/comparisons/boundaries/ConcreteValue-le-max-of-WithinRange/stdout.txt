@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'when considering range: 0 <= value <= 0xfffffffe'
+    'when considering range: 0 <= j.0 <= 0xfffffffe'
     'taking False path'
     'returning'
   Return value:
@@ -11,7 +11,7 @@ Trace 0:
 
 Trace 1:
   Transitions:
-    'when considering value == (const unsigned int)0xffffffff from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-le-max-of-WithinRange/input.c:22'
+    'when considering j.0 == (const unsigned int)0xffffffff from tests/cpychecker/absinterp/comparisons/boundaries/ConcreteValue-le-max-of-WithinRange/input.c:22'
     'taking True path'
     'returning'
   Return value:

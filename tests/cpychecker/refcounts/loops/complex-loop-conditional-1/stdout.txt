@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering value == (const unsigned int)0 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22'
+    'when considering unknown_unsigned_val.1 == (const unsigned int)0 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22'
     'taking False path'
     'returning'
   Return value:
@@ -27,13 +27,13 @@ Trace 1:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() succeeds'
     'taking False path'
     'when PyList_Append() succeeds'
     'taking False path'
-    'when considering value == (const unsigned int)1 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22'
+    'when considering unknown_unsigned_val.1 == (const unsigned int)1 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22'
     'taking False path'
     'returning'
   Return value:
@@ -63,7 +63,7 @@ Trace 2:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() succeeds'
     'taking False path'
@@ -103,7 +103,7 @@ Trace 3:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() succeeds'
     'taking False path'
@@ -144,7 +144,7 @@ Trace 4:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() succeeds'
     'taking False path'
@@ -185,7 +185,7 @@ Trace 5:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() succeeds'
     'taking False path'
@@ -227,7 +227,7 @@ Trace 6:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() fails'
     'taking True path'
@@ -259,7 +259,7 @@ Trace 7:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0xffffffff'
+    'when considering range: 1 <= unknown_unsigned_val.1 <= 0xffffffff'
     'taking True path'
     'when make_item() fails'
     'taking True path'

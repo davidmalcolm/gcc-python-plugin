@@ -160,7 +160,7 @@ class RefcountValue(AbstractValue):
     def __repr__(self):
         return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
 
-    def eval_binop(self, exprcode, rhs, gcctype, loc):
+    def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
                 return RefcountValue(self.relvalue + rhs.value, self.min_external)
@@ -168,7 +168,7 @@ class RefcountValue(AbstractValue):
                 return RefcountValue(self.relvalue - rhs.value, self.min_external)
         return UnknownValue.make(gcctype, loc)
 
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         """
         opname is a string in opnames
         Return a boolean, or None (meaning we don't know)
@@ -407,7 +407,7 @@ class CPython(Facet):
         s_new.cpython.dec_ref(v_pyobjectptr, stmt.loc)
         v_ob_refcnt = s_new.cpython.get_refcount(v_pyobjectptr, stmt)
         # print('ob_refcnt: %r' % v_ob_refcnt)
-        eq_zero = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1))
+        eq_zero = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1), None)
         # print('eq_zero: %r' % eq_zero)
         if eq_zero or eq_zero is None:
             # tri-state; it might be zero:
@@ -3196,7 +3196,7 @@ class CPython(Facet):
         # Because of the way we store RefcountValue instances, we can't
         # easily prove that the refcount == 1, so only follow this path
         # if we can prove that refcount != 1
-        eq_one = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1))
+        eq_one = v_ob_refcnt.eval_comparison('eq', ConcreteValue.from_int(1), None)
         if eq_one is False: # tri-state
             # FIXME: Py_XDECREF on newitem
             s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
@@ -3214,8 +3214,8 @@ class CPython(Facet):
                                                   v_op.region,
                                                   'ob_size')
 
-        lt_zero = v_i.eval_comparison('lt', ConcreteValue.from_int(0))
-        lt_size = v_i.eval_comparison('lt', v_ob_size)
+        lt_zero = v_i.eval_comparison('lt', ConcreteValue.from_int(0), None)
+        lt_size = v_i.eval_comparison('lt', v_ob_size, None)
         # The above could be None: signifying that we don't know, and that
         # False is possible.  Out-of-range is possible if either aren't known
         # to be non-False:

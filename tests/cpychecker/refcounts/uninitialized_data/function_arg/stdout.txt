@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: -0x80000000 <= value <= 0'
+    'when considering range: -0x80000000 <= len <= 0'
     'taking False path'
     'returning'
   Return value:
@@ -17,7 +17,7 @@ Trace 1:
   Transitions:
     'when PyList_New() succeeds'
     'taking False path'
-    'when considering range: 1 <= value <= 0x7fffffff'
+    'when considering range: 1 <= len <= 0x7fffffff'
     'taking True path'
   error: UsageOfUninitializedData()
   error: passing uninitialized data (item) as argument 3 to function at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41

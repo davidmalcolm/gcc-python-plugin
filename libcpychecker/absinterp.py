@@ -234,11 +234,11 @@ class AbstractValue(object):
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
 
-    def eval_binop(self, exprcode, rhs, gcctype, loc):
+    def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         raise NotImplementedError
 
     @dump_comparison
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         """
         opname is a string in opnames
         Return a boolean, or None (meaning we don't know)
@@ -319,11 +319,11 @@ class UnknownValue(AbstractValue):
     def eval_unary_op(self, exprcode, gcctype, loc):
         return UnknownValue.make(gcctype, loc)
 
-    def eval_binop(self, exprcode, rhs, gcctype, loc):
+    def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         return UnknownValue.make(gcctype, loc)
 
     @dump_comparison
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         if opname == 'eq':
             # If it's the *same* value, it's equal to itself:
             if self is rhs:
@@ -474,7 +474,7 @@ class ConcreteValue(AbstractValue):
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
 
-    def eval_binop(self, exprcode, rhs, gcctype, loc):
+    def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             newvalue = eval_binop(exprcode, self.value, rhs.value, rhs)
             if newvalue is not None:
@@ -482,7 +482,7 @@ class ConcreteValue(AbstractValue):
         return UnknownValue.make(gcctype, loc)
 
     @dump_comparison
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         log('ConcreteValue.eval_comparison(%s, %s%s)', self, opname, rhs)
         if isinstance(rhs, ConcreteValue):
             return raw_comparison(self.value, opname, rhs.value)
@@ -508,7 +508,7 @@ class ConcreteValue(AbstractValue):
                                                    rhs.loc,
                                                    self.value+1,
                                                    rhs.maxvalue))
-                rhs.raise_split(*ranges)
+                rhs.raise_split(rhsdesc, *ranges)
 
             # For everything else (inequalities), consider ranges:
             self_vs_min = raw_comparison(self.value, opname, rhs.minvalue)
@@ -618,7 +618,7 @@ class ConcreteValue(AbstractValue):
                 if debug_comparisons:
                     from pprint import pprint
                     pprint(ranges)
-                rhs.raise_split(*[roc.rng for roc in ranges])
+                rhs.raise_split(rhsdesc, *[roc.rng for roc in ranges])
         return None
 
     def extract_from_parent(self, region, gcctype, loc):
@@ -743,7 +743,7 @@ class WithinRange(AbstractValue):
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
 
-    def eval_binop(self, exprcode, rhs, gcctype, loc):
+    def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             values = [eval_binop(exprcode, val, rhs.value, rhs)
                       for val in (self.minvalue, self.maxvalue)]
@@ -759,7 +759,7 @@ class WithinRange(AbstractValue):
                     zero_range = WithinRange.make(rhs.gcctype, rhs.loc, 0)
                     gt_zero_range = WithinRange.make(rhs.gcctype, rhs.loc,
                                                 1, rhs.maxvalue)
-                    rhs.raise_split(zero_range, gt_zero_range)
+                    rhs.raise_split(rhsdesc, zero_range, gt_zero_range)
 
             # Avoid negative shifts:
             # (see https://fedorahosted.org/gcc-python-plugin/ticket/14 )
@@ -769,7 +769,7 @@ class WithinRange(AbstractValue):
                                             rhs.minvalue, -1)
                     ge_zero_range = WithinRange.make(rhs.gcctype, rhs.loc,
                                                 0, rhs.maxvalue)
-                    rhs.raise_split(neg_range, ge_zero_range)
+                    rhs.raise_split(rhsdesc, neg_range, ge_zero_range)
 
             values = (eval_binop(exprcode, self.minvalue, rhs.minvalue, rhs),
                       eval_binop(exprcode, self.minvalue, rhs.maxvalue, rhs),
@@ -785,7 +785,7 @@ class WithinRange(AbstractValue):
         return self.minvalue <= rawvalue and rawvalue <= self.maxvalue
 
     @dump_comparison
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         log('WithinRange.eval_comparison(%s, %s%s)', self, opname, rhs)
 
         # If it's the *same* value, it's equal to itself:
@@ -805,22 +805,25 @@ class WithinRange(AbstractValue):
         if isinstance(rhs, ConcreteValue):
             # to implement WithinRange op ConcreteValue, use:
             #   ConcreteValue flip(op) WithinRange
-            return rhs.eval_comparison(flip_opname(opname), self)
+            return rhs.eval_comparison(flip_opname(opname), self, None)
 
         return None
 
-    def raise_split(self, *new_ranges):
+    def raise_split(self, valuedesc, *new_ranges):
         """
         Raise a SplitValue exception to subdivide this range into subranges
         """
         descriptions = []
+        if valuedesc is None:
+            valuedesc = 'value'
         for r in new_ranges:
             if isinstance(r, WithinRange):
-                descriptions.append('when considering range: %s <= value <= %s' %
+                descriptions.append('when considering range: %s <= %s <= %s' %
                                     (value_to_str(r.minvalue),
+                                     valuedesc,
                                      value_to_str(r.maxvalue)))
             elif isinstance(r, ConcreteValue):
-                descriptions.append('when considering value == %s' % r)
+                descriptions.append('when considering %s == %s' % (valuedesc, r))
             else:
                 raise TypeError('unrecognized type: %r' % r)
         raise SplitValue(self, new_ranges, descriptions)
@@ -875,7 +878,7 @@ class PointerToRegion(AbstractValue):
     def __repr__(self):
         return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
 
-    def eval_comparison(self, opname, rhs):
+    def eval_comparison(self, opname, rhs, rhsdesc):
         log('PointerToRegion.eval_comparison:(%s, %s%s)', self, opname, rhs)
 
         if opname == 'eq':
@@ -2332,7 +2335,8 @@ class State(object):
                     # so that we can split the new state:
                     eqzero = v_returnval.eval_comparison(
                         'lt',
-                        ConcreteValue.from_int(0))
+                        ConcreteValue.from_int(0),
+                        None)
                     if eqzero is True:
                         # Mark the global exception state (with an arbitrary
                         # error):
@@ -2415,27 +2419,27 @@ class State(object):
                                            'comparison against uninitialized data (%s)' % expr_rhs)
 
         if exprcode == gcc.EqExpr:
-            result = lhs.eval_comparison('eq', rhs)
+            result = lhs.eval_comparison('eq', rhs, expr_rhs)
             if result is not None:
                 return result
         elif exprcode == gcc.NeExpr:
-            result = lhs.eval_comparison('eq', rhs)
+            result = lhs.eval_comparison('eq', rhs, expr_rhs)
             if result is not None:
                 return not result
         elif exprcode == gcc.LtExpr:
-            result = lhs.eval_comparison('lt', rhs)
+            result = lhs.eval_comparison('lt', rhs, expr_rhs)
             if result is not None:
                 return result
         elif exprcode == gcc.LeExpr:
-            result = lhs.eval_comparison('le', rhs)
+            result = lhs.eval_comparison('le', rhs, expr_rhs)
             if result is not None:
                 return result
         elif exprcode == gcc.GeExpr:
-            result = lhs.eval_comparison('ge', rhs)
+            result = lhs.eval_comparison('ge', rhs, expr_rhs)
             if result is not None:
                 return result
         elif exprcode == gcc.GtExpr:
-            result = lhs.eval_comparison('gt', rhs)
+            result = lhs.eval_comparison('gt', rhs, expr_rhs)
             if result is not None:
                 return result
 
@@ -2484,7 +2488,7 @@ class State(object):
                                                'usage of uninitialized data (%s) on right-hand side of %s'
                                                % (stmt.rhs[0], stmt.exprcode.get_symbol()))
             try:
-                c = a.eval_binop(stmt.exprcode, b, stmt.lhs.type, stmt.loc)
+                c = a.eval_binop(stmt.exprcode, b, rhs[1], stmt.lhs.type, stmt.loc)
                 check_isinstance(c, AbstractValue)
                 return c
             except NotImplementedError:
