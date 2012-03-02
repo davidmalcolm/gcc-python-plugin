@@ -719,6 +719,12 @@ known to the checker are:
 `PyUnicodeUCS4_DecodeUTF8 <http://docs.python.org/c-api/unicode.html#PyUnicode_DecodeUTF8>`_,
 `PyWeakref_GetObject <http://docs.python.org/c-api/weakref.html#PyWeakref_GetObject>`_
 
+The checker also has some knowledge about these SWIG-generated functions:
+`SWIG_Python_ErrorType`,
+`SWIG_Python_SetErrorMsg`
+
+and of this Cython-generated function:
+`__Pyx_GetStdout`
 
 Ideas for future tests
 ----------------------

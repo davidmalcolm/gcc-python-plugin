@@ -20,8 +20,14 @@ from gccutils import check_isinstance
 from libcpychecker.types import register_type_object
 
 # Recorded attribute data, primed with some special-case knowledge about
-# the code that Cython generates:
-fnnames_returning_borrowed_refs = set(['__Pyx_GetStdout'])
+# the code that Cython and SWIG generate:
+fnnames_returning_borrowed_refs = set([
+        '__Pyx_GetStdout',
+
+        'SWIG_Python_ErrorType',
+        # returns a borrowed ref to one of the global exception objects
+
+])
 
 fnnames_setting_exception = set()
 fnnames_setting_exception_on_negative_result = set()

@@ -3355,6 +3355,19 @@ class CPython(Facet):
     # (end of Python API implementations)
     ########################################################################
 
+    ########################################################################
+    # SWIG_*
+    ########################################################################
+    def impl_SWIG_Python_SetErrorMsg(self, stmt, v_errtype, v_msg):
+        fnmeta = FnMeta(name='SWIG_Python_SetErrorMsg')
+
+        # Calls PyErr_SetString:
+        result = self.impl_PyErr_SetString(stmt, v_errtype, v_msg)
+        for t_iter in result:
+            t_iter.desc = 'calling %s()' % fnmeta.name
+        return result
+
+
 def get_traces(fun):
     return list(iter_traces(fun,
                             {'cpython':CPython},

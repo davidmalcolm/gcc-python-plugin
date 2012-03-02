@@ -1,0 +1,11 @@
+Trace 0:
+  Transitions:
+    'calling SWIG_Python_SetErrorMsg()'
+    'returning'
+  Region("region-for-arg-gcc.ParmDecl('errtype')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('errtype')")
+    str(): Region("region-for-arg-gcc.ParmDecl('errtype')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/SWIG_Python_SetErrorMsg/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('errtype')"))
+  Exception:
+    (struct PyObject *)&Region("region-for-arg-gcc.ParmDecl('errtype')") from tests/cpychecker/refcounts/SWIG_Python_SetErrorMsg/correct/input.c:27
