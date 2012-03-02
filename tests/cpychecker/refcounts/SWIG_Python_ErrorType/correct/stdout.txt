@@ -1,0 +1,11 @@
+Trace 0:
+  Transitions:
+    'SWIG_Python_ErrorType()'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/SWIG_Python_ErrorType/correct/input.c', line=31), region=RegionForGlobal(gcc.VarDecl('PyExc_TypeError')))
+    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/SWIG_Python_ErrorType/correct/input.c:31
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/SWIG_Python_ErrorType/correct/input.c:30

@@ -3358,6 +3358,21 @@ class CPython(Facet):
     ########################################################################
     # SWIG_*
     ########################################################################
+    def impl_SWIG_Python_ErrorType(self, stmt, v_code):
+        fnmeta = FnMeta(name='SWIG_Python_ErrorType',
+                        prototype='PyObject* SWIG_Python_ErrorType(int code)')
+        # returns a borrowed reference to one of the builtin exception types
+        # Cannot return NULL
+        # For now, hardcode a TypeError:
+        exc_decl = compat.get_exception_decl_by_name('PyExc_TypeError')
+        check_isinstance(exc_decl, gcc.VarDecl)
+        r_exception = self.state.var_region(exc_decl)
+        v_exception = PointerToRegion(get_PyObjectPtr(), stmt.loc, r_exception)
+        t_next = self.state.mktrans_assignment(stmt.lhs,
+                                               v_exception,
+                                               '%s()' % fnmeta.name)
+        return [t_next]
+
     def impl_SWIG_Python_SetErrorMsg(self, stmt, v_errtype, v_msg):
         fnmeta = FnMeta(name='SWIG_Python_SetErrorMsg')
 
