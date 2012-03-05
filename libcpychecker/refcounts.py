@@ -2757,6 +2757,9 @@ class CPython(Facet):
                                                          fnmeta,
                                                          'new ref from %s' % fnmeta.name)
 
+    def impl_PySequence_Length(self, stmt, v_o):
+        return self.impl_PySequence_Size(stmt, v_o)
+
     def impl_PySequence_SetItem(self, stmt, v_o, v_i, v_item):
         fnmeta = FnMeta(name='PySequence_SetItem',
                         prototype='int PySequence_SetItem(PyObject *o, Py_ssize_t i, PyObject *item)',
@@ -2785,6 +2788,29 @@ class CPython(Facet):
                                  '%s() succeeds' % fnmeta.name))
 
         return result
+
+    def impl_PySequence_Size(self, stmt, v_o):
+        fnmeta = FnMeta(name='PySequence_Size',
+                        docurl='http://docs.python.org/c-api/sequrnce.html#PySequence_Size',
+                        prototype='Py_ssize_t PySequence_Size(PyObject *s)',
+                        defined_in='Objects/abstract.c')
+
+        # safely handles NULL for the obj via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o, rawreturnvalue=-1)
+        if t_err:
+            return [t_err]
+
+        # on success, expect a value >= 0
+        returntype = stmt.fn.type.dereference.type
+        s_success = self.state.mkstate_return_of(stmt,
+                                                 WithinRange.ge_zero(returntype,
+                                                                     stmt.loc))
+        # else, return -1 and set an exception
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc)
+
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
 
     ########################################################################
     # PyString_*

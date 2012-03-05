@@ -1,0 +1,147 @@
+Trace 0:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when PySequence_Size() succeeds'
+    'taking True path'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=36), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
+    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:36
+    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_type: None
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:24
+
+Trace 1:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when PySequence_Size() succeeds'
+    'taking True path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=36), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
+    str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:36
+    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_type: None
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:24
+
+Trace 2:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when PySequence_Size() fails'
+    'taking False path'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=26), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:26
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:33
+
+Trace 3:
+  Transitions:
+    'when PyList_New() succeeds'
+    'taking False path'
+    'when PySequence_Size() fails'
+    'taking False path'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=26), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:26
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28:
+    repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=28))
+    str(): PyListObject allocated at tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:33
+
+Trace 4:
+  Transitions:
+    'when PyList_New() fails'
+    'taking True path'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=26), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:26
+  Region("region-for-arg-gcc.ParmDecl('self')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
+    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  Region("region-for-arg-gcc.ParmDecl('args')"):
+    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
+    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySequence_Size/correct/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PySequence_Size/correct/input.c:28
