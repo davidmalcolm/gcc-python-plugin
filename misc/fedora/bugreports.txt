@@ -61,6 +61,10 @@ nautilus-python-1.1-1.fc17           rhbz#795001     http://fedorapeople.org/~dm
 net-snmp-5.7.1-4.fc17                rhbz#795002     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-18/net-snmp-5.7.1-4.fc17/
 postgresql-9.1.2-2.fc17              rhbz#795011     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-02-18/postgresql-9.1.2-2.fc17/
 
+# 2012-03-03
+duplicity-0.6.17-2.fc17              rhbz#799618     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-03/duplicity-0.6.17-2.fc17/
+
+
 
 ############################################################################
 # The following are grouped by rough category:
@@ -76,6 +80,7 @@ dbus-python-0.83.0-9.fc17            Only false positives
 python-pycurl-7.19.0-9.fc15          Only false positives
 brltty-4.3-4.fc17                    Only false positives
 dracut-modules-olpc-0.6.1-2.fc17     Appear to all be false positives
+gcc-python-plugin-0.9-1.fc17         Only false positives
 mod_scgi-1.13-5.fc15                 Only a false positive
 ntop-4.1.0-3.fc17                    Only false positives
 numpy-1.6.1-2.fc17                   Only false positives (bugs in cpychecker's union-handling)
@@ -87,7 +92,9 @@ cwiid-0.6.00-18.20100505gitfadf11e.fc17  Only in module initialization
 fonttools-2.3-4.fc17                 Only in module initialization
 freeipa-2.1.90-0.1.fc17              Only in module initialization
 glade3-3.10.2-3.fc17                 Only in module initialization
+listen-0.6.5-7.fc17                  Only in module initialization
 mirage-0.9.5.2-2.fc17                Signedness of PyArg_Parse
+PyMca-4.4.1-3.p1.fc16                Only in module initialization
 
 # FIXMEs:
 libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
@@ -97,96 +104,6 @@ python-lxml-2.3-1.fc16.src.rpm       FIXME: all appear to be bugs in the checker
 
 
 # TODOs: not being built with correct flags:
-python-cheetah-2.4.4-2.fc17.src.rpm  TODO: isn't being built with the correct build flags, so plugin is not run
-python-ldap-2.3.12-2.fc15.src.rpm    TODO: isn't being built with the correct build flags, so plugin is not run
-python-ldap-2.4.6-2.fc17.src.rpm     TODO: isn't being built with the correct build flags, so plugin is not run
-
-Cython-0.15.1-2.fc16                 TODO: isn't being built with the correct build flags, so plugin is not run
-Io-language-20080330-8.fc17.2        TODO: usage appears to be just within addons/Python/source/IoPython.c, and this isn't being built with the correct flags
-PyAmanith-0.3.35-12.fc17             TODO: isn't being built with the correct build flags, so plugin is not run
-PyMca-4.4.1-3.p1.fc16                TODO: isn't being built with the correct build flags, so plugin is not run
-PyQuante-1.6.4-3.fc17                TODO: isn't being built with the correct build flags, so plugin is not run
-coccinelle-1.0.0-0.rc9.6.fc17        TODO: isn't being built with the correct build flags, so plugin is not run
-duplicity-0.6.17-2.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
-fuse-python-0.2.1-4.fc17             TODO: isn't being built with the correct build flags, so plugin is not run
-gcc-python-plugin-0.9-1.fc17         TODO: ironically, it isn't being built with the correct build flags, so plugin is not run
-gdb-7.4.50.20120120-17.fc17          TODO: isn't being built with the correct build flags, so plugin is not run
-ghmm-0.7-7.svn2286.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
-gnumeric-1.11.1-1.fc17               TODO: isn't being built with the correct build flags, so plugin is not run
-graphviz-2.28.0-14.fc17              TODO: isn't being built with the correct build flags, so plugin is not run
-ice-3.4.2-8.fc17                     TODO: isn't being built with the correct build flags, so plugin is not run
-kig-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-kross-interpreters-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-libldb-1.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-libreoffice-3.5.0.3-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-libselinux-2.1.9-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-libssh2-python-0.7.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-libtevent-0.9.15-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-listen-0.6.5-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-marble-4.8.0-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-mercurial-2.1-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-mx-3.2.1-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-mypaint-1.0.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-newt-0.52.14-2.fc17   TODO: the python code isn't being built with the correct flags
-policycoreutils-2.1.10-21.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-py-bcrypt-0.2-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-py-radix-0.5-9.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pyaudio-0.2.3-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pycdio-0.17-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pyicu-1.2-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pykde4-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pyliblzma-0.5.3-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pyodbc-2.1.5-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pyparted-3.8-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pypop-0.7.0-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pystatgrab-0.5-9.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-PSI-0.3-0.4.b2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-arm4-1.2-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-basemap-0.99.4-13.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-coverage-3.5.1-0.1.b1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-cryptsetup-0.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-ctags-1.0.5-4.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
-python-cvxopt-1.1.4-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-dmidecode-3.10.13-3.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
-python-ethtool-0.7-2.fc16  TODO: isn't being built with the correct build flags, so plugin is not run
-python-genshi-0.6-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-guppy-0.1.9-5.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-igraph-0.5.4-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-imdb-4.7-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-iptables-0.1.0-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-iwlib-1.1-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-kerberos-1.1-8.1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-kinterbasdb-3.3.0-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-matplotlib-1.0.1-18.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-mecab-0.991-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-msgpack-0.1.12-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-netifaces-0.5-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-numeric-24.2-17.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-numexpr-2.0.1-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-poppler-qt4-0.16.2-3.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-psycopg2-2.4.4-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-ptrace-0.6.3-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-pywt-0.2.0-3.fc15  TODO: isn't being built with the correct build flags, so plugin is not run
-python-schedutils-0.2-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-shapely-1.2.13-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-simplejson-2.3.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-simpleparse-2.1.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-storm-0.19-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-sybase-0.39-8.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-sysv_ipc-0.4.2-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-tables-2.3.1-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-python-twisted-runner-11.1.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-pywcs-1.11-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-qmtest-2.4.1-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-quodlibet-2.3.92-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-rdiff-backup-1.2.8-7.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-setools-3.3.7-21.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-superkaramba-4.8.0-1.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-texworks-0.4.3-4.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-wxPython-2.8.12.0-2.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-yum-metadata-parser-1.1.4-6.fc17  TODO: isn't being built with the correct build flags, so plugin is not run
-
-
 
 
 # FIXME: checker fails completely on C++, with errors of the form:
@@ -285,12 +202,17 @@ cryptsetup-1.4.1-2.fc17    FIXME: checker got confused by PyObjectResult, and so
 ekg-1.8-0.9.rc1.fc16       FIXME: lots of tracebacks during build
 fontforge-20110222-7.fc17  FIXME: lots of tracebacks during build
 freeradius-2.1.12-5.fc17   FIXME: some tracebacks during build
+fuse-python-0.2.1-4.fc17   FIXME: some tracebacks during build
 gcompris-12.01-1.fc17      FIXME: lots of tracebacks during build
 gnome-hearts-0.3-10.fc17   FIXME: some tracebacks during build
 gtkparasite-0-0.8.20090120git928494e5.fc17  FIXME: some tracebacks during build
 libdmtx-0.7.2-6.fc17       FIXME: some tracebacks during build
+libssh2-python-0.7.1-4.fc17 FIXME: lots of tracebacks during build
+libtevent-0.9.15-1.fc17    FIXME: lots of tracebacks during build
 linkchecker-6.5-4.fc17     FIXME: lots of tracebacks during build
+mercurial-2.1-1.fc17       FIXME: some tracebacks during build
 mod_wsgi-3.3-2.fc17        FIXME: lots of tracebacks during build
+PyQuante-1.6.4-3.fc17      FIXME: lots of tracebacks during build
 
 # To be reported:
 PyGreSQL-4.0-4.fc17        FIXME: to be reported
@@ -319,23 +241,7 @@ mpi4py-1.3-2.fc17     FIXME: Cython-generated; various false positives (I think)
 pocketsphinx-0.7-4.fc17   FIXME: Cython-generated
 
 
-gdal-1.7.3-12.fc17    FIXME: new build flags broke a "sed"
-# it's confused by the /test.py in the build flags:
-#  + sed -i -e 's/$(LD)/g++ -L..\/..\/.libs\/ -fplugin=python2 -fplugin-arg-python2-script=/test.py -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic/g' swig/ruby/RubyMakefile.mk
-#  sed: -e expression #1, char 77: unknown option to `s'
-
-lcgdm-1.8.2-2.fc17    FIXME: new build flags broke a "sed"
-#  sed: -e expression #1, char 58: unknown option to `s'
-#  + sed 's/^CC +=/& -fplugin=python2 -fplugin-arg-python2-script=/test.py -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -fno-strict-aliasing/' -i config/linux.cf
-
 libftdi-0.19-3.fc17   FIXME: checking if we can build the C++ wrapper... ./configure: line 382: test: we: integer expression expected
-
-kernel-3.3.0-0.rc3.git5.1.fc17  FIXME:
-#  only reference to python seems to be:
-#   + make -j4 -C tools/perf -s V=1 EXTRA_CFLAGS=-Wno-error=array-bounds HAVE_CPLUS_DEMANGLE=1 prefix=/usr DESTDIR=/builddir/build/BUILDROOT/kernel-3.3.0-0.rc3.git5.1.fc16.x86_64 install-python_ext
-#  and:
-#   extracting debug info from /builddir/build/BUILDROOT/kernel-3.3.0-0.rc3.git5.1.fc16.x86_64/usr/lib64/python2.7/site-packages/perf.so
-# and it's not clear if this used the python plugin or not
 
 gnome-python2-2.28.1-8.fc17           TODO
 gnome-python2-extras-2.25.3-38.fc17   TODO
@@ -348,8 +254,10 @@ libtalloc-2.0.7-4.fc17 TODO
 
 # Various packages using SWIG; I probably need to add some specialcasing
 # to the checker for SWIG:
+ghmm-0.7-7.svn2286.fc17  TODO: SWIG-built
 ibus-anthy-1.2.6-5.fc17  TODO: SWIG-built
 input-pad-1.0.1-3.fc17   TODO: SWIG-built
+lcgdm-1.8.2-2.fc17       TODO: SWIG-built
 libopensync-0.22-11.fc17  TODO: SWIG-built
 libpreludedb-1.0.0-10.fc17 TODO: SWIG-built
 libteam-0.1-3.20120130gitb5cf2a8.fc17 TODO: SWIG-built
@@ -361,3 +269,28 @@ ldns-1.6.12-1.fc17       FIXME: many errors
 mod_python-3.3.1-17.fc17  FIXME: Was only partially run
 
 mysql-workbench-5.2.37-4.fc17  FIXME: configure: error: "BOOST library is missing"
+
+coccinelle-1.0.0-0.rc9.6.fc17 TODO
+gdb-7.4.50.20120120-17.fc17  TODO
+kernel-3.3.0-0.rc3.git5.1.fc17  TODO
+
+# TODO: I think these are completely failing to build, rather than building with no errors:
+gnumeric-1.11.1-1.fc17           TODO: appears to have failed to build
+graphviz-2.28.0-14.fc17          TODO: appears to have failed to build
+ice-3.4.2-8.fc17                 TODO: appears to have failed to build
+kig-4.8.0-1.fc17                 TODO: appears to have failed to build
+kross-interpreters-4.8.0-1.fc17  TODO: appears to have failed to build
+libreoffice-3.5.0.3-5.fc17       TODO: appears to have failed to build
+libselinux-2.1.9-7.fc17          TODO: appears to have failed to build
+marble-4.8.0-6.fc17              TODO: appears to have failed to build
+
+libldb-1.1.4-2.fc17    TODO: checker got confused by PyLdb_GetPyType
+
+
+# /usr/include/pygtk-2.0/pygobject.h: In function 'pygobject_init':
+# usage of PyErr_Fetch
+
+Cython-0.15.1-2.fc17   all false positives?
+Io-language-20080330-8.fc17.2  FIXME: C++
+PyAmanith-0.3.35-12.fc17  FIXME: C++
+gdal-1.7.3-12.fc17  FIXME: C++
