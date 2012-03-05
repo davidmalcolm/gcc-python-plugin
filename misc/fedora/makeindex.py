@@ -239,7 +239,6 @@ about internal API calls that can lead to an exception being set''')
 class BuildLog:
     # Wrapper around a "build.log" scraped from the mock build
     def __init__(self, path):
-        self.seen_plugin = False
         self.unimplemented_functions = set()
         self.cplusplus_failure = False
 
@@ -248,8 +247,6 @@ class BuildLog:
             for line in f.readlines():
                 if 0:
                     print repr(line)
-                if '-fplugin=python2 -fplugin-arg-python2-script=/test.py' in line:
-                    self.seen_plugin = True
                 m = re.match('NotImplementedError: not yet implemented: (\S+)',
                              line)
                 if m:
@@ -270,13 +267,6 @@ class Index:
             f.write('  <p>Raw build logs can be seen <a href="build.log">here</a></p>\n')
 
             buildlog = BuildLog(path)
-            if not buildlog.seen_plugin:
-                f.write('    <p>The GCC arguments for invoking the plugin were\n'
-                        '       not seen in the build logs: did the plugin actually\n'
-                        '       get run?</p>')
-                srpm = Srpm.from_path(path)
-                BugReportDb.add_status(srpm,
-                                       "TODO: isn't being built with the correct build flags, so plugin is not run")
 
             if buildlog.cplusplus_failure:
                 f.write('    <p>C++ failure</p>\n')
