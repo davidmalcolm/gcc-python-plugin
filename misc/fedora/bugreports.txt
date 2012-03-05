@@ -64,13 +64,44 @@ postgresql-9.1.2-2.fc17              rhbz#795011     http://fedorapeople.org/~dm
 # 2012-03-03
 duplicity-0.6.17-2.fc17              rhbz#799618     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-03/duplicity-0.6.17-2.fc17/
 
+# 2012-03-05
+newt-0.52.14-2.fc17                  rhbz#800075     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/newt-0.52.14-2.fc17/
+py-radix-0.5-9.fc17                  rhbz#800085     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/py-radix-0.5-9.fc17/
+pyOpenSSL-0.12-2.fc17                rhbz#800086     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/pyOpenSSL-0.12-2.fc17/
+pyaudio-0.2.3-5.fc17                 rhbz#800094     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/pyaudio-0.2.3-5.fc17/
+pygoocanvas-0.14.1-6.fc17            rhbz#800113     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/pygoocanvas-0.14.1-6.fc17/
+pyhunspell-0.1-6.fc17                rhbz#800116     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/pyhunspell-0.1-6.fc17/
+pylibacl-0.5.0-4.fc17                rhbz#800126     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/pylibacl-0.5.0-4.fc17/
+python-GeoIP-1.2.5-0.4.20090931cvs.fc15  rhbz#800134  http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-GeoIP-1.2.5-0.4.20090931cvs.fc15/
+python-alsa-1.0.25-1.fc17            rhbz#800135     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-alsa-1.0.25-1.fc17/
+python-cryptsetup-0.1.4-2.fc17       rhbz#800138     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-cryptsetup-0.1.4-2.fc17/
+python-cups-1.9.60-1.fc17            rhbz#800143     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-cups-1.9.60-1.fc17/
+python-ethtool-0.7-2.fc16            rhbz#800146     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-ethtool-0.7-2.fc16/
+python-iwlib-1.1-2.fc17              rhbz#800154     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-iwlib-1.1-2.fc17/
+python-jinja-1.2-7.fc17              rhbz#800158     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-jinja-1.2-7.fc17/
+python-kerberos-1.1-8.1.fc17         rhbz#800161     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-kerberos-1.1-8.1.fc17/
+python-libasyncns-0.7.1-6.fc17       rhbz#800167     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-libasyncns-0.7.1-6.fc17/
+python-netifaces-0.5-2.fc17          rhbz#800171     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-netifaces-0.5-2.fc17/
+python-psutil-0.4.1-2.fc17           rhbz#800177     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-psutil-0.4.1-2.fc17/
+python-schedutils-0.2-8.fc17         rhbz#800180     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-schedutils-0.2-8.fc17/
+python-virtkey-0.50-11.fc17          rhbz#800184     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-virtkey-0.50-11.fc17/
+python-yenc-0.3-10.fc17              rhbz#800187     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/python-yenc-0.3-10.fc17/
+setroubleshoot-3.1.2-1.fc17          rhbz#800190     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/setroubleshoot-3.1.2-1.fc17/
+urjtag-0.10-2.fc17.20111215gite1a4227  rhbz#800194   http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/urjtag-0.10-2.fc17.20111215gite1a4227/
+veusz-1.14-3.fc17                    rhbz#800196     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/veusz-1.14-3.fc17/
+wireshark-1.6.5-1.fc17               rhbz#800197     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/wireshark-1.6.5-1.fc17/
+yum-metadata-parser-1.1.4-6.fc17     rhbz#800200     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/yum-metadata-parser-1.1.4-6.fc17/
 
 
 ############################################################################
 # The following are grouped by rough category:
 ############################################################################
 
-
+# Apparent perfection:
+python-gnutls-1.1.9-4.fc17           Tool appears to have run, and not to have found any errors
+python-iptables-0.1.0-3.fc17         Tool appears to have run, and not to have found any errors
+python-pysctp-0.3.1-12.fc17          Tool appears to have run, and not to have found any errors
+python-smbpasswd-1.0.1-18.fc17       Tool appears to have run, and not to have found any errors
 
 # False positives:
 Mayavi-3.4.0-2.fc15                  Only false positives
@@ -82,9 +113,17 @@ brltty-4.3-4.fc17                    Only false positives
 dracut-modules-olpc-0.6.1-2.fc17     Appear to all be false positives
 gcc-python-plugin-0.9-1.fc17         Only false positives
 mod_scgi-1.13-5.fc15                 Only a false positive
+mx-3.2.1-2.fc17                      Appear to all be false positives
 ntop-4.1.0-3.fc17                    Only false positives
 numpy-1.6.1-2.fc17                   Only false positives (bugs in cpychecker's union-handling)
 opensips-1.7.1-3.fc17                Only false positives
+pyfribidi-0.10.0-3.fc17              Only false positives
+pyliblo-0.9.1-3.fc17                 Appears to be a false positive
+python-daap-0.7.1-7.fc15             Only false positives
+python-dulwich-0.8.2-1.fc17          Only false positives
+python-imdb-4.7-2.fc17               Only false positives
+python-sysv_ipc-0.4.2-6.fc17         Appears to be a false positive
+python-twisted-core-11.1.0-2.fc17    Only false positives
 
 # Not worth fixing:
 calibre-0.8.39-1.fc17                Only when module initialization fails
@@ -95,6 +134,22 @@ glade3-3.10.2-3.fc17                 Only in module initialization
 listen-0.6.5-7.fc17                  Only in module initialization
 mirage-0.9.5.2-2.fc17                Signedness of PyArg_Parse
 PyMca-4.4.1-3.p1.fc16                Only in module initialization
+py-bcrypt-0.2-6.fc17                 Signedness of PyArg_Parse
+pyflowtools-0.3.4.1-2.fc17           Only in module initialization
+pygame-1.9.1-8.fc17                  Only in module initialization, and a minor lack NULL-without-exception
+pygpgme-0.2-2.fc17                   Only in module initialization
+pysendfile-2.0.0-3.fc17              Only in module initialization, and a minor lack NULL-without-exception
+python-guppy-0.1.9-5.fc17            Only in module initialization
+python-lirc-0.0.5-13.fc17            leak of ref to Py_None
+python-lzo-1.08-10.fc17              Only in module initialization
+python-nss-0.12-3.fc17               Only in module initialization
+python-ogg-1.3-16                    Only in module initialization
+python-signalfd-0.1-2.fc17           Only in module initialization, and (possibly) NULL-without-exception
+python-zfec-1.4.22-3.fc17            Only in module initialization
+qmtest-2.4.1-6.fc17                  Only in module initialization
+quodlibet-2.3.92-1.fc17              Reference leak to a module
+rdiff-backup-1.2.8-7.fc17            Only in module initialization
+sanlock-1.8-2.fc17                   Only in module initialization, and (possibly) NULL-without-exception
 
 # FIXMEs:
 libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
@@ -213,6 +268,7 @@ linkchecker-6.5-4.fc17     FIXME: lots of tracebacks during build
 mercurial-2.1-1.fc17       FIXME: some tracebacks during build
 mod_wsgi-3.3-2.fc17        FIXME: lots of tracebacks during build
 PyQuante-1.6.4-3.fc17      FIXME: lots of tracebacks during build
+pyfits-3.0.5-1.fc17        FIXME: some tracebacks during build
 
 # To be reported:
 PyGreSQL-4.0-4.fc17        FIXME: to be reported
@@ -251,6 +307,7 @@ h5py-2.0.1-1.fc17     TODO
 iscsi-initiator-utils-6.2.0.872-18.fc17  TODO
 libpeas-1.2.0-2.fc17  TODO
 libtalloc-2.0.7-4.fc17 TODO
+pyephem-3.7.3.4-3.fc17 TODO
 
 # Various packages using SWIG; I probably need to add some specialcasing
 # to the checker for SWIG:
@@ -263,6 +320,7 @@ libpreludedb-1.0.0-10.fc17 TODO: SWIG-built
 libteam-0.1-3.20120130gitb5cf2a8.fc17 TODO: SWIG-built
 m2crypto-0.21.1-6.fc17     TODO: SWIG-built
 obexftp-0.23-9.fc17      TODO: SWIG-built
+pycdio-0.17-3.fc17       TODO: SWIG-built
 
 ldns-1.6.12-1.fc17       FIXME: many errors
 
@@ -273,6 +331,15 @@ mysql-workbench-5.2.37-4.fc17  FIXME: configure: error: "BOOST library is missin
 coccinelle-1.0.0-0.rc9.6.fc17 TODO
 gdb-7.4.50.20120120-17.fc17  TODO
 kernel-3.3.0-0.rc3.git5.1.fc17  TODO
+pybluez-0.18-4.fc17  TODO
+pypar-2.1.4_94-6.fc17  TODO
+python-posix_ipc-0.5.3-5.fc17  TODO
+python-ptrace-0.6.3-1.fc17  TODO: some PyArg_Parse errors
+python-tables-2.3.1-4.fc17  FIXME: tracebacks dealing with gcc.FixTruncExpr
+pyxmlsec-0.3.0-10.fc17   TODO
+sonata-1.6.2.1-6.fc17   TODO: errors aren't appearing in index for some reason
+python-2.7.2-18.fc17    TODO: this one will probably require special-casing
+
 
 # TODO: I think these are completely failing to build, rather than building with no errors:
 gnumeric-1.11.1-1.fc17           TODO: appears to have failed to build
@@ -283,9 +350,14 @@ kross-interpreters-4.8.0-1.fc17  TODO: appears to have failed to build
 libreoffice-3.5.0.3-5.fc17       TODO: appears to have failed to build
 libselinux-2.1.9-7.fc17          TODO: appears to have failed to build
 marble-4.8.0-6.fc17              TODO: appears to have failed to build
+policycoreutils-2.1.10-21.fc17   TODO: appears to have failed to build
+python-pywt-0.2.0-3.fc15         TODO: appears to have failed to build
+rb_libtorrent-0.15.8-3.fc17      TODO: build failed
 
 libldb-1.1.4-2.fc17    TODO: checker got confused by PyLdb_GetPyType
+pygsl-0.9.5-6.fc17     TODO: checker got confused by PyGSL_*
 
+python-isprelink-0.1.2-11.fc17  TODO: flags do not match callback signature
 
 # /usr/include/pygtk-2.0/pygobject.h: In function 'pygobject_init':
 # usage of PyErr_Fetch
@@ -294,3 +366,115 @@ Cython-0.15.1-2.fc17   all false positives?
 Io-language-20080330-8.fc17.2  FIXME: C++
 PyAmanith-0.3.35-12.fc17  FIXME: C++
 gdal-1.7.3-12.fc17  FIXME: C++
+mypaint-1.0.0-2.fc17  FIXME: C++
+pyicu-1.2-2.fc17  FIXME: C++
+pyifp-0.2.2-5.fc17  FIXME: SWIG-built
+pykde4-4.8.0-1.fc17  FIXME: did not see rpmbuild -bb in build.log
+pyliblzma-0.5.3-6.fc17  FIXME: 5 tracebacks during build
+pymongo-1.11-2.fc17  FIXME: 13 tracebacks during build
+pyodbc-2.1.5-6.fc17  FIXME: C++
+pyparted-3.8-3.fc17  FIXME: did not see rpmbuild -bb in build.log
+pypop-0.7.0-8.fc17  FIXME: SWIG-built
+pyrit-0.4.0-5.fc17  FIXME: 7 tracebacks during build
+pystatgrab-0.5-9.fc17  FIXME: 7 tracebacks during build
+python-4Suite-XML-1.0.2-14.fc17  FIXME: 5 tracebacks during build
+python-CDDB-1.4-9.fc17  FIXME: 5 tracebacks during build
+python-Levenshtein-0.10.1-14.fc17  FIXME: 29 tracebacks during build
+python-PSI-0.3-0.4.b2.fc17  FIXME: 5 tracebacks during build
+python-Traits-3.5.0-3.fc17  FIXME: 31 tracebacks during build
+python-ZODB3-3.10.5-2.fc17  FIXME: 26 tracebacks during build
+python-adns-1.2.1-9.fc17  FIXME: 11 tracebacks during build
+python-alsaaudio-0.7-2.fc17  FIXME: 13 tracebacks during build
+python-arm4-1.2-5.fc17  FIXME: 17 tracebacks during build
+python-async-0.6.1-4.fc17  FIXME: 12 tracebacks during build
+python-basemap-0.99.4-13.fc17  FIXME: 25 tracebacks during build
+python-bibtex-1.2.5-4.fc17  FIXME: 10 tracebacks during build
+python-biopython-1.58-2.fc17  FIXME: 6 tracebacks during build
+python-bitarray-0.3.5-4.fc15  FIXME: 15 tracebacks during build
+python-blist-1.3.4-1.fc16  FIXME: 36 tracebacks during build
+python-cheetah-2.4.4-2.fc17  FIXME: 6 tracebacks during build
+python-chm-0.8.4-10.fc15  FIXME: 7 tracebacks during build
+python-cjson-1.0.5-7.fc15  FIXME: 11 tracebacks during build
+python-coverage-3.5.1-0.1.b1.fc17  FIXME: 11 tracebacks during build
+python-ctags-1.0.5-4.fc15  FIXME: 11 tracebacks during build
+python-cvxopt-1.1.4-2.fc17  FIXME: 10 tracebacks during build
+python-dmidecode-3.10.13-3.fc15  FIXME: 10 tracebacks during build
+python-drizzle-0.08.2-7.fc15  FIXME: SWIG-built
+python-durus-3.9-2.fc14  FIXME: 8 tracebacks during build
+python-genshi-0.6-4.fc17  FIXME: 10 tracebacks during build
+python-gevent-0.13.6-2.fc17  FIXME: 49 tracebacks during build
+python-gitdb-0.5.4-3.fc17  FIXME: 9 tracebacks during build
+python-greenlet-0.3.1-9.fc17  FIXME: 13 tracebacks during build
+python-igraph-0.5.4-4.fc17  FIXME: 20 tracebacks during build
+python-kaa-base-0.6.0-6.fc17  FIXME: 20 tracebacks during build
+python-kaa-display-0.1.0-6.fc17 FIXME: various errors during build
+python-kaa-imlib2-0.2.3-12.fc17  FIXME: 6 tracebacks during build
+python-kaa-metadata-0.7.7-5.fc17  FIXME: 5 tracebacks during build
+python-kinterbasdb-3.3.0-4.fc17  FIXME: 123 tracebacks during build
+python-ldap-2.4.6-2.fc17  FIXME: 7 tracebacks during build
+python-logbook-0.3-4.fc17  FIXME: 14 tracebacks during build
+python-markupsafe-0.11-4.fc17  FIXME: 7 tracebacks during build
+python-matplotlib-1.0.1-18.fc17  FIXME: C++
+python-mecab-0.991-2.fc17  FIXME: did not see rpmbuild -bb in build.log
+python-meld3-0.6.7-5.fc17  FIXME: 6 tracebacks during build
+python-meliae-0.2.0-6.fc17  FIXME: 8 tracebacks during build
+python-msgpack-0.1.12-1.fc17  FIXME: 27 tracebacks during build
+python-numeric-24.2-17.fc17  FIXME: 166 tracebacks during build
+python-numexpr-2.0.1-1.fc17  FIXME: 23 tracebacks during build
+python-openhpi-1.2-0.4.20090109svn6930.fc15  FIXME: SWIG-built
+python-osmgpsmap-0.7.3-6.fc17  FIXME: some tracebacks during build
+python-pbs-4.3.3-1.fc17  FIXME: SWIG-built
+python-pebl-1.0.2-8.fc17  FIXME: 19 tracebacks during build
+python-poppler-qt4-0.16.2-3.fc17  FIXME: C++
+python-protocols-1.0-0.15.a0dev_r2302.fc17  FIXME: 9 tracebacks during build
+python-psycopg2-2.4.4-1.fc17  FIXME: 6 tracebacks during build
+python-pylibmc-1.2.0-5.20110805gitf01c31.fc17  FIXME: 39 tracebacks during build
+python-quixote-2.4-15.fc17  FIXME: 13 tracebacks during build
+python-reportlab-2.5-4.fc17  FIXME: 18 tracebacks during build
+python-ruledispatch-0.5a1-0.21.svnr2618.fc17  FIXME: 11 tracebacks during build
+python-shapely-1.2.13-2.fc17  FIXME: 26 tracebacks during build
+python-shout-0.2.1-7.fc17  FIXME: 7 tracebacks during build
+python-simplejson-2.3.0-2.fc17  FIXME: 18 tracebacks during build
+python-simpleparse-2.1.1-4.fc17  FIXME: 35 tracebacks during build
+python-smbc-1.0.11-2.fc17  FIXME: traceback during build
+python-sqlalchemy-0.7.5-1.fc17  FIXME: 6 tracebacks during build
+python-sqlite2-2.3.5-5.fc17     FIXME: tracebacks during build
+python-storm-0.19-2.fc17  FIXME: 21 tracebacks during build
+python-sybase-0.39-8.fc17  FIXME: 14 tracebacks during build
+python-twisted-runner-11.1.0-2.fc17  FIXME: did not see rpmbuild -bb in build.log
+python-urwid-1.0.0-3.fc17  FIXME: 17 tracebacks during build
+python-vorbis-1.5-0.10.a   FIXME: PyCObject_Import
+python-zmq-2.1.9-4.fc17  FIXME: 11 tracebacks during build
+python-zope-i18nmessageid-3.5.3-5.fc17  FIXME: traceback during build
+python-zope-interface-3.7.0-1.fc17  FIXME: 8 tracebacks during build
+python-zope-proxy-3.6.1-6.fc17  FIXME: 19 tracebacks during build
+pywcs-1.11-1.fc17  FIXME: did not see rpmbuild -bb in build.log
+pyxattr-0.5.0-4.fc17  FIXME: 7 tracebacks during build
+rpy-2.2.4-2.fc17  FIXME: 38 tracebacks during build
+rrdtool-1.4.7-5.fc17  FIXME: 6 tracebacks during build
+sK1-0.9.1-0.5.pre_rev730.fc17  FIXME: 9 tracebacks during build
+samba4-4.0.0-37.alpha16.fc17  FIXME: 11 tracebacks during build
+scipy-0.10.0-2.fc17  FIXME: 5 tracebacks during build
+setools-3.3.7-21.fc17  FIXME: did not see rpmbuild -bb in build.log
+smart-1.3.1-68.fc17  FIXME: 18 tracebacks during build
+sphinxbase-0.7-4.fc17  FIXME: 44 tracebacks during build
+superkaramba-4.8.0-1.fc17  FIXME: did not see rpmbuild -bb in build.log
+syck-0.61-16.fc17  FIXME: 6 tracebacks during build
+tennix-1.0-7.fc17  FIXME: 5 tracebacks during build
+texworks-0.4.3-4.fc17  FIXME: C++
+thunarx-python-0.2.3-5.fc17  FIXME: 19 tracebacks during build
+tomoe-0.6.0-19.fc15  FIXME: 5 tracebacks during build
+tre-0.8.0-5.fc17  FIXME: 6 tracebacks during build
+unbound-1.4.16-1.fc17  FIXME: SWIG-built
+uniconvertor-1.1.4-5.fc17  FIXME: 9 tracebacks during build
+vegastrike-0.5.1-0.6.beta1.2.fc17  FIXME: C++
+vim-7.3.444-1.fc17  FIXME: 29 tracebacks during build
+volume_key-0.3.7-3.fc17  FIXME: SWIG-built
+weechat-0.3.6-2.fc17  FIXME: 7 tracebacks during build
+wxPython-2.8.12.0-2.fc17  FIXME: C++
+xchat-2.8.8-10.fc16  FIXME: 31 tracebacks during build
+xchat-gnome-0.26.2-6.git40c5bf988.fc17  FIXME: build failed
+xen-4.1.2-8.fc17  FIXME: 8 tracebacks during build
+xulrunner-python-2.0-1.20110406hg.fc16  FIXME: C++
+zarafa-7.0.4-2.fc17  FIXME: build failed
+zinnia-0.06-11.fc17  FIXME: C++
