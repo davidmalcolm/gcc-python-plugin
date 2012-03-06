@@ -168,7 +168,7 @@ TEST_CFLAGS= \
 
 # A catch-all test for quick experimentation with the API:
 test: plugin
-	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
+	$(GCC) -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # Selftest for the cpychecker.py code:
 testcpychecker: plugin
@@ -179,10 +179,10 @@ testcpybuilder:
 	$(PYTHON) testcpybuilder.py -v
 
 dump_gimple:
-	gcc -fdump-tree-gimple $(shell pwd)/test.c
+	$(GCC) -fdump-tree-gimple $(shell pwd)/test.c
 
 debug: plugin
-	gcc -v $(TEST_CFLAGS) $(shell pwd)/test.c
+	$(GCC) -v $(TEST_CFLAGS) $(shell pwd)/test.c
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin

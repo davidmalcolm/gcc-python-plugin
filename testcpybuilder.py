@@ -69,7 +69,7 @@ class BuiltModule:
 
 
     def compile_src(self, extra_cflags = None):
-        self.args = ['gcc']
+        self.args = [os.environ.get('GCC', 'gcc')]
         self.args += ['-o', self.modfile]
         self.args +=  ['-I' + sc.get_python_inc(),
                        '-I' + sc.get_python_inc(plat_specific=True)]

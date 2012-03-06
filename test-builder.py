@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import os
 from maketreetypes import iter_tree_types
 from cpybuilder import CompilationUnit, SimpleModule
 
@@ -46,7 +47,8 @@ print sm.cu.as_str()
 from subprocess import Popen, PIPE, check_call
 
 
-GCCPLUGINS_DIR = Popen(['gcc', '--print-file-name=plugin'], stdout=PIPE).communicate()[0].strip()
+GCCPLUGINS_DIR = Popen([os.environ.get('GCC', 'gcc'),
+                        '--print-file-name=plugin'], stdout=PIPE).communicate()[0].strip()
 
 
 pyconfigs = ('python2.7-config',
@@ -56,7 +58,7 @@ pyconfigs = ('python2.7-config',
              
 for pyconfig in pyconfigs:
     cflags = Popen([pyconfig, '--cflags', '--ldflags'], stdout=PIPE).communicate()[0]
-    args = ['gcc']
+    args = [os.environ.get('GCC', 'gcc')]
     args += ['-x', 'c'] # specify that it's C
     args += ['-o', 'test.so']
     args += cflags.split()

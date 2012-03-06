@@ -253,7 +253,7 @@ def run_test(testdir):
     env['LC_ALL'] = 'C'
 
     # Generate the command-line for invoking gcc:
-    args = ['gcc']
+    args = [os.environ.get('GCC', 'gcc')]
     args += ['-c'] # (don't run the linker)
     args += ['-o', outfile]
     args += ['-fplugin=%s' % os.path.abspath('python.so'),
