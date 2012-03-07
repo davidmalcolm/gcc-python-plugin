@@ -1414,6 +1414,17 @@ class CPython(Facet):
     ########################################################################
     # PyErr_*
     ########################################################################
+    def impl_PyErr_Clear(self, stmt):
+        fnmeta = FnMeta(name='PyErr_Clear',
+                        # FIXME docurl='http://docs.python.org/c-api/exceptions.html#PyErr_Clear',
+                        declared_in='pyerrors.h',
+                        prototype='PyAPI_FUNC(void) PyErr_Clear(void);',
+                        defined_in='Python/errors.c')
+        # equiv to PyErr_Restore(NULL, NULL, NULL)
+        t_next = self.state.mktrans_nop(stmt, fnmeta.name)
+        t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
+        return [t_next]
+
     def impl_PyErr_Format(self, stmt, v_exc, v_fmt, *v_args):
         fnmeta = FnMeta(name='PyErr_Format',
                         docurl='http://docs.python.org/c-api/exceptions.html#PyErr_Format',
