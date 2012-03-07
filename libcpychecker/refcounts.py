@@ -448,6 +448,12 @@ class CPython(Facet):
         """
         self.set_exception('PyExc_SystemError', loc)
 
+    def bad_argument(self, loc):
+        """
+        Analogous to PyErr_BadArgument()
+        """
+        self.set_exception('PyExc_TypeError', loc)
+
     def typeobjregion_by_name(self, typeobjname):
         """
         Given a type object string e.g. "PyString_Type", locate
@@ -1709,6 +1715,68 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/init.html#Py_Finalize')
         # For now, treat it as a no-op:
         return [self.state.mktrans_nop(stmt, 'Py_Finalize')]
+
+    ########################################################################
+    # PyFloat_*
+    ########################################################################
+    def impl_PyFloat_AsDouble(self, stmt, v_op):
+        fnmeta = FnMeta(name='PyFloat_AsDouble',
+                        declared_in='floatobject.h',
+                        # FIXME: docurl
+                        prototype=('double '
+                                   'PyFloat_AsDouble(PyObject *op)'),
+                        defined_in='Objects/floatobject.c')
+        # gracefully handles NULL with PyErr_BadArgument:
+        if isinstance(v_op, UnknownValue):
+            self.state.raise_split_value(v_op, stmt.loc)
+        if v_op.is_null_ptr():
+            s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+            s_failure.cpython.bad_argument(stmt.loc)
+            return [Transition(self.state,
+                               s_failure,
+                               '%s() fails due to NULL argument' % fnmeta.name)]
+
+        # if it's exactly a PyFloat_Type, we extract ob_fval
+        # otherwise, we can call into nb_float
+        # or raise TypeError
+        returntype = stmt.fn.type.dereference.type
+
+        if self.object_ptr_has_global_ob_type(v_op, 'PyFloat_Type'):
+            # We know it's a PyFloatObject; the call will succeed:
+            # FIXME: cast:
+            v_ob_fval = self.state.read_field_by_name(stmt,
+                                                      returntype,
+                                                      v_op.region,
+                                                      'ob_fval')
+            t_success = self.state.mktrans_assignment(stmt.lhs,
+                                                v_ob_fval,
+                                                'PyFloat_AsDouble() returns ob_fval')
+            return [t_success]
+        # We don't know if it's a PyFloatObject (or subclass); the call could
+        # fail with TypeError or MemoryError:
+        t_success = self.state.mktrans_assignment(stmt.lhs,
+                                            UnknownValue.make(returntype, stmt.loc),
+                                            fnmeta.desc_when_call_succeeds())
+        t_failure = self.state.mktrans_assignment(stmt.lhs,
+                                            ConcreteValue(returntype, stmt.loc, -1),
+                                            fnmeta.desc_when_call_fails())
+        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        return [t_success, t_failure]
+
+    def impl_PyFloat_FromDouble(self, stmt, v_fval):
+        fnmeta = FnMeta(name='PyFloat_FromDouble',
+                        declared_in='floatobject.h',
+                        # FIXME: docurl
+                        prototype=('PyObject *'
+                                   ' PyFloat_FromDouble(double fval)'),
+                        defined_in='Objects/floatobject.c')
+        r_newobj, t_success, t_failure = self.object_ctor(stmt,
+                                                          'PyFloatObject',
+                                                          'PyFloat_Type')
+        # Set ob_fval in the new object (when successful):
+        t_success.dest.set_field_by_name(r_newobj, 'ob_fval', v_fval)
+
+        return [t_success, t_failure]
 
     ########################################################################
     # PyFrame_*

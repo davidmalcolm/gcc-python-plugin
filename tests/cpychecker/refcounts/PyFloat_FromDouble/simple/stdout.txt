@@ -1,0 +1,21 @@
+Trace 0:
+  Transitions:
+    'when PyFloat_FromDouble() succeeds'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c', line=29), region=RegionOnHeap('PyFloatObject', gcc.Location(file='tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c', line=29)))
+    str(): (struct PyObject *)&RegionOnHeap('PyFloatObject', gcc.Location(file='tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c', line=29)) from tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c:29
+    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyFloat_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c:28
+
+Trace 1:
+  Transitions:
+    'when PyFloat_FromDouble() fails'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c', line=29), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c:29
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyFloat_FromDouble/simple/input.c:29

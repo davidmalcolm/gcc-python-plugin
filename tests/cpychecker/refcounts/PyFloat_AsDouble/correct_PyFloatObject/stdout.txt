@@ -1,0 +1,48 @@
+Trace 0:
+  Transitions:
+    'when PyFloat_FromDouble() succeeds'
+    'PyFloat_AsDouble() returns ob_fval'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='double', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33), value=42.0)
+    str(): (double)42.0 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33
+  PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33:
+    repr(): RegionOnHeap('PyFloatObject', gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33))
+    str(): PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33
+    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyFloat_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:29
+
+Trace 1:
+  Transitions:
+    'when PyFloat_FromDouble() succeeds'
+    'PyFloat_AsDouble() returns ob_fval'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='double', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33), value=42.0)
+    str(): (double)42.0 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33
+  PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33:
+    repr(): RegionOnHeap('PyFloatObject', gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33))
+    str(): PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:29
+
+Trace 2:
+  Transitions:
+    'when PyFloat_FromDouble() fails'
+    'PyFloat_AsDouble() fails due to NULL argument'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='double', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=36), value=-1)
+    str(): (double)-1 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:36
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_TypeError')) from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:36
