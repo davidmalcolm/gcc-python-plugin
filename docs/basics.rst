@@ -459,6 +459,11 @@ Global data access
 	       The source language of this translation unit, as a string
 	       (e.g. "GNU C")
 
+.. py:function:: gcc.get_global_namespace(name)
+
+      C++ only: locate the :py:class:`gcc.NamespaceDecl` for the global
+      namespace (a.k.a. "::")
+
 .. py:function:: gccutils.get_global_typedef(name)
 
       Given a string `name`, look for a C/C++ `typedef` in global scope with

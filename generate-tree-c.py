@@ -314,6 +314,8 @@ def generate_tree_code_classes():
         tp_repr = None
         tp_str = None
 
+        methods = PyMethodTable('gcc_%s_methods' % cc, [])
+
         def get_getter_identifier(name):
             return 'gcc_%s_get_%s' % (cc, name)
 
@@ -472,6 +474,12 @@ def generate_tree_code_classes():
                               'gcc_tree_list_from_chain(BLOCK_VARS(self->t))',
                                "The list of gcc.Tree for the declarations and labels in this block")
 
+        if tree_type.SYM == 'NAMESPACE_DECL':
+            methods.add_method('lookup',
+                               '(PyCFunction)gcc_NamespaceDecl_lookup',
+                               'METH_VARARGS|METH_KEYWORDS',
+                               "Look up the given string within this namespace")
+
         if tree_type.SYM == 'TYPE_DECL':
             getsettable.add_gsdef('pointer',
                                   'gcc_TypeDecl_get_pointer',
@@ -542,7 +550,7 @@ def generate_tree_code_classes():
                               "The target of the case label, as a gcc.LabelDecl")
 
         cu.add_defn(getsettable.c_defn())
-
+        cu.add_defn(methods.c_defn())
         pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
@@ -552,6 +560,7 @@ def generate_tree_code_classes():
                               tp_getset = getsettable.identifier,
                               tp_str = tp_str,
                               tp_repr = tp_repr,
+                              tp_methods = methods.identifier,
                               )
         if tp_as_number:
             pytype.tp_as_number = '&%s' % tp_as_number

@@ -35,10 +35,14 @@ def get_global_typedef(name):
     # Look up a typedef in global scope by name, returning a gcc.TypeDecl,
     # or None if not found
     for u in gcc.get_translation_units():
-        for v in u.block.vars:
-            if isinstance(v, gcc.TypeDecl):
-                if v.name == name:
-                    return v
+        if u.language == 'GNU C++':
+            gns = gcc.get_global_namespace()
+            return gns.lookup(name)
+        if u.block:
+            for v in u.block.vars:
+                if isinstance(v, gcc.TypeDecl):
+                    if v.name == name:
+                        return v
 
 def get_variables_as_dict():
     result = {}
@@ -50,6 +54,9 @@ def get_global_vardecl_by_name(name):
     # Look up a variable in global scope by name, returning a gcc.VarDecl,
     # or None if not found
     for u in gcc.get_translation_units():
+        if u.language == 'GNU C++':
+            gns = gcc.get_global_namespace()
+            return gns.lookup(name)
         for v in u.block.vars:
             if isinstance(v, gcc.VarDecl):
                 if v.name == name:

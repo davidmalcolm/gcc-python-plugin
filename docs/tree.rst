@@ -320,6 +320,15 @@ Declarations
 
       (boolean) Is this variable to be allocated with static storage?
 
+.. py:class:: gcc.NamespaceDecl
+
+   A subclass of :py:class:`gcc.Declaration` representing a C++ namespace
+
+   .. py:method:: locate(name)
+
+      Locate the given name within the namespace, returning a
+      :py:class:`gcc.Tree` or `None`
+
 
   ..        Declaration
   ..            ClassMethodDecl

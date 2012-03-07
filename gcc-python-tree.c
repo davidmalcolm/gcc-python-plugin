@@ -40,6 +40,16 @@
 
 __typeof__ (decl_as_string) decl_as_string __attribute__ ((weak));
 
+/* Similar for namespace_binding: */
+__typeof__ (namespace_binding) namespace_binding __attribute__ ((weak));
+
+static PyObject *
+raise_cplusplus_only(const char *what)
+{
+    return PyErr_Format(PyExc_RuntimeError,
+                        "%s is only available when compiling C++ code",
+                        what);
+}
 
 //#include "rtl.h"
 /*
@@ -191,8 +201,7 @@ gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
     const char *str;
 
     if (NULL == decl_as_string) {
-        return PyErr_Format(PyExc_RuntimeError,
-                            "attribute 'fullname' is only available when compiling C++ code");
+        return raise_cplusplus_only("attribute 'fullname'");
     }
 
     str = decl_as_string(self->t,
@@ -566,6 +575,34 @@ gcc_TreeList_repr(struct PyGccTree * self)
     Py_XDECREF(repr_chain);
 
     return result;
+}
+
+
+PyObject *
+gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+{
+    tree t_result;
+    tree t_name;
+
+    const char *name;
+    char *keywords[] = {"name",
+                        NULL};
+
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "s:lookup", keywords,
+                                     &name)) {
+        return NULL;
+    }
+
+    if (NULL == namespace_binding) {
+        return raise_cplusplus_only("gcc.NamespaceDecl.lookup");
+    }
+
+    t_name = get_identifier(name);
+
+    t_result = namespace_binding(t_name, self->t);
+    return gcc_python_make_wrapper_tree(t_result);
 }
 
 /* 

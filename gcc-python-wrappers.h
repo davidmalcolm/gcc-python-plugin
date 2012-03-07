@@ -182,6 +182,9 @@ gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 PyObject *
 gcc_TreeList_repr(struct PyGccTree * self);
 
+PyObject *
+gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
+
 /* gcc-python-gimple.c: */
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self);

@@ -27,6 +27,7 @@ int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
 
+#include "cp/name-lookup.h" /* for global_namespace */
 #include "tree.h"
 #include "function.h"
 #include "diagnostic.h"
@@ -271,6 +272,17 @@ gcc_python_get_translation_units(PyObject *self, PyObject *args)
     return VEC_tree_as_PyList(all_translation_units);
 }
 
+/* Weakly import global_namespace; it will be non-NULL for the C++ frontend: */
+__typeof__ (global_namespace) global_namespace __attribute__ ((weak));
+
+static PyObject *
+gcc_python_get_global_namespace(PyObject *self, PyObject *args)
+{
+    /* (global_namespace will be NULL outside the C++ frontend, giving a
+       result of None) */
+    return gcc_python_make_wrapper_tree(global_namespace);
+}
+
 /* Dump files */
 
 static PyObject *
@@ -394,6 +406,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_translation_units", gcc_python_get_translation_units, METH_VARARGS,
      "Get a list of all gcc.TranslationUnitDecl"},
+
+    {"get_global_namespace", gcc_python_get_global_namespace, METH_VARARGS,
+     "C++: get the global namespace (aka '::') as a gcc.NamespaceDecl"},
 
     /* Version handling: */
     {"get_plugin_gcc_version", gcc_python_get_plugin_gcc_version, METH_VARARGS,
