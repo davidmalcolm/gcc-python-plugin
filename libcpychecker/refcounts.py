@@ -1863,9 +1863,8 @@ class CPython(Facet):
         r_newobj, t_success, t_failure = self.object_ctor(stmt,
                                                           'PyIntObject',
                                                           'PyInt_Type')
-        # Set ob_size:
-        r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_ival')
-        t_success.dest.value_for_region[r_ob_size] = v_ival
+        # Set ob_ival:
+        t_success.dest.set_field_by_name(r_newobj, 'ob_ival', v_ival)
 
         if isinstance(v_ival, ConcreteValue):
             if v_ival.value >= -5 and v_ival.value < 257:
@@ -1963,8 +1962,7 @@ class CPython(Facet):
                                                           'PyListObject',
                                                           'PyList_Type')
         # Set ob_size:
-        ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
-        t_success.dest.value_for_region[ob_size] = v_len
+        t_success.dest.set_field_by_name(r_newobj, 'ob_size', v_len)
 
         # "Allocate" ob_item, and set it up so that all of the array is
         # treated as NULL:
@@ -3158,8 +3156,7 @@ class CPython(Facet):
                                                           'PyTupleObject',
                                                           'PyTuple_Type')
         # Set ob_size:
-        r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
-        t_success.dest.value_for_region[r_ob_size] = v_len
+        t_success.dest.set_field_by_name(r_newobj, 'ob_size', v_len)
         return [t_success, t_failure]
 
     def impl_PyTuple_Pack(self, stmt, v_n, *v_args):
@@ -3183,8 +3180,7 @@ class CPython(Facet):
                                                           'PyTupleObject',
                                                           'PyTuple_Type')
         # Set ob_size:
-        r_ob_size = t_success.dest.make_field_region(r_newobj, 'ob_size')
-        t_success.dest.value_for_region[r_ob_size] = v_n
+        t_success.dest.set_field_by_name(r_newobj, 'ob_size', v_n)
 
         #FIXME: adds a ref on each item; sets ob_item
         return [t_success, t_failure]

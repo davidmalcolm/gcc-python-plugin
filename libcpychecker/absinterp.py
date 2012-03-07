@@ -1835,6 +1835,10 @@ class State(object):
 
         return v_field
 
+    def set_field_by_name(self, r_struct, fieldname, v_field):
+        r_field = self.make_field_region(r_struct, fieldname)
+        self.value_for_region[r_field] = v_field
+
     def dereference(self, expr, v_ptr, loc):
         check_isinstance(v_ptr, AbstractValue)
 
