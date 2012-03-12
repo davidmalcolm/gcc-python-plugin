@@ -1,0 +1,460 @@
+{
+    "filename": "bug.c", 
+    "function": {
+        "lines": [
+            6, 
+            22
+        ], 
+        "name": "make_a_list_of_random_ints_badly"
+    }, 
+    "reports": [
+        {
+            "message": "ob_refcnt of '*item' is 1 too high", 
+            "notes": [
+                {
+                    "location": [
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }, 
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }
+                    ], 
+                    "message": "was expecting final ob_refcnt to be N + 1 (for some unknown N)"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }, 
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }
+                    ], 
+                    "message": "due to object being referenced by: PyListObject.ob_item[0]"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }, 
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }
+                    ], 
+                    "message": "but final ob_refcnt is N + 2"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": "PyLongObject allocated at:         item = PyLong_FromLong(random());"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }, 
+                        {
+                            "column": 1, 
+                            "line": 22
+                        }
+                    ], 
+                    "message": "found 1 similar trace(s) to this"
+                }
+            ], 
+            "severity": "warning", 
+            "states": [
+                {
+                    "location": null, 
+                    "message": ""
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 26, 
+                            "line": 10
+                        }, 
+                        {
+                            "column": 26, 
+                            "line": 10
+                        }
+                    ], 
+                    "message": "when PyArg_ParseTuple() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 10
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 10
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 10, 
+                            "line": 14
+                        }, 
+                        {
+                            "column": 10, 
+                            "line": 14
+                        }
+                    ], 
+                    "message": "when PyList_New() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 31, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 31, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": "when PyLong_FromLong() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }
+                    ], 
+                    "message": "when PyList_Append() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 29, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 29, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "when considering count.0 == (int)1 from bug.c:10"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 21
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 21
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": null, 
+                    "message": "returning"
+                }, 
+                {
+                    "location": null, 
+                    "message": null
+                }
+            ]
+        }, 
+        {
+            "message": "calling PyList_Append with NULL as argument 1 (list) at bug.c:18", 
+            "notes": [
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }
+                    ], 
+                    "message": "PyList_Append() invokes Py_TYPE() on the pointer via the PyList_Check() macro, thus accessing (NULL)->ob_type"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }
+                    ], 
+                    "message": "found 1 similar trace(s) to this"
+                }
+            ], 
+            "severity": "warning", 
+            "states": [
+                {
+                    "location": null, 
+                    "message": ""
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 26, 
+                            "line": 10
+                        }, 
+                        {
+                            "column": 26, 
+                            "line": 10
+                        }
+                    ], 
+                    "message": "when PyArg_ParseTuple() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 10
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 10
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 10, 
+                            "line": 14
+                        }, 
+                        {
+                            "column": 10, 
+                            "line": 14
+                        }
+                    ], 
+                    "message": "when PyList_New() fails"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 31, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 31, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 14, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": "when PyLong_FromLong() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 18
+                        }
+                    ], 
+                    "message": null
+                }
+            ]
+        }
+    ]
+}
