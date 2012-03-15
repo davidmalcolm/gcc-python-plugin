@@ -1,0 +1,33 @@
+html {
+    height: 100%;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: black;
+}
+body {
+    min-height: 100%;
+}
+div {
+    box-flex: 1;
+}
+body {
+    display: box;
+    box-orient: vertical;
+}
+#main {
+    background: red;
+    display: box;
+    min-height: 100%;
+}
+#code {
+    background: blue;
+    min-width: 300px;
+    box-flex: 2;
+}
+#notes {
+    background: yellow;
+    min-width: 200px;
+}
