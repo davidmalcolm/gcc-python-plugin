@@ -160,6 +160,11 @@ class RefcountValue(AbstractValue):
     def __repr__(self):
         return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
 
+    def as_json(self):
+        return dict(kind='RefcountValue',
+                    relvalue=self.relvalue,
+                    min_external=self.min_external)
+
     def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
@@ -301,7 +306,7 @@ class CPython(Facet):
                 # We have a PyObject* (or a derived class)
                 log('got python obj arg: %r', region)
                 # Assume it's a non-NULL ptr:
-                objregion = Region('region-for-arg-%r' % parm, None)
+                objregion = RegionForLocal(parm, None)
                 self.state.region_for_var[objregion] = objregion
                 self.state.value_for_region[region] = PointerToRegion(parm.type,
                                                                 parm.location,
@@ -4026,6 +4031,12 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
     rep.flush()
 
     if rep.got_warnings():
+        if 0:
+            # JSON output:
+            filename = ('%s.%s.json'
+                    % (gcc.get_dump_base_name(), fun.decl.name))
+            rep.dump_json(fun, filename)
+
         filename = ('%s.%s-refcount-errors.html'
                     % (gcc.get_dump_base_name(), fun.decl.name))
         rep.dump_html(fun, filename)

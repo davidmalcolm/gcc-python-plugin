@@ -17,12 +17,14 @@
 
 import gcc
 import gccutils
+import re
 import sys
 from six import StringIO, integer_types
 from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
+from libcpychecker.diagnostics import location_as_json
 
 debug_comparisons = 0
 
@@ -194,6 +196,9 @@ class AbstractValue(object):
     def __repr__(self):
         return ('%s(gcctype=%r, loc=%r)'
                 % (self.__class__.__name__, str(self.gcctype), self.loc))
+
+    def as_json(self):
+        return dict(kind=self.__class__.__name__)
 
     def is_null_ptr(self):
         """
@@ -426,6 +431,10 @@ class ConcreteValue(AbstractValue):
     def __repr__(self):
         return ('ConcreteValue(gcctype=%r, loc=%r, value=%s)'
                 % (str(self.gcctype), self.loc, value_to_str(self.value)))
+
+    def as_json(self):
+        return dict(kind='ConcreteValue',
+                    value=self.value)
 
     def is_null_ptr(self):
         if isinstance(self.gcctype, gcc.PointerType):
@@ -719,6 +728,11 @@ class WithinRange(AbstractValue):
                 % (str(self.gcctype), self.loc, value_to_str(self.minvalue),
                    value_to_str(self.maxvalue)))
 
+    def as_json(self):
+        return dict(kind='WithinRange',
+                    minvalue=self.minvalue,
+                    maxvalue=self.maxvalue)
+
     def eval_unary_op(self, exprcode, gcctype, loc):
         if exprcode == gcc.AbsExpr:
             values = [abs(val)
@@ -877,6 +891,10 @@ class PointerToRegion(AbstractValue):
 
     def __repr__(self):
         return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
+
+    def as_json(self):
+        return dict(kind='PointerToRegion',
+                    target=self.region.as_json())
 
     def eval_comparison(self, opname, rhs, rhsdesc):
         log('PointerToRegion.eval_comparison:(%s, %s%s)', self, opname, rhs)
@@ -1158,6 +1176,12 @@ class Region(object):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.name)
 
+    def as_json(self):
+        m = re.match(r"region for gcc.ParmDecl\('(\S+)'\)\.(\S+)", self.name)
+        if m:
+            return '%s->%s' % (m.group(1), m.group(2))
+        return self.name
+
     def is_on_stack(self):
         if isinstance(self, RegionOnStack):
             return True
@@ -1180,6 +1204,9 @@ class RegionForGlobal(Region):
     def __repr__(self):
         return 'RegionForGlobal(%r)' % self.vardecl
 
+    def as_json(self):
+        return str(self.vardecl)
+
 class RegionOnStack(Region):
     def __repr__(self):
         return 'RegionOnStack(%r)' % self.name
@@ -1193,6 +1220,9 @@ class RegionForLocal(RegionOnStack):
     def __init__(self, vardecl, stack):
         RegionOnStack.__init__(self, 'region for %r' % vardecl, stack)
         self.vardecl = vardecl
+
+    def as_json(self):
+        return str(self.vardecl)
 
 class RegionForStaticLocal(RegionForGlobal):
     # "static" locals work more like globals.  In particular, they're not on
@@ -1227,6 +1257,9 @@ class RegionForStringConstant(Region):
     def __init__(self, text):
         Region.__init__(self, text, None)
         self.text = text
+
+    def as_json(self):
+        return str(repr(self.text))
 
 class ArrayElementRegion(Region):
     __slots__ = ('index', )
@@ -1384,6 +1417,18 @@ class State(object):
         s = StringIO()
         t.write(s)
         return s.getvalue()
+
+    def as_json(self, desc):
+        variables = OrderedDict()
+        for k in self.region_for_var:
+            region = self.region_for_var[k]
+            value = self.value_for_region.get(region, None)
+            if value:
+                variables[region.as_json()] = value.as_json()
+        result = dict(location=location_as_json(self.loc.get_gcc_loc()),
+                      message=desc,
+                      variables=variables)
+        return result
 
     def log(self, logger):
         if not logging_enabled:

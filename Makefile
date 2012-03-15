@@ -188,6 +188,9 @@ debug: plugin
 demo: plugin
 	./gcc-with-cpychecker $(shell python-config --cflags) demo.c
 
+json-examples: plugin
+	./gcc-with-cpychecker -I/usr/include/python2.7 libcpychecker/html/test/example1/bug.c
+
 test-suite: plugin
 	$(PYTHON) run-test-suite.py
 

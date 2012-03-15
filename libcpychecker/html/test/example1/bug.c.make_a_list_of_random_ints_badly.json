@@ -1,5 +1,5 @@
 {
-    "filename": "bug.c", 
+    "filename": "libcpychecker/html/test/example1/bug.c", 
     "function": {
         "lines": [
             6, 
@@ -81,7 +81,62 @@
             "states": [
                 {
                     "location": null, 
-                    "message": ""
+                    "message": "", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -94,7 +149,62 @@
                             "line": 10
                         }
                     ], 
-                    "message": "when PyArg_ParseTuple() succeeds"
+                    "message": "when PyArg_ParseTuple() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -107,7 +217,65 @@
                             "line": 10
                         }
                     ], 
-                    "message": "taking False path"
+                    "message": "taking False path", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -120,7 +288,65 @@
                             "line": 14
                         }
                     ], 
-                    "message": "when PyList_New() succeeds"
+                    "message": "when PyList_New() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -133,7 +359,90 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -146,7 +455,91 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -159,7 +552,93 @@
                             "line": 16
                         }
                     ], 
-                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff"
+                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -172,7 +651,93 @@
                             "line": 16
                         }
                     ], 
-                    "message": "taking True path"
+                    "message": "taking True path", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -185,7 +750,93 @@
                             "line": 17
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -198,7 +849,95 @@
                             "line": 17
                         }
                     ], 
-                    "message": "when PyLong_FromLong() succeeds"
+                    "message": "when PyLong_FromLong() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -211,7 +950,108 @@
                             "line": 18
                         }
                     ], 
-                    "message": "when PyList_Append() succeeds"
+                    "message": "when PyList_Append() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -224,7 +1064,112 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -237,7 +1182,112 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -250,7 +1300,112 @@
                             "line": 16
                         }
                     ], 
-                    "message": "when considering count.0 == (int)1 from bug.c:10"
+                    "message": "when considering count.0 == (int)1 from libcpychecker/html/test/example1/bug.c:10", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -263,7 +1418,110 @@
                             "line": 16
                         }
                     ], 
-                    "message": "taking False path"
+                    "message": "taking False path", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "count.0": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -276,20 +1534,331 @@
                             "line": 21
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "count.0": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": null, 
-                    "message": "returning"
+                    "message": "returning", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "count.0": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": null, 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyListObject.ob_item": {
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject"
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyListObject.ob_size": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "PyListObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type"
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 2
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "count.0": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject"
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }
             ]
         }, 
         {
-            "message": "calling PyList_Append with NULL as argument 1 (list) at bug.c:18", 
+            "message": "calling PyList_Append with NULL as argument 1 (list) at libcpychecker/html/test/example1/bug.c:18", 
             "notes": [
                 {
                     "location": [
@@ -322,7 +1891,62 @@
             "states": [
                 {
                     "location": null, 
-                    "message": ""
+                    "message": "", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -335,7 +1959,62 @@
                             "line": 10
                         }
                     ], 
-                    "message": "when PyArg_ParseTuple() succeeds"
+                    "message": "when PyArg_ParseTuple() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -348,7 +2027,65 @@
                             "line": 10
                         }
                     ], 
-                    "message": "taking False path"
+                    "message": "taking False path", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -361,7 +2098,65 @@
                             "line": 14
                         }
                     ], 
-                    "message": "when PyList_New() fails"
+                    "message": "when PyList_New() fails", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -374,7 +2169,66 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -387,7 +2241,67 @@
                             "line": 16
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -400,7 +2314,69 @@
                             "line": 16
                         }
                     ], 
-                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff"
+                    "message": "when considering range: 1 <= count.0 <= 0x7fffffff", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -413,7 +2389,69 @@
                             "line": 16
                         }
                     ], 
-                    "message": "taking True path"
+                    "message": "taking True path", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -426,7 +2464,69 @@
                             "line": 17
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -439,7 +2539,71 @@
                             "line": 17
                         }
                     ], 
-                    "message": "when PyLong_FromLong() succeeds"
+                    "message": "when PyLong_FromLong() succeeds", 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }, 
                 {
                     "location": [
@@ -452,7 +2616,84 @@
                             "line": 18
                         }
                     ], 
-                    "message": null
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12024": {
+                            "kind": "ConcreteValue", 
+                            "value": 1
+                        }, 
+                        "D.12027": {
+                            "kind": "UninitializedData"
+                        }, 
+                        "D.12028": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 0, 
+                            "relvalue": 1
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type"
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "kind": "GenericTpDealloc"
+                        }, 
+                        "args": {
+                            "kind": "PointerToRegion", 
+                            "target": "args"
+                        }, 
+                        "args->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "args->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')"
+                        }, 
+                        "count": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "count.0": {
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1
+                        }, 
+                        "i": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "item": {
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject"
+                        }, 
+                        "list": {
+                            "kind": "ConcreteValue", 
+                            "value": 0
+                        }, 
+                        "self": {
+                            "kind": "PointerToRegion", 
+                            "target": "self"
+                        }, 
+                        "self->ob_refcnt": {
+                            "kind": "RefcountValue", 
+                            "min_external": 1, 
+                            "relvalue": 0
+                        }, 
+                        "self->ob_type": {
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')"
+                        }
+                    }
                 }
             ]
         }
