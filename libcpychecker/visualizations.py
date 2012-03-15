@@ -331,7 +331,9 @@ pre {
         from pygments import highlight
         from pygments.lexers import CLexer
         html = highlight(code,
-                         CLexer(), # FIXME
+                         CLexer(),
+                         # FIXME: ^^^ this hardcodes the source language
+                         # (e.g. what about C++?)
                          self.formatter)
 
         # Carve it up by line, adding our own line numbering:
