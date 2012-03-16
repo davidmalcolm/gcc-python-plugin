@@ -11,6 +11,7 @@ from pygments import highlight
 from pygments.lexers.compiled import CLexer
 from pygments.formatters.html import HtmlFormatter
 
+import copy
 import itertools
 from json import load
 
@@ -55,7 +56,7 @@ class HtmlPage(object):
         """generate the contents of the #code section"""
         # Get ready to use Pygments:
         formatter = CodeHtmlFormatter(
-                style='default', 
+                style='default',
                 cssclass='source',
                 linenostart=self.data['function']['lines'][0],
         )
@@ -79,6 +80,10 @@ class HtmlPage(object):
 
     def header(self):
         """Make the header bar of the webpage"""
+        def report_links():
+            for i in range(len(self.data['reports'])):
+                yield E.A(str(i + 1), href="#state{0}".format(i + 1))
+
         return E.E.header(
             E.ATTR(id='header'),
             E.DIV(
@@ -105,7 +110,7 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='report-pagination'),
                     E.H3('Report'),
-                    '[Report Pagination]',
+                    *report_links()
                 ),
                 E.DIV(
                     E.ATTR(id='bug-toggle'),
@@ -118,13 +123,13 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='prev'),
                     E.IMG(
-                        src='images/arrow.png',
+                        src='images/arrow-180.png',
                     ),
                 ),
                 E.DIV(
                     E.ATTR(id='next'),
                     E.IMG(
-                        src='images/arrow-180.png',
+                        src='images/arrow.png',
                     ),
                 ),
             ),
@@ -143,71 +148,74 @@ class HtmlPage(object):
         )
 
     def states(self):
-        report = self.data['reports'][0]
+        for report in self.data['reports']:
+            lis = []
+            last_line = None
+            for state in report['states']:
+                if not state['location'] or not state['message']:
+                    continue
 
-        lis = []
-        last_line = None
-        for state in report['states']:
-            if not state['location'] or not state['message']:
-                continue
+                line = state['location'][0]['line']
+                p = E.P(state['message'])
 
-            line = state['location'][0]['line']
-            p = E.P(state['message'])
-            p.append(
-                            E.IMG(
-                                src='images/bug--arrow.png', align='center',
-                            ),
-                        )
+                if lis and line == last_line:
+                    # Merge adjacent messages for the same line together
+                    lis[-1].append(p)
+                else:
+                    lis.append(E.LI(
+                        {'data-line': str(line)},
+                        p,
+                    ))
 
-            if lis and line == last_line:
-                # Merge adjacent messages for the same line together
-                lis[-1].append(p)
-            else:
-                lis.append(E.LI(
-                    {'data-line': str(line)},
-                    p,
-                ))
+                last_line = line
 
-            last_line = line
+            final_li = E.LI({'data-line': str(self.data['function']['lines'][-1] - 1)})
+            for note in report['notes']:
+                final_li.append(
+                    E.P(note['message']),
+                )
+            lis.append(final_li)
 
-        return E.OL(
-            {'class': 'states'},
-            *lis
-        )
+            html = E.OL(
+                {'class': 'states'},
+                *lis
+            )
+
+            yield html, report['message']
 
     def body(self):
         """The BODY of the html document"""
+        reports = []
+        code = self.code()
+
+        for i, (state_html, state_problem) in enumerate(self.states(), 1):
+            reports.append(
+                E.LI(
+                    E.ATTR(id="state{0}".format(i)),
+                    E.DIV(
+                        E.CLASS('source'),
+                        E.E.header(
+                            E.DIV(
+                                E.CLASS('error'),
+                                state_problem,
+                            ),
+                            E.DIV(
+                                E.CLASS('report-count'),
+                                E.H3('Report'),
+                                str(i),
+                            ),
+                        ),
+                        copy.deepcopy(code),
+                    ),
+                    state_html,
+                ),
+            )
+
         return E.BODY(
             self.header(),
             E.OL(
                 E.ATTR(id='reports'),
-                E.LI(
-                    E.DIV(
-                        E.CLASS('source'),
-                        E.DIV(
-                            E.ATTR(id='error-box'),
-                            E.SPAN(
-                                E.CLASS('label'),
-                                'Error: ',
-                            ),
-                            ' [error type]',
-                        ),
-                        E.DIV(
-                            E.ATTR(id='report-count'),
-                            E.SPAN(
-                                E.CLASS('label'),
-                                'Report: ',
-                            ),
-                            ' [count]',
-                        ),
-                        self.code(),
-                        E.DIV(
-                            E.CLASS('hr'),
-                            E.HR(),
-                        ),
-                    ),
-                    self.states(),
-                ),
+                *reports
             ),
             self.footer(),
         )
@@ -228,10 +236,6 @@ class CodeHtmlFormatter(HtmlFormatter):
             else:
                 yield i, line
         yield 0, '</table>'
-        
-    def wrap2(self, source, outfile):
-        """not used"""
-        return super(CodeHtmlFormatter, self).wrap(source, outfile)
 
 def main(argv):
     """our entry point"""

@@ -17,6 +17,14 @@ body {
 h1, h2 {
     font-weight: bolder;
 }
+h3 {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 0.33em;
+}
+h3:after {
+    content: ':';
+}
 hr {
     border-bottom: 1px solid #CCC; width: 640px;
 }
@@ -28,11 +36,6 @@ img {
 /* Main page layout */
 #header {
     background-color: #0099ff;
-}
-#nav {
-    padding: 1em;
-    background: hsl(0, 0%, 83%);
-    color: black;
 }
 #reports {
     box-flex: 1;
@@ -54,12 +57,13 @@ img {
     display: box;
     box-orient: horizontal;
     width: 100%;
+    padding: 1em;
+    box-sizing: border-box;
     color: white;
 }
 #title h1,
 #title #filename {
     box-flex: 1;
-    padding: 1em;
     vertical-align: middle;
 }
 #title h1 {
@@ -78,18 +82,11 @@ img {
     box-orient: horizontal;
     box-align: center;
     width: 100%;
+    padding: 0.5em 1em;
     box-sizing: border-box;
     background-color: #E4E4E4;
     border-bottom: 1px solid #7A7A7A;
     box-shadow: 0px 0px 2px #000;
-}
-#nav h3 {
-    display: inline-block;
-    font-weight: bold;
-    margin-right: 0.33em;
-}
-#nav h3:after {
-    content: ':';
 }
 #nav #function {
     margin-right: 2em;
@@ -102,12 +99,10 @@ img {
 }
 #nav #prev,
 #nav #next {
-    width: 2em;
-    height: 18px;
-    text-align: center;
-    background-color:#fff;
-    border: 1px solid #CCCCCC;
-    margin: 0 1em;
+    padding: 0.25em 1em;
+    background-color: white;
+    border: 1px solid #ccc;
+    margin-left: 1em;
 }
 
 
@@ -151,6 +146,9 @@ img {
     box-orient: horizontal;
     width: 100%;
 }
+#reports > li + li {
+    border-top: 1px dashed hsl(0, 0%, 70%);
+}
 
 
 
@@ -170,15 +168,28 @@ img {
 
 .source {
     height: 100%;
-    font-family: monospace;
     font-size: 12px;
     padding: 1em;
     background: white;
     box-flex: 1;
     line-height: 1.33;
 }
+.source > header {
+    display: box;
+    box-orient: horizontal;
+    width: 100%;
+}
+.source > header .error {
+    box-flex: 1;
+    color: darkred;
+    font-weight: bold;
+}
+.source > header .report-count {
+}
 .source table {
     width: 100%;
+    margin-top: 1em;
+    font-family: monospace;
 }
 
 #bug-toggle {
