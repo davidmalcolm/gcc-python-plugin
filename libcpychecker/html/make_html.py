@@ -242,10 +242,6 @@ class CodeHtmlFormatter(HtmlFormatter):
                 yield i, line
         yield 0, '</table>'
 
-    def wrap2(self, source, outfile):
-        """not used"""
-        return super(CodeHtmlFormatter, self).wrap(source, outfile)
-
 def main(argv):
     """our entry point"""
     if len(argv) < 3:
