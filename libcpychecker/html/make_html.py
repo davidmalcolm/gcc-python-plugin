@@ -23,10 +23,15 @@ class HtmlPage(object):
     def __html__(self):
         return E.HTML( self.head(), self.body() )
 
-    @staticmethod
-    def head():
+    def head(self):
         """The HEAD of the html document"""
-        head =  E.HEAD()
+        head =  E.HEAD(
+            E.META({
+                'http-equiv': 'Content-Type',
+                'content': 'text/html; charset=utf-8'
+            }),
+            E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
+        )
         head.extend(
             E.LINK(rel='stylesheet', href=css + '.css', type='text/css')
             for css in ('extlib/reset-20110126', 'pygments_c', 'style')
@@ -52,16 +57,169 @@ class HtmlPage(object):
         # Use pygments to convert it all to HTML:
         return parse(highlight(self.codefile.read(), CLexer(), formatter))
 
+    def header(self):
+        """Make the header bar of the webpage"""
+        return E.DIV(
+            E.ATTR(id='header-wrap'),
+            E.DIV(
+                E.ATTR(id='header-container'),
+                E.DIV(
+                    E.ATTR(id='header'),
+                    E.H1(
+                        'GCC Python Plugin',
+                    ),
+                    E.DIV(
+                        E.ATTR(id='header-filename'),
+                        E.SPAN(
+                            E.CLASS('label'),
+                            'Filename: ',
+                        ),
+                        self.data['filename'],
+                    ),
+                ),
+            ),
+            E.DIV(
+                E.ATTR(id='nav-container'),
+                E.DIV(
+                    E.ATTR(id='nav'),
+                    E.SPAN(
+                        E.CLASS('label'),
+                        'Function Name: ',
+                    ),
+                    E.SPAN(
+                        E.CLASS('fnc-report'),
+                        E.ATTR(id='fnc-name'),
+                        '[Function name goes here]',
+                    ),
+                    u'\xa0|\xa0',
+                    E.SPAN(
+                        E.CLASS('label'),
+                        'Report: ',
+                    ),
+                    E.SPAN(
+                        E.CLASS('fnc-report'),
+                        E.ATTR(id='report-pagination'),
+                        '[Report Pagination]',
+                    ),
+                    E.DIV(
+                        E.ATTR(id='white-box'),
+                        E.IMG(
+                            src='images/arrow.png',
+                        ),
+                    ),
+                    E.DIV(
+                        E.ATTR(id='white-box'),
+                        E.IMG(
+                            src='images/arrow-180.png',
+                        ),
+                    ),
+                    E.DIV(
+                        E.ATTR(id='bug-toggle'),
+                        E.IMG(
+                            src='images/bug.png',
+                        ),
+                        E.SPAN(
+                            E.CLASS('label'),
+                            'Bug: ',
+                        ),
+                        ' [count]',
+                    ),
+                ),
+            ),
+    )
+
+    @staticmethod
+    def footer():
+        """make the footer"""
+        return E.DIV(
+                E.ATTR(id='footer-wrap'),
+                E.DIV(
+                    E.ATTR(id='footer-container'),
+                    E.DIV(
+                        E.ATTR(id='footer'),
+                        E.DIV(
+                            E.ATTR(id='footer-text'),
+                            u'Hackathon 7.0 \xa0|\xa0 '
+                            u'Buck G, Alex M, Jason M \xa0|\xa0 '
+                            u'Yelp HQ 2012',
+                        ),
+                    ),
+                ),
+        )
+
     def body(self):
         """The BODY of the html document"""
         return E.BODY(
+            self.header(),
+            E.DIV(
+                E.ATTR(id='ie6-container-wrap'),
                 E.DIV(
-                    E.ATTR(id='main'),
-                    E.DIV(self.code(), id='code'),
-                    E.DIV(id='notes'),
-                )
+                    E.ATTR(id='container'),
+                    E.DIV(
+                        E.ATTR(id='content'),
+                        E.DIV(
+                            E.ATTR(id='error-box'),
+                            E.SPAN(
+                                E.CLASS('label'),
+                                'Error: ',
+                            ),
+                            ' [error type]',
+                        ),
+                        E.DIV(
+                            E.ATTR(id='report-count'),
+                            E.SPAN(
+                                E.CLASS('label'),
+                                'Report: ',
+                            ),
+                            ' [count]',
+                        ),
+                        self.code(),
+                        E.DIV(
+                            E.CLASS('hr'),
+                            E.HR(),
+                        ),
+                    ),
+                    E.DIV(
+                        E.ATTR(id='sidebar'),
+                        E.DIV(
+                            E.CLASS('annotation-box'),
+                            E.IMG(
+                                src='images/bug--arrow.png', align='center',
+                            ),
+                            ' : ',
+                            E.SPAN(
+                                E.CLASS('bug-count'),
+                                '[bug count]',
+                            ),
+                            E.DIV(
+                                E.CLASS('annotation-comment'),
+                                'when PyArg_ParseTuple() succeeds ',
+                                E.BR(),
+                                ' taking False path',
+                            ),
+                        ),
+                        E.DIV(
+                            E.CLASS('annotation-box selected'),
+                            E.IMG(
+                                src='images/bug--arrow.png', align='center',
+                            ),
+                            ' : ',
+                            E.SPAN(
+                                E.CLASS('bug-count'),
+                                '[bug count]',
+                            ),
+                            E.DIV(
+                                E.CLASS('annotation-comment'),
+                                'when PyArg_ParseTuple() succeeds ',
+                                E.BR(),
+                                ' taking False path',
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            self.footer(),
         )
-
 
 class CodeHtmlFormatter(HtmlFormatter):
     """Format our HTML!"""
