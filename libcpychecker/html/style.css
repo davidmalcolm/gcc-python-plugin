@@ -326,7 +326,7 @@ var.leak {
     vertical-align: middle;
 }
 .flow-dot {
-    display: block;
+    display: inline-block;
     background: hsl(210, 80%, 60%);
     outline: 1px solid rgba(100%, 100%, 100%, 0.5);
     height: 6px;
