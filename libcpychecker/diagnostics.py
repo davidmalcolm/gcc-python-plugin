@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -125,6 +125,24 @@ class Reporter:
 
     def got_warnings(self):
         return self._got_warnings
+
+    def to_json(self, fun):
+        result = dict(filename=fun.start.file,
+                      function=dict(name=fun.decl.name,
+                                    # line number range:
+                                    lines=(fun.decl.location.line - 1,
+                                           fun.end.line + 1)),
+                      reports=[])
+        for report in self.reports:
+            result['reports'].append(report.to_json(fun))
+        return result
+
+    def dump_json(self, fun, filename):
+        js = self.to_json(fun)
+        from json import dump, dumps
+        with open(filename, 'w') as f:
+            dump(js, f, sort_keys=True, indent=4)
+        print(dumps(js, sort_keys=True, indent=4))
 
     def to_html(self, fun):
         # (FIXME: eliminate self.fun from HtmlRenderer and the above arg)
@@ -254,10 +272,40 @@ class Report:
         self.duplicates.append(other)
         other.is_duplicate = True
 
+    def to_json(self, fun):
+        assert self.trace
+        result = dict(message=self.msg,
+                      severity='warning', # FIXME
+                      states=[])
+        # Generate a list of (state, desc) pairs, putting the desc from the
+        # transition into source state; the final state will have an empty
+        # string
+        pairs = []
+        for t_iter in self.trace.transitions:
+            pairs.append( (t_iter.src, t_iter.desc) )
+        pairs.append( (self.trace.transitions[-1].dest, None) )
+        for i, (s_iter, desc) in enumerate(pairs):
+            result['states'].append(s_iter.as_json(desc))
+        result['notes'] = [dict(location=location_as_json(note.loc),
+                                message=note.msg)
+                           for note in self.notes]
+        return result
+
+
 class Note:
     """
-    A note within a report
+    A note within a self
     """
     def __init__(self, loc, msg):
         self.loc = loc
         self.msg = msg
+
+
+def location_as_json(loc):
+    if loc:
+        return (dict(line=loc.line,
+                     column=loc.column),
+                dict(line=loc.line,
+                     column=loc.column))
+    else:
+        return None
