@@ -186,24 +186,25 @@ blockquote {
 	padding-top:60px;
 }
 
-#annotation-box {
+.annotation-box {
 	background-color:#fff;
 	border: 1px solid #CCC;
 	width:278px;
 	min-height:55px;
 	margin-left:10px;
 	margin-bottom:10px;
-	padding:5px
+	padding:5px;
+	line-height:20px;
 }
 
-#annotation-box-selected {
+.annotation-box img {
+	vertical-align:middle;
+}
+
+.annotation-box.selected {
 	background-color:#FEF8CB;
 	border: 1px solid #FFE181;
-	width:278px;
-	min-height:55px;
 	margin-left:-10px;
-	margin-bottom:10px;
-	padding:5px
 }
 
 #annotation-comment {
