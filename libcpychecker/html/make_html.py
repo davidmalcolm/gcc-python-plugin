@@ -157,11 +157,6 @@ class HtmlPage(object):
 
                 line = state['location'][0]['line']
                 p = E.P(state['message'])
-                p.append(
-                                E.IMG(
-                                    src='images/bug--arrow.png', align='center',
-                                ),
-                            )
 
                 if lis and line == last_line:
                     # Merge adjacent messages for the same line together

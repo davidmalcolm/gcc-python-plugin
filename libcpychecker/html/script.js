@@ -88,11 +88,11 @@ $(function() {
                     (idx == source_flow.length - 1 && ! flow.length) ||
                     (started[idx] && flow.length)
                 ) {
-                    $paths = $paths.add($('<td>', { "class": "flow-line" }));
+                    $paths = $paths.add($('<td>', { "class": "flow-line" }).html('&#x200b;'));
                 }
                 // Anywhere else gets nothing
                 else {
-                    $paths = $paths.add($('<td>', { "class": "flow-empty" }));
+                    $paths = $paths.add($('<td>', { "class": "flow-empty" }).html('&#x200b;'));
                 }
             });
             $row.prepend($paths);
