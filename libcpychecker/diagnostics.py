@@ -130,8 +130,8 @@ class Reporter:
         result = dict(filename=fun.start.file,
                       function=dict(name=fun.decl.name,
                                     # line number range:
-                                    lines=(fun.start.line,
-                                           fun.end.line)),
+                                    lines=(fun.decl.location.line - 1,
+                                           fun.end.line + 1)),
                       reports=[])
         for report in self.reports:
             result['reports'].append(report.to_json(fun))
