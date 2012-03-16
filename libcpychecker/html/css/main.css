@@ -15,6 +15,7 @@ h1, h2 {
 	color: #000;
 	font-family: Tahoma, Arial, Geneva, sans-serif;
 	font-size:12px;
+	font-weight:bolder;
 }
 
 hr {
@@ -111,20 +112,25 @@ blockquote {
 	width: 1000px;
 	margin: 0 auto;
 	position: relative;
+	padding-top:8px;
 }
 
-#nav-text {
-	float:left;
+.nav-text {
 	font-color:000;
 	font-size: 12px;
-	padding-top:8px;
+	font-weight:bolder;
 }
 
 #bug-toggle {
 	color:#000;
 	font-size:12px;
 	float:right;
-	margin-top:8px;
+	vertical-align:middle;
+}
+
+#bug-toggle img{
+	padding-right:5px; 
+	vertical-align:middle;
 }
 
 #white-box {
@@ -134,9 +140,9 @@ blockquote {
 	border: 1px solid #CCCCCC;
 	float:right;
 	margin-left:10px;
-	margin-top:4px;
 	padding-left:10px;
 	padding-top:3px;
+	margin-top:-4px;
 }
 
 #container {
@@ -154,6 +160,10 @@ blockquote {
 	padding-top:20px;
 	padding-left:20px;
 	padding-right:10px;
+}
+
+.fnc-report {
+	font-size:12px;
 }
 
 #error-box {
@@ -176,24 +186,25 @@ blockquote {
 	padding-top:60px;
 }
 
-#annotation-box {
+.annotation-box {
 	background-color:#fff;
 	border: 1px solid #CCC;
 	width:278px;
 	min-height:55px;
 	margin-left:10px;
 	margin-bottom:10px;
-	padding:5px
+	padding:5px;
+	line-height:20px;
 }
 
-#annotation-box-selected {
+.annotation-box img {
+	vertical-align:middle;
+}
+
+.annotation-box.selected {
 	background-color:#FEF8CB;
 	border: 1px solid #FFE181;
-	width:278px;
-	min-height:55px;
 	margin-left:-10px;
-	margin-bottom:10px;
-	padding:5px
 }
 
 #annotation-comment {

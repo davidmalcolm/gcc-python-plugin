@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<LINK REL=StyleSheet HREF="css/reset.css" TYPE="text/css" MEDIA=screen>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>GCC Python Plugin</title>
 <link href="css/main.css" rel="stylesheet" type="text/css" />
@@ -21,9 +22,19 @@
 	</div>
 	<div id="nav-container">
 		<div id ="nav">
-			<div id = "nav-text">
-			<strong>Function Name:</strong> [Function name goes here] &nbsp;|&nbsp;  <strong>Report:</strong> [Report Pagination]
-			</div>
+			<span class = "nav-text">
+				Function Name:
+			</span>
+			<span class = "fnc-report" id = "fnc-name">
+				[Function name goes here]
+			</span>
+			&nbsp;|&nbsp;
+			<span class = "nav-text">
+				Report:
+			</span>
+			<span class = "fnc-report" id = "report-pagination">
+				[Report Pagination]
+			</span>
 			<div id ="white-box">
 				<img src="images/arrow.png">
 			</div>
@@ -31,7 +42,7 @@
 				<img src="images/arrow-180.png">
 			</div>
 			<div id ="bug-toggle">
-				<img align = "center" src="images/bug.png" style="padding-right:5px;"><strong>Bug:</strong> [count]
+				<img src="images/bug.png"><strong>Bug:</strong> [count]
 			</div>
 		</div>
 	</div>
@@ -70,15 +81,21 @@
 			<div class="hr"><hr></div>
 		</div>
 		<div id="sidebar">
-			<div id ="annotation-box">
-				<img src="images/bug--arrow.png" align="center"> : [bug count]
-				<div id ="annotation-comment"> 
-					when PyArg_ParseTuple() succeeds <br/> taking False path
+			<div class ="annotation-box">
+				<img src="images/bug--arrow.png" align="center"> : 
+				<span class ="bug-count">
+					[bug count]
+				</span>
+				<div class ="annotation-comment"> 
+						when PyArg_ParseTuple() succeeds <br/> taking False path
+					</div>
 				</div>
-			</div>
-			<div id ="annotation-box-selected">
-				<img src="images/bug--arrow.png" align="center"> : [bug count]
-				<div id ="annotation-comment"> 
+			<div class ="annotation-box selected">
+				<img src="images/bug--arrow.png" align="center"> : 
+				<span class ="bug-count">
+					[bug count]
+				</span>
+				<div class ="annotation-comment"> 
 					when PyArg_ParseTuple() succeeds <br/> taking False path
 				</div>
 			</div>
