@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>GCC Python Plugin</title>
+<link href="css/main.css" rel="stylesheet" type="text/css" />
+<!--[if IE 6]>
+<link href="css/ie6.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+
+</head>
+<body style="background-color:#EBEBEB;">
+<div id="header-wrap">
+	<div id="header-container">
+		<div id="header">
+			<h1>GCC Python Plugin</h1>
+			<div id="header-filename">
+				[Filename goes here]
+			</div>
+		</div>
+	</div>
+	<div id="nav-container">
+		<div id ="nav">
+			<div id = "nav-text">
+			<strong>Function Name:</strong> [Function name goes here] &nbsp;|&nbsp;  <strong>Report:</strong> [Report Pagination]
+			</div>
+			<div id ="white-box">
+				<img src="images/arrow.png">
+			</div>
+			<div id ="white-box">
+				<img src="images/arrow-180.png">
+			</div>
+			<div id ="bug-toggle">
+				<img align = "center" src="images/bug.png" style="padding-right:5px;"><strong>Bug:</strong> [count]
+			</div>
+		</div>
+	</div>
+</div>
+<div id="ie6-container-wrap">
+	<div id="container">
+		<div id="content">
+			<div id="error-box">
+				<strong>Error:</strong> [error type]
+			</div>
+			<div id="report-count">
+				<strong>Report:</strong> [count]
+			</div>
+			<p style="line-height:24px">
+				<br/>3&nbsp;&nbsp;   PyObject *
+				<br/>4&nbsp;&nbsp;  make_a_list_of_random_ints_badly(PyObject *self,
+				<br/>5&nbsp;&nbsp;                                   PyObject *args)
+				<br/>6&nbsp;&nbsp;  {
+				<br/>7&nbsp;&nbsp;      PyObject *list, *item;
+				<br/>8&nbsp;&nbsp;      long count, i;
+				<br/>9&nbsp;&nbsp;  
+				<br/>10&nbsp;&nbsp;       if (!PyArg_ParseTuple(args, “i”, &count)) {
+				<br/>11&nbsp;&nbsp;            return NULL;
+				<br/>12&nbsp;&nbsp;       }
+				<br/>13&nbsp;&nbsp;   
+				<br/>14&nbsp;&nbsp;       list = PyList_New(0);
+				<br/>15&nbsp;&nbsp;   
+				<br/>16&nbsp;&nbsp;       for (i = 0; i < count; i++) {
+				<br/>17&nbsp;&nbsp;           item = PyLong_FromLong(random());
+				<br/>18&nbsp;&nbsp;           PyList_Append(list, item);
+				<br/>19&nbsp;&nbsp;       }
+				<br/>20&nbsp;&nbsp;   
+				<br/>21&nbsp;&nbsp;       return list;
+				<br/>22&nbsp;&nbsp;   }
+			</p>
+			<div class="hr"><hr></div>
+		</div>
+		<div id="sidebar">
+			<div id ="annotation-box">
+				<img src="images/bug--arrow.png" align="center"> : [bug count]
+				<div id ="annotation-comment"> 
+					when PyArg_ParseTuple() succeeds <br/> taking False path
+				</div>
+			</div>
+			<div id ="annotation-box-selected">
+				<img src="images/bug--arrow.png" align="center"> : [bug count]
+				<div id ="annotation-comment"> 
+					when PyArg_ParseTuple() succeeds <br/> taking False path
+				</div>
+			</div>
+		</div>           
+	</div>
+</div>
+<div id="footer-wrap">
+	<div id="footer-container">
+		<div id="footer">
+			<div id="footer-text">
+			Hackathon 7.0 &nbsp;|&nbsp; Buck G, Alex M, Jason M &nbsp;|&nbsp; Yelp HQ 2012
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

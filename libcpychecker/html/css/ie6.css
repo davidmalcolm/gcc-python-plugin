@@ -1,0 +1,22 @@
+html, body{
+	height: 100%;
+	overflow: hidden;
+}
+
+#header-wrap, #footer-wrap {
+	position: absolute;
+}
+
+#header-container, #footer-container {
+	margin-right: 17px;
+}
+
+#footer-wrap {
+	bottom: -1px;
+}
+
+#ie6-container-wrap {
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+}
