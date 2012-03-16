@@ -91,7 +91,8 @@ img {
 #nav #function {
     margin-right: 2em;
 }
-#nav #report-pagination {
+#nav #report-pagination a {
+    padding: 4px;
 }
 #nav #bug-toggle {
     box-flex: 1;
@@ -348,8 +349,8 @@ var.leak {
 td .flow-dot,
 .states li,
 .states li h2 {
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out;
+    -gecko-transition-duration: 0.25s;
+    -gecko-transition-timing-function: ease-out;
 }
 
 td.selected .flow-dot {
