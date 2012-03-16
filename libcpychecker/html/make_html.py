@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """Make our data into HTML!"""
 
 import capi
@@ -11,6 +11,7 @@ from pygments import highlight
 from pygments.lexers.compiled import CLexer
 from pygments.formatters.html import HtmlFormatter
 
+import itertools
 from json import load
 
 class HtmlPage(object):
@@ -41,9 +42,14 @@ class HtmlPage(object):
         )
         head.extend(
             E.SCRIPT(src=js + '.js')
-            for js in ('extlib/prefixfree-1.0.4.min', 'extlib/jquery-1.7.1.min')
+            for js in ('extlib/prefixfree-1.0.4.min', 'extlib/jquery-1.7.1.min', 'script')
         )
         return head
+
+    def raw_code(self):
+        first, last = self.data['function']['lines']
+        # Line numbers are ONE-based
+        return ''.join(itertools.islice(self.codefile, first - 1, last))
 
     def code(self):
         """generate the contents of the #code section"""
@@ -58,7 +64,7 @@ class HtmlPage(object):
         open('pygments_c.css', 'w').write(formatter.get_style_defs())
 
         # Use pygments to convert it all to HTML:
-        code =  parse(highlight(self.codefile.read(), CLexer(), formatter))
+        code =  parse(highlight(self.raw_code(), CLexer(), formatter))
 
         # linkify the python C-API functions
         for name in code.xpath('//span[@class="n"]'):
@@ -71,73 +77,54 @@ class HtmlPage(object):
         return code
 
 
-
     def header(self):
         """Make the header bar of the webpage"""
-        return E.DIV(
-            E.ATTR(id='header-wrap'),
+        return E.E.header(
+            E.ATTR(id='header'),
             E.DIV(
-                E.ATTR(id='header-container'),
+                E.ATTR(id='title'),
+                E.H1(
+                    'GCC Python Plugin',
+                ),
                 E.DIV(
-                    E.ATTR(id='header'),
-                    E.H1(
-                        'GCC Python Plugin',
+                    E.ATTR(id='filename'),
+                    E.SPAN(
+                        E.CLASS('label'),
+                        'Filename: ',
                     ),
-                    E.DIV(
-                        E.ATTR(id='header-filename'),
-                        E.SPAN(
-                            E.CLASS('label'),
-                            'Filename: ',
-                        ),
-                        self.data['filename'],
-                    ),
+                    self.data['filename'],
                 ),
             ),
-            E.DIV(
-                E.ATTR(id='nav-container'),
+            E.E.nav(
+                E.ATTR(id='nav'),
                 E.DIV(
-                    E.ATTR(id='nav'),
-                    E.SPAN(
-                        E.CLASS('label'),
-                        'Function Name: ',
+                    E.ATTR(id='function'),
+                    E.H3('Function'),
+                    self.data['function']['name'],
+                ),
+                E.DIV(
+                    E.ATTR(id='report-pagination'),
+                    E.H3('Report'),
+                    '[Report Pagination]',
+                ),
+                E.DIV(
+                    E.ATTR(id='bug-toggle'),
+                    E.IMG(
+                        src='images/bug.png',
                     ),
-                    E.SPAN(
-                        E.CLASS('fnc-report'),
-                        E.ATTR(id='fnc-name'),
-                        '[Function name goes here]',
+                    E.H3('Bug'),
+                    ' [count]',
+                ),
+                E.DIV(
+                    E.ATTR(id='prev'),
+                    E.IMG(
+                        src='images/arrow.png',
                     ),
-                    u'\xa0|\xa0',
-                    E.SPAN(
-                        E.CLASS('label'),
-                        'Report: ',
-                    ),
-                    E.SPAN(
-                        E.CLASS('fnc-report'),
-                        E.ATTR(id='report-pagination'),
-                        '[Report Pagination]',
-                    ),
-                    E.DIV(
-                        E.ATTR(id='white-box'),
-                        E.IMG(
-                            src='images/arrow.png',
-                        ),
-                    ),
-                    E.DIV(
-                        E.ATTR(id='white-box'),
-                        E.IMG(
-                            src='images/arrow-180.png',
-                        ),
-                    ),
-                    E.DIV(
-                        E.ATTR(id='bug-toggle'),
-                        E.IMG(
-                            src='images/bug.png',
-                        ),
-                        E.SPAN(
-                            E.CLASS('label'),
-                            'Bug: ',
-                        ),
-                        ' [count]',
+                ),
+                E.DIV(
+                    E.ATTR(id='next'),
+                    E.IMG(
+                        src='images/arrow-180.png',
                     ),
                 ),
             ),
@@ -146,32 +133,57 @@ class HtmlPage(object):
     @staticmethod
     def footer():
         """make the footer"""
-        return E.DIV(
-                E.ATTR(id='footer-wrap'),
-                E.DIV(
-                    E.ATTR(id='footer-container'),
-                    E.DIV(
-                        E.ATTR(id='footer'),
-                        E.DIV(
-                            E.ATTR(id='footer-text'),
-                            u'Hackathon 7.0 \xa0|\xa0 '
-                            u'Buck G, Alex M, Jason M \xa0|\xa0 '
-                            u'Yelp HQ 2012',
-                        ),
-                    ),
-                ),
+        return E.E.footer(
+            E.ATTR(id='footer'),
+            E.P(
+                u'Hackathon 7.0 | '
+                u'Buck G, Alex M, Jason M | '
+                u'Yelp HQ 2012',
+            ),
+        )
+
+    def states(self):
+        report = self.data['reports'][0]
+
+        lis = []
+        last_line = None
+        for state in report['states']:
+            if not state['location'] or not state['message']:
+                continue
+
+            line = state['location'][0]['line']
+            p = E.P(state['message'])
+            p.append(
+                            E.IMG(
+                                src='images/bug--arrow.png', align='center',
+                            ),
+                        )
+
+            if lis and line == last_line:
+                # Merge adjacent messages for the same line together
+                lis[-1].append(p)
+            else:
+                lis.append(E.LI(
+                    {'data-line': str(line)},
+                    p,
+                ))
+
+            last_line = line
+
+        return E.OL(
+            {'class': 'states'},
+            *lis
         )
 
     def body(self):
         """The BODY of the html document"""
         return E.BODY(
             self.header(),
-            E.DIV(
-                E.ATTR(id='ie6-container-wrap'),
-                E.DIV(
-                    E.ATTR(id='container'),
+            E.OL(
+                E.ATTR(id='reports'),
+                E.LI(
                     E.DIV(
-                        E.ATTR(id='content'),
+                        E.CLASS('source'),
                         E.DIV(
                             E.ATTR(id='error-box'),
                             E.SPAN(
@@ -194,43 +206,7 @@ class HtmlPage(object):
                             E.HR(),
                         ),
                     ),
-                    E.DIV(
-                        E.ATTR(id='sidebar'),
-                        E.DIV(
-                            E.CLASS('annotation-box'),
-                            E.IMG(
-                                src='images/bug--arrow.png', align='center',
-                            ),
-                            ' : ',
-                            E.SPAN(
-                                E.CLASS('bug-count'),
-                                '[bug count]',
-                            ),
-                            E.DIV(
-                                E.CLASS('annotation-comment'),
-                                'when PyArg_ParseTuple() succeeds ',
-                                E.BR(),
-                                ' taking False path',
-                            ),
-                        ),
-                        E.DIV(
-                            E.CLASS('annotation-box selected'),
-                            E.IMG(
-                                src='images/bug--arrow.png', align='center',
-                            ),
-                            ' : ',
-                            E.SPAN(
-                                E.CLASS('bug-count'),
-                                '[bug count]',
-                            ),
-                            E.DIV(
-                                E.CLASS('annotation-comment'),
-                                'when PyArg_ParseTuple() succeeds ',
-                                E.BR(),
-                                ' taking False path',
-                            ),
-                        ),
-                    ),
+                    self.states(),
                 ),
             ),
             self.footer(),
@@ -240,13 +216,13 @@ class CodeHtmlFormatter(HtmlFormatter):
     """Format our HTML!"""
 
     def wrap(self, source, outfile):
-        yield 0, '<table class="%s" data-first-line="%s">' % (
-                self.cssclass, self.linenostart,
+        yield 0, '<table data-first-line="%s">' % (
+                self.linenostart,
         )
         for i, line in source:
             if i == 1:
                 # it's a line of formatted code
-                yield 0, '<tr><td>'
+                yield 0, '<tr><td class="code">'
                 yield i, line
                 yield 0, '</td></tr>'
             else:
