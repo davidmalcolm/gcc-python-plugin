@@ -2,8 +2,6 @@ html {
     height: 100%;
 }
 html, body {
-    margin: 0;
-    padding: 0;
     width: 100%;
     background: black;
 }
@@ -26,6 +24,11 @@ body {
     background: blue;
     min-width: 300px;
     box-flex: 2;
+}
+#code .source td {
+    font-family: monospace;
+    white-space: pre;
+    min-height: 1em;
 }
 #notes {
     background: yellow;
