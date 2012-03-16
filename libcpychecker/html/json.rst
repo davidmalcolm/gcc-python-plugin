@@ -165,22 +165,66 @@ Some other kinds of value:
 
   * "kind": "RefcountValue"
 
+     Example data::
+
+                        "PyLongObject.ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 0, 
+                                "refs_we_own": 2
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": [
+                                    "PyListObject.ob_item[0]"
+                                ]
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 22, 
+                                    "line": 18
+                                }, 
+                                {
+                                    "column": 22, 
+                                    "line": 18
+                                }
+                            ]
+                        }, 
+
      Fields:
 
-        * "relvalue"
+        * "actual_ob_refcnt"
         
-           the refcount owned by the function::
-           
-              "relvalue": 0, 
-
-        * "min_external"
-
-           a lower bound on the references known to be owned by other things
-           (it exists so that we can prove that some Py_DECREF(obj) invocations
+           the actual value of the ob_refcnt field, split into the references
+           that the function owns ("refs_we_own"), plus a
+           "lower_bound_of_other_refs" which can probably be ignored (it exists
+           so that we can prove that some Py_DECREF(obj) invocations
            don't deallocate the object: even though the function might not own
-           any refs on obj, other things might)::
+           any refs on obj, other things might)
 
-              "min_external": 1, 
+           "refs_we_own" is of most interest to the user::
+
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 0, 
+                                "refs_we_own": 2
+                            }, 
+
+        * "expected_ob_refcnt"
+
+           information on what the ob_refcnt field *ought* to be.
+
+           Contains a single field, "pointers_to_this", which is a list of all
+           pointers to the object::
+
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": [
+                                    "PyListObject.ob_item[0]"
+                                ]
+                            }, 
+
+           In theory, "refs_we_own" ought to equal the
+           length of this list: the user is interested in when they're
+           non-equal
 
   * "kind": "ConcreteValue"
 
