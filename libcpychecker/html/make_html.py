@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 """Make our data into HTML!"""
 
+import capi
+
 from lxml.html import (
         tostring, fragment_fromstring as parse, builder as E
 )
-from json import load
 
 from pygments import highlight
 from pygments.lexers.compiled import CLexer
 from pygments.formatters.html import HtmlFormatter
+
+from json import load
 
 class HtmlPage(object):
     """Represent one html page."""
@@ -55,7 +58,19 @@ class HtmlPage(object):
         open('pygments_c.css', 'w').write(formatter.get_style_defs())
 
         # Use pygments to convert it all to HTML:
-        return parse(highlight(self.codefile.read(), CLexer(), formatter))
+        code =  parse(highlight(self.codefile.read(), CLexer(), formatter))
+
+        # linkify the python C-API functions
+        for name in code.xpath('//span[@class="n"]'):
+            url = capi.get_url(name.text)
+            if url is not None:
+                link = E.A(name.text, href=url)
+                name.text = None
+                name.append(link)
+
+        return code
+
+
 
     def header(self):
         """Make the header bar of the webpage"""
