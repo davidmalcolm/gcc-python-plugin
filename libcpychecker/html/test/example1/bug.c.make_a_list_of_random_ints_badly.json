@@ -81,249 +81,6 @@
             "states": [
                 {
                     "location": null, 
-                    "message": "initial state", 
-                    "variables": {
-                        "<retval>": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12024": {
-                            "gcctype": "int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12027": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12028": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "args": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "args", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "count": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "count.0": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "i": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "item": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "list": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "self": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "self", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }
-                    }
-                }, 
-                {
-                    "location": [
-                        {
-                            "column": 26, 
-                            "line": 10
-                        }, 
-                        {
-                            "column": 26, 
-                            "line": 10
-                        }
-                    ], 
                     "message": "", 
                     "variables": {
                         "<retval>": {
@@ -559,11 +316,11 @@
                 {
                     "location": [
                         {
-                            "column": 8, 
+                            "column": 26, 
                             "line": 10
                         }, 
                         {
-                            "column": 8, 
+                            "column": 26, 
                             "line": 10
                         }
                     ], 
@@ -585,16 +342,15 @@
                         }, 
                         "D.12024": {
                             "gcctype": "int", 
-                            "kind": "ConcreteValue", 
-                            "value": 1, 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -678,18 +434,16 @@
                             ]
                         }, 
                         "count": {
-                            "gcctype": "int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 2147483647, 
-                            "minvalue": -2147483648, 
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -805,12 +559,12 @@
                 {
                     "location": [
                         {
-                            "column": 10, 
-                            "line": 14
+                            "column": 8, 
+                            "line": 10
                         }, 
                         {
-                            "column": 10, 
-                            "line": 14
+                            "column": 8, 
+                            "line": 10
                         }
                     ], 
                     "message": "taking False path", 
@@ -1051,12 +805,12 @@
                 {
                     "location": [
                         {
-                            "column": 12, 
-                            "line": 16
+                            "column": 10, 
+                            "line": 14
                         }, 
                         {
-                            "column": 12, 
-                            "line": 16
+                            "column": 10, 
+                            "line": 14
                         }
                     ], 
                     "message": "when PyList_New() succeeds", 
@@ -1118,6 +872,252 @@
                                 }
                             ]
                         }, 
+                        "args": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "args", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "count": {
+                            "gcctype": "int", 
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": -2147483648, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "count.0": {
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "i": {
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "item": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "list": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "self": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "self", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }
+                    }
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 16
+                        }
+                    ], 
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "D.12024": {
+                            "gcctype": "int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "D.12027": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "D.12028": {
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
                         "PyListObject.ob_item": {
                             "gcctype": "struct PyObject * *", 
                             "kind": "PointerToRegion", 
@@ -1618,351 +1618,6 @@
                                 {
                                     "column": 1, 
                                     "line": 6
-                                }
-                            ]
-                        }, 
-                        "i": {
-                            "gcctype": "long int", 
-                            "kind": "ConcreteValue", 
-                            "value": 0, 
-                            "value_comes_from": [
-                                {
-                                    "column": 12, 
-                                    "line": 16
-                                }, 
-                                {
-                                    "column": 12, 
-                                    "line": 16
-                                }
-                            ]
-                        }, 
-                        "item": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "list": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyListObject", 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "ob_item array for PyListObject": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "ConcreteValue", 
-                            "value": 0, 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "self": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "self", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }
-                    }
-                }, 
-                {
-                    "location": [
-                        {
-                            "column": 5, 
-                            "line": 16
-                        }, 
-                        {
-                            "column": 5, 
-                            "line": 16
-                        }
-                    ], 
-                    "message": null, 
-                    "variables": {
-                        "<retval>": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12024": {
-                            "gcctype": "int", 
-                            "kind": "ConcreteValue", 
-                            "value": 1, 
-                            "value_comes_from": [
-                                {
-                                    "column": 26, 
-                                    "line": 10
-                                }, 
-                                {
-                                    "column": 26, 
-                                    "line": 10
-                                }
-                            ]
-                        }, 
-                        "D.12027": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12028": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "PyListObject.ob_item": {
-                            "gcctype": "struct PyObject * *", 
-                            "kind": "PointerToRegion", 
-                            "target": "ob_item array for PyListObject", 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "PyListObject.ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 0, 
-                                "refs_we_own": 1
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "PyListObject.ob_size": {
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "ConcreteValue", 
-                            "value": 0, 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "PyListObject.ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyList_Type", 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "PyList_Type.tp_dealloc": {
-                            "gcctype": "void (*destructor) (struct PyObject *)", 
-                            "kind": "GenericTpDealloc", 
-                            "value_comes_from": [
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }, 
-                                {
-                                    "column": 10, 
-                                    "line": 14
-                                }
-                            ]
-                        }, 
-                        "args": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "args", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "count": {
-                            "gcctype": "int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 2147483647, 
-                            "minvalue": -2147483648, 
-                            "value_comes_from": [
-                                {
-                                    "column": 26, 
-                                    "line": 10
-                                }, 
-                                {
-                                    "column": 26, 
-                                    "line": 10
-                                }
-                            ]
-                        }, 
-                        "count.0": {
-                            "gcctype": "int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 2147483647, 
-                            "minvalue": -2147483648, 
-                            "value_comes_from": [
-                                {
-                                    "column": 26, 
-                                    "line": 10
-                                }, 
-                                {
-                                    "column": 26, 
-                                    "line": 10
                                 }
                             ]
                         }, 
@@ -2283,7 +1938,7 @@
                             "gcctype": "int", 
                             "kind": "WithinRange", 
                             "maxvalue": 2147483647, 
-                            "minvalue": 1, 
+                            "minvalue": -2147483648, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -2299,7 +1954,7 @@
                             "gcctype": "int", 
                             "kind": "WithinRange", 
                             "maxvalue": 2147483647, 
-                            "minvalue": 1, 
+                            "minvalue": -2147483648, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -2426,12 +2081,12 @@
                 {
                     "location": [
                         {
-                            "column": 31, 
-                            "line": 17
+                            "column": 5, 
+                            "line": 16
                         }, 
                         {
-                            "column": 31, 
-                            "line": 17
+                            "column": 5, 
+                            "line": 16
                         }
                     ], 
                     "message": "taking True path", 
@@ -2771,11 +2426,11 @@
                 {
                     "location": [
                         {
-                            "column": 14, 
+                            "column": 31, 
                             "line": 17
                         }, 
                         {
-                            "column": 14, 
+                            "column": 31, 
                             "line": 17
                         }
                     ], 
@@ -2826,17 +2481,15 @@
                         }, 
                         "D.12028": {
                             "gcctype": "long int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 9223372036854775807, 
-                            "minvalue": -9223372036854775808, 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 31, 
-                                    "line": 17
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 31, 
-                                    "line": 17
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -3118,12 +2771,12 @@
                 {
                     "location": [
                         {
-                            "column": 22, 
-                            "line": 18
+                            "column": 14, 
+                            "line": 17
                         }, 
                         {
-                            "column": 22, 
-                            "line": 18
+                            "column": 14, 
+                            "line": 17
                         }
                     ], 
                     "message": "when PyLong_FromLong() succeeds", 
@@ -3267,56 +2920,6 @@
                                 }
                             ]
                         }, 
-                        "PyLongObject.ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 0, 
-                                "refs_we_own": 1
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }, 
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }
-                            ]
-                        }, 
-                        "PyLongObject.ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyLong_Type", 
-                            "value_comes_from": [
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }, 
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }
-                            ]
-                        }, 
-                        "PyLong_Type.tp_dealloc": {
-                            "gcctype": "void (*destructor) (struct PyObject *)", 
-                            "kind": "GenericTpDealloc", 
-                            "value_comes_from": [
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }, 
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }
-                            ]
-                        }, 
                         "args": {
                             "gcctype": "struct PyObject *", 
                             "kind": "PointerToRegion", 
@@ -3417,16 +3020,15 @@
                         }, 
                         "item": {
                             "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyLongObject", 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 14, 
-                                    "line": 17
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 14, 
-                                    "line": 17
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -3516,12 +3118,12 @@
                 {
                     "location": [
                         {
-                            "column": 29, 
-                            "line": 16
+                            "column": 22, 
+                            "line": 18
                         }, 
                         {
-                            "column": 29, 
-                            "line": 16
+                            "column": 22, 
+                            "line": 18
                         }
                     ], 
                     "message": "when PyList_Append() succeeds", 
@@ -3600,21 +3202,6 @@
                                 }
                             ]
                         }, 
-                        "PyListObject.ob_item[0]": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyLongObject", 
-                            "value_comes_from": [
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }, 
-                                {
-                                    "column": 14, 
-                                    "line": 17
-                                }
-                            ]
-                        }, 
                         "PyListObject.ob_refcnt": {
                             "actual_ob_refcnt": {
                                 "lower_bound_of_other_refs": 0, 
@@ -3683,23 +3270,21 @@
                         "PyLongObject.ob_refcnt": {
                             "actual_ob_refcnt": {
                                 "lower_bound_of_other_refs": 0, 
-                                "refs_we_own": 2
+                                "refs_we_own": 1
                             }, 
                             "expected_ob_refcnt": {
-                                "pointers_to_this": [
-                                    "PyListObject.ob_item[0]"
-                                ]
+                                "pointers_to_this": []
                             }, 
                             "gcctype": "Py_ssize_t", 
                             "kind": "RefcountValue", 
                             "value_comes_from": [
                                 {
-                                    "column": 22, 
-                                    "line": 18
+                                    "column": 14, 
+                                    "line": 17
                                 }, 
                                 {
-                                    "column": 22, 
-                                    "line": 18
+                                    "column": 14, 
+                                    "line": 17
                                 }
                             ]
                         }, 
@@ -3931,11 +3516,11 @@
                 {
                     "location": [
                         {
-                            "column": 19, 
+                            "column": 29, 
                             "line": 16
                         }, 
                         {
-                            "column": 19, 
+                            "column": 29, 
                             "line": 16
                         }
                     ], 
@@ -4233,14 +3818,14 @@
                         "i": {
                             "gcctype": "long int", 
                             "kind": "ConcreteValue", 
-                            "value": 1, 
+                            "value": 0, 
                             "value_comes_from": [
                                 {
-                                    "column": 29, 
+                                    "column": 12, 
                                     "line": 16
                                 }, 
                                 {
-                                    "column": 29, 
+                                    "column": 12, 
                                     "line": 16
                                 }
                             ]
@@ -4346,11 +3931,11 @@
                 {
                     "location": [
                         {
-                            "column": 5, 
+                            "column": 19, 
                             "line": 16
                         }, 
                         {
-                            "column": 5, 
+                            "column": 19, 
                             "line": 16
                         }
                     ], 
@@ -5030,8 +4615,9 @@
                         }, 
                         "count": {
                             "gcctype": "int", 
-                            "kind": "ConcreteValue", 
-                            "value": 1, 
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -5045,8 +4631,9 @@
                         }, 
                         "count.0": {
                             "gcctype": "int", 
-                            "kind": "ConcreteValue", 
-                            "value": 1, 
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -5175,11 +4762,11 @@
                     "location": [
                         {
                             "column": 5, 
-                            "line": 21
+                            "line": 16
                         }, 
                         {
                             "column": 5, 
-                            "line": 21
+                            "line": 16
                         }
                     ], 
                     "message": "taking False path", 
@@ -5585,7 +5172,16 @@
                     }
                 }, 
                 {
-                    "location": null, 
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 21
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 21
+                        }
+                    ], 
                     "message": null, 
                     "variables": {
                         "<retval>": {
@@ -5619,16 +5215,15 @@
                         }, 
                         "D.12027": {
                             "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "PyListObject", 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 10, 
-                                    "line": 14
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 10, 
-                                    "line": 14
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -6089,6 +5684,411 @@
                                 "refs_we_own": 1
                             }, 
                             "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "PyListObject.ob_size": {
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "ConcreteValue", 
+                            "value": 0, 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "PyListObject.ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyList_Type", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "PyList_Type.tp_dealloc": {
+                            "gcctype": "void (*destructor) (struct PyObject *)", 
+                            "kind": "GenericTpDealloc", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "PyLongObject.ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 0, 
+                                "refs_we_own": 2
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": [
+                                    "PyListObject.ob_item[0]"
+                                ]
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 22, 
+                                    "line": 18
+                                }, 
+                                {
+                                    "column": 22, 
+                                    "line": 18
+                                }
+                            ]
+                        }, 
+                        "PyLongObject.ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyLong_Type", 
+                            "value_comes_from": [
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }, 
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }
+                            ]
+                        }, 
+                        "PyLong_Type.tp_dealloc": {
+                            "gcctype": "void (*destructor) (struct PyObject *)", 
+                            "kind": "GenericTpDealloc", 
+                            "value_comes_from": [
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }, 
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }
+                            ]
+                        }, 
+                        "args": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "args", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "count": {
+                            "gcctype": "int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "count.0": {
+                            "gcctype": "int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "i": {
+                            "gcctype": "long int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 29, 
+                                    "line": 16
+                                }, 
+                                {
+                                    "column": 29, 
+                                    "line": 16
+                                }
+                            ]
+                        }, 
+                        "item": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject", 
+                            "value_comes_from": [
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }, 
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }
+                            ]
+                        }, 
+                        "list": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "ob_item array for PyListObject": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "ConcreteValue", 
+                            "value": 0, 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "self": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "self", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }
+                    }
+                }, 
+                {
+                    "location": null, 
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "D.12024": {
+                            "gcctype": "int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "D.12027": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyListObject", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "D.12028": {
+                            "gcctype": "long int", 
+                            "kind": "WithinRange", 
+                            "maxvalue": 9223372036854775807, 
+                            "minvalue": -9223372036854775808, 
+                            "value_comes_from": [
+                                {
+                                    "column": 31, 
+                                    "line": 17
+                                }, 
+                                {
+                                    "column": 31, 
+                                    "line": 17
+                                }
+                            ]
+                        }, 
+                        "PyListObject.ob_item": {
+                            "gcctype": "struct PyObject * *", 
+                            "kind": "PointerToRegion", 
+                            "target": "ob_item array for PyListObject", 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "PyListObject.ob_item[0]": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "PyLongObject", 
+                            "value_comes_from": [
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }, 
+                                {
+                                    "column": 14, 
+                                    "line": 17
+                                }
+                            ]
+                        }, 
+                        "PyListObject.ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 0, 
+                                "refs_we_own": 1
+                            }, 
+                            "expected_ob_refcnt": {
                                 "pointers_to_this": [
                                     "return value"
                                 ]
@@ -6432,249 +6432,6 @@
             "states": [
                 {
                     "location": null, 
-                    "message": "initial state", 
-                    "variables": {
-                        "<retval>": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12024": {
-                            "gcctype": "int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12027": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "D.12028": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "args": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "args", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "args->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 5
-                                }
-                            ]
-                        }, 
-                        "count": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "count.0": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "i": {
-                            "gcctype": "long int", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "item": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "list": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "UninitializedData", 
-                            "value_comes_from": [
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }, 
-                                {
-                                    "column": 1, 
-                                    "line": 6
-                                }
-                            ]
-                        }, 
-                        "self": {
-                            "gcctype": "struct PyObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "self", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_refcnt": {
-                            "actual_ob_refcnt": {
-                                "lower_bound_of_other_refs": 1, 
-                                "refs_we_own": 0
-                            }, 
-                            "expected_ob_refcnt": {
-                                "pointers_to_this": []
-                            }, 
-                            "gcctype": "Py_ssize_t", 
-                            "kind": "RefcountValue", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }, 
-                        "self->ob_type": {
-                            "gcctype": "struct PyTypeObject *", 
-                            "kind": "PointerToRegion", 
-                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
-                            "value_comes_from": [
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }, 
-                                {
-                                    "column": 44, 
-                                    "line": 4
-                                }
-                            ]
-                        }
-                    }
-                }, 
-                {
-                    "location": [
-                        {
-                            "column": 26, 
-                            "line": 10
-                        }, 
-                        {
-                            "column": 26, 
-                            "line": 10
-                        }
-                    ], 
                     "message": "", 
                     "variables": {
                         "<retval>": {
@@ -6910,11 +6667,11 @@
                 {
                     "location": [
                         {
-                            "column": 8, 
+                            "column": 26, 
                             "line": 10
                         }, 
                         {
-                            "column": 8, 
+                            "column": 26, 
                             "line": 10
                         }
                     ], 
@@ -6936,16 +6693,15 @@
                         }, 
                         "D.12024": {
                             "gcctype": "int", 
-                            "kind": "ConcreteValue", 
-                            "value": 1, 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -7029,18 +6785,16 @@
                             ]
                         }, 
                         "count": {
-                            "gcctype": "int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 2147483647, 
-                            "minvalue": -2147483648, 
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -7156,12 +6910,12 @@
                 {
                     "location": [
                         {
-                            "column": 10, 
-                            "line": 14
+                            "column": 8, 
+                            "line": 10
                         }, 
                         {
-                            "column": 10, 
-                            "line": 14
+                            "column": 8, 
+                            "line": 10
                         }
                     ], 
                     "message": "taking False path", 
@@ -7402,12 +7156,12 @@
                 {
                     "location": [
                         {
-                            "column": 12, 
-                            "line": 16
+                            "column": 10, 
+                            "line": 14
                         }, 
                         {
-                            "column": 12, 
-                            "line": 16
+                            "column": 10, 
+                            "line": 14
                         }
                     ], 
                     "message": "when PyList_New() fails", 
@@ -7580,16 +7334,15 @@
                         }, 
                         "list": {
                             "gcctype": "struct PyObject *", 
-                            "kind": "ConcreteValue", 
-                            "value": 0, 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 10, 
-                                    "line": 14
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 10, 
-                                    "line": 14
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -7649,11 +7402,11 @@
                 {
                     "location": [
                         {
-                            "column": 19, 
+                            "column": 12, 
                             "line": 16
                         }, 
                         {
-                            "column": 19, 
+                            "column": 12, 
                             "line": 16
                         }
                     ], 
@@ -7799,16 +7552,15 @@
                         }, 
                         "i": {
                             "gcctype": "long int", 
-                            "kind": "ConcreteValue", 
-                            "value": 0, 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 12, 
-                                    "line": 16
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 12, 
-                                    "line": 16
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -7897,11 +7649,11 @@
                 {
                     "location": [
                         {
-                            "column": 5, 
+                            "column": 19, 
                             "line": 16
                         }, 
                         {
-                            "column": 5, 
+                            "column": 19, 
                             "line": 16
                         }
                     ], 
@@ -8032,18 +7784,16 @@
                             ]
                         }, 
                         "count.0": {
-                            "gcctype": "int", 
-                            "kind": "WithinRange", 
-                            "maxvalue": 2147483647, 
-                            "minvalue": -2147483648, 
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
                             "value_comes_from": [
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }, 
                                 {
-                                    "column": 26, 
-                                    "line": 10
+                                    "column": 1, 
+                                    "line": 6
                                 }
                             ]
                         }, 
@@ -8269,7 +8019,7 @@
                             "gcctype": "int", 
                             "kind": "WithinRange", 
                             "maxvalue": 2147483647, 
-                            "minvalue": 1, 
+                            "minvalue": -2147483648, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -8285,7 +8035,7 @@
                             "gcctype": "int", 
                             "kind": "WithinRange", 
                             "maxvalue": 2147483647, 
-                            "minvalue": 1, 
+                            "minvalue": -2147483648, 
                             "value_comes_from": [
                                 {
                                     "column": 26, 
@@ -8397,12 +8147,12 @@
                 {
                     "location": [
                         {
-                            "column": 31, 
-                            "line": 17
+                            "column": 5, 
+                            "line": 16
                         }, 
                         {
-                            "column": 31, 
-                            "line": 17
+                            "column": 5, 
+                            "line": 16
                         }
                     ], 
                     "message": "taking True path", 
@@ -8647,6 +8397,256 @@
                 {
                     "location": [
                         {
+                            "column": 31, 
+                            "line": 17
+                        }, 
+                        {
+                            "column": 31, 
+                            "line": 17
+                        }
+                    ], 
+                    "message": null, 
+                    "variables": {
+                        "<retval>": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "D.12024": {
+                            "gcctype": "int", 
+                            "kind": "ConcreteValue", 
+                            "value": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "D.12027": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "D.12028": {
+                            "gcctype": "long int", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "args": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "args", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "args->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('args')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 5
+                                }
+                            ]
+                        }, 
+                        "count": {
+                            "gcctype": "int", 
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "count.0": {
+                            "gcctype": "int", 
+                            "kind": "WithinRange", 
+                            "maxvalue": 2147483647, 
+                            "minvalue": 1, 
+                            "value_comes_from": [
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }, 
+                                {
+                                    "column": 26, 
+                                    "line": 10
+                                }
+                            ]
+                        }, 
+                        "i": {
+                            "gcctype": "long int", 
+                            "kind": "ConcreteValue", 
+                            "value": 0, 
+                            "value_comes_from": [
+                                {
+                                    "column": 12, 
+                                    "line": 16
+                                }, 
+                                {
+                                    "column": 12, 
+                                    "line": 16
+                                }
+                            ]
+                        }, 
+                        "item": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "UninitializedData", 
+                            "value_comes_from": [
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }, 
+                                {
+                                    "column": 1, 
+                                    "line": 6
+                                }
+                            ]
+                        }, 
+                        "list": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "ConcreteValue", 
+                            "value": 0, 
+                            "value_comes_from": [
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }, 
+                                {
+                                    "column": 10, 
+                                    "line": 14
+                                }
+                            ]
+                        }, 
+                        "self": {
+                            "gcctype": "struct PyObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "self", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_refcnt": {
+                            "actual_ob_refcnt": {
+                                "lower_bound_of_other_refs": 1, 
+                                "refs_we_own": 0
+                            }, 
+                            "expected_ob_refcnt": {
+                                "pointers_to_this": []
+                            }, 
+                            "gcctype": "Py_ssize_t", 
+                            "kind": "RefcountValue", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }, 
+                        "self->ob_type": {
+                            "gcctype": "struct PyTypeObject *", 
+                            "kind": "PointerToRegion", 
+                            "target": "region-for-type-of-arg-gcc.ParmDecl('self')", 
+                            "value_comes_from": [
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }, 
+                                {
+                                    "column": 44, 
+                                    "line": 4
+                                }
+                            ]
+                        }
+                    }
+                }, 
+                {
+                    "location": [
+                        {
                             "column": 14, 
                             "line": 17
                         }, 
@@ -8655,7 +8655,7 @@
                             "line": 17
                         }
                     ], 
-                    "message": null, 
+                    "message": "when PyLong_FromLong() succeeds", 
                     "variables": {
                         "<retval>": {
                             "gcctype": "struct PyObject *", 
@@ -8907,7 +8907,7 @@
                             "line": 18
                         }
                     ], 
-                    "message": "when PyLong_FromLong() succeeds", 
+                    "message": null, 
                     "variables": {
                         "<retval>": {
                             "gcctype": "struct PyObject *", 

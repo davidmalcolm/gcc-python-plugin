@@ -41,6 +41,9 @@ The plugin has the following requirements:
   * graphviz: many of the interesting examples use "dot" to draw diagrams
     (e.g. control-flow graphs), so it's worth having graphviz installed.
 
+Prebuilt-packages
+=================
+
 Various distributions ship with pre-built copies of the plugin.  If you're
 using Fedora, you can install the plugin via RPM on Fedora 16 onwards using:
 
@@ -59,8 +62,10 @@ for the Python 3 build of the plugin.
 Building the plugin from source
 ===============================
 
+Build-time dependencies
+-----------------------
 If you plan to build the plugin from scratch, you'll need the build-time
-dependencides.
+dependencies.
 
 On a Fedora box you can install them by running the following as root:
 
@@ -75,6 +80,12 @@ for building against Python 2, or:
    yum install gcc-plugin-devel python3-devel python3-six python3-pygments graphviz
 
 when building for Python 3.
+
+Building the code
+------------------
+You can obtain the source code from git by using::
+
+   $ git clone git://git.fedorahosted.org/gcc-python-plugin.git
 
 To build the plugin, run:
 
