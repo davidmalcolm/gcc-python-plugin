@@ -171,8 +171,9 @@ img {
     font-size: 12px;
     padding: 1em;
     background: white;
-    box-flex: 1;
     line-height: 1.33;
+    min-width: 40em;
+    box-flex: 3;
 }
 .source > header {
     display: box;
@@ -279,8 +280,9 @@ img {
     font-size: 12px;
     top: 0.5em;
     height: 100%;
-    width: 24em;
+    min-width: 25em;
     border-left: 1px solid hsl(0, 0%, 70%);
+    box-flex: 1;
 }
 .states li {
     position: relative;

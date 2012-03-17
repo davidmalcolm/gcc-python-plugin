@@ -145,7 +145,7 @@ class HtmlPage(object):
         """make the footer"""
         return E.E.footer(
             E.ATTR(id='footer'),
-            E.P(' | '.join((
+            E.P(u' \xa0|\xa0 '.join((
                 'Hackathon 7.0',
                 'Buck G, Alex M, Jason M',
                 'Yelp HQ 2012',
