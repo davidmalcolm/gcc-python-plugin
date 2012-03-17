@@ -371,9 +371,12 @@ td.selected .flow-dot {
     background-color: #ffe181;
 }
 
-
-
 #notes {
     background: yellow;
     min-width: 200px;
+}
+
+.note:first-of-type::before {
+    content: url('images/exclamation.png');
+    padding: 5px;
 }
