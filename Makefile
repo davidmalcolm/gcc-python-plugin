@@ -187,12 +187,14 @@ docs/passes.svg: plugin generate-passes-svg.py
 # The following assumes that VERSION has been set e.g.
 #   $ make tarball VERSION=0.4
 
-tarball:
+$(HOME)/rpmbuild/SOURCES/%.tar.gz:
 	-git tag -d v$(VERSION)
 	git tag -a v$(VERSION) -m"$(VERSION)"
-	git archive --format=tar --prefix=gcc-python-plugin-$(VERSION)/ v$(VERSION) | gzip > gcc-python-plugin-$(VERSION).tar.gz
-	sha256sum gcc-python-plugin-$(VERSION).tar.gz
-	cp gcc-python-plugin-$(VERSION).tar.gz ~/rpmbuild/SOURCES/
+	git archive --format=tar --prefix=$*/ v$(VERSION) | gzip > $*.tar.gz
+	sha256sum $*.tar.gz
+	cp $*.tar.gz $@
+
+tarball: $(HOME)/rpmbuild/SOURCES/gcc-python-plugin-$(VERSION).tar.gz
 
 # Notes to self on making a release
 # ---------------------------------
