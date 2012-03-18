@@ -188,6 +188,7 @@ docs/passes.svg: plugin generate-passes-svg.py
 #   $ make tarball VERSION=0.4
 
 $(HOME)/rpmbuild/SOURCES/%.tar.gz:
+	test -n "$(VERSION)"
 	-git tag -d v$(VERSION)
 	git tag -a v$(VERSION) -m"$(VERSION)"
 	git archive --format=tar --prefix=$*/ v$(VERSION) | gzip > $*.tar.gz
