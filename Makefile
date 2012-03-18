@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+.PHONY: all clean debug dump_gimple plugin show-ssa tarball test-suite testcpychecker testcpybuilder
+
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
   gcc-python-attribute.c \
