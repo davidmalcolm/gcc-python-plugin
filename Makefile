@@ -157,7 +157,7 @@ debug: plugin
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
 demo: plugin
-	./gcc-with-cpychecker $(shell $(PYTHON_CONFIG) --cflags) demo.c
+	./gcc-with-cpychecker $(PYTHON_CFLAGS) demo.c
 
 json-examples: plugin
 	./gcc-with-cpychecker -I/usr/include/python2.7 libcpychecker/html/test/example1/bug.c
