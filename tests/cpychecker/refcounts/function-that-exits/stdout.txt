@@ -4,9 +4,9 @@ Trace 0:
     'taking True path'
     'PyString_AsString() returns ob_sval'
     'not returning from exit'
-  Region("region-for-arg-gcc.ParmDecl('obj')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
-    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+  region for gcc.ParmDecl('obj') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('obj')")
+    str(): region for gcc.ParmDecl('obj') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
   PyStringObject allocated at tests/cpychecker/refcounts/function-that-exits/input.c:33:
@@ -22,9 +22,9 @@ Trace 1:
     'when PyObject_Repr() fails'
     'taking False path'
     'not returning from exit'
-  Region("region-for-arg-gcc.ParmDecl('obj')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
-    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+  region for gcc.ParmDecl('obj') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('obj')")
+    str(): region for gcc.ParmDecl('obj') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/function-that-exits/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
   Exception:

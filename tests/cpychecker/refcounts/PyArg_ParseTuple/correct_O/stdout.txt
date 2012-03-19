@@ -8,14 +8,14 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('object from arg "O"', gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=32)) from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:32
     r->ob_refcnt: (Py_ssize_t)val [-0x7fffffffffffffff <= val <= 0x7fffffffffffffff] from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:42
     r->ob_type: None
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
@@ -29,14 +29,14 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=34), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c:34
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:

@@ -5,9 +5,9 @@ Trace 0:
   Return value:
     repr(): WithinRange(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Size/correct/input.c', line=29), minvalue=0, maxvalue=0x7fffffffffffffff)
     str(): (Py_ssize_t)val [0 <= val <= 0x7fffffffffffffff] from tests/cpychecker/refcounts/PyString_Size/correct/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('obj')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
-    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+  region for gcc.ParmDecl('obj') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('obj')")
+    str(): region for gcc.ParmDecl('obj') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Size/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
   Exception:
@@ -20,9 +20,9 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='Py_ssize_t', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Size/correct/input.c', line=29), value=-1)
     str(): (Py_ssize_t)-1 from tests/cpychecker/refcounts/PyString_Size/correct/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('obj')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('obj')")
-    str(): Region("region-for-arg-gcc.ParmDecl('obj')")
+  region for gcc.ParmDecl('obj') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('obj')")
+    str(): region for gcc.ParmDecl('obj') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_Size/correct/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
   Exception:

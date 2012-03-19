@@ -17,14 +17,14 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('PyTupleObject', gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=33)) from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33
     r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyTuple_Type')))
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyLongObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:39:
@@ -62,14 +62,14 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -108,14 +108,14 @@ Trace 2:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -154,14 +154,14 @@ Trace 3:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -201,14 +201,14 @@ Trace 4:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -247,14 +247,14 @@ Trace 5:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -294,14 +294,14 @@ Trace 6:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -341,14 +341,14 @@ Trace 7:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -389,14 +389,14 @@ Trace 8:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=55), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:55
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -431,14 +431,14 @@ Trace 9:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=48), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:48
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -469,14 +469,14 @@ Trace 10:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=48), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:48
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -507,14 +507,14 @@ Trace 11:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=48), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:48
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -546,14 +546,14 @@ Trace 12:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=48), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:48
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -580,14 +580,14 @@ Trace 13:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=42), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:42
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -610,14 +610,14 @@ Trace 14:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=42), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:42
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyTupleObject allocated at tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:33:
@@ -636,14 +636,14 @@ Trace 15:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=35), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c:35
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyTuple_SetItem/correct_multiple/input.c', line=23), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:

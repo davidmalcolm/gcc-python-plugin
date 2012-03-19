@@ -8,14 +8,14 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('new ref from call to PyObject_CallMethod', gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30)) from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
     r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), region=Region('PyTypeObject for new ref from call to PyObject_CallMethod'))
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30:
@@ -34,14 +34,14 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyLongObject allocated at tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30:
@@ -60,14 +60,14 @@ Trace 2:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=30), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c:30
-  Region("region-for-arg-gcc.ParmDecl('self')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('self')")
-    str(): Region("region-for-arg-gcc.ParmDecl('self')")
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
-  Region("region-for-arg-gcc.ParmDecl('args')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('args')")
-    str(): Region("region-for-arg-gcc.ParmDecl('args')")
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_CallMethod/correct-code-N/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:

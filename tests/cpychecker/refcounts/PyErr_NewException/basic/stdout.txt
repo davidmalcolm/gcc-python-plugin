@@ -8,14 +8,14 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('new exception object from PyErr_NewException', gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=29)) from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
     r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=29), region=Region('PyTypeObject for new exception object from PyErr_NewException'))
-  Region("region-for-arg-gcc.ParmDecl('base')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('base')")
-    str(): Region("region-for-arg-gcc.ParmDecl('base')")
+  region for gcc.ParmDecl('base') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('base')")
+    str(): region for gcc.ParmDecl('base') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('base')"))
-  Region("region-for-arg-gcc.ParmDecl('dict')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('dict')")
-    str(): Region("region-for-arg-gcc.ParmDecl('dict')")
+  region for gcc.ParmDecl('dict') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('dict')")
+    str(): region for gcc.ParmDecl('dict') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('dict')"))
   Exception:
@@ -29,14 +29,14 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=29), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('base')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('base')")
-    str(): Region("region-for-arg-gcc.ParmDecl('base')")
+  region for gcc.ParmDecl('base') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('base')")
+    str(): region for gcc.ParmDecl('base') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('base')"))
-  Region("region-for-arg-gcc.ParmDecl('dict')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('dict')")
-    str(): Region("region-for-arg-gcc.ParmDecl('dict')")
+  region for gcc.ParmDecl('dict') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('dict')")
+    str(): region for gcc.ParmDecl('dict') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('dict')"))
   Exception:
@@ -47,14 +47,14 @@ Trace 2:
     'when treating unknown char * from tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:27 as NULL'
   error: NullPtrArgument()
   error: possibly calling PyErr_NewException with NULL as argument 1 (name) at tests/cpychecker/refcounts/PyErr_NewException/basic/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('base')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('base')")
-    str(): Region("region-for-arg-gcc.ParmDecl('base')")
+  region for gcc.ParmDecl('base') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('base')")
+    str(): region for gcc.ParmDecl('base') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('base')"))
-  Region("region-for-arg-gcc.ParmDecl('dict')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('dict')")
-    str(): Region("region-for-arg-gcc.ParmDecl('dict')")
+  region for gcc.ParmDecl('dict') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('dict')")
+    str(): region for gcc.ParmDecl('dict') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_NewException/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('dict')"))
   Exception:

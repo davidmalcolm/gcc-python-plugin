@@ -5,9 +5,9 @@ Trace 0:
   Return value:
     repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=29))
     str(): unknown void * from tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('capsule')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('capsule')")
-    str(): Region("region-for-arg-gcc.ParmDecl('capsule')")
+  region for gcc.ParmDecl('capsule') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('capsule')")
+    str(): region for gcc.ParmDecl('capsule') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('capsule')"))
   Exception:
@@ -20,9 +20,9 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='void *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=29), value=0)
     str(): (void *)0 from tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('capsule')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('capsule')")
-    str(): Region("region-for-arg-gcc.ParmDecl('capsule')")
+  region for gcc.ParmDecl('capsule') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('capsule')")
+    str(): region for gcc.ParmDecl('capsule') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('capsule')"))
   Exception:

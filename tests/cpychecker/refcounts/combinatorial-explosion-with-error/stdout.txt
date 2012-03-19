@@ -41,9 +41,9 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 2 + N where N >= 31
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -97,9 +97,9 @@ Trace 1:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -153,9 +153,9 @@ Trace 2:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -209,9 +209,9 @@ Trace 3:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 4 + N where N >= 29
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -265,9 +265,9 @@ Trace 4:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 1 + N where N >= 32
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -321,9 +321,9 @@ Trace 5:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 2 + N where N >= 31
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -377,9 +377,9 @@ Trace 6:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 2 + N where N >= 31
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -433,9 +433,9 @@ Trace 7:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -489,9 +489,9 @@ Trace 8:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 2 + N where N >= 31
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -545,9 +545,9 @@ Trace 9:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -601,9 +601,9 @@ Trace 10:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -657,9 +657,9 @@ Trace 11:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 4 + N where N >= 29
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -713,9 +713,9 @@ Trace 12:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 2 + N where N >= 31
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -769,9 +769,9 @@ Trace 13:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -825,9 +825,9 @@ Trace 14:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -881,9 +881,9 @@ Trace 15:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 4 + N where N >= 29
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -937,9 +937,9 @@ Trace 16:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 3 + N where N >= 30
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -993,9 +993,9 @@ Trace 17:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 4 + N where N >= 29
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -1049,9 +1049,9 @@ Trace 18:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 4 + N where N >= 29
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:
@@ -1105,9 +1105,9 @@ Trace 19:
     str(): (struct PyObject *)&RegionOnHeap('PyLongObject', gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34)) from tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:34
     r->ob_refcnt: refs: 5 + N where N >= 28
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyLong_Type')))
-  Region("region-for-arg-gcc.ParmDecl('m')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('m')")
-    str(): Region("region-for-arg-gcc.ParmDecl('m')")
+  region for gcc.ParmDecl('m') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('m')")
+    str(): region for gcc.ParmDecl('m') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c', line=32), region=Region("region-for-type-of-arg-gcc.ParmDecl('m')"))
   PyDictObject allocated at tests/cpychecker/refcounts/combinatorial-explosion-with-error/input.c:45:

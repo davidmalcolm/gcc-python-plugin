@@ -5,9 +5,9 @@ Trace 0:
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=31), value=0)
     str(): (int)0 from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31
-  Region("region-for-arg-gcc.ParmDecl('module')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('module')")
-    str(): Region("region-for-arg-gcc.ParmDecl('module')")
+  region for gcc.ParmDecl('module') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('module')")
+    str(): region for gcc.ParmDecl('module') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('module')"))
   RegionForGlobal(gcc.VarDecl('fooType')):
@@ -25,9 +25,9 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=31), value=-1)
     str(): (int)-1 from tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31
-  Region("region-for-arg-gcc.ParmDecl('module')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('module')")
-    str(): Region("region-for-arg-gcc.ParmDecl('module')")
+  region for gcc.ParmDecl('module') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('module')")
+    str(): region for gcc.ParmDecl('module') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c', line=29), region=Region("region-for-type-of-arg-gcc.ParmDecl('module')"))
   RegionForGlobal(gcc.VarDecl('fooType')):

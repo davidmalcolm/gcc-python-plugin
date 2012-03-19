@@ -7,14 +7,14 @@ Trace 0:
     str(): (struct PyObject *)&RegionOnHeap('new ref from PyObject_GenericGetAttr()', gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=29)) from tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c:29
     r->ob_refcnt: refs: 1 + N where N >= 0
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=29), region=Region('PyTypeObject for new ref from PyObject_GenericGetAttr()'))
-  Region("region-for-arg-gcc.ParmDecl('o')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('o')")
-    str(): Region("region-for-arg-gcc.ParmDecl('o')")
+  region for gcc.ParmDecl('o') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('o')")
+    str(): region for gcc.ParmDecl('o') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
-  Region("region-for-arg-gcc.ParmDecl('name')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('name')")
-    str(): Region("region-for-arg-gcc.ParmDecl('name')")
+  region for gcc.ParmDecl('name') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('name')")
+    str(): region for gcc.ParmDecl('name') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
   Exception:
@@ -27,14 +27,14 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=29), value=0)
     str(): (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c:29
-  Region("region-for-arg-gcc.ParmDecl('o')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('o')")
-    str(): Region("region-for-arg-gcc.ParmDecl('o')")
+  region for gcc.ParmDecl('o') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('o')")
+    str(): region for gcc.ParmDecl('o') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
-  Region("region-for-arg-gcc.ParmDecl('name')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('name')")
-    str(): Region("region-for-arg-gcc.ParmDecl('name')")
+  region for gcc.ParmDecl('name') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('name')")
+    str(): region for gcc.ParmDecl('name') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericGetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
   Exception:

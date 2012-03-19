@@ -7,9 +7,9 @@ Trace 0:
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=33), value=0)
     str(): (int)0 from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
-  Region("region-for-arg-gcc.ParmDecl('item')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('item')")
-    str(): Region("region-for-arg-gcc.ParmDecl('item')")
+  region for gcc.ParmDecl('item') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('item')")
+    str(): region for gcc.ParmDecl('item') on stack
     r->ob_refcnt: refs: 1 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
@@ -24,9 +24,9 @@ Trace 1:
   Return value:
     repr(): ConcreteValue(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=33), value=-1)
     str(): (int)-1 from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
-  Region("region-for-arg-gcc.ParmDecl('item')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('item')")
-    str(): Region("region-for-arg-gcc.ParmDecl('item')")
+  region for gcc.ParmDecl('item') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('item')")
+    str(): region for gcc.ParmDecl('item') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
@@ -37,9 +37,9 @@ Trace 2:
     'when treating unknown void * from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:30 as NULL'
   error: NullPtrArgument()
   error: possibly calling PyList_Append with NULL as argument 1 (list) at tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
-  Region("region-for-arg-gcc.ParmDecl('item')"):
-    repr(): Region("region-for-arg-gcc.ParmDecl('item')")
-    str(): Region("region-for-arg-gcc.ParmDecl('item')")
+  region for gcc.ParmDecl('item') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('item')")
+    str(): region for gcc.ParmDecl('item') on stack
     r->ob_refcnt: refs: 0 + N where N >= 1
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
