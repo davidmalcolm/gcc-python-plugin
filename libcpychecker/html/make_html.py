@@ -11,8 +11,8 @@ from pygments import highlight
 from pygments.lexers.compiled import CLexer
 from pygments.formatters.html import HtmlFormatter
 
-import copy
-import itertools
+from copy import deepcopy
+from itertools import islice
 from json import load
 
 class HtmlPage(object):
@@ -43,14 +43,19 @@ class HtmlPage(object):
         )
         head.extend(
             E.SCRIPT(src=js + '.js')
-            for js in ('extlib/prefixfree-1.0.4.min', 'extlib/jquery-1.7.1.min', 'script')
+            for js in (
+                'extlib/prefixfree-1.0.4.min',
+                'extlib/jquery-1.7.1.min',
+                'script'
+            )
         )
         return head
 
     def raw_code(self):
+        """Get the correct lines from the code file"""
         first, last = self.data['function']['lines']
         # Line numbers are ONE-based
-        return ''.join(itertools.islice(self.codefile, first - 1, last))
+        return ''.join(islice(self.codefile, first - 1, last))
 
     def code(self):
         """generate the contents of the #code section"""
@@ -80,9 +85,6 @@ class HtmlPage(object):
 
     def header(self):
         """Make the header bar of the webpage"""
-        def report_links():
-            for i in range(len(self.data['reports'])):
-                yield E.A(str(i + 1), href="#state{0}".format(i + 1))
 
         return E.E.header(
             E.ATTR(id='header'),
@@ -110,7 +112,10 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='report-pagination'),
                     E.H3('Report'),
-                    *report_links()
+                    *(
+                        E.A(str(i + 1), href="#state{0}".format(i + 1))
+                        for i in range(len(self.data['reports']))
+                    )
                 ),
                 E.DIV(
                     E.ATTR(id='bug-toggle'),
@@ -140,83 +145,92 @@ class HtmlPage(object):
         """make the footer"""
         return E.E.footer(
             E.ATTR(id='footer'),
-            E.P(
-                u'Hackathon 7.0 | '
-                u'Buck G, Alex M, Jason M | '
-                u'Yelp HQ 2012',
-            ),
+            E.P(u' \xa0|\xa0 '.join((
+                'Hackathon 7.0',
+                'Buck G, Alex M, Jason M',
+                'Yelp HQ 2012',
+            )))
         )
 
     def states(self):
+        """Return an ordered-list of states, for each report."""
         for report in self.data['reports']:
-            lis = []
-            last_line = None
+            annotations = E.OL({'class': 'states'})
+
+            prevline = None
+            lineno_to_index = {}
+            index = -1
             for state in report['states']:
                 if not state['location'] or not state['message']:
                     continue
 
                 line = state['location'][0]['line']
-                p = E.P(state['message'])
+                state = E.P(state['message'])
 
-                if lis and line == last_line:
-                    # Merge adjacent messages for the same line together
-                    lis[-1].append(p)
-                else:
-                    lis.append(E.LI(
-                        {'data-line': str(line)},
-                        p,
-                    ))
+                # We try to combine with the previous state.
+                if line != prevline:
+                    child = E.LI({'data-line': str(line)})
+                    annotations.append(child)
+                    index += 1
 
-                last_line = line
+                child.append(state)
 
-            final_li = E.LI({'data-line': str(self.data['function']['lines'][-1] - 1)})
+                lineno_to_index[line] = (index, child)
+                prevline = line
+
             for note in report['notes']:
-                final_li.append(
-                    E.P(note['message']),
-                )
-            lis.append(final_li)
+                line = note['location'][0]['line']
+                note = E.P({'class':'note'}, note['message'])
 
-            html = E.OL(
-                {'class': 'states'},
-                *lis
-            )
+                # Put this note on the last matching state, if possible
+                for ann in reversed(tuple(annotations)):
+                    annline = int(ann.attrib['data-line'])
+                    if line == annline:
+                        ann.append(note)
+                        break
+                    elif line > annline:
+                        ann.addnext(
+                                E.LI({'data-line': str(line)}, note)
+                        )
+                        break
+                else:
+                    annotations.insert(0, 
+                            E.LI({'data-line': str(line)}, note)
+                    )
 
-            yield html, report['message']
+            yield annotations, report['message']
 
     def body(self):
         """The BODY of the html document"""
-        reports = []
+        reports = E.OL(id='reports')
         code = self.code()
 
         for i, (state_html, state_problem) in enumerate(self.states(), 1):
             reports.append(
-                E.LI(
-                    E.ATTR(id="state{0}".format(i)),
-                    E.DIV(
-                        E.CLASS('source'),
-                        E.E.header(
-                            E.DIV(
-                                E.CLASS('error'),
-                                state_problem,
+                    E.LI(
+                        E.ATTR(id="state{0}".format(i)),
+                        E.DIV(
+                            E.CLASS('source'),
+                            E.E.header(
+                                E.DIV(
+                                    E.CLASS('error'),
+                                    state_problem,
+                                ),
+                                E.DIV(
+                                    E.CLASS('report-count'),
+                                    E.H3('Report'),
+                                    str(i),
+                                ),
                             ),
-                            E.DIV(
-                                E.CLASS('report-count'),
-                                E.H3('Report'),
-                                str(i),
-                            ),
+                            deepcopy(code),
                         ),
-                        copy.deepcopy(code),
+                        state_html,
                     ),
-                    state_html,
-                ),
             )
 
         return E.BODY(
             self.header(),
-            E.OL(
-                E.ATTR(id='reports'),
-                *reports
-            ),
+            reports,
             self.footer(),
         )
 
