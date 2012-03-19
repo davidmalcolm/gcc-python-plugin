@@ -366,8 +366,8 @@ var.leak {
 td .flow-dot,
 .states li,
 .states li h2 {
-    -gecko-transition-duration: 0.25s;
-    -gecko-transition-timing-function: ease-out;
+    -moz-transition-duration: 0.25s;
+    -moz-transition-timing-function: ease-out;
 }
 
 td.selected .flow-dot {
