@@ -40,6 +40,7 @@ Contents:
    attributes.rst
    cpychecker.rst
    success.rst
+   getting-involved.rst
    misc.rst
    release-notes.rst
    appendices.rst

@@ -124,54 +124,7 @@ installed (http://sphinx.pocoo.org/), you can regenerate these docs using::
 within the `docs` directory.  Sphinx is the `python-sphinx` package on a
 Fedora/RHEL box.
 
-
-Debugging
----------
-
-gcc can launch subprocesses, so it can be fiddly to debug.
-
-When debugging, I've generally been adding "-v" to the gcc command line
-(verbose), so that it outputs the commands that it's running.  I can then use
-this to launch::
-
-   $ gdb --args PROGRAM WITH ARGS
-
-This approach to obtaining a debuggable process doesn't seem to work in the
-presence of `ccache`, in that it writes to a temporary directory with a name
-that embeds the process ID each time, which then gets deleted.  I've worked
-around this by uninstalling ccache, but apparently setting::
-
-   CCACHE_DISABLE=1
-
-before invoking `gcc -v` ought to also work around this.
-
-I've also been running into this error from gdb::
-
-  [Thread debugging using libthread_db enabled]
-  Cannot find new threads: generic error
-
-Apparently this happens when debugging a process that uses dlopen to load a
-library that pulls in libpthread (as does gcc when loading in my plugin), and
-a workaround is to link cc1 with -lpthread
-
-The workaround I've been using (to avoid the need to build my own gcc) is to
-use LD_PRELOAD, either like this::
-
-   LD_PRELOAD=libpthread.so.0 gdb --args ./cc1 ...
-
-or this::
-
-   (gdb) set environment LD_PRELOAD libpthread.so.0
-
-Handy tricks
-
-Given a (PyGccTree *) named "self"::
-
-   (gdb) call debug_tree(self->t)
-
-will use GCC's prettyprinter to dump the embedded (tree*) and its descendants
-to stderr; it can help to put a breakpoint on that function too, to explore the
-insides of that type.
+More detailed documentation can be seen within `docs/getting-involved.rst`
 
 Enjoy!
 David Malcolm <dmalcolm@redhat.com>
