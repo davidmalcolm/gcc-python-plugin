@@ -55,7 +55,41 @@ Ideas for using the plugin
 Here are some ideas for possible uses of the plugin.  Please email the
 plugin's mailing list if you get any of these working (or if you have other
 ideas!).  Some guesses as to the usefulness and difficulty level are given in
-parentheses after some of the ideas.
+parentheses after some of the ideas.  Some of them might require new attributes,
+methods and/or classes to be added to the plugin (to expose more of GCC
+internals), but you can always ask on the mailing list if you need help.
+
+* extend the libcpychecker code to add checking for the standard C library.
+  For example, given this buggy C code:
+
+  .. code-block:: c
+
+    int foo() {
+         FILE *src, *dst;
+         src = fopen("source.txt", "r");
+         if (!src) return -1;
+
+         dst = fopen("dest.txt", "w");
+         if (!dst) return -1;  /* <<<< BUG: this error-handling leaks "src" */
+
+         /* etc, copy src to dst (or whatever) */
+    }
+
+  it would be great if the checker could emit a compile-time warning about
+  the buggy error-handling path above (or indeed any paths through
+  functions that leak `FILE*`, file descriptors, or other resources). The
+  way to do this (I think) is to add a new `Facet` subclass to
+  libcpychecker, analogous to the `CPython` facet subclass that already
+  exists (though the facet handling is probably rather messy right now).
+  (useful but difficult, and a lot of work)
+
+* extend the libcpychecker code to add checking for other libraries.  For
+  example:
+
+  * reference-count checking within `glib <http://developer.gnome.org/glib/>`_
+    and gobject
+
+  (useful for commonly-used C libraries but difficult, and a lot of work)
 
 * detection of C++ variables with non-trivial constructors that will need to be
   run before `main` - globals and static locals (useful, ought to be fairly
