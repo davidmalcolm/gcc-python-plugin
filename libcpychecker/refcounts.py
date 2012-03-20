@@ -3916,33 +3916,23 @@ def warn_about_NULL_without_exception(v_return,
                        % v_return.value))
                 w.add_trace(trace, ExceptionStateAnnotator())
 
-def check_refcounts(fun, dump_traces=False, show_traces=False,
-                    show_possible_null_derefs=False,
-                    show_timings=False):
+
+def impl_check_refcounts(fun, dump_traces=False,
+                    show_possible_null_derefs=False):
     """
-    The top-level function of the refcount checker, checking the refcounting
-    behavior of a function
+    Inner implementation of the refcount checker, checking the refcounting
+    behavior of a function, returning a Reporter instance.
+
+    Used by check_refcounts, but also exposed for use by unit tests
+    that want to get at the Reporter directly (e.g. for JSON output)
 
     fun: the gcc.Function to be checked
 
     dump_traces: bool: if True, dump information about the traces through
     the function to stdout (for self tests)
-
-    show_traces: bool: if True, display a diagram of the state transition graph
-
-    show_timings: bool: if True, add timing information to stderr
     """
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
-
-    log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
-
-    # show_timings = 1
-
-    if show_timings:
-        import time
-        start_cpusecs = time.clock()
-        gcc.inform(fun.start, 'Analyzing reference-counting within %s' % fun.decl.name)
 
     check_isinstance(fun, gcc.Function)
 
@@ -3954,15 +3944,6 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
     facets = {}
     if get_PyObject():
         facets['cpython'] = CPython
-
-    if show_traces:
-        from libcpychecker.visualizations import StateGraphPrettyPrinter
-        sg = StateGraph(fun, log, MyState)
-        sgpp = StateGraphPrettyPrinter(sg)
-        dot = sgpp.to_dot()
-        #dot = sgpp.extra_items()
-        # print(dot)
-        invoke_dot(dot)
 
     limits=Limits(maxtrans=256)
 
@@ -3999,6 +3980,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     rep = Reporter()
 
+    # Iterate through all traces, adding reports to the Reporter:
     for i, trace in enumerate(traces):
         trace.log(log, 'TRACE %i' % i)
         if trace.err:
@@ -4070,6 +4052,48 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     # (all traces analysed)
 
+    return rep
+
+
+def check_refcounts(fun, dump_traces=False, show_traces=False,
+                    show_possible_null_derefs=False,
+                    show_timings=False):
+    """
+    The top-level function of the refcount checker, checking the refcounting
+    behavior of a function
+
+    fun: the gcc.Function to be checked
+
+    dump_traces: bool: if True, dump information about the traces through
+    the function to stdout (for self tests)
+
+    show_traces: bool: if True, display a diagram of the state transition graph
+
+    show_timings: bool: if True, add timing information to stderr
+    """
+
+    log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
+
+    # show_timings = 1
+
+    if show_timings:
+        import time
+        start_cpusecs = time.clock()
+        gcc.inform(fun.start, 'Analyzing reference-counting within %s' % fun.decl.name)
+
+    if show_traces:
+        from libcpychecker.visualizations import StateGraphPrettyPrinter
+        sg = StateGraph(fun, log, MyState)
+        sgpp = StateGraphPrettyPrinter(sg)
+        dot = sgpp.to_dot()
+        #dot = sgpp.extra_items()
+        # print(dot)
+        invoke_dot(dot)
+
+    rep = impl_check_refcounts(fun,
+                               dump_traces,
+                               show_possible_null_derefs)
+
     # Organize the Report instances into equivalence classes, simplifying
     # the list of reports:
     rep.remove_duplicates()
@@ -4104,4 +4128,4 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         dot = cfg_to_dot(fun.cfg, fun.decl.name)
         invoke_dot(dot)
 
-
+    return rep

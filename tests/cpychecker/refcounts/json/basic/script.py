@@ -16,12 +16,9 @@
 #   <http://www.gnu.org/licenses/>.
 
 # Verify that the JSON serialization of error reports is working
-# TODO: For now, we're only verifying the JSON form of State instances; this
-# should be generalized so that we also verify the JSON form of a whole
-# error report
 
 import gcc
-from libcpychecker import get_traces
+from libcpychecker.refcounts import impl_check_refcounts
 
 def assertEqual(lhs, rhs):
     if lhs != rhs:
@@ -32,14 +29,35 @@ def verify_json(optpass, fun):
     # FIXME: should we be adding our own pass for this?
     if optpass.name == '*warn_function_return':
         if fun:
-            traces = get_traces(fun)
+            rep = impl_check_refcounts(fun)
+            js = rep.to_json(fun)
+            if 0:
+                from json import dumps
+                print(dumps(js, sort_keys=True, indent=4))
 
-            # We should have a single trace
-            assert len(traces) == 1
-            state = traces[0].states[-1]
+            # Verify the top-level JSON that's emitted:
+            assertEqual(js['filename'], 'tests/cpychecker/refcounts/json/basic/input.c')
+            assertEqual(js['function']['name'], 'losing_refcnt_of_none')
+            assertEqual(js['function']['lines'][0], 22)
+            assertEqual(js['function']['lines'][1], 28)
 
-            # Verify the JSON serialization of the endstate:
-            statejs = traces[0].states[-1].as_json('end state')
+            # Verify the JSON for the single error report:
+            assertEqual(len(js['reports']), 1)
+            r = js['reports'][0]
+            assertEqual(r['severity'], "warning")
+            assertEqual(r['message'], "ob_refcnt of return value is 1 too low")
+            assertEqual(len(r['notes']), 4)
+            assertEqual(r['notes'][0]['message'],
+                        "was expecting final ob_refcnt to be N + 1 (for some unknown N)")
+            assertEqual(r['notes'][1]['message'],
+                        "due to object being referenced by: return value")
+            assertEqual(r['notes'][2]['message'],
+                        "but final ob_refcnt is N + 0")
+            assertEqual(r['notes'][3]['message'],
+                        "consider using \"Py_RETURN_NONE;\"")
+
+            # Verify the JSON serialization of the endstate within the report:
+            statejs = r['states'][-1]
 
             if 0:
                 from json import dumps
@@ -50,7 +68,7 @@ def verify_json(optpass, fun):
                 assert statejs['location'][i]['column'] > 0
                 assertEqual(statejs['location'][i]['line'], 26)
 
-            assertEqual(statejs['message'], 'end state')
+            assertEqual(statejs['message'], None)
 
             vars = statejs['variables']
 
