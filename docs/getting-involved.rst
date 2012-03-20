@@ -49,6 +49,50 @@ There is also a clone of the repository on github here:
 
    https://github.com/davidmalcolm/gcc-python-plugin
 
+Ideas for using the plugin
+--------------------------
+
+Here are some ideas for possible uses of the plugin.  Please email the
+plugin's mailing list if you get any of these working (or if you have other
+ideas!).  Some guesses as to the usefulness and difficulty level are given in
+parentheses after some of the ideas.
+
+* detection of C++ variables with non-trivial constructors that will need to be
+  run before `main` - globals and static locals (useful, ought to be fairly
+  easy)
+
+* finding unused parameters in definitions of non-virtual functions, so that
+  they can be removed - possibly removing further dead code.  Some care would
+  be needed for function pointers.  (useful, ought to be fairly easy)
+
+* detection of bad format strings (see e.g. https://lwn.net/Articles/478139/ )
+
+* compile gcc's own test suite with the cpychecker code, to reuse their
+  coverage of C and thus shake out more bugs in the checker (useful and easy)
+
+* a new `PyPy gc root finder <http://pypy.readthedocs.org/en/latest/config/translation.gcrootfinder.html>`_,
+  running inside GCC (useful for PyPy, but difficult)
+
+* reimplement `GCC-XML <http://www.gccxml.org/HTML/Index.html>`_ in Python
+  (probably fairly easy, but does anyone still use GCC-XML now that GCC
+  supports plugins?)
+
+* .gir generation for `GObject Introspection <http://live.gnome.org/GObjectIntrospection>`_
+  (unknown if the GNOME developers are actually interested in this though)
+
+* create an interface that lets you view the changing internal representation
+  of each function as it's modified by the various optimization pases: lets
+  you see which passes change a given function, and what the changes are
+  (might be useful as a teaching tool, and for understanding GCC)
+
+* add array bounds checking to C (to what extent can GCC already do this?)
+
+* `taint mode <http://perldoc.perl.org/perlsec.html#Taint-mode>`_ for GCC!
+  e.g. detect usage of data from network/from disk/etc; identify certain data
+  as untrusted, and track how it gets used; issue a warning (very useful, but
+  very difficult: how does untainting work? what about pointers and memory
+  regions?  is it just too low-level?)
+
 
 Tour of the C code
 ------------------
