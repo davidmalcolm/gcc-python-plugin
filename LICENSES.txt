@@ -1,0 +1,24 @@
+The C and Python code is licensed under the GPLv3 or later (see COPYING and the
+per-file license information).
+
+There are copies of various JavaScript and CSS libraries embedded within the
+source tree, which have their own licenses as follows:
+
+  libcpychecker/html/extlib/jquery-1.7.1.min.js:
+     jquery.org/license (MIT or GPLv2)
+
+  libcpychecker/html/extlib/prefixfree-1.0.4.min.js:
+     MIT license
+
+  libcpychecker/html/extlib/reset-20110126.css:
+     Public Domain
+
+There are also various images within:
+   libcpychecker/html/images
+These were taken from:
+  http://code.google.com/p/fugue-icons-src/
+and are:
+  "© 2012 Yusuke Kamiyamane. All rights reserved.
+  These icons are available under a Creative Commons Attribution 3.0
+  License. "
+     http://creativecommons.org/licenses/by/3.0/
