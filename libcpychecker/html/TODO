@@ -1,0 +1,36 @@
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+These are things we planned, but didn't get done, yet.
+
+buttons:
+    
+    Should add the "selected" style to the annotations, allowing the user to
+    step through them.
+
+report selection:
+
+    Figure out which report is visible, and make the buttons control *that*
+    report if more than one report is visible, use the previous selection.
+    Change selection when clicking report links as well.
+
+annotation clicking:
+
+    Clicking an annotation makes it selected, until clicking the selected
+    event.  Users can use this to stop stepping through notes as well.
+
+alignment of notes:
+
+    When selecting a note, it should line up with the line it's annotating.
+    Move the "states" pane up and down, and make sure the overflow is clipped.
+    There may be some jquery plugins that will make this much easier.
+
+    * https://developer.mozilla.org/en/DOM/element.offsetTop
+    * http://api.jquery.com/position/
+
+more data:
+
+    When a state is selected, we could apply mouseovers to variables that show
+    their value within that state.

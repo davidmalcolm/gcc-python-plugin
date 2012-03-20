@@ -1,33 +1,400 @@
-html {
-    height: 100%;
-}
+/*  Copyright 2012 Buck Golemon <buck@yelp.com>
+ 
+    This is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see
+    <http://www.gnu.org/licenses/>.
+*/
 html, body {
-    margin: 0;
-    padding: 0;
     width: 100%;
     background: black;
 }
-body {
-    min-height: 100%;
-}
-div {
-    box-flex: 1;
+html {
+    height: 100%;
 }
 body {
+    font: 12px "DejaVu Sans", "Bitstream Vera Sans", "Ubuntu Sans", Helvetica, Arial, sans-serif;
+    color: black;
+    background: #EBEBEB;
+    height: 100%;
+
     display: box;
     box-orient: vertical;
 }
+h1, h2 {
+    font-weight: bolder;
+}
+h3 {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 0.33em;
+}
+h3:after {
+    content: ':';
+}
+hr {
+    border-bottom: 1px solid #CCC; width: 640px;
+}
+img {
+    vertical-align: middle;
+}
+
+
+/* Main page layout */
+#header {
+    background-color: #0099ff;
+}
+#reports {
+    box-flex: 1;
+    overflow-y: auto;
+}
+#footer {
+    background: hsl(0, 0%, 30%);
+    box-shadow: inset 0 3px 3px -3px black;
+    color: white;
+    padding: 0.83em;
+    text-shadow: 0px 1px 0px black;
+    background-color: #09f;
+}
+
+
+/* Header */
+#title {
+    display: box;
+    box-orient: horizontal;
+    width: 100%;
+    padding: 1em;
+    box-sizing: border-box;
+    color: white;
+}
+#title h1,
+#title #filename {
+    box-flex: 1;
+    vertical-align: middle;
+}
+#title h1 {
+    font-size: 1.2em;
+    text-shadow: 0 1px 1px black;
+}
+#title #filename {
+    box-flex: 1;
+    text-align: right;
+    text-shadow: 0 1px 0 black;
+}
+
+/* Navigation */
+#nav {
+    display: box;
+    box-orient: horizontal;
+    box-align: center;
+    width: 100%;
+    padding: 0.5em 1em;
+    box-sizing: border-box;
+    background-color: #E4E4E4;
+    border-bottom: 1px solid #7A7A7A;
+    box-shadow: 0px 0px 2px #000;
+}
+#nav #function {
+    margin-right: 2em;
+}
+#nav #report-pagination a {
+    padding: 4px;
+}
+#nav #bug-toggle {
+    box-flex: 1;
+    text-align: right;
+}
+#nav #prev,
+#nav #next {
+    padding: 0.25em 1em;
+    background-color: white;
+    border: 1px solid #ccc;
+    margin-left: 1em;
+}
+
+
+
+#header-container {
+    border-bottom:1px solid #7A7A7A;
+}
+
+#header ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+}
+
+#header ul li {
+    float: left;
+    margin-right: 5px;
+}
+
+#header ul li a{
+    color: #90b874;
+    font-weight: bold;
+    font-size: 1.4em;
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+#header ul li a:hover {
+    color: #beffbf;
+}
+
+
+
+
+
+#reports > li {
+    display: box;
+    box-orient: horizontal;
+    width: 100%;
+}
+#reports > li + li {
+    border-top: 1px dashed hsl(0, 0%, 70%);
+}
+
+
+
+
+
+
+.label {
+    font-color:000;
+    font-size: 12px;
+    font-weight:bolder;
+}
+
 #main {
     background: red;
     display: box;
-    min-height: 100%;
 }
+
+.source {
+    height: 100%;
+    font-size: 12px;
+    padding: 1em;
+    background: white;
+    line-height: 1.33;
+    min-width: 40em;
+    box-flex: 3;
+}
+.source > header {
+    display: box;
+    box-orient: horizontal;
+    width: 100%;
+}
+.source > header .error {
+    box-flex: 1;
+    color: darkred;
+    font-weight: bold;
+}
+.source > header .report-count {
+}
+.source table {
+    width: 100%;
+    margin-top: 1em;
+    font-family: monospace;
+}
+
+#bug-toggle {
+    color:#000;
+    font-size:12px;
+    float:right;
+    vertical-align:middle;
+}
+
 #code {
     background: blue;
     min-width: 300px;
     box-flex: 2;
 }
+.source tr:nth-child(2n) {
+    background: hsl(0, 0%, 93%);
+}
+
+#bug-toggle img{
+    padding-right:5px;
+    vertical-align:middle;
+}
+
+#container {
+    width: 1000px;
+    margin: 0 auto;
+    font-size:12px;
+    overflow: auto;
+    padding: 70px 0 0px;
+    background-color:#f8f8f8;
+}
+
+#content {
+    float: left;
+    width: 660px;
+    padding-top:20px;
+    padding-left:20px;
+    padding-right:10px;
+}
+
+
+#content table.source {
+    clear: left;
+    margin: 2em 0;
+}
+
+#content .source td {
+    font-family: monospace;
+    white-space: pre;
+    min-height: 1em;
+    line-height: 20px;
+}
+
+
+.fnc-report {
+    font-size:12px;
+}
+
+#error-box {
+    font-size:12px;
+    font-color:000;
+    float:left;
+}
+
+#report-count{
+    font-size:12px;
+    float:right;
+}
+
+/* Left column: source code */
+.source tr:hover {
+    background: hsl(210, 30%, 87%);
+}
+.source .lineno {
+    padding-right: 0.5em;
+    text-align: right;
+    user-select: none;
+    color: hsl(0, 0%, 60%);
+}
+.source .code {
+    white-space: pre-wrap;
+}
+
+
+/* Right column: list of states */
+.states {
+    font-size: 12px;
+    top: 0.5em;
+    height: 100%;
+    min-width: 25em;
+    border-left: 1px solid hsl(0, 0%, 70%);
+    box-flex: 1;
+}
+.states li {
+    position: relative;
+    padding: 0.5em;
+    margin: 1em;
+    background: white;
+    border: 1px solid hsl(0, 0%, 80%);
+}
+.states li.new-subflow {
+    border-top-width: 4px;
+}
+.states h2 {
+    float: right;
+    padding: 0.33em 0.5em;
+    margin: -0.5em -0.5em 0.5em 0.5em;
+    background: hsl(0, 0%, 80%);
+    color: hsl(0, 0%, 30%);
+    border-radius: 0 0 0 0.5em;
+}
+.states p {
+    line-height: 1.5;
+}
+.states p + p {
+    margin-top: 0.5em;
+}
+
+var {
+    color: navy;
+}
+var.leak {
+    color: darkred;
+    font-weight: bold;
+    background: hsl(0, 100%, 90%);
+}
+
+.flow-line {
+    background: hsl(210, 80%, 60%);
+    background-clip: content-box;
+}
+.flow-empty, .flow-line {
+    width: 2px;
+    padding: 0 5px;
+    vertical-align: middle;
+}
+.flow-dot {
+    display: inline-block;
+    background: hsl(210, 80%, 60%);
+    outline: 1px solid rgba(100%, 100%, 100%, 0.5);
+    height: 6px;
+    width: 6px;
+    margin: 0 -2px;
+    border-radius: 100px;
+    outline-radius: 100px;
+}
+
+/* Selection overrides */
+.states li {
+    left: 0;
+    transition-property: left background-color border-color;
+}
+.source tr
+.states li h2 {
+    transition-property: background-color;
+}
+td .flow-dot,
+.states li,
+.states li h2 {
+    -moz-transition-duration: 0.25s;
+    -moz-transition-timing-function: ease-out;
+}
+
+td.selected .flow-dot {
+    height: 10px;
+    width: 10px;
+    margin: 0 -4px;
+    background: hsl(30, 80%, 60%);
+}
+
+.source tr.selected {
+    background-color: #ffe181;
+}
+.states li.selected {
+    left: -2em;
+    background-color: #fef8cb;
+    border-color: #ffe181;
+}
+.states li.selected h2 {
+    background-color: #ffe181;
+}
+
 #notes {
     background: yellow;
     min-width: 200px;
+}
+
+.note:first-of-type::before {
+    content: url('images/exclamation.png');
+    padding: 5px;
 }
