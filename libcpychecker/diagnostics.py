@@ -309,3 +309,9 @@ def location_as_json(loc):
                      column=loc.column))
     else:
         return None
+
+def type_as_json(t):
+    if t:
+        return str(t)
+    else:
+        return None

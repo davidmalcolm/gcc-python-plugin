@@ -24,7 +24,7 @@ from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
-from libcpychecker.diagnostics import location_as_json
+from libcpychecker.diagnostics import location_as_json, type_as_json
 
 debug_comparisons = 0
 
@@ -197,8 +197,18 @@ class AbstractValue(object):
         return ('%s(gcctype=%r, loc=%r)'
                 % (self.__class__.__name__, str(self.gcctype), self.loc))
 
-    def as_json(self):
-        return dict(kind=self.__class__.__name__)
+    def as_json(self, state):
+        result = dict(kind=self.__class__.__name__,
+                      gcctype=type_as_json(self.gcctype),
+                      value_comes_from=location_as_json(self.loc))
+        # Get extra per-class JSON fields:
+        result.update(self.json_fields(state))
+        return result
+
+    def json_fields(self, state):
+        # Hook for getting extra per-class fields for JSON serialization
+        # Empty for the base class
+        return dict()
 
     def is_null_ptr(self):
         """
@@ -432,9 +442,8 @@ class ConcreteValue(AbstractValue):
         return ('ConcreteValue(gcctype=%r, loc=%r, value=%s)'
                 % (str(self.gcctype), self.loc, value_to_str(self.value)))
 
-    def as_json(self):
-        return dict(kind='ConcreteValue',
-                    value=self.value)
+    def json_fields(self, state):
+        return dict(value=self.value)
 
     def is_null_ptr(self):
         if isinstance(self.gcctype, gcc.PointerType):
@@ -728,9 +737,8 @@ class WithinRange(AbstractValue):
                 % (str(self.gcctype), self.loc, value_to_str(self.minvalue),
                    value_to_str(self.maxvalue)))
 
-    def as_json(self):
-        return dict(kind='WithinRange',
-                    minvalue=self.minvalue,
+    def json_fields(self, state):
+        return dict(minvalue=self.minvalue,
                     maxvalue=self.maxvalue)
 
     def eval_unary_op(self, exprcode, gcctype, loc):
@@ -892,9 +900,8 @@ class PointerToRegion(AbstractValue):
     def __repr__(self):
         return 'PointerToRegion(gcctype=%r, loc=%r, region=%r)' % (str(self.gcctype), self.loc, self.region)
 
-    def as_json(self):
-        return dict(kind='PointerToRegion',
-                    target=self.region.as_json())
+    def json_fields(self, state):
+        return dict(target=self.region.as_json())
 
     def eval_comparison(self, opname, rhs, rhsdesc):
         log('PointerToRegion.eval_comparison:(%s, %s%s)', self, opname, rhs)
@@ -1424,7 +1431,7 @@ class State(object):
             region = self.region_for_var[k]
             value = self.value_for_region.get(region, None)
             if value:
-                variables[region.as_json()] = value.as_json()
+                variables[region.as_json()] = value.as_json(self)
         result = dict(location=location_as_json(self.loc.get_gcc_loc()),
                       message=desc,
                       variables=variables)
@@ -1620,7 +1627,7 @@ class State(object):
             if str(var.type) == 'struct PyObject':
                 from libcpychecker.refcounts import RefcountValue
                 ob_refcnt = self.make_field_region(region, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                self.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
+                self.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref(None, region)
         return self.region_for_var[var]
 
     def element_region(self, ar, loc):

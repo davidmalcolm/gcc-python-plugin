@@ -135,20 +135,28 @@ class RefcountValue(AbstractValue):
       - a newly constructed object gets (1, 0): we own a reference on it,
       and we don't know if there are any external refs on it.
     """
-    __slots__ = ('relvalue', 'min_external')
+    __slots__ = ('r_obj', 'relvalue', 'min_external')
 
-    def __init__(self, relvalue, min_external):
+    def __init__(self, loc, r_obj, relvalue, min_external):
+        if loc:
+            check_isinstance(loc, gcc.Location)
+        if r_obj:
+            check_isinstance(r_obj, Region)
+        AbstractValue.__init__(self, get_Py_ssize_t().type, loc)
+        self.r_obj = r_obj
         self.relvalue = relvalue
         self.min_external = min_external
 
     @classmethod
-    def new_ref(cls):
-        return RefcountValue(relvalue=1,
+    def new_ref(cls, loc, r_obj):
+        return RefcountValue(loc, r_obj,
+                             relvalue=1,
                              min_external=0)
 
     @classmethod
-    def borrowed_ref(cls):
-        return RefcountValue(relvalue=0,
+    def borrowed_ref(cls, loc, r_obj):
+        return RefcountValue(loc, r_obj,
+                             relvalue=0,
                              min_external=1)
 
     def get_min_value(self):
@@ -160,17 +168,43 @@ class RefcountValue(AbstractValue):
     def __repr__(self):
         return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
 
-    def as_json(self):
-        return dict(kind='RefcountValue',
-                    relvalue=self.relvalue,
-                    min_external=self.min_external)
+    def get_referrers_as_json(self, state):
+        # FIXME:
+        # Get a list of Regions holding pointers that:
+        #   (a) point at the object for this value, and
+        #   (b) ought to contribute to this ob_refcnt's relvalue
+        exp_refs = []
+        v_return = state.return_rvalue
+        if v_return:
+            if (isinstance(v_return, PointerToRegion)
+                and v_return.region == self.r_obj):
+
+                # The return value points at this obj:
+                if state.fun.decl.name not in fnnames_returning_borrowed_refs:
+                    # ...and this function has not been marked as returning a
+                    # borrowed reference: it returns a new one:
+                    exp_refs = ['return value']
+
+        exp_refs += [ref.as_json()
+                     for ref in state.get_persistent_refs_for_region(self.r_obj)]
+        return exp_refs
+
+    def json_fields(self, state):
+        actual = OrderedDict(refs_we_own=self.relvalue,
+                             lower_bound_of_other_refs=self.min_external)
+        exp_refs = self.get_referrers_as_json(state)
+        expected = dict(pointers_to_this=exp_refs)
+        return dict(actual_ob_refcnt=actual,
+                    expected_ob_refcnt=expected)
 
     def eval_binop(self, exprcode, rhs, rhsdesc, gcctype, loc):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
-                return RefcountValue(self.relvalue + rhs.value, self.min_external)
+                return RefcountValue(loc, self.r_obj,
+                                     self.relvalue + rhs.value, self.min_external)
             elif exprcode == gcc.MinusExpr:
-                return RefcountValue(self.relvalue - rhs.value, self.min_external)
+                return RefcountValue(loc, self.r_obj,
+                                     self.relvalue - rhs.value, self.min_external)
         return UnknownValue.make(gcctype, loc)
 
     def eval_comparison(self, opname, rhs, rhsdesc):
@@ -313,7 +347,9 @@ class CPython(Facet):
                                                                 objregion)
                 # Assume we have a borrowed reference:
                 ob_refcnt = self.state.make_field_region(objregion, 'ob_refcnt') # FIXME: this should be a memref and fieldref
-                self.state.value_for_region[ob_refcnt] = RefcountValue.borrowed_ref()
+                self.state.value_for_region[ob_refcnt] = \
+                    RefcountValue.borrowed_ref(parm.location,
+                                               objregion)
 
                 # Assume it has a non-NULL ob_type:
                 ob_type = self.state.make_field_region(objregion, 'ob_type')
@@ -352,7 +388,7 @@ class CPython(Facet):
         log('oldvalue: %r', oldvalue)
         # If we never had a ob_refcnt, treat it as a borrowed reference:
         if isinstance(oldvalue, UnknownValue):
-            oldvalue = RefcountValue.borrowed_ref()
+            oldvalue = RefcountValue.borrowed_ref(loc, pyobjectptr.region)
         check_isinstance(oldvalue, RefcountValue)
         newvalue = fn(oldvalue)
         log('newvalue: %r', newvalue)
@@ -365,7 +401,9 @@ class CPython(Facet):
         being held by a PyObject* that we are directly tracking.
         """
         def _incref_internal(oldvalue):
-            return RefcountValue(oldvalue.relvalue + 1,
+            return RefcountValue(loc,
+                                 pyobjectptr.region,
+                                 oldvalue.relvalue + 1,
                                  oldvalue.min_external)
         self.change_refcount(pyobjectptr,
                              loc,
@@ -377,7 +415,9 @@ class CPython(Facet):
         being held by a PyObject* that we're not directly tracking.
         """
         def _incref_external(oldvalue):
-            return RefcountValue(oldvalue.relvalue,
+            return RefcountValue(loc,
+                                 pyobjectptr.region,
+                                 oldvalue.relvalue,
                                  oldvalue.min_external + 1)
         self.change_refcount(pyobjectptr,
                              loc,
@@ -389,7 +429,9 @@ class CPython(Facet):
         reference being held by a PyObject* that we are directly tracking.
         """
         def _decref_internal(oldvalue):
-            return RefcountValue(oldvalue.relvalue - 1,
+            return RefcountValue(loc,
+                                 pyobjectptr.region,
+                                 oldvalue.relvalue - 1,
                                  oldvalue.min_external)
         check_isinstance(pyobjectptr, PointerToRegion)
         v_ob_refcnt = self.change_refcount(pyobjectptr,
@@ -530,7 +572,9 @@ class CPython(Facet):
             # rest of the program.  Given that the rest of the program is
             # stealing a ref, that is increasing by one, hence our value must
             # go down by one:
-            return RefcountValue(v_old.relvalue - 1,
+            return RefcountValue(loc,
+                                 pyobjectptr.region,
+                                 v_old.relvalue - 1,
                                  v_old.min_external + 1)
         check_isinstance(pyobjectptr, PointerToRegion)
         self.change_refcount(pyobjectptr,
@@ -559,6 +603,11 @@ class CPython(Facet):
         r_ob_refcnt = self.state.make_field_region(r_nonnull,
                                              'ob_refcnt') # FIXME: this should be a memref and fieldref
         self.state.value_for_region[r_ob_refcnt] = v_refcount
+
+        # If the RefcountValue doesn't have a Region yet, associate it
+        # with that of the new object:
+        if not v_refcount.r_obj:
+            v_refcount.r_obj = r_nonnull
 
         # Ensure that the new object has a sane ob_type:
         if r_typeobj is None:
@@ -591,7 +640,7 @@ class CPython(Facet):
         newstate.loc = self.state.loc.next_loc()
 
         r_nonnull = newstate.cpython.make_sane_object(stmt, name,
-                                              RefcountValue.new_ref(),
+                                              RefcountValue.new_ref(stmt.loc, None),
                                               typeobjregion)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
@@ -610,7 +659,7 @@ class CPython(Facet):
 
         r_nonnull = newstate.cpython.make_sane_object(stmt,
                                               'borrowed reference returned by %s()' % fnmeta.name,
-                                              RefcountValue.borrowed_ref(),
+                                              RefcountValue.borrowed_ref(stmt.loc, None),
                                               r_typeobj)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
@@ -844,7 +893,7 @@ class CPython(Facet):
                 return PointerToRegion(exptype.dereference,
                                        stmt.loc,
                                        self.make_sane_object(stmt, 'object from arg "O"',
-                                                             RefcountValue.borrowed_ref()))
+                                                             RefcountValue.borrowed_ref(stmt.loc, None)))
 
             if unit.code == 'O!':
                 if isinstance(exptype, TypeCheckCheckerType):
@@ -858,7 +907,7 @@ class CPython(Facet):
                     return PointerToRegion(get_PyObjectPtr(),
                                            stmt.loc,
                                            self.make_sane_object(stmt, 'object from arg "O!"',
-                                                                 RefcountValue.borrowed_ref()))
+                                                                 RefcountValue.borrowed_ref(stmt.loc, None)))
 
             if unit.code == 'O&':
                 # Assume for now that conversion succeeds
@@ -1023,7 +1072,7 @@ class CPython(Facet):
                                             stmt.loc,
                                             s_success.cpython.make_sane_object(stmt,
                                                                                'argument %i' % (i + 1),
-                                                                               RefcountValue.borrowed_ref()))
+                                                                               RefcountValue.borrowed_ref(stmt.loc, None)))
                     s_success.value_for_region[vararg.region] = v_obj
 
         return result
@@ -2980,7 +3029,7 @@ class CPython(Facet):
         r_nonnull = s_success.cpython.make_sane_object(
             stmt,
             'result of %s' % fnmeta.name,
-            RefcountValue.new_ref())
+            RefcountValue.new_ref(stmt.loc, None))
         s_failure = self.mkstate_exception(stmt)
 
 
