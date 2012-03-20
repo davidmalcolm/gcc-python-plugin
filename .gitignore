@@ -1,5 +1,5 @@
 *~
-.*.sw[n-p]
+.*.sw[a-z]
 *.o
 *.so
 a.out
