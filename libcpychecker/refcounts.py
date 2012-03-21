@@ -2007,6 +2007,48 @@ class CPython(Facet):
         return [t_success, t_failure]
 
     ########################################################################
+    # PyIter_*
+    ########################################################################
+    def impl_PyIter_Next(self, stmt, v_iter):
+        fnmeta = FnMeta(name='PyIter_Next',
+                        declared_in='abstract.h',
+                        prototype='PyObject * PyIter_Next(PyObject *iter);',
+                        defined_in='Objects/abstract.c',
+                        docurl='http://docs.python.org/c-api/iter.html#PyIter_Next')
+
+        returntype = stmt.fn.type.dereference.type
+
+        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_iter,
+                               why='directly accesses iter->ob_type')
+
+        # Three outcomes:
+        #   * returns a new ref (next item)
+        #   * returns NULL with no exception set (no more items)
+        #   * returns NULL with an exception (error occurred)
+
+        # The "next value" case:
+        s_nextvalue, nonnull = \
+            self.mkstate_new_ref(stmt,
+                                 'new ref returned by %s()' % fnmeta.name)
+
+        t_nextvalue = Transition(self.state,
+                                 s_nextvalue,
+                                 'when %s() retrieves a value (new ref)' % fnmeta.name)
+
+        # The "end of iteration" case:
+        t_end = self.state.mktrans_assignment(stmt.lhs,
+                                              ConcreteValue(returntype, stmt.loc, 0),
+                                              'when %s() returns NULL without setting an exception (end of iteration)' % fnmeta.name)
+
+        # The "error occurred" case:
+        t_error = self.state.mktrans_assignment(stmt.lhs,
+                                                ConcreteValue(returntype, stmt.loc, 0),
+                                                'when %s() returns NULL setting an exception (error occurred)' % fnmeta.name)
+
+        t_error.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        return [t_nextvalue, t_end, t_error]
+
+    ########################################################################
     # PyList_*
     ########################################################################
     def impl_PyList_Append(self, stmt, v_op, v_newitem):

@@ -1,0 +1,5 @@
+tests/cpychecker/refcounts/PyIter_Next/simple/input.c: In function 'test':
+tests/cpychecker/refcounts/PyIter_Next/simple/input.c:29:nn: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
+tests/cpychecker/refcounts/PyIter_Next/simple/input.c:29:nn: note: when PyIter_Next() returns NULL without setting an exception (end of iteration) at:     return PyIter_Next(iter);
+tests/cpychecker/refcounts/PyIter_Next/simple/input.c:29:nn: note: returning at:     return PyIter_Next(iter);
+tests/cpychecker/refcounts/PyIter_Next/simple/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyIter_Next/simple/input.c.test-refcount-errors.html'
