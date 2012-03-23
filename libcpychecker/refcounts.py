@@ -3960,7 +3960,8 @@ def warn_about_NULL_without_exception(v_return,
 
 
 def impl_check_refcounts(fun, dump_traces=False,
-                    show_possible_null_derefs=False):
+                         show_possible_null_derefs=False,
+                         maxtrans=256):
     """
     Inner implementation of the refcount checker, checking the refcounting
     behavior of a function, returning a Reporter instance.
@@ -3987,7 +3988,7 @@ def impl_check_refcounts(fun, dump_traces=False,
     if get_PyObject():
         facets['cpython'] = CPython
 
-    limits=Limits(maxtrans=256)
+    limits=Limits(maxtrans=maxtrans)
 
     try:
         traces = iter_traces(fun,
@@ -4099,7 +4100,8 @@ def impl_check_refcounts(fun, dump_traces=False,
 
 def check_refcounts(fun, dump_traces=False, show_traces=False,
                     show_possible_null_derefs=False,
-                    show_timings=False):
+                    show_timings=False,
+                    maxtrans=256):
     """
     The top-level function of the refcount checker, checking the refcounting
     behavior of a function
@@ -4134,7 +4136,8 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
 
     rep = impl_check_refcounts(fun,
                                dump_traces,
-                               show_possible_null_derefs)
+                               show_possible_null_derefs,
+                               maxtrans)
 
     # Organize the Report instances into equivalence classes, simplifying
     # the list of reports:

@@ -43,7 +43,13 @@ itself for now:
 
    * various test cases (in the source tree, below `tests/cpychecker`)
 
-So it should be possible to use the checker on arbitrary CPython extension
+gcc-with-cpychecker
+-------------------
+`gcc-with-cpychecker` is a harness script, which invokes GCC, adding
+the arguments necessary to use the Python plugin, using the
+`libcpychecker` Python code
+
+You should be able to use the checker on arbitrary CPython extension
 code by replacing "gcc" with "gcc-with-cpychecker" in your build with
 something like::
 
@@ -65,6 +71,17 @@ This respects the environment variable `CC`, so typically you can replace the
 above with something like this in order to add the additional checks::
 
    CC=/path/to/built/plugin/gcc-with-cpychecker python setup.py build
+
+Additional arguments for `gcc-with-cpychecker`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. program:: gcc-with-cpychecker
+
+.. cmdoption:: --maxtrans <int>
+
+   Set the maximum number of transitions to consider within each function
+   before pruning the analysis tree.  You may need to increase this limit
+   for complicated functions.
+
 
 Reference-count checking
 ------------------------
@@ -591,6 +608,8 @@ function.  This brings with it some shortcomings:
 
       input.c: In function 'add_module_objects':
       input.c:31:1: note: this function is too complicated for the reference-count checker to analyze
+
+    To increase this limit, see the :option:`--maxtrans` option.
 
   * The checker doesn't yet match up similar traces, and so a single bug that
     affects multiple traces in the trace tree can lead to duplicate error
