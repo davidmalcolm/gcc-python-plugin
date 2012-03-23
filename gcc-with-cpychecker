@@ -37,14 +37,11 @@ PLUGIN = os.path.join(abspath, 'python.so')
 
 # Create arg parser:
 parser = argparse.ArgumentParser(usage='%(prog)s [options] gcc-options')
-parser.add_argument('--check-refcounts',
-                    action='store_true',
-                    default=False,
-                    help='foo')
-parser.add_argument('--dump-cpychecker',
-                    action='store_true',
-                    default=False,
-                    help='foo')
+DEFAULT_MAXTRANS=256
+parser.add_argument('--maxtrans',
+                    type=int,
+                    default=DEFAULT_MAXTRANS,
+                    help='Set the maximum number of transitions to consider before pruning the analysis tree (default: %i)' % DEFAULT_MAXTRANS)
 
 # Only consume args we understand, leaving the rest for gcc:
 ns, other_args = parser.parse_known_args()
@@ -58,7 +55,9 @@ if 0:
 #   verify_refcounting=True
 # but unfortunately gcc's option parser seems to not be able to cope with '='
 # within an option's value.  So we do it using dictionary syntax instead:
-cmd = 'from libcpychecker import main; main(**{"verify_refcounting":True})'
+dictstr = '"verify_refcounting":True'
+dictstr += ', "maxtrans":%i' % ns.maxtrans
+cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 
 args = ['gcc',
         ('-fplugin=%s' % PLUGIN),
