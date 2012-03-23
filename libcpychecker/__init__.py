@@ -37,7 +37,8 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                  verify_refcounting=False,
                  show_possible_null_derefs=False,
                  only_on_python_code=True,
-                 maxtrans=256):
+                 maxtrans=256,
+                 dump_json=False):
         gcc.GimplePass.__init__(self, 'cpychecker-gimple')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
@@ -46,6 +47,7 @@ class CpyCheckerGimplePass(gcc.GimplePass):
         self.show_possible_null_derefs = show_possible_null_derefs
         self.only_on_python_code = only_on_python_code
         self.maxtrans = maxtrans
+        self.dump_json = dump_json
 
     def execute(self, fun):
         if fun:
@@ -79,7 +81,8 @@ class CpyCheckerGimplePass(gcc.GimplePass):
     def _check_refcounts(self, fun):
         check_refcounts(fun, self.dump_traces, self.show_traces,
                         self.show_possible_null_derefs,
-                        maxtrans=self.maxtrans)
+                        maxtrans=self.maxtrans,
+                        dump_json=self.dump_json)
 
 
 class CpyCheckerIpaPass(gcc.SimpleIpaPass):

@@ -142,7 +142,8 @@ class Reporter:
         from json import dump, dumps
         with open(filename, 'w') as f:
             dump(js, f, sort_keys=True, indent=4)
-        print(dumps(js, sort_keys=True, indent=4))
+        if 0:
+            print(dumps(js, sort_keys=True, indent=4))
 
     def to_html(self, fun):
         # (FIXME: eliminate self.fun from HtmlRenderer and the above arg)

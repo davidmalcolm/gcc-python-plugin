@@ -43,6 +43,15 @@ parser.add_argument('--maxtrans',
                     default=DEFAULT_MAXTRANS,
                     help='Set the maximum number of transitions to consider before pruning the analysis tree (default: %i)' % DEFAULT_MAXTRANS)
 
+parser.add_argument('--dump-json',
+                    action='store_true',
+                    default=False,
+                    help=('Dump a JSON representation of any problems.  For'
+                          ' example, given a function "foo.c", if any warnings'
+                          ' or errors are found in function "bar", a file'
+                          ' "foo.c.bar.json" will be written out in JSON'
+                          ' form'))
+
 # Only consume args we understand, leaving the rest for gcc:
 ns, other_args = parser.parse_known_args()
 if 0:
@@ -57,6 +66,7 @@ if 0:
 # within an option's value.  So we do it using dictionary syntax instead:
 dictstr = '"verify_refcounting":True'
 dictstr += ', "maxtrans":%i' % ns.maxtrans
+dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 
 args = ['gcc',

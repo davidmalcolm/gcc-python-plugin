@@ -4101,7 +4101,8 @@ def impl_check_refcounts(fun, dump_traces=False,
 def check_refcounts(fun, dump_traces=False, show_traces=False,
                     show_possible_null_derefs=False,
                     show_timings=False,
-                    maxtrans=256):
+                    maxtrans=256,
+                    dump_json=False):
     """
     The top-level function of the refcount checker, checking the refcounting
     behavior of a function
@@ -4149,7 +4150,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
     rep.flush()
 
     if rep.got_warnings():
-        if 0:
+        if dump_json:
             # JSON output:
             filename = ('%s.%s.json'
                     % (gcc.get_dump_base_name(), fun.decl.name))

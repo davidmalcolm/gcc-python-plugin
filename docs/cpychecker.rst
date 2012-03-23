@@ -82,6 +82,12 @@ Additional arguments for `gcc-with-cpychecker`
    before pruning the analysis tree.  You may need to increase this limit
    for complicated functions.
 
+.. cmdoption:: --dump-json
+
+   Dump a JSON representation of any problems.  For example, given a function
+   `foo.c`, if any warnings or errors are found in function `bar`, a file
+   `foo.c.bar.json` will be written out in JSON form.
+
 
 Reference-count checking
 ------------------------
