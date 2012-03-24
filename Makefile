@@ -94,15 +94,15 @@ PYTHON_CONFIG=python-config
 #PYTHON=python3-debug
 #PYTHON_CONFIG=python3.2dmu-config
 
-PYTHON_CFLAGS=$(shell $(PYTHON_CONFIG) --cflags)
+PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
 
-CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I.
+CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I. $(PYTHON_INCLUDES)
 # Allow user to pick optimization, choose whether warnings are fatal,
 # and choose debugging information level.
 CFLAGS?=-O2 -Werror -g
 # Force these settings
-CFLAGS+= -fPIC -fno-strict-aliasing -Wall $(PYTHON_CFLAGS)
+CFLAGS+= -fPIC -fno-strict-aliasing -Wall
 LIBS+= $(PYTHON_LIBS)
 ifneq "$(PLUGIN_PYTHONPATH)" ""
   CPPFLAGS+= -DPLUGIN_PYTHONPATH='"$(PLUGIN_PYTHONPATH)"'
