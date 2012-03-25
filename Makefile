@@ -97,7 +97,7 @@ PYTHON_CONFIG=python-config
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
 
-CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I. $(PYTHON_INCLUDES)
+CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I$(GCCPLUGINS_DIR)/include/c-family -I. $(PYTHON_INCLUDES)
 # Allow user to pick optimization, choose whether warnings are fatal,
 # and choose debugging information level.
 CFLAGS?=-O2 -Werror -g

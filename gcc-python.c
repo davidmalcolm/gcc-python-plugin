@@ -34,7 +34,12 @@ int plugin_is_GPL_compatible;
 #include "cgraph.h"
 #include "opts.h"
 
-#include "c-family/c-pragma.h" /* for parse_in */
+/*
+ * Use an unqualified name here and rely on dual search paths to let the
+ * compiler find it.  This deals with c-pragma.h moving to a
+ * subdirectory in newer versions of gcc.
+ */
+#include "c-pragma.h" /* for parse_in */
 
 #if 0
 #define LOG(msg) \
