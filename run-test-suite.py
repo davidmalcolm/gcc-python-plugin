@@ -403,11 +403,13 @@ if six.PY3:
 
     # The PyCObject_ API was removed in 3.2:
     exclude_tests_below('tests/cpychecker/refcounts/PyCObject_FromVoidPtr')
+    exclude_tests_below('tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc')
 
     # The following tests happen to use PyInt or PyString APIs and thus we
     # exclude them for now:
     exclude_test('tests/cpychecker/refcounts/function-that-exits') # PyString
     exclude_test('tests/cpychecker/refcounts/GIL/correct') # PyString
+    exclude_test('tests/cpychecker/refcounts/handle_null_error') # PyString
     exclude_test('tests/cpychecker/refcounts/PyArg_ParseTuple/correct_O_bang') # PyString
     exclude_test('tests/cpychecker/refcounts/PyObject_CallMethodObjArgs/correct') # PyString
     exclude_test('tests/cpychecker/refcounts/PyObject_CallMethodObjArgs/incorrect') # PyString
