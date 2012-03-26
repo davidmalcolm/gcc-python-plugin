@@ -22,3 +22,9 @@ and are:
   These icons are available under a Creative Commons Attribution 3.0
   License. "
      http://creativecommons.org/licenses/by/3.0/
+
+The test code contains historical examples of reference-count bugs:
+
+  * libcpychecker/html/test/example2
+      contains an embedded copy of part of an old version of pylibmc, which
+      is under a 3-clause BSD license

@@ -1,0 +1,2596 @@
+{
+    "filename": "libcpychecker/html/test/example2/pylibmc-issue-68.c", 
+    "function": {
+        "lines": [
+            52, 
+            213
+        ], 
+        "name": "PylibMC_Client_get_multi"
+    }, 
+    "reports": [
+        {
+            "message": "returning pointer to deallocated memory", 
+            "notes": [
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": "memory deallocated here"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 1, 
+                            "line": 212
+                        }, 
+                        {
+                            "column": 1, 
+                            "line": 212
+                        }
+                    ], 
+                    "message": "found 11 similar trace(s) to this"
+                }
+            ], 
+            "severity": "warning", 
+            "states": [
+                {
+                    "location": null, 
+                    "message": ""
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 37, 
+                            "line": 55
+                        }, 
+                        {
+                            "column": 37, 
+                            "line": 55
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 56
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 56
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 57
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 57
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 32, 
+                            "line": 58
+                        }, 
+                        {
+                            "column": 32, 
+                            "line": 58
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 59
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 59
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 63
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 63
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 37, 
+                            "line": 68
+                        }, 
+                        {
+                            "column": 37, 
+                            "line": 68
+                        }
+                    ], 
+                    "message": "when _PyArg_ParseTupleAndKeywords_SizeT() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 68
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 68
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 43, 
+                            "line": 72
+                        }, 
+                        {
+                            "column": 43, 
+                            "line": 72
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 43, 
+                            "line": 72
+                        }, 
+                        {
+                            "column": 43, 
+                            "line": 72
+                        }
+                    ], 
+                    "message": "when PySequence_Size() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 72
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 72
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 72
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 72
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }
+                    ], 
+                    "message": "when considering range: 0 <= value <= 0xfffffffffffffff"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 76
+                        }
+                    ], 
+                    "message": "when PyMem_Malloc() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 10, 
+                            "line": 76
+                        }, 
+                        {
+                            "column": 10, 
+                            "line": 76
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 77
+                        }
+                    ], 
+                    "message": "when PyMem_Malloc() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 14, 
+                            "line": 77
+                        }, 
+                        {
+                            "column": 14, 
+                            "line": 77
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 78
+                        }
+                    ], 
+                    "message": "when PyMem_Malloc() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 14, 
+                            "line": 78
+                        }, 
+                        {
+                            "column": 14, 
+                            "line": 78
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 79
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 79
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 15, 
+                            "line": 79
+                        }, 
+                        {
+                            "column": 15, 
+                            "line": 79
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 28, 
+                            "line": 79
+                        }, 
+                        {
+                            "column": 28, 
+                            "line": 79
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 88
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 88
+                        }
+                    ], 
+                    "message": "calling PyErr_Clear()"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 30, 
+                            "line": 91
+                        }, 
+                        {
+                            "column": 30, 
+                            "line": 91
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 91
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 91
+                        }
+                    ], 
+                    "message": "when PyObject_GetIter() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 7, 
+                            "line": 92
+                        }, 
+                        {
+                            "column": 7, 
+                            "line": 92
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }
+                    ], 
+                    "message": "when PyIter_Next() retrieves a value (new ref)"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }
+                    ], 
+                    "message": "when considering range: 1 <= nkeys <= 0xfffffffffffffff"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 98
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 27, 
+                            "line": 100
+                        }, 
+                        {
+                            "column": 27, 
+                            "line": 100
+                        }
+                    ], 
+                    "message": "PyErr_Occurred()"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 100
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 100
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 51, 
+                            "line": 100
+                        }, 
+                        {
+                            "column": 51, 
+                            "line": 100
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 30, 
+                            "line": 100
+                        }, 
+                        {
+                            "column": 30, 
+                            "line": 100
+                        }
+                    ], 
+                    "message": "when considering range: -0x80000000 <= value <= -1"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 30, 
+                            "line": 100
+                        }, 
+                        {
+                            "column": 30, 
+                            "line": 100
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 33, 
+                            "line": 105
+                        }, 
+                        {
+                            "column": 33, 
+                            "line": 105
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 40, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 21, 
+                            "line": 107
+                        }, 
+                        {
+                            "column": 21, 
+                            "line": 107
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": "when considering range: -0x8000000000000000 <= value <= -1"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 110
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 110
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 20, 
+                            "line": 114
+                        }, 
+                        {
+                            "column": 20, 
+                            "line": 114
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 114
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 114
+                        }
+                    ], 
+                    "message": "when treating unknown const char * from libcpychecker/html/test/example2/pylibmc-issue-68.c:68 as non-NULL"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 114
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 114
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 115
+                        }
+                    ], 
+                    "message": "when PyString_FromStringAndSize() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 18, 
+                            "line": 115
+                        }, 
+                        {
+                            "column": 18, 
+                            "line": 115
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 117
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 117
+                        }
+                    ], 
+                    "message": "when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS)"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 22, 
+                            "line": 117
+                        }, 
+                        {
+                            "column": 22, 
+                            "line": 117
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 117
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 117
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 29, 
+                            "line": 120
+                        }, 
+                        {
+                            "column": 29, 
+                            "line": 120
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 39, 
+                            "line": 119
+                        }, 
+                        {
+                            "column": 39, 
+                            "line": 119
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 39, 
+                            "line": 119
+                        }, 
+                        {
+                            "column": 39, 
+                            "line": 119
+                        }
+                    ], 
+                    "message": "when PyString_FromFormat() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 18, 
+                            "line": 119
+                        }, 
+                        {
+                            "column": 18, 
+                            "line": 119
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 125
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 127
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 127
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 128
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 128
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }
+                    ], 
+                    "message": "when PyIter_Next() returns NULL without setting an exception (end of iteration)"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 93
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 11, 
+                            "line": 130
+                        }, 
+                        {
+                            "column": 11, 
+                            "line": 130
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 131
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 133
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 133
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 30, 
+                            "line": 136
+                        }, 
+                        {
+                            "column": 30, 
+                            "line": 136
+                        }
+                    ], 
+                    "message": "PyErr_Occurred()"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 15, 
+                            "line": 136
+                        }, 
+                        {
+                            "column": 15, 
+                            "line": 136
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 147
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 147
+                        }
+                    ], 
+                    "message": "releasing the GIL by calling PyEval_SaveThread()"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 39, 
+                            "line": 148
+                        }, 
+                        {
+                            "column": 39, 
+                            "line": 148
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 39, 
+                            "line": 148
+                        }, 
+                        {
+                            "column": 39, 
+                            "line": 148
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 148
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 148
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 152
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 152
+                        }
+                    ], 
+                    "message": "reacquiring the GIL by calling PyEval_RestoreThread()"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 154
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 154
+                        }
+                    ], 
+                    "message": "when considering value == (int)0 from libcpychecker/html/test/example2/pylibmc-issue-68.c:148"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 154
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 154
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 159
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 159
+                        }
+                    ], 
+                    "message": "when PyDict_New() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 161
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 161
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 161
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 161
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 161
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 161
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 161
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 161
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 165
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 165
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 165
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 73, 
+                            "line": 171
+                        }, 
+                        {
+                            "column": 73, 
+                            "line": 171
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }, 
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }, 
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }, 
+                        {
+                            "column": 79, 
+                            "line": 171
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 72, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 72, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 78, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 78, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 45, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 170
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 170
+                        }
+                    ], 
+                    "message": "when PyString_FromStringAndSize() succeeds"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 172
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 172
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 176
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 176
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 46, 
+                            "line": 176
+                        }, 
+                        {
+                            "column": 46, 
+                            "line": 176
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 176
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 176
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 177
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 177
+                        }
+                    ], 
+                    "message": "when treating unknown struct PyObject * from libcpychecker/html/test/example2/pylibmc-issue-68.c:176 as non-NULL"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 177
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 177
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 180
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 180
+                        }
+                    ], 
+                    "message": "when PyDict_SetItem() fails"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 181
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": "when considering range: -0x8000000000000000 <= value <= -1"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 182
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 184
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 184
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": null, 
+                    "message": ""
+                }, 
+                {
+                    "location": null, 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": "when taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }, 
+                        {
+                            "column": 13, 
+                            "line": 190
+                        }
+                    ], 
+                    "message": "calling tp_dealloc on PyDictObject allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:159"
+                }, 
+                {
+                    "location": null, 
+                    "message": ""
+                }, 
+                {
+                    "location": null, 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 15, 
+                            "line": 195
+                        }, 
+                        {
+                            "column": 15, 
+                            "line": 195
+                        }
+                    ], 
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:77"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 15, 
+                            "line": 196
+                        }, 
+                        {
+                            "column": 15, 
+                            "line": 196
+                        }
+                    ], 
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:76"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 12, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 12, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 199
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 29, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 29, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 198
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 198
+                        }
+                    ], 
+                    "message": "taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 15, 
+                            "line": 200
+                        }, 
+                        {
+                            "column": 15, 
+                            "line": 200
+                        }
+                    ], 
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:78"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 17, 
+                            "line": 202
+                        }, 
+                        {
+                            "column": 17, 
+                            "line": 202
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 202
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 202
+                        }
+                    ], 
+                    "message": "when treating unknown struct memcached_result_st * * from libcpychecker/html/test/example2/pylibmc-issue-68.c:148 as non-NULL"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 8, 
+                            "line": 202
+                        }, 
+                        {
+                            "column": 8, 
+                            "line": 202
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 16, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 16, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": "when taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 45, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 45, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 34, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 34, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": "taking True path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }, 
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }, 
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 43, 
+                            "line": 204
+                        }, 
+                        {
+                            "column": 43, 
+                            "line": 204
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }, 
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }, 
+                        {
+                            "column": 34, 
+                            "line": 204
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 55, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 55, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 23, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 9, 
+                            "line": 203
+                        }, 
+                        {
+                            "column": 9, 
+                            "line": 203
+                        }
+                    ], 
+                    "message": "when taking False path"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 206
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 206
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 19, 
+                            "line": 206
+                        }, 
+                        {
+                            "column": 19, 
+                            "line": 206
+                        }
+                    ], 
+                    "message": "calling PyMem_Free on Region('heap-region-12')"
+                }, 
+                {
+                    "location": [
+                        {
+                            "column": 5, 
+                            "line": 211
+                        }, 
+                        {
+                            "column": 5, 
+                            "line": 211
+                        }
+                    ], 
+                    "message": null
+                }, 
+                {
+                    "location": null, 
+                    "message": "returning"
+                }, 
+                {
+                    "location": null, 
+                    "message": null
+                }
+            ]
+        }
+    ]
+}
