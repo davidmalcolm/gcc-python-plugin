@@ -127,6 +127,19 @@ internals), but you can always ask on the mailing list if you need help.
   very difficult: how does untainting work? what about pointers and memory
   regions?  is it just too low-level?)
 
+* implement something akin to PyPy's pygame-based viewer, for viewing control
+  flow graphs and tree structures: an OpenGL-based GUI giving a fast,
+  responsive UI for navigating the data - zooming, panning, search, etc.  (very
+  useful, and fairly easy)
+
+* `generation of pxd files for Cython
+  <http://comments.gmane.org/gmane.comp.python.cython.user/5970>`_
+  (useful for Cython, ought to be fairly easy)
+
+* reverse-engineering a .py or .pyx file from a .c file: turning legacy C
+  Python extension modules back into Python or Cython sources (useful but
+  difficult)
+
 
 Tour of the C code
 ------------------
