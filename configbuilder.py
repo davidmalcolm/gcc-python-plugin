@@ -134,7 +134,7 @@ class ConfigBuilder:
         with open(srcpath, 'w') as f:
             f.write(src)
         outpath = os.path.join(dirpath, 'feature-test.o')
-        args= [os.environ.get('GCC', 'gcc'),
+        args= [os.environ.get('CC', 'gcc'),
                '-c', # don't run the linker (no main)
                '-o', outpath,
                srcpath] + extraargs
