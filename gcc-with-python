@@ -16,4 +16,4 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-gcc -fplugin=$(pwd)/python.so -fplugin-arg-python-script=$@
+${CC:-gcc} -fplugin=$(pwd)/python.so -fplugin-arg-python-script=$@

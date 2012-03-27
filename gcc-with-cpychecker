@@ -69,7 +69,7 @@ dictstr += ', "maxtrans":%i' % ns.maxtrans
 dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 
-args = ['gcc',
+args = [os.environ.get('CC', 'gcc'),
         ('-fplugin=%s' % PLUGIN),
 	('-fplugin-arg-python-command=%s' % cmd)]
 args += other_args # (the args we didn't consume)
