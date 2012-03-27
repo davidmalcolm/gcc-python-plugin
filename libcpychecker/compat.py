@@ -57,10 +57,11 @@ if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
 
         decl = args[0]
         if isinstance(decl, gcc.VarDecl):
-            if decl.name.startswith('PyExc_'):
-                global_exceptions[decl.name] = decl
-            if decl.name.endswith('_Type'):
-                global_typeobjs[decl.name] = decl
+            if decl.name:
+                if decl.name.startswith('PyExc_'):
+                    global_exceptions[decl.name] = decl
+                if decl.name.endswith('_Type'):
+                    global_typeobjs[decl.name] = decl
 
     def _get_exception_decl_by_name(exc_name):
         return global_exceptions[exc_name]
