@@ -17,7 +17,6 @@
 
 from subprocess import Popen, PIPE
 import re
-import six
 
 # For the purpose of the GCC plugin, it's OK to assume that we're compiling
 # with GCC itself, and thus we can use GCC extensions

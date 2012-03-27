@@ -47,7 +47,7 @@ print sm.cu.as_str()
 from subprocess import Popen, PIPE, check_call
 
 
-GCCPLUGINS_DIR = Popen([os.environ.get('GCC', 'gcc'),
+GCCPLUGINS_DIR = Popen([os.environ.get('CC', 'gcc'),
                         '--print-file-name=plugin'], stdout=PIPE).communicate()[0].strip()
 
 
@@ -58,7 +58,7 @@ pyconfigs = ('python2.7-config',
              
 for pyconfig in pyconfigs:
     cflags = Popen([pyconfig, '--cflags', '--ldflags'], stdout=PIPE).communicate()[0]
-    args = [os.environ.get('GCC', 'gcc')]
+    args = [os.environ.get('CC', 'gcc')]
     args += ['-x', 'c'] # specify that it's C
     args += ['-o', 'test.so']
     args += cflags.split()
