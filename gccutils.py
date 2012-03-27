@@ -78,7 +78,7 @@ def get_nonnull_arguments(funtype):
 
     Compare with gcc/tree-vrp.c: nonnull_arg_p
     """
-    check_isinstance(funtype, gcc.FunctionType)
+    check_isinstance(funtype, (gcc.FunctionType, gcc.MethodType))
     if 'nonnull' in funtype.attributes:
         result = []
         nonnull = funtype.attributes['nonnull']

@@ -66,7 +66,14 @@ def type_is_pyobjptr_subclass(t):
     if not isinstance(t.dereference, gcc.RecordType):
         return False
 
-    fields = t.dereference.fields
+    # Obtain the fields of the struct/class
+    # For C++ "fields" will also contain a gcc.TypeDecl for the
+    # type itself, and for any nested types (e.g. typedefs), so filter them
+    # out.  This avoids an infinite recursion for classes with no data, where
+    # the initial decl of the type otherwise would make it appear that there's
+    # a nested copy of the struct inside itself.
+    fields = [field for field in t.dereference.fields
+              if isinstance(field, gcc.FieldDecl)]
 
     if len(fields) == 0:
         # Opaque struct: there's nothing we can do.
