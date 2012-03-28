@@ -113,6 +113,8 @@ Subclass                                 Meaning
 
                                              LABEL:
 
+:py:class:`gcc.GimpleNop`                The "do nothing" statement
+
 :py:class:`gcc.GimplePhi`                Used in the SSA passes::
 
                                             LHS = PHI <ARG1, ..., ARGN>;
@@ -149,7 +151,6 @@ Subclass                                 Meaning
 :py:class:`gcc.GimpleEhMustNotThrow`     Used in exception-handling
 :py:class:`gcc.GimpleErrorMark`          A dummy statement used for handling internal errors
 :py:class:`gcc.GimpleGoto`               An unconditional jump
-:py:class:`gcc.GimpleNop`                The "do nothing" statement
 :py:class:`gcc.GimpleOmpAtomicLoad`      Used for implementing OpenMP
 :py:class:`gcc.GimpleOmpAtomicStore`     (ditto)
 :py:class:`gcc.GimpleOmpContinue`        (ditto)
@@ -371,7 +372,10 @@ Subclass                                 Meaning
       The kind of the expression, as an :py:class:`gcc.Tree` subclass (the type
       itself, not an instance)
 
+.. py:class:: gcc.GimpleNop
 
+   Subclass of :py:class:`gcc.Gimple`, representing a "do-nothing" statement
+   (a.k.a. "no operation").
 
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Gimple

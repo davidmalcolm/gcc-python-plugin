@@ -2088,7 +2088,7 @@ class State(object):
         if isinstance(stmt, gcc.GimpleCall):
             return self._get_transitions_for_GimpleCall(stmt)
         elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel,
-                               gcc.GimplePredict)):
+                               gcc.GimplePredict, gcc.GimpleNop)):
             return [Transition(self,
                                self.use_next_loc(),
                                None)]

@@ -1,0 +1,5 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Exception:
+    (struct PyObject *)0
