@@ -194,7 +194,8 @@ docs/passes.svg: plugin generate-passes-svg.py
 	$(srcdir)./gcc-with-python generate-passes-svg.py test.c
 
 # Utility target, to help me to make releases
-#   - creates a tag in git, and pushes it
+#   - creates a tag in git (but does not push it; see "Notes to self on
+#     making a release" below)
 #   - creates a tarball
 #
 # The following assumes that VERSION has been set e.g.
