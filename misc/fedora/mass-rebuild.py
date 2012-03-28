@@ -77,7 +77,7 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     Rebuild the given SRPM locally within mock, injecting the cpychecker
     code in RPM form; gathering the results to a subdir within "LOGS"
     """
-    def run_mock(commands, captureOut=False, captureErr=False):
+    def run_mock(commands, captureOut=False, captureErr=False, failOnError=True):
         cmds = ['mock', '-r', mockcfg, '--disable-plugin=ccache'] + commands
         print('--------------------------------------------------------------')
         print(' '.join(cmds))
@@ -89,6 +89,13 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
             args['stderr'] = PIPE
         p = Popen(cmds, **args)
         out, err = p.communicate()
+        if p.returncode != 0 and failOnError:
+            msg = 'mock failed: return code %i' % p.returncode
+            if captureOut:
+                msg += 'stdout: %s' % out
+            if captureErr:
+                msg += 'stderr: %s' % err
+            raise RuntimeError(msg)
         return out, err
 
     resultdir = get_result_dir(srpmpath)
@@ -107,24 +114,28 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
     # Copy up latest version of the libcpychecker code from this working copy
     # overriding the copy from the pre-built plugin:
     if 1:
+        HACKED_PATH='/usr/lib/gcc/x86_64-redhat-linux/4.6.3/plugin/python2'
+        # FIXME: ^^ this will need changing
         for module in glob.glob('../../libcpychecker/*.py'):
-            HACKED_PATH='/usr/lib/gcc/x86_64-redhat-linux/4.6.2/plugin/python2/libcpychecker'
-            # FIXME: ^^ this will need changing
-            run_mock(['--copyin', module, HACKED_PATH])
+            run_mock(['--copyin', module, os.path.join(HACKED_PATH, 'libcpychecker')])
+        run_mock(['--copyin', '../../gccutils.py', HACKED_PATH])
 
     # Override the real gcc/g++ with our fake ones, which add the necessary flags
     # and then invokes the real one:
     run_mock(['--chroot', 'mv /usr/bin/gcc /usr/bin/the-real-gcc'])
     run_mock(['--chroot', 'mv /usr/bin/g++ /usr/bin/the-real-g++'])
+    run_mock(['--chroot', 'mv /usr/bin/c++ /usr/bin/the-real-c++'])
     run_mock(['--copyin', 'fake-gcc.py', '/usr/bin/gcc'])
     run_mock(['--copyin', 'fake-g++.py', '/usr/bin/g++'])
+    run_mock(['--copyin', 'fake-g++.py', '/usr/bin/c++'])
 
     # Rebuild src.rpm, using the script:
     run_mock(['--rebuild', srpmpath,
 
               '--no-clean',
 
-              ])
+              ],
+             failOnError=False)
 
     # Extract build logs:
     shutil.copy('/var/lib/mock/%s/result/build.log' % mockcfg,
