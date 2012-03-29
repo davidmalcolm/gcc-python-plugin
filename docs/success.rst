@@ -62,6 +62,16 @@ a particular usage pattern of C++ method calls:
    * https://fedorahosted.org/pipermail/gcc-python-plugin/2011-December/000136.html
    * https://bugs.freedesktop.org/show_bug.cgi?id=43460
 
+`psycopg <http://initd.org/psycopg/>`_
+--------------------------------------
+Daniele Varrazzo used the plugin's :ref:`gcc-with-cpychecker <cpychecker>`
+script on `psycopg <http://initd.org/psycopg/>`_, the popular Python interface
+to `PostgreSQL <http://www.postgresql.org/>`_, and was able to find and fix
+numerous subtle errors:
+
+  * https://fedorahosted.org/pipermail/gcc-python-plugin/2012-March/000229.html
+  * http://initd.org/psycopg/articles/2012/03/29/psycopg-245-released/
+
 pycups
 ------
 Bugs found in the `Python bindings for the CUPS API
