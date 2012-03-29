@@ -20,9 +20,13 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "proposed-plugin-api/gcc-cfg.h"
 
+#if 1
+/* Ideally we wouldn't have these includes here: */
 #include "basic-block.h"
 #include "rtl.h"
+#endif
 
 /*
   "struct edge_def" is declared in basic-block.h, c.f:
@@ -34,11 +38,11 @@
       typedef const struct edge_def *const_edge;
  */
 PyObject *
-gcc_python_make_wrapper_edge(edge e)
+gcc_python_make_wrapper_edge(GccCfgEdgeI e)
 {
     struct PyGccEdge *obj;
 
-    if (!e) {
+    if (!e.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -59,58 +63,64 @@ void
 wrtp_mark_for_PyGccEdge(PyGccEdge *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_edge_def(wrapper->e);
+    GccCfgEdgeI_MarkInUse(wrapper->e);
 }
 
-
-/*
-  "struct basic_block_def" is declared in basic-block.h, c.f:
-      struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_def {
-           ... snip ...
-      }
-  and there are these typedefs to pointers defined in coretypes.h:
-      typedef struct basic_block_def *basic_block;
-      typedef const struct basic_block_def *const_basic_block;
- */
-PyObject *    
-VEC_edge_as_PyList(VEC(edge,gc) *vec_edges)
+static bool add_edge_to_list(GccCfgEdgeI edge, void *user_data)
 {
-    PyObject *result = NULL;
-    int i;
-    edge e;
-    
-    result = PyList_New(VEC_length(edge, vec_edges));
-    if (!result) {
-	goto error;
+    PyObject *result = (PyObject*)user_data;
+    PyObject *item;
+
+    item = gcc_python_make_wrapper_edge(edge);
+    if (!item) {
+        return true;
     }
 
-    FOR_EACH_VEC_ELT(edge, vec_edges, i, e) {
-	PyObject *item;
-	item = gcc_python_make_wrapper_edge(e);
-	if (!item) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, item);
+    if (-1 == PyList_Append(result, item)) {
+        Py_DECREF(item);
     }
 
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    return false;
 }
-
 
 PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 {
-    return VEC_edge_as_PyList(self->bb->preds);
+    PyObject *result;
+
+    result = PyList_New(0);
+    if (!result) {
+        return NULL;
+    }
+
+    if (GccCfgBlockI_ForEachPredEdge(self->bb,
+                                     add_edge_to_list,
+                                     result)) {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+    return result;
 }
 
 PyObject *
 gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
 {
-    return VEC_edge_as_PyList(self->bb->succs);
+    PyObject *result;
+
+    result = PyList_New(0);
+    if (!result) {
+        return NULL;
+    }
+
+    if (GccCfgBlockI_ForEachSuccEdge(self->bb,
+                                     add_edge_to_list,
+                                     result)) {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+    return result;
 }
 
 static PyObject *
@@ -165,34 +175,34 @@ PyObject *
 gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 {
     assert(self);
-    assert(self->bb);
+    assert(self->bb.inner);
 
-    if (self->bb->flags & BB_RTL) {
+    if (self->bb.inner->flags & BB_RTL) {
 	Py_RETURN_NONE;
     }
 
-    if (NULL == self->bb->il.gimple) {
+    if (NULL == self->bb.inner->il.gimple) {
 	Py_RETURN_NONE;
     }
 
-    return gcc_python_gimple_seq_to_list(self->bb->il.gimple->seq);
+    return gcc_python_gimple_seq_to_list(self->bb.inner->il.gimple->seq);
 }
 
 PyObject *
 gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 {
     assert(self);
-    assert(self->bb);
+    assert(self->bb.inner);
 
-    if (self->bb->flags & BB_RTL) {
+    if (self->bb.inner->flags & BB_RTL) {
 	Py_RETURN_NONE;
     }
 
-    if (NULL == self->bb->il.gimple) {
+    if (NULL == self->bb.inner->il.gimple) {
 	Py_RETURN_NONE;
     }
 
-    return gcc_python_gimple_seq_to_list(self->bb->il.gimple->phi_nodes);
+    return gcc_python_gimple_seq_to_list(self->bb.inner->il.gimple->phi_nodes);
 }
 
 PyObject *
@@ -202,7 +212,7 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 
     rtx insn;
 
-    if (!(self->bb->flags & BB_RTL)) {
+    if (!(self->bb.inner->flags & BB_RTL)) {
 	Py_RETURN_NONE;
     }
 
@@ -222,7 +232,7 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 	goto error;
     }
 
-    FOR_BB_INSNS(self->bb, insn) {
+    FOR_BB_INSNS(self->bb.inner, insn) {
 	PyObject *obj;
 
 	obj = gcc_python_make_wrapper_rtl(insn);
@@ -348,10 +358,10 @@ gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
 static PyObject *
 real_make_basic_block_wrapper(void *ptr)
 {
-    basic_block bb = (basic_block)ptr;
+    GccCfgBlockI bb = GccPrivate_make_CfgBlockI(ptr);
     struct PyGccBasicBlock *obj;
 
-    if (!bb) {
+    if (!bb.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -433,16 +443,16 @@ void
 wrtp_mark_for_PyGccBasicBlock(PyGccBasicBlock *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_basic_block_def(wrapper->bb);
+    GccCfgBlockI_MarkInUse(wrapper->bb);
 }
 
 
 static PyObject *basic_block_wrapper_cache = NULL;
 PyObject *
-gcc_python_make_wrapper_basic_block(basic_block bb)
+gcc_python_make_wrapper_basic_block(GccCfgBlockI bb)
 {
     return gcc_python_lazily_create_wrapper(&basic_block_wrapper_cache,
-					    bb,
+					    bb.inner,
 					    real_make_basic_block_wrapper);
 }
 
@@ -458,14 +468,18 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
     PyObject *result = NULL;
     int i;
     
-    result = PyList_New(self->cfg->x_n_basic_blocks);
+    result = PyList_New(self->cfg.inner->x_n_basic_blocks);
     if (!result) {
 	goto error;
     }
 
-    for (i = 0; i < self->cfg->x_n_basic_blocks; i++) {
+    for (i = 0; i < self->cfg.inner->x_n_basic_blocks; i++) {
 	PyObject *item;
-	item = gcc_python_make_wrapper_basic_block(VEC_index(basic_block, self->cfg->x_basic_block_info, i));
+	item = gcc_python_make_wrapper_basic_block(
+                   GccPrivate_make_CfgBlockI(
+                       VEC_index(basic_block,
+                                 self->cfg.inner->x_basic_block_info,
+                                 i)));
 	if (!item) {
 	    goto error;
 	}
@@ -499,7 +513,7 @@ gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
     uid = LABEL_DECL_UID(label_decl->t);
 
     if (uid < 0 ||
-        (VEC_length (basic_block, self->cfg->x_label_to_block_map)
+        (VEC_length (basic_block, self->cfg.inner->x_label_to_block_map)
          <=
          (unsigned int) uid)
         ) {
@@ -507,17 +521,17 @@ gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
                             "uid %i not found", uid);
     }
 
-    bb = VEC_index(basic_block, self->cfg->x_label_to_block_map, uid);
+    bb = VEC_index(basic_block, self->cfg.inner->x_label_to_block_map, uid);
 
-    return gcc_python_make_wrapper_basic_block(bb);
+    return gcc_python_make_wrapper_basic_block(GccPrivate_make_CfgBlockI(bb));
 }
 
 PyObject *
-gcc_python_make_wrapper_cfg(struct control_flow_graph *cfg)
+gcc_python_make_wrapper_cfg(GccCfgI cfg)
 {
     struct PyGccCfg *obj;
 
-    if (!cfg) {
+    if (!cfg.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -538,7 +552,7 @@ void
 wrtp_mark_for_PyGccCfg(PyGccCfg *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_control_flow_graph(wrapper->cfg);
+    GccCfgI_MarkInUse(wrapper->cfg);
 }
 
 /*

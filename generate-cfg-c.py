@@ -22,7 +22,8 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("basic-block.h")
+cu.add_include('proposed-plugin-api/gcc-cfg.h')
+#cu.add_include("basic-block.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -38,17 +39,18 @@ def generate_edge():
                                    [PyGetSetDef('src',
                                                 cu.add_simple_getter('gcc_Edge_get_src',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(self->e->src)'),
+                                                                     'gcc_python_make_wrapper_basic_block(GccCfgEdgeI_GetSrc(self->e))'),
                                                 None,
                                                 'The source gcc.BasicBlock of this edge'),
                                     PyGetSetDef('dest',
                                                 cu.add_simple_getter('gcc_Edge_get_dest',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(self->e->dest)'),
+                                                                     'gcc_python_make_wrapper_basic_block(GccCfgEdgeI_GetDest(self->e))'),
                                                 None,
                                                 'The destination gcc.BasicBlock of this edge')],
                                    identifier_prefix = 'gcc_Edge',
                                    typename = 'PyGccEdge')
+    """
     for flag in ('EDGE_FALLTHRU', 'EDGE_ABNORMAL', 'EDGE_ABNORMAL_CALL',
                  'EDGE_EH', 'EDGE_FAKE', 'EDGE_DFS_BACK', 'EDGE_CAN_FALLTHRU',
                  'EDGE_IRREDUCIBLE_LOOP', 'EDGE_SIBCALL', 'EDGE_LOOP_EXIT',
@@ -58,8 +60,9 @@ def generate_edge():
         flagname = flag[5:].lower()
         getsettable.add_simple_getter(cu,
                                       flagname,
-                                      'PyBool_FromLong(self->e->flags & %s)' % flag,
+                                      'PyBool_FromLong(gcc_edge_is_%s(self->e))' % flagname,
                                       'Boolean, corresponding to flag %s' % flag)
+    """
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyGccWrapperTypeObject(identifier = 'gcc_EdgeType',
@@ -111,7 +114,7 @@ def generate_basic_block():
                                    typename='PyGccBasicBlock')
     getsettable.add_simple_getter(cu,
                                   'index',
-                                  'gcc_python_int_from_long(self->bb->index)',
+                                  'gcc_python_int_from_long(GccCfgBlockI_GetIndex(self->bb))',
                                   None)
     cu.add_defn(getsettable.c_defn())
 
@@ -146,13 +149,13 @@ def generate_cfg():
                                     PyGetSetDef('entry',
                                                 cu.add_simple_getter('gcc_Cfg_get_entry',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_entry_block_ptr)'),
+                                                                     'gcc_python_make_wrapper_basic_block(GccCfgI_GetEntry(self->cfg))'),
                                                 None,
                                                 'The initial gcc.BasicBlock in this graph'),
                                     PyGetSetDef('exit', 
                                                 cu.add_simple_getter('gcc_Cfg_get_exit',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_exit_block_ptr)'),
+                                                                     'gcc_python_make_wrapper_basic_block(GccCfgI_GetExit(self->cfg))'),
                                                 None,
                                                 'The final gcc.BasicBlock in this graph'),
                                     ])

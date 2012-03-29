@@ -106,7 +106,8 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
         Py_RETURN_NONE; /* for now */
 
     case 'B':
-        return gcc_python_make_wrapper_basic_block(XBBDEF (in_rtx, idx));
+        return gcc_python_make_wrapper_basic_block(
+            GccPrivate_make_CfgBlockI(XBBDEF (in_rtx, idx)));
 
     default:
         gcc_unreachable ();

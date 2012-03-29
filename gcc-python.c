@@ -27,6 +27,8 @@ int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
 
+#if 1
+/* Ideally we wouldn't have these includes here: */
 #include "cp/name-lookup.h" /* for global_namespace */
 #include "tree.h"
 #include "function.h"
@@ -40,6 +42,7 @@ int plugin_is_GPL_compatible;
  * subdirectory in newer versions of gcc.
  */
 #include "c-pragma.h" /* for parse_in */
+#endif
 
 #if 0
 #define LOG(msg) \

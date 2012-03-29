@@ -37,7 +37,7 @@ def generate_function():
                 "static PyObject *\n"
                 "gcc_Function_get_cfg(struct PyGccFunction *self, void *closure)\n"
                 "{\n"
-                "    return gcc_python_make_wrapper_cfg(self->fun->cfg);\n"
+                "    return gcc_python_make_wrapper_cfg(GccPrivate_make_CfgI(self->fun->cfg));\n"
                 "}\n"
                 "\n")
     getsettable = PyGetSetDefTable('gcc_Function_getset_table',

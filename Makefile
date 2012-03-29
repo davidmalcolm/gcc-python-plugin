@@ -18,6 +18,7 @@
 .PHONY: all clean debug dump_gimple plugin show-ssa tarball test-suite testcpychecker testcpybuilder
 
 PLUGIN_SOURCE_FILES= \
+  proposed-plugin-api/gcc-cfg.c \
   gcc-python.c \
   gcc-python-attribute.c \
   gcc-python-callbacks.c \
