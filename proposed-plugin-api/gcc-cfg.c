@@ -64,7 +64,22 @@ GccCfgI_GetExit(GccCfgI cfg)
 GCC_IMPLEMENT_PUBLIC_API(bool)
 GccCfgI_ForEachBlock(GccCfgI cfg,
                      bool (*cb)(GccCfgBlockI block, void *user_data),
-                     void *user_data);
+                     void *user_data)
+{
+    int i;
+
+    for (i = 0; i < cfg.inner->x_n_basic_blocks; i++) {
+        if (cb(GccPrivate_make_CfgBlockI(
+                   VEC_index(basic_block,
+                             cfg.inner->x_basic_block_info,
+                             i)),
+               user_data)) {
+            return true;
+        }
+    }
+    return false;
+
+}
 
 /***********************************************************
   GccCfgBlockI

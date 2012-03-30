@@ -79,8 +79,11 @@ static bool add_edge_to_list(GccCfgEdgeI edge, void *user_data)
 
     if (-1 == PyList_Append(result, item)) {
         Py_DECREF(item);
+        return true;
     }
 
+    /* Success: */
+    Py_DECREF(item);
     return false;
 }
 
@@ -458,41 +461,44 @@ gcc_python_make_wrapper_basic_block(GccCfgBlockI bb)
 					    real_make_basic_block_wrapper);
 }
 
-/*
-  "struct control_flow_graph" is declared in basic-block.h, c.f.:
-      struct GTY(()) control_flow_graph {
-           ... snip ...
-      }
-*/
+static bool add_block_to_list(GccCfgBlockI block, void *user_data)
+{
+    PyObject *result = (PyObject*)user_data;
+    PyObject *item;
+
+    item = gcc_python_make_wrapper_basic_block(block);
+    if (!item) {
+        return true;
+    }
+
+    if (-1 == PyList_Append(result, item)) {
+        Py_DECREF(item);
+        return true;
+    }
+
+    /* Success: */
+    Py_DECREF(item);
+    return false;
+}
+
 PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
 {
-    PyObject *result = NULL;
-    int i;
+    PyObject *result;
     
-    result = PyList_New(self->cfg.inner->x_n_basic_blocks);
+    result = PyList_New(0);
     if (!result) {
-	goto error;
+	return NULL;
     }
 
-    for (i = 0; i < self->cfg.inner->x_n_basic_blocks; i++) {
-	PyObject *item;
-	item = gcc_python_make_wrapper_basic_block(
-                   GccPrivate_make_CfgBlockI(
-                       VEC_index(basic_block,
-                                 self->cfg.inner->x_basic_block_info,
-                                 i)));
-	if (!item) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, item);
+    if (GccCfgI_ForEachBlock(self->cfg,
+                             add_block_to_list,
+                             result)) {
+        Py_DECREF(result);
+        return NULL;
     }
 
     return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
 }
 
 extern PyTypeObject gcc_LabelDeclType;
