@@ -217,12 +217,12 @@ Declarations
 
       The :py:class:`gcc.Location` for this declaration
 
-   .. py:attribute:: is_artifical
+   .. py:attribute:: is_artificial
 
       (bool) Is this declaration a compiler-generated entity, rather than
       one provided by the user?
 
-      An example of such an "artifical" declaration occurs within the
+      An example of such an "artificial" declaration occurs within the
       arguments of C++ methods: the initial `this` argument is a
       compiler-generated :py:class:`gcc.ParmDecl`.
 
