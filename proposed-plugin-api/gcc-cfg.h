@@ -98,15 +98,13 @@ GccCfgEdgeI_GetDest(GccCfgEdgeI edge);
 GCC_PUBLIC_API(void)
 GccCfgEdgeI_MarkInUse(GccCfgEdgeI edge);
 
-/*
-    for flag in ('EDGE_FALLTHRU', 'EDGE_ABNORMAL', 'EDGE_ABNORMAL_CALL',
-                 'EDGE_EH', 'EDGE_FAKE', 'EDGE_DFS_BACK', 'EDGE_CAN_FALLTHRU',
-                 'EDGE_IRREDUCIBLE_LOOP', 'EDGE_SIBCALL', 'EDGE_LOOP_EXIT',
-                 'EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE', 'EDGE_EXECUTABLE',
-                 'EDGE_CROSSING'):
-*/
+/* How many of the flags do we want to expose? */
 GCC_PUBLIC_API(bool)
-GccCfgEdgeI_IsFallthru(GccCfgEdgeI edge);
+GccCfgEdgeI_IsTrueValue(GccCfgEdgeI edge);
+
+GCC_PUBLIC_API(bool)
+GccCfgEdgeI_IsFalseValue(GccCfgEdgeI edge);
+
 /* etc */
 
 /*

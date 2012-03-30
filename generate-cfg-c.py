@@ -50,19 +50,16 @@ def generate_edge():
                                                 'The destination gcc.BasicBlock of this edge')],
                                    identifier_prefix = 'gcc_Edge',
                                    typename = 'PyGccEdge')
-    """
-    for flag in ('EDGE_FALLTHRU', 'EDGE_ABNORMAL', 'EDGE_ABNORMAL_CALL',
-                 'EDGE_EH', 'EDGE_FAKE', 'EDGE_DFS_BACK', 'EDGE_CAN_FALLTHRU',
-                 'EDGE_IRREDUCIBLE_LOOP', 'EDGE_SIBCALL', 'EDGE_LOOP_EXIT',
-                 'EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE', 'EDGE_EXECUTABLE',
-                 'EDGE_CROSSING'):
+
+    # We only expose the subset of the flags exposed by the plugin API:
+    for flag in ('EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE'):
         assert flag.startswith('EDGE_')
         flagname = flag[5:].lower()
         getsettable.add_simple_getter(cu,
                                       flagname,
-                                      'PyBool_FromLong(gcc_edge_is_%s(self->e))' % flagname,
+                                      'PyBool_FromLong(GccCfgEdgeI_Is%s(self->e))' % camel_case(flagname),
                                       'Boolean, corresponding to flag %s' % flag)
-    """
+
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyGccWrapperTypeObject(identifier = 'gcc_EdgeType',

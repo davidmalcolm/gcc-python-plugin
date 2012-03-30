@@ -232,12 +232,17 @@ GccCfgEdgeI_GetDest(GccCfgEdgeI edge)
     return GccPrivate_make_CfgBlockI(edge.inner->dest);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgEdgeI_IsFallthru(GccCfgEdgeI edge)
+GCC_PUBLIC_API(bool)
+GccCfgEdgeI_IsTrueValue(GccCfgEdgeI edge)
 {
-    return edge.inner->flags & EDGE_FALLTHRU;
+    return (edge.inner->flags & EDGE_TRUE_VALUE) == EDGE_TRUE_VALUE;
 }
 
+GCC_PUBLIC_API(bool)
+GccCfgEdgeI_IsFalseValue(GccCfgEdgeI edge)
+{
+    return (edge.inner->flags & EDGE_FALSE_VALUE) == EDGE_FALSE_VALUE;
+}
 
 /*
   PEP-7
