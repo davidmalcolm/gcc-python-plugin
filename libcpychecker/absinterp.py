@@ -1818,7 +1818,9 @@ class State(object):
 
     def make_field_region(self, target, field):
         check_isinstance(target, Region)
-        check_isinstance(field, str)
+        if field:
+            # (field can be None for C++ destructors)
+            check_isinstance(field, str)
         log('make_field_region(%r, %r)', target, field)
         if field in target.fields:
             log('reusing')
