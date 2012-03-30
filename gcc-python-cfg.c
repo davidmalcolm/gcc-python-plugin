@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "proposed-plugin-api/gcc-cfg.h"
+#include "proposed-plugin-api/gcc-gimple.h"
 
 #if 1
 /* Ideally we wouldn't have these includes here: */
@@ -123,86 +124,113 @@ gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
     return result;
 }
 
-static PyObject *
-gcc_python_gimple_seq_to_list(gimple_seq seq)
+static bool
+append_gimple_to_list(GccGimpleI stmt, void *user_data)
 {
-    gimple_stmt_iterator gsi;
-    PyObject *result = NULL;
+    PyObject *result = (PyObject *)user_data;
+    PyObject *obj_stmt;
 
-    result = PyList_New(0);
-    if (!result) {
-	goto error;
+    obj_stmt = gcc_python_make_wrapper_gimple(stmt);
+    if (!obj_stmt) {
+        return true;
     }
 
-    for (gsi = gsi_start (seq);
-	 !gsi_end_p (gsi);
-	 gsi_next (&gsi)) {
-
-	gimple stmt = gsi_stmt(gsi);
-	PyObject *obj_stmt;
-
-	obj_stmt = gcc_python_make_wrapper_gimple(stmt);
-	if (!obj_stmt) {
-	    goto error;
-	}
-
-	if (PyList_Append(result, obj_stmt)) {
-            Py_DECREF(obj_stmt);
-            goto error;
-	}
+    if (PyList_Append(result, obj_stmt)) {
         Py_DECREF(obj_stmt);
-
-#if 0
-	printf("  gimple: %p code: %s (%i) %s:%i num_ops=%i\n", 
-	       stmt,
-	       gimple_code_name[gimple_code(stmt)],
-	       gimple_code(stmt),
-	       gimple_filename(stmt),
-	       gimple_lineno(stmt),
-	       gimple_num_ops(stmt));
-#endif
+        return true;
     }
 
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;    
+    /* Success: */
+    Py_DECREF(obj_stmt);
+    return false;
 }
-
 
 PyObject *
 gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 {
+    PyObject *result = NULL;
+
     assert(self);
     assert(self->bb.inner);
 
-    if (self->bb.inner->flags & BB_RTL) {
-	Py_RETURN_NONE;
+    result = PyList_New(0);
+    if (!result) {
+        return NULL;
     }
 
-    if (NULL == self->bb.inner->il.gimple) {
-	Py_RETURN_NONE;
+    if (GccCfgBlockI_ForEachGimple(self->bb,
+                                   append_gimple_to_list,
+                                   result)) {
+        Py_DECREF(result);
+        return NULL;
     }
 
-    return gcc_python_gimple_seq_to_list(self->bb.inner->il.gimple->seq);
+    return result;
+}
+
+static bool
+append_gimple_phi_to_list(GccGimplePhiI stmt, void *user_data)
+{
+    PyObject *result = (PyObject *)user_data;
+    PyObject *obj_stmt;
+
+    obj_stmt = gcc_python_make_wrapper_gimple(GccGimplePhiI_Upcast(stmt));
+    if (!obj_stmt) {
+        return true;
+    }
+
+    if (PyList_Append(result, obj_stmt)) {
+        Py_DECREF(obj_stmt);
+        return true;
+    }
+
+    /* Success: */
+    Py_DECREF(obj_stmt);
+    return false;
 }
 
 PyObject *
 gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 {
+    PyObject *result = NULL;
+
     assert(self);
     assert(self->bb.inner);
 
-    if (self->bb.inner->flags & BB_RTL) {
-	Py_RETURN_NONE;
+    result = PyList_New(0);
+    if (!result) {
+        return NULL;
     }
 
-    if (NULL == self->bb.inner->il.gimple) {
-	Py_RETURN_NONE;
+    if (GccCfgBlockI_ForEachGimplePhi(self->bb,
+                                      append_gimple_phi_to_list,
+                                      result)) {
+        Py_DECREF(result);
+        return NULL;
     }
 
-    return gcc_python_gimple_seq_to_list(self->bb.inner->il.gimple->phi_nodes);
+    return result;
+}
+
+static bool
+append_rtl_to_list(GccRtlInsnI insn, void *user_data)
+{
+    PyObject *result = (PyObject *)user_data;
+    PyObject *obj;
+
+    obj = gcc_python_make_wrapper_rtl(insn);
+    if (!obj) {
+        return true;
+    }
+
+    if (PyList_Append(result, obj)) {
+        Py_DECREF(obj);
+        return true;
+    }
+
+    /* Success: */
+    Py_DECREF(obj);
+    return false;
 }
 
 PyObject *
@@ -210,48 +238,22 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 {
     PyObject *result = NULL;
 
-    rtx insn;
-
-    if (!(self->bb.inner->flags & BB_RTL)) {
-	Py_RETURN_NONE;
-    }
-
-#if 0
-    /* Debugging help: */
-    {
-        fprintf(stderr, "--BEGIN--\n");
-        FOR_BB_INSNS(self->bb, insn) {
-            print_rtl_single (stderr, insn);
-        }
-        fprintf(stderr, "-- END --\n");
-    }
-#endif
+    assert(self);
+    assert(self->bb.inner);
 
     result = PyList_New(0);
     if (!result) {
-	goto error;
+        return NULL;
     }
 
-    FOR_BB_INSNS(self->bb.inner, insn) {
-	PyObject *obj;
-
-	obj = gcc_python_make_wrapper_rtl(insn);
-	if (!obj) {
-	    goto error;
-	}
-
-        if (PyList_Append(result, obj)) {
-            Py_DECREF(obj);
-            goto error;
-	}
-        Py_DECREF(obj);
+    if (GccCfgBlockI_ForEachRtlInsn(self->bb,
+                                    append_rtl_to_list,
+                                    result)) {
+        Py_DECREF(result);
+        return NULL;
     }
 
     return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
 }
 
 

@@ -17,24 +17,16 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PUBLIC_TYPES_H
-#define INCLUDED__GCC_PUBLIC_TYPES_H
+/* FIXME: rationalize these headers */
+#include <Python.h>
+#include "proposed-plugin-api/gcc-common.h"
+#include "gcc-python.h"
+#include "gcc-python-wrappers.h"
+#include "gcc-python-compat.h"
+#include "rtl.h"
+#include "tree-flow.h"
+#include "tree-flow-inline.h"
 
-#include "gcc-semiprivate-types.h"
-
-/* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
-
-/* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
-
-/* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
-
-/* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
-
-#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */
+/* RTL instructions */
+GCC_PUBLIC_API(void)
+GccRtlInsnI_MarkInUse(GccRtlInsnI insn);

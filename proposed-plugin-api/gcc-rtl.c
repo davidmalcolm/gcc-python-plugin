@@ -17,24 +17,30 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PUBLIC_TYPES_H
-#define INCLUDED__GCC_PUBLIC_TYPES_H
+#include "proposed-plugin-api/gcc-rtl.h"
 
-#include "gcc-semiprivate-types.h"
+#include <gcc-plugin.h>
+#include "tree.h"
+#include "rtl.h"
 
-/* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
+GCC_IMPLEMENT_PUBLIC_API(void)
+GccRtlInsnI_MarkInUse(GccRtlInsnI insn)
+{
+    gt_ggc_mx_rtx_def(insn.inner);
+}
 
-/* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
+GCC_IMPLEMENT_PRIVATE_API(struct GccRtlInsnI)
+GccPrivate_make_RtlInsnI(struct rtx_def *inner)
+{
+    struct GccRtlInsnI result;
+    result.inner = inner;
+    return result;
+}
 
-/* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
-
-/* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
-
-#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

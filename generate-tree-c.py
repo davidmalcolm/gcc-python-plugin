@@ -528,7 +528,7 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t))',
                               "The variable being referenced'")
             add_simple_getter('def_stmt',
-                              'gcc_python_make_wrapper_gimple(SSA_NAME_DEF_STMT(self->t))',
+                              'gcc_python_make_wrapper_gimple(GccPrivate_make_GimpleI(SSA_NAME_DEF_STMT(self->t)))',
                               "The gcc.Gimple statement which defines this SSA name'")
             add_simple_getter('version',
                               'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',

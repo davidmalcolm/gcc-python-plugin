@@ -17,24 +17,26 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PUBLIC_TYPES_H
-#define INCLUDED__GCC_PUBLIC_TYPES_H
+#include "proposed-plugin-api/gcc-common.h"
 
-#include "gcc-semiprivate-types.h"
+/* Gimple statements (generic) */
+GCC_PUBLIC_API(void)
+GccGimpleI_MarkInUse(GccGimpleI stmt);
 
-/* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
+GCC_PUBLIC_API(void)
+GccGimpleI_Print(GccGimpleI stmt,
+                 GccPrinterI printer,
+                 int spc,  /* FIXME: meaning of spc! */
+                 int flags); /* FIXME: meaning of flags! */
 
-/* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
+#if 0
+GCC_PUBLIC_API(bool)
+GccGimpleI_WalkTree(GccGimpleI stmt,);
+#endif               
 
-/* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
 
-/* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
+/* Subclasses of gimple */
 
-#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */
+/* Gimple phi nodes */
+GCC_PUBLIC_API(GccGimpleI)
+GccGimplePhiI_Upcast(GccGimplePhiI phi);

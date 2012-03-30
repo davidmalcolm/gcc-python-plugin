@@ -29,6 +29,8 @@
 #include "cgraph.h"
 #include "opts.h"
 #include "c-family/c-pragma.h" /* for parse_in */
+#include "basic-block.h"
+#include "rtl.h"
 
 /***********************************************************
    GccCfgI
@@ -121,21 +123,85 @@ GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
     return for_each_edge(block.inner->succs, cb, user_data);
 }
 
+
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachPhiNode(GccCfgBlockI block,
-                            bool (*cb)(GccGimplePhiI phi, void *user_data),
-                            void *user_data);
+GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
+                              bool (*cb)(GccGimplePhiI phi, void *user_data),
+                              void *user_data)
+{
+    gimple_stmt_iterator gsi;
+
+    if (block.inner->flags & BB_RTL) {
+        return false;
+    }
+
+    if (NULL == block.inner->il.gimple) {
+        return false;
+    }
+
+    for (gsi = gsi_start(block.inner->il.gimple->seq);
+	 !gsi_end_p(gsi);
+	 gsi_next(&gsi)) {
+
+	gimple stmt = gsi_stmt(gsi);
+        if (cb(GccPrivate_make_GimplePhiI(stmt),
+               user_data)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
 GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
                            bool (*cb)(GccGimpleI stmt, void *user_data),
-                           void *user_data);
+                           void *user_data)
+{
+    gimple_stmt_iterator gsi;
+
+    if (block.inner->flags & BB_RTL) {
+        return false;
+    }
+
+    if (NULL == block.inner->il.gimple) {
+        return false;
+    }
+
+    for (gsi = gsi_start(block.inner->il.gimple->seq);
+	 !gsi_end_p(gsi);
+	 gsi_next(&gsi)) {
+
+	gimple stmt = gsi_stmt(gsi);
+        if (cb(GccPrivate_make_GimpleI(stmt),
+               user_data)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
 GccCfgBlockI_ForEachRtlInsn(GccCfgBlockI block,
                             bool (*cb)(GccRtlInsnI insn, void *user_data),
-                            void *user_data);
+                            void *user_data)
+{
+    rtx insn;
 
+    if (!(block.inner->flags & BB_RTL)) {
+        return false;
+    }
+
+    FOR_BB_INSNS(block.inner, insn) {
+        if (cb(GccPrivate_make_RtlInsnI(insn),
+               user_data)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /***********************************************************
    GccCfgEdgeI

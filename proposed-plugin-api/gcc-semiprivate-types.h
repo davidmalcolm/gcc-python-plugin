@@ -56,17 +56,27 @@ GCC_PRIVATE_API(struct GccCfgEdgeI)
 GccPrivate_make_CfgEdgeI(edge inner);
 
 
-#if 0
 /* Semiprivate types: GIMPLE representation */
 struct GccGimplePhiI {
+  gimple inner;
 };
 
+GCC_PRIVATE_API(struct GccGimplePhiI)
+GccPrivate_make_GimplePhiI(gimple inner);
+
 struct GccGimpleI {
+  gimple inner;
 };
+
+GCC_PRIVATE_API(struct GccGimpleI)
+GccPrivate_make_GimpleI(gimple inner);
 
 /* Semiprivate types: RTL representation */
 struct GccRtlInsnI {
+  struct rtx_def *inner;
 };
-#endif
+
+GCC_PRIVATE_API(struct GccRtlInsnI)
+GccPrivate_make_RtlInsnI(struct rtx_def *inner);
 
 #endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */

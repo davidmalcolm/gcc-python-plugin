@@ -62,13 +62,13 @@ GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
   These will only exist at a certain phase of the compilation
 */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachPhiNode(GccCfgBlockI block,
-                            bool (*cb)(GccGimplePhiI phi, void *user_data),
-                            void *user_data);
+GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
+                              bool (*cb)(GccGimplePhiI phi, void *user_data),
+                              void *user_data);
 
 /*
-  Iterate over GIMPLE statements (if any); terminate if the callback returns
-  truth (for linear search)
+  Iterate over non-phi GIMPLE statements (if any); terminate if the callback
+  returns truth (for linear search)
   These will only exist at a certain phase of the compilation
 */
 GCC_PUBLIC_API(bool)

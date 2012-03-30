@@ -24,12 +24,13 @@
 #include "rtl.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
+#include "proposed-plugin-api/gcc-rtl.h"
 
 PyObject *
 gcc_Rtl_get_location(struct PyGccRtl *self, void *closure)
 {
-    int locator = INSN_LOCATOR (self->insn);
-    if (locator && insn_file (self->insn)) {
+    int locator = INSN_LOCATOR (self->insn.inner);
+    if (locator && insn_file (self->insn.inner)) {
         return gcc_python_make_wrapper_location(locator_location(locator));
     }
 
@@ -59,7 +60,8 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
 
     case 'e': /* pointer to an rtl expression */
         /* Nested expression: */
-        return gcc_python_make_wrapper_rtl(XEXP (in_rtx, idx));
+        return gcc_python_make_wrapper_rtl(
+                   GccPrivate_make_RtlInsnI(XEXP (in_rtx, idx)));
 
     case 'E':
     case 'V':
@@ -71,7 +73,8 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
                 return NULL;
             }
             for (j = 0; j < XVECLEN (in_rtx, idx); j++) {
-                PyObject *item = gcc_python_make_wrapper_rtl(XVECEXP (in_rtx, idx, j));
+                PyObject *item = gcc_python_make_wrapper_rtl(
+                                     GccPrivate_make_RtlInsnI(XVECEXP (in_rtx, idx, j)));
                 if (!item) {
                     Py_DECREF(list);
                     return NULL;
@@ -117,7 +120,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
 PyObject *
 gcc_Rtl_get_operands(struct PyGccRtl *self, void *closure)
 {
-    const int length = GET_RTX_LENGTH (GET_CODE (self->insn));
+    const int length = GET_RTX_LENGTH (GET_CODE (self->insn.inner));
     PyObject *result;
     int i;
     const char *format_ptr;
@@ -127,9 +130,9 @@ gcc_Rtl_get_operands(struct PyGccRtl *self, void *closure)
         return NULL;
     }
 
-    format_ptr = GET_RTX_FORMAT (GET_CODE (self->insn));
+    format_ptr = GET_RTX_FORMAT (GET_CODE (self->insn.inner));
     for (i = 0; i < length; i++) {
-        PyObject *item = get_operand_as_object(self->insn, i, *format_ptr++);
+        PyObject *item = get_operand_as_object(self->insn.inner, i, *format_ptr++);
         if (!item) {
             Py_DECREF(result);
             return NULL;
@@ -163,7 +166,7 @@ gcc_Rtl_str(struct PyGccRtl * self)
         return PyErr_SetFromErrno(PyExc_IOError);
     }
 
-    print_rtl_single (f, self->insn);
+    print_rtl_single (f, self->insn.inner);
 
     fclose(f);
 
@@ -171,12 +174,12 @@ gcc_Rtl_str(struct PyGccRtl * self)
 }
 
 PyObject*
-gcc_python_make_wrapper_rtl(struct rtx_def *insn)
+gcc_python_make_wrapper_rtl(GccRtlInsnI insn)
 {
     struct PyGccRtl *rtl_obj = NULL;
     PyGccWrapperTypeObject* tp;
 
-    if (!insn) {
+    if (!insn.inner) {
         Py_RETURN_NONE;
     }
 
@@ -199,7 +202,7 @@ void
 wrtp_mark_for_PyGccRtl(PyGccRtl *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_rtx_def(wrapper->insn);
+    GccRtlInsnI_MarkInUse(wrapper->insn);
 }
 
 /*

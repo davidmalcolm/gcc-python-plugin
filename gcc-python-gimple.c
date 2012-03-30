@@ -25,6 +25,7 @@
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
+#include "proposed-plugin-api/gcc-gimple.h"
 
 static PyObject *
 do_pretty_print(struct PyGccGimple * self, int spc, int flags)
@@ -36,8 +37,9 @@ do_pretty_print(struct PyGccGimple * self, int spc, int flags)
     }
 
     dump_gimple_stmt(gcc_python_pretty_printer_as_pp(ppobj),
-		     self->stmt,
-		     spc, flags);
+                     self->stmt.inner,
+                     spc, flags);
+
     result = gcc_python_pretty_printer_as_string(ppobj);
     if (!result) {
 	goto error;
@@ -132,7 +134,7 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
     memset(&wi, 0, sizeof(wi));
     wi.info = closure;
 
-    result = walk_gimple_op (self->stmt,
+    result = walk_gimple_op (self->stmt.inner,
                              gimple_walk_tree_callback,
                              &wi);
     Py_XDECREF(closure->callback);
@@ -153,16 +155,16 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
     PyObject * result = NULL;
     int i;
 
-    assert(gimple_has_ops(self->stmt));
+    assert(gimple_has_ops(self->stmt.inner));
 
-    assert(gimple_num_ops(self->stmt) > 0);
-    result = PyList_New(gimple_num_ops (self->stmt) - 1);
+    assert(gimple_num_ops(self->stmt.inner) > 0);
+    result = PyList_New(gimple_num_ops (self->stmt.inner) - 1);
     if (!result) {
 	goto error;
     }
     
-    for (i = 1 ; i < gimple_num_ops(self->stmt); i++) {
-	tree t = gimple_op(self->stmt, i);
+    for (i = 1 ; i < gimple_num_ops(self->stmt.inner); i++) {
+	tree t = gimple_op(self->stmt.inner, i);
 	PyObject *obj = gcc_python_make_wrapper_tree(t);
 	if (!obj) {
 	    goto error;
@@ -187,7 +189,7 @@ PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
-    int num_args = gimple_call_num_args (self->stmt);
+    int num_args = gimple_call_num_args (self->stmt.inner);
     int i;
 
     result = PyList_New(num_args);
@@ -196,7 +198,7 @@ gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
     }
     
     for (i = 0 ; i < num_args; i++) {
-	tree t = gimple_call_arg(self->stmt, i);
+	tree t = gimple_call_arg(self->stmt.inner, i);
 	PyObject *obj = gcc_python_make_wrapper_tree(t);
 	if (!obj) {
 	    goto error;
@@ -216,7 +218,7 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
 {
     /* See e.g. gimple-pretty-print.c:dump_gimple_phi */
     PyObject * result = NULL;
-    int num_args = gimple_phi_num_args (self->stmt);
+    int num_args = gimple_phi_num_args (self->stmt.inner);
     int i;
 
     result = PyList_New(num_args);
@@ -225,8 +227,8 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
     }
 
     for (i = 0 ; i < num_args; i++) {
-        tree arg_def = gimple_phi_arg_def(self->stmt, i);
-        edge arg_edge = gimple_phi_arg_edge(self->stmt, i);
+        tree arg_def = gimple_phi_arg_def(self->stmt.inner, i);
+        edge arg_edge = gimple_phi_arg_edge(self->stmt.inner, i);
         /* fwiw, there's also gimple_phi_arg_has_location and gimple_phi_arg_location */
         PyObject *tuple_obj;
         tuple_obj = Py_BuildValue("O&O&",
@@ -249,7 +251,7 @@ PyObject *
 gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
-    unsigned num_labels = gimple_switch_num_labels(self->stmt);
+    unsigned num_labels = gimple_switch_num_labels(self->stmt.inner);
     int i;
 
     result = PyList_New(num_labels);
@@ -258,7 +260,7 @@ gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
     }
 
     for (i = 0 ; i < num_labels; i++) {
-	tree t = gimple_switch_label(self->stmt, i);
+	tree t = gimple_switch_label(self->stmt.inner, i);
 	PyObject *obj = gcc_python_make_wrapper_tree(t);
 	if (!obj) {
 	    goto error;
@@ -275,7 +277,7 @@ gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 
 
 PyObject*
-gcc_python_make_wrapper_gimple(gimple stmt)
+gcc_python_make_wrapper_gimple(GccGimpleI stmt)
 {
     struct PyGccGimple *gimple_obj = NULL;
     PyGccWrapperTypeObject* tp;
@@ -300,8 +302,7 @@ error:
 void
 wrtp_mark_for_PyGccGimple(PyGccGimple *wrapper)
 {
-    /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_gimple_statement_d(wrapper->stmt);
+    GccGimpleI_MarkInUse(wrapper->stmt);
 }
 
 /*
