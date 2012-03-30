@@ -504,7 +504,7 @@ def generate_tree_code_classes():
                                   None,
                                   'C++ only: the full name of this function declaration')
             add_simple_getter('function',
-                              'gcc_python_make_wrapper_function(DECL_STRUCT_FUNCTION(self->t))',
+                              'gcc_python_make_wrapper_function(GccPrivate_make_FunctionI(DECL_STRUCT_FUNCTION(self->t)))',
                               'The gcc.Function (or None) for this declaration')
             add_simple_getter('arguments',
                               'gcc_tree_list_from_chain(DECL_ARGUMENTS(self->t))',

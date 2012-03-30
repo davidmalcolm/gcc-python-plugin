@@ -24,6 +24,8 @@
 #include "gcc-python.h"
 #include "function.h"
 
+#include "proposed-plugin-api/gcc-function.h"
+
 struct callback_closure *
 gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject *kwargs)
 {
@@ -102,7 +104,7 @@ gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, Py
 	}
 
         if (add_cfun) {
-            cfun_obj = gcc_python_make_wrapper_function(cfun);
+            cfun_obj = gcc_python_make_wrapper_function(Gcc_GetCurrentFunction());
             if (!cfun_obj) {
                 goto error;
             }

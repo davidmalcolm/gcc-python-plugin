@@ -197,7 +197,7 @@ DECLARE_SIMPLE_WRAPPER(PyGccCfg,
 DECLARE_SIMPLE_WRAPPER(PyGccFunction, 
 		       gcc_FunctionType,
 		       function,
-		       struct function *, fun)
+		       GccFunctionI, fun)
 
 DECLARE_SIMPLE_WRAPPER(PyGccOption,
 		       gcc_OptionType,

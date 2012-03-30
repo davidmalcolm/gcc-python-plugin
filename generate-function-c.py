@@ -23,6 +23,7 @@ cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("function.h")
+cu.add_include("proposed-plugin-api/gcc-function.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -37,7 +38,7 @@ def generate_function():
                 "static PyObject *\n"
                 "gcc_Function_get_cfg(struct PyGccFunction *self, void *closure)\n"
                 "{\n"
-                "    return gcc_python_make_wrapper_cfg(GccPrivate_make_CfgI(self->fun->cfg));\n"
+                "    return gcc_python_make_wrapper_cfg(GccFunctionI_GetCfg(self->fun));\n"
                 "}\n"
                 "\n")
     getsettable = PyGetSetDefTable('gcc_Function_getset_table',
@@ -48,23 +49,23 @@ def generate_function():
                                    typename='PyGccFunction')
     getsettable.add_simple_getter(cu,
                                   'decl', 
-                                  'gcc_python_make_wrapper_tree(self->fun->decl)',
+                                  'gcc_python_make_wrapper_tree(self->fun.inner->decl)',
                                   'The declaration of this function, as a gcc.FunctionDecl instance')
     getsettable.add_simple_getter(cu,
                                   'local_decls',
-                                  'VEC_tree_as_PyList(self->fun->local_decls)',
+                                  'VEC_tree_as_PyList(self->fun.inner->local_decls)',
                                   "List of gcc.VarDecl for the function's local variables")
     getsettable.add_simple_getter(cu,
                                   'funcdef_no',
-                                  'gcc_python_int_from_long(self->fun->funcdef_no)',
+                                  'gcc_python_int_from_long(GccFunctionI_GetIndex(self->fun))',
                                   'Function sequence number for profiling, debugging, etc.')
     getsettable.add_simple_getter(cu,
                                   'start',
-                                  'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(self->fun->function_start_locus))',
+                                  'gcc_python_make_wrapper_location(GccFunctionI_GetStart(self->fun))',
                                   'Location of the start of the function')
     getsettable.add_simple_getter(cu,
                                   'end',
-                                  'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(self->fun->function_end_locus))',
+                                  'gcc_python_make_wrapper_location(GccFunctionI_GetEnd(self->fun))',
                                   'Location of the end of the function')
     cu.add_defn(getsettable.c_defn())
 

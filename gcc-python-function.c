@@ -29,6 +29,7 @@
 */
 
 #include "function.h"
+#include "proposed-plugin-api/gcc-function.h"
 
 PyObject *
 gcc_Function_repr(struct PyGccFunction * self)
@@ -37,8 +38,8 @@ gcc_Function_repr(struct PyGccFunction * self)
      PyObject *result = NULL;
      tree decl;
 
-     assert(self->fun);
-     decl = self->fun->decl;
+     assert(self->fun.inner);
+     decl = self->fun.inner->decl;
      if (DECL_NAME(decl)) {
          name = IDENTIFIER_POINTER (DECL_NAME(decl));
      } else {
@@ -58,11 +59,11 @@ error:
 }
 
 PyObject *
-gcc_python_make_wrapper_function(struct function *fun)
+gcc_python_make_wrapper_function(GccFunctionI func)
 {
     struct PyGccFunction *obj;
 
-    if (!fun) {
+    if (!func.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -117,7 +118,7 @@ gcc_python_make_wrapper_function(struct function *fun)
         goto error;
     }
 
-    obj->fun = fun;
+    obj->fun = func;
 
     return (PyObject*)obj;
       
@@ -129,7 +130,7 @@ void
 wrtp_mark_for_PyGccFunction(PyGccFunction *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_function(wrapper->fun);
+    GccFunctionI_MarkInUse(wrapper->fun);
 }
 
 

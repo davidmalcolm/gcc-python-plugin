@@ -17,30 +17,33 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PUBLIC_TYPES_H
-#define INCLUDED__GCC_PUBLIC_TYPES_H
+#include "proposed-plugin-api/gcc-common.h"
 
-#include "gcc-semiprivate-types.h"
+/* Declarations: functions */
 
-/* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
+/* GccFunctionI */
+GCC_PUBLIC_API(void)
+GccFunctionI_MarkInUse(GccFunctionI func);
 
-/* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
+GCC_PUBLIC_API(GccCfgI)
+GccFunctionI_GetCfg(GccFunctionI func);
 
-/* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
+GCC_PUBLIC_API(int)
+GccFunctionI_GetIndex(GccFunctionI func);
 
-/* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
+GCC_PUBLIC_API(GccLocationI)
+GccFunctionI_GetStart(GccFunctionI func);
 
-/* Opaque types: locations */
-typedef struct GccLocationI GccLocationI;
+GCC_PUBLIC_API(GccLocationI)
+GccFunctionI_GetEnd(GccFunctionI func);
 
-/* Opaque types: functions */
-typedef struct GccFunctionI GccFunctionI;
+GCC_PUBLIC_API(GccFunctionI)
+Gcc_GetCurrentFunction(void);
 
-#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

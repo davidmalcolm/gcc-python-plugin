@@ -89,5 +89,13 @@ struct GccLocationI {
 GCC_PRIVATE_API(struct GccLocationI)
 GccPrivate_make_LocationI(location_t inner);
 
+/* Semiprivate types: functions */
+struct GccFunctionI {
+  struct function *inner;
+};
+
+GCC_PRIVATE_API(struct GccFunctionI)
+GccPrivate_make_FunctionI(struct function *inner);
+
 
 #endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */

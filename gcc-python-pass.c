@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "diagnostic.h"
+#include "proposed-plugin-api/gcc-function.h"
 #include "proposed-plugin-api/gcc-location.h"
 
 /*
@@ -59,7 +60,7 @@ static bool impl_gate(void)
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
         Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
-        cfun_obj = gcc_python_make_wrapper_function(cfun);
+        cfun_obj = gcc_python_make_wrapper_function(Gcc_GetCurrentFunction());
         if (!cfun_obj) {
             gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
             Py_DECREF(pass_obj);
@@ -101,7 +102,7 @@ static unsigned int impl_execute(void)
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
         Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
-        cfun_obj = gcc_python_make_wrapper_function(cfun);
+        cfun_obj = gcc_python_make_wrapper_function(Gcc_GetCurrentFunction());
         if (!cfun_obj) {
             gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
             Py_DECREF(pass_obj);

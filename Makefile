@@ -19,6 +19,7 @@
 
 PLUGIN_SOURCE_FILES= \
   proposed-plugin-api/gcc-cfg.c \
+  proposed-plugin-api/gcc-function.c \
   proposed-plugin-api/gcc-gimple.c \
   proposed-plugin-api/gcc-location.c \
   proposed-plugin-api/gcc-rtl.c \
