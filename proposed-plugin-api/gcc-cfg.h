@@ -17,21 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include <gcc-plugin.h>
-
-/* see design.rst for notes */
-
-/* Compatibility macros */
-
-/* For declarations: */
-#define GCC_PUBLIC_API(RETURN_TYPE) extern RETURN_TYPE
-#define GCC_PRIVATE_API(RETURN_TYPE) extern RETURN_TYPE
-
-#include "gcc-public-types.h"
-
-/* For internal use: */
-#define GCC_IMPLEMENT_PUBLIC_API(RETURN_TYPE) RETURN_TYPE
-#define GCC_IMPLEMENT_PRIVATE_API(RETURN_TYPE) RETURN_TYPE
+#include "proposed-plugin-api/gcc-common.h"
 
 /* Declarations: control flow graphs */
 
