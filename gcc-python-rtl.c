@@ -31,7 +31,7 @@ gcc_Rtl_get_location(struct PyGccRtl *self, void *closure)
 {
     int locator = INSN_LOCATOR (self->insn.inner);
     if (locator && insn_file (self->insn.inner)) {
-        return gcc_python_make_wrapper_location(locator_location(locator));
+        return gcc_python_make_wrapper_location(GccPrivate_make_LocationI(locator_location(locator)));
     }
 
     Py_RETURN_NONE;

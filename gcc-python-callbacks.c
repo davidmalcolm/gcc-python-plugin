@@ -23,6 +23,8 @@
 #include "gcc-python-closure.h"
 #include "gcc-python-wrappers.h"
 
+#include "proposed-plugin-api/gcc-location.h"
+
 /*
   Notes on the passes
 
@@ -128,7 +130,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
     PyObject *result = NULL;
-    location_t saved_loc = input_location;
+    GccLocationI saved_loc = Gcc_GetInputLocation();
     enum plugin_event saved_event;
 
     assert(closure);
@@ -141,7 +143,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
 
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
+        Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
     }
 
     args = gcc_python_closure_make_args(closure, 1, wrapped_gcc_data);
@@ -169,7 +171,7 @@ cleanup:
     Py_XDECREF(result);
 
     PyGILState_Release(gstate);
-    input_location = saved_loc;
+    Gcc_SetInputLocation(saved_loc);
 }
 
 /*

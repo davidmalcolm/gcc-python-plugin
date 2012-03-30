@@ -22,7 +22,7 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("tree.h")
+cu.add_include("proposed-plugin-api/gcc-location.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -38,7 +38,7 @@ def generate_location():
 static PyObject *
 gcc_Location_get_file(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_string_from_string(LOCATION_FILE(self->loc));
+    return gcc_python_string_from_string(GccLocationI_GetFilename(self->loc));
 }
 """)
 
@@ -46,7 +46,7 @@ gcc_Location_get_file(struct PyGccLocation *self, void *closure)
 static PyObject *
 gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_int_from_long(LOCATION_LINE(self->loc));
+    return gcc_python_int_from_long(GccLocationI_GetLine(self->loc));
 }
 """)
 
@@ -54,9 +54,7 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 static PyObject *
 gcc_Location_get_column(struct PyGccLocation *self, void *closure)
 {
-    expanded_location exploc = expand_location(self->loc);
-
-    return gcc_python_int_from_long(exploc.column);
+    return gcc_python_int_from_long(GccLocationI_GetColumn(self->loc));
 }
 """)
 

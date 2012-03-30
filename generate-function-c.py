@@ -60,11 +60,11 @@ def generate_function():
                                   'Function sequence number for profiling, debugging, etc.')
     getsettable.add_simple_getter(cu,
                                   'start',
-                                  'gcc_python_make_wrapper_location(self->fun->function_start_locus)',
+                                  'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(self->fun->function_start_locus))',
                                   'Location of the start of the function')
     getsettable.add_simple_getter(cu,
                                   'end',
-                                  'gcc_python_make_wrapper_location(self->fun->function_end_locus)',
+                                  'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(self->fun->function_end_locus))',
                                   'Location of the end of the function')
     cu.add_defn(getsettable.c_defn())
 

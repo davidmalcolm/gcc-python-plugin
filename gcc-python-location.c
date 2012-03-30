@@ -20,6 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "proposed-plugin-api/gcc-location.h"
 
 /*
   Wrapper for GCC's "location_t"
@@ -36,16 +37,16 @@ PyObject *
 gcc_Location_repr(struct PyGccLocation * self)
 {
      return gcc_python_string_from_format("gcc.Location(file='%s', line=%i)",
-                                          LOCATION_FILE(self->loc),
-                                          LOCATION_LINE(self->loc));
+                                          GccLocationI_GetFilename(self->loc),
+                                          GccLocationI_GetLine(self->loc));
 }
 
 PyObject *
 gcc_Location_str(struct PyGccLocation * self)
 {
      return gcc_python_string_from_format("%s:%i",
-                                          LOCATION_FILE(self->loc),
-                                          LOCATION_LINE(self->loc));
+                                          GccLocationI_GetFilename(self->loc),
+                                          GccLocationI_GetLine(self->loc));
 }
 
 PyObject *
@@ -68,11 +69,11 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
 
     switch (op) {
     case Py_EQ:
-	cond = (locobj1->loc == locobj2->loc);
+	cond = (locobj1->loc.inner == locobj2->loc.inner);
 	break;
 
     case Py_NE:
-	cond = (locobj1->loc != locobj2->loc);
+	cond = (locobj1->loc.inner != locobj2->loc.inner);
 	break;
 
     default:
@@ -87,11 +88,11 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
 }
 
 PyObject *
-gcc_python_make_wrapper_location(location_t loc)
+gcc_python_make_wrapper_location(GccLocationI loc)
 {
     struct PyGccLocation *location_obj = NULL;
 
-    if (UNKNOWN_LOCATION == loc) {
+    if (GccLocationI_IsUnknown(loc)) {
 	Py_RETURN_NONE;
     }
   

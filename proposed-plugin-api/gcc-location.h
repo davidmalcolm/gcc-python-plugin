@@ -17,27 +17,36 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDED__GCC_PUBLIC_TYPES_H
-#define INCLUDED__GCC_PUBLIC_TYPES_H
+#include "proposed-plugin-api/gcc-common.h"
 
-#include "gcc-semiprivate-types.h"
+/* Declarations: locations */
 
-/* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
+/* GccLocationI */
+GCC_PUBLIC_API(void)
+GccLocationI_MarkInUse(GccLocationI loc);
 
-/* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
+GCC_PUBLIC_API(void)
+Gcc_SetInputLocation(GccLocationI loc);
 
-/* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
+GCC_PUBLIC_API(GccLocationI)
+Gcc_GetInputLocation(void);
 
-/* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
+GCC_PUBLIC_API(const char *)
+GccLocationI_GetFilename(GccLocationI loc);
 
-/* Opaque types: locations */
-typedef struct GccLocationI GccLocationI;
+GCC_PUBLIC_API(int)
+GccLocationI_GetLine(GccLocationI loc);
 
-#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */
+GCC_PUBLIC_API(int)
+GccLocationI_GetColumn(GccLocationI loc);
+
+GCC_PUBLIC_API(bool)
+GccLocationI_IsUnknown(GccLocationI loc);
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

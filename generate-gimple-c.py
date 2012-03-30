@@ -192,7 +192,7 @@ def generate_gimple():
 static PyObject *
 gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(gimple_location(self->stmt.inner));
+    return gcc_python_make_wrapper_location(GccPrivate_make_LocationI(gimple_location(self->stmt.inner)));
 }
 
 static PyObject *

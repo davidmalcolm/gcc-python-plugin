@@ -23,6 +23,8 @@
 #include "gcc-python-closure.h"
 #include "gcc-python-wrappers.h"
 
+#include "proposed-plugin-api/gcc-location.h"
+
 int plugin_is_GPL_compatible;
 
 #include "plugin-version.h"
@@ -124,7 +126,7 @@ gcc_python_set_location(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    input_location = loc_obj->loc;
+    Gcc_SetInputLocation(loc_obj->loc);
 
     Py_RETURN_NONE;
 }
@@ -912,7 +914,7 @@ void gcc_python_print_exception(const char *msg)
        within passes is initialized to the top of the function; it can be
        temporarily overridden using gcc.set_location()
     */
-    error_at(input_location, "%s", msg);
+    error_at(Gcc_GetInputLocation().inner, "%s", msg);
 
     /* Print the traceback: */
     PyErr_PrintEx(1);

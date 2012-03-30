@@ -163,7 +163,7 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(DECL_SOURCE_LOCATION(self->t));
+    return gcc_python_make_wrapper_location(GccPrivate_make_LocationI(DECL_SOURCE_LOCATION(self->t)));
 }
 """)
 
@@ -277,7 +277,7 @@ PyObject*
         if localname in ('Reference', 'Comparison', 'Unary', 'Binary',
                          'Statement' 'VlExp', 'Expression'):
             add_simple_getter('location',
-                              'gcc_python_make_wrapper_location(EXPR_LOCATION(self->t))',
+                              'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(EXPR_LOCATION(self->t)))',
                               "The source location of this expression")
 
             methods.add_method('get_symbol',

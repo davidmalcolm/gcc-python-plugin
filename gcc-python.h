@@ -172,7 +172,7 @@ DECLARE_SIMPLE_WRAPPER(PyGccPass,
 DECLARE_SIMPLE_WRAPPER(PyGccLocation, 
 		       gcc_LocationType,
 		       location,
-		       location_t, loc)
+		       GccLocationI, loc)
 
 DECLARE_SIMPLE_WRAPPER(PyGccGimple, 
 		       gcc_GimpleType,

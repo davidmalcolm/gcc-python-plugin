@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "diagnostic.h"
+#include "proposed-plugin-api/gcc-location.h"
 
 /*
   Wrapper for GCC's (opt_pass *)
@@ -42,7 +43,7 @@ static bool impl_gate(void)
     PyObject *cfun_obj = NULL;
     PyObject* result_obj;
     int result;
-    location_t saved_loc = input_location;
+    GccLocationI saved_loc = Gcc_GetInputLocation();
 
     assert(current_pass);
     pass_obj = gcc_python_make_wrapper_pass(current_pass);
@@ -57,12 +58,12 @@ static bool impl_gate(void)
     /* Supply the current function, if any */
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
+        Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
         cfun_obj = gcc_python_make_wrapper_function(cfun);
         if (!cfun_obj) {
             gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
             Py_DECREF(pass_obj);
-            input_location = saved_loc;
+            Gcc_SetInputLocation(saved_loc);
             return false;
         }
         result_obj = PyObject_CallMethod(pass_obj, "gate", "O", cfun_obj, NULL);
@@ -75,13 +76,13 @@ static bool impl_gate(void)
 
     if (!result_obj) {
         gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
-        input_location = saved_loc;
+        Gcc_SetInputLocation(saved_loc);
         return false;
     }
 
     result = PyObject_IsTrue(result_obj);
     Py_DECREF(result_obj);
-    input_location = saved_loc;
+    Gcc_SetInputLocation(saved_loc);
     return result;
 }
 
@@ -90,7 +91,7 @@ static unsigned int impl_execute(void)
     PyObject *pass_obj;
     PyObject *cfun_obj = NULL;
     PyObject* result_obj;
-    location_t saved_loc = input_location;
+    GccLocationI saved_loc = Gcc_GetInputLocation();
 
     assert(current_pass);
     pass_obj = gcc_python_make_wrapper_pass(current_pass);
@@ -99,12 +100,12 @@ static unsigned int impl_execute(void)
     /* Supply the current function, if any */
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
+        Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
         cfun_obj = gcc_python_make_wrapper_function(cfun);
         if (!cfun_obj) {
             gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
             Py_DECREF(pass_obj);
-            input_location = saved_loc;
+            Gcc_SetInputLocation(saved_loc);
             return false;
         }
         result_obj = PyObject_CallMethod(pass_obj, "execute", "O", cfun_obj, NULL);
@@ -117,13 +118,13 @@ static unsigned int impl_execute(void)
 
     if (!result_obj) {
         gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
-        input_location = saved_loc;
+        Gcc_SetInputLocation(saved_loc);
         return 0;
     }
 
     if (result_obj == Py_None) {
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        Gcc_SetInputLocation(saved_loc);
         return 0;
     }
 
@@ -131,7 +132,7 @@ static unsigned int impl_execute(void)
     if (PyInt_Check(result_obj)) {
         long result = PyInt_AS_LONG(result_obj);
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        Gcc_SetInputLocation(saved_loc);
         return result;
     }
 #endif
@@ -139,7 +140,7 @@ static unsigned int impl_execute(void)
     if (PyLong_Check(result_obj)) {
         long result = PyLong_AsLong(result_obj);
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        Gcc_SetInputLocation(saved_loc);
         return result;
     }
 
@@ -149,7 +150,7 @@ static unsigned int impl_execute(void)
                  Py_TYPE(result_obj)->tp_name);
     Py_DECREF(result_obj);
     gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
-    input_location = saved_loc;
+    Gcc_SetInputLocation(saved_loc);
     return 0;
 }
 

@@ -57,7 +57,7 @@ gcc_python_permerror(PyObject *self, PyObject *args)
     }
 
     /* Invoke the GCC function: */
-    result_b = permerror(loc_obj->loc, "%s", msgid);
+    result_b = permerror(loc_obj->loc.inner, "%s", msgid);
 
     result_obj = PyBool_FromLong(result_b);
 
@@ -80,7 +80,7 @@ gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    error_at(loc_obj->loc, "%s", msg);
+    error_at(loc_obj->loc.inner, "%s", msg);
 
     Py_RETURN_NONE;
 }
@@ -135,7 +135,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-    was_reported = warning_at(loc_obj->loc, opt_code, "%s", msg);
+    was_reported = warning_at(loc_obj->loc.inner, opt_code, "%s", msg);
 
     return PyBool_FromLong(was_reported);
 }
@@ -156,7 +156,7 @@ gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    inform(loc_obj->loc, "%s", msg);
+    inform(loc_obj->loc.inner, "%s", msg);
 
     Py_RETURN_NONE;
 }

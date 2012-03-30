@@ -20,6 +20,8 @@
 #ifndef INCLUDED__GCC_SEMIPRIVATE_TYPES_H
 #define INCLUDED__GCC_SEMIPRIVATE_TYPES_H
 
+#include "input.h" /* for location_t */
+
 /*
   These "interface types" should be treated like pointers, only that
   users are required to collaborate with the garbage-collector.
@@ -78,5 +80,14 @@ struct GccRtlInsnI {
 
 GCC_PRIVATE_API(struct GccRtlInsnI)
 GccPrivate_make_RtlInsnI(struct rtx_def *inner);
+
+/* Semiprivate types: locations */
+struct GccLocationI {
+  location_t inner;
+};
+
+GCC_PRIVATE_API(struct GccLocationI)
+GccPrivate_make_LocationI(location_t inner);
+
 
 #endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */
