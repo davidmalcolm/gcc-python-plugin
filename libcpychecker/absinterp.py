@@ -1916,9 +1916,12 @@ class State(object):
 
         nonnull_args = get_nonnull_arguments(fun.decl.type)
         for idx, parm in enumerate(fun.decl.arguments):
+            def parm_is_this():
+                if idx == 0 and parm.is_artificial and parm.name == 'this':
+                    return True
             region = RegionForLocal(parm, stack)
             self.region_for_var[parm] = region
-            if idx in nonnull_args:
+            if idx in nonnull_args or parm_is_this():
                 # Make a non-NULL ptr:
                 other = Region('region-for-arg-%r' % parm, None)
                 self.region_for_var[other] = other
