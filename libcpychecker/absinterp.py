@@ -1923,7 +1923,8 @@ class State(object):
                     return True
             region = RegionForLocal(parm, stack)
             self.region_for_var[parm] = region
-            if idx in nonnull_args or parm_is_this():
+            if idx in nonnull_args or parm_is_this() \
+                    or isinstance(parm.type, gcc.ReferenceType):
                 # Make a non-NULL ptr:
                 other = Region('region-for-arg-%r' % parm, None)
                 self.region_for_var[other] = other
