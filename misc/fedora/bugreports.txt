@@ -92,6 +92,8 @@ veusz-1.14-3.fc17                    rhbz#800196     http://fedorapeople.org/~dm
 wireshark-1.6.5-1.fc17               rhbz#800197     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/wireshark-1.6.5-1.fc17/
 yum-metadata-parser-1.1.4-6.fc17     rhbz#800200     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-05/yum-metadata-parser-1.1.4-6.fc17/
 
+# 2012-03-27
+Io-language-20080330-8.fc17.2        rhbz#807451     http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-27/Io-language-20080330-8.fc17.2/
 
 ############################################################################
 # The following are grouped by rough category:
@@ -108,6 +110,7 @@ Mayavi-3.4.0-2.fc15                  Only false positives
 PyYAML-3.10-2.fc17                   Only false positives
 ScientificPython-2.8-15.fc17         Intended behavior of PyNetCDFFile_GetVariable unknown; may well be just a false positive
 dbus-python-0.83.0-9.fc17            Only false positives
+# (I ran it on dbus-1.0.0 manually and filed a bug upstream as https://bugs.freedesktop.org/show_bug.cgi?id=47108 )
 python-pycurl-7.19.0-9.fc15          Only false positives
 brltty-4.3-4.fc17                    Only false positives
 dracut-modules-olpc-0.6.1-2.fc17     Appear to all be false positives
@@ -152,10 +155,10 @@ rdiff-backup-1.2.8-7.fc17            Only in module initialization
 sanlock-1.8-2.fc17                   Only in module initialization, and (possibly) NULL-without-exception
 
 # FIXMEs:
-libsemanage-2.1.6-2.fc17.src.rpm     FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
-MySQL-python-1.2.3-3.fc16.src.rpm    FIXME
-PyQt4-4.8.4-4.fc16.src.rpm           FIXME
-python-lxml-2.3-1.fc16.src.rpm       FIXME: all appear to be bugs in the checker
+libsemanage-2.1.6-2.fc17             FIXME: build.log has: error: File /builddir/build/SOURCES/libsemanage-rhat.patch is smaller than 13 bytes
+MySQL-python-1.2.3-3.fc16            FIXME
+PyQt4-4.8.4-4.fc16                   FIXME
+python-lxml-2.3-1.fc16               FIXME: all appear to be bugs in the checker
 
 
 # TODOs: not being built with correct flags:
@@ -254,7 +257,7 @@ kalzium-4.8.0-1.fc17       FIXME: build failed for some reason
 
 cryptsetup-1.4.1-2.fc17    FIXME: checker got confused by PyObjectResult, and some tracebacks
 
-ekg-1.8-0.9.rc1.fc16       FIXME: lots of tracebacks during build
+ekg-1.8-0.9.rc1.fc17       FIXME: lots of tracebacks during build
 fontforge-20110222-7.fc17  FIXME: lots of tracebacks during build
 freeradius-2.1.12-5.fc17   FIXME: some tracebacks during build
 fuse-python-0.2.1-4.fc17   FIXME: some tracebacks during build
