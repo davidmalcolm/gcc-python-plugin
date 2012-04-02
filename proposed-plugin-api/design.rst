@@ -11,28 +11,28 @@ garbage-collect, others will want to reference-count, etc.
 ence all types are "really" just pointers, but are hidden somewhat to
 emphasize that you must collaborate with the GCC garbage collector.
 
-Naming convention:  a GccSomethingI is a GCC "something" interface
-e.g. GccGimplePhiI is an interface to a Gcc Gimple phi node.  All types
-also have a standard varname (e.g. "edge" for a GccCfgEdgeI).  All
+Naming convention:  a gcc_something is an interface to a GCC "something"
+e.g. gcc_gimple_phi is an interface to a GCC gimple phi node.  All types
+also have a standard varname (e.g. "edge" for a gcc_cfg_edge).  All
 functions have a prefix relating to what they act on, e.g.:
 
-All such interface types have a "MarkInUse" function, e.g.::
+All such interface types have a "mark_in_use" function, e.g.::
 
     GCC_PUBLIC_API(void)
-    GccCfgBlockI_MarkInUse(GccCfgBlockI block);
+    gcc_cfg_block_mark_in_use(gcc_cfg_block block);
 
 If you're holding a pointer to one of these types, you *must* call this
 when GCC's garbage collector runs.
 
-Getters are named "TYPEPREFIX_GetATTR" e.g. "GccCfgBlockI_GetIndex"
+Getters are named "TYPEPREFIX_get_ATTR" e.g. "gcc_cfg_block_get_index"
 
 Iterators follow a common pattern.  Here's one that iterates over all basic
 blocks within a control flow graph::
 
       GCC_PUBLIC_API(bool)
-      GccCfgI_ForEachBlock(GccCfgI cfg,
-                           bool (*cb)(GccCfgBlockI block, void *user_data),
-                           void *user_data);
+      gcc_cfg_for_each_block(gcc_cfg cfg,
+                             bool (*cb)(gcc_cfg_block block, void *user_data),
+                             void *user_data);
 
 The iteration terminates if the callback ever returns truth (allowing
 it also to be used for a linear search).  The overall return value is truth
