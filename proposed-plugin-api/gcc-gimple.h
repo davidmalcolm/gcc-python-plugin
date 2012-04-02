@@ -21,22 +21,22 @@
 
 /* Gimple statements (generic) */
 GCC_PUBLIC_API(void)
-GccGimpleI_MarkInUse(GccGimpleI stmt);
+gcc_gimple_mark_in_use(gcc_gimple stmt);
 
 GCC_PUBLIC_API(void)
-GccGimpleI_Print(GccGimpleI stmt,
-                 GccPrinterI printer,
+gcc_gimple_print(gcc_gimple stmt,
+                 gcc_printer printer,
                  int spc,  /* FIXME: meaning of spc! */
                  int flags); /* FIXME: meaning of flags! */
 
 #if 0
 GCC_PUBLIC_API(bool)
-GccGimpleI_WalkTree(GccGimpleI stmt,);
+gcc_gimple_walk_tree(gcc_gimple stmt,);
 #endif               
 
 
 /* Subclasses of gimple */
 
 /* Gimple phi nodes */
-GCC_PUBLIC_API(GccGimpleI)
-GccGimplePhiI_Upcast(GccGimplePhiI phi);
+GCC_PUBLIC_API(gcc_gimple)
+gcc_gimple_phi_upcast(gcc_gimple_phi phi);

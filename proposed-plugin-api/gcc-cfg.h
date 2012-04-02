@@ -21,40 +21,40 @@
 
 /* Declarations: control flow graphs */
 
-/* GccCfgI */
+/* gcc_cfg */
 GCC_PUBLIC_API(void)
-GccCfgI_MarkInUse(GccCfgI cfg);
+gcc_cfg_mark_in_use(gcc_cfg cfg);
 
-GCC_PUBLIC_API(GccCfgBlockI)
-GccCfgI_GetEntry(GccCfgI cfg);
+GCC_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_get_entry(gcc_cfg cfg);
 
-GCC_PUBLIC_API(GccCfgBlockI)
-GccCfgI_GetExit(GccCfgI cfg);
+GCC_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_get_exit(gcc_cfg cfg);
 
 GCC_PUBLIC_API(bool)
-GccCfgI_ForEachBlock(GccCfgI cfg,
-                     bool (*cb)(GccCfgBlockI block, void *user_data),
-                     void *user_data);
+gcc_cfg_for_each_block(gcc_cfg cfg,
+                       bool (*cb)(gcc_cfg_block block, void *user_data),
+                       void *user_data);
 
-/* GccCfgBlockI: */
+/* gcc_cfg_block: */
 GCC_PUBLIC_API(void)
-GccCfgBlockI_MarkInUse(GccCfgBlockI block);
+gcc_cfg_block_mark_in_use(gcc_cfg_block block);
 
 GCC_PUBLIC_API(int)
-GccCfgBlockI_GetIndex(GccCfgBlockI block);
+gcc_cfg_block_get_index(gcc_cfg_block block);
 
 /* Iterate over predecessor edges; terminate if the callback returns truth
    (for linear search) */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachPredEdge(GccCfgBlockI block,
-                             bool (*cb)(GccCfgEdgeI edge, void *user_data),
-                             void *user_data);
+gcc_cfg_block_for_each_pred_edge(gcc_cfg_block block,
+                                 bool (*cb)(gcc_cfg_edge edge, void *user_data),
+                                 void *user_data);
 
 /* Same, but for successor edges */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
-                             bool (*cb)(GccCfgEdgeI edge, void *user_data),
-                             void *user_data);
+gcc_cfg_block_for_each_succ_edge(gcc_cfg_block block,
+                                 bool (*cb)(gcc_cfg_edge edge, void *user_data),
+                                 void *user_data);
 
 /*
   Iterate over phi nodes (if any); terminate if the callback returns truth
@@ -62,9 +62,9 @@ GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
   These will only exist at a certain phase of the compilation
 */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
-                              bool (*cb)(GccGimplePhiI phi, void *user_data),
-                              void *user_data);
+gcc_cfg_block_for_each_gimple_phi(gcc_cfg_block block,
+                                  bool (*cb)(gcc_gimple_phi phi, void *user_data),
+                                  void *user_data);
 
 /*
   Iterate over non-phi GIMPLE statements (if any); terminate if the callback
@@ -72,9 +72,9 @@ GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
   These will only exist at a certain phase of the compilation
 */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
-                           bool (*cb)(GccGimpleI stmt, void *user_data),
-                           void *user_data);
+gcc_cfg_block_for_each_gimple(gcc_cfg_block block,
+                              bool (*cb)(gcc_gimple stmt, void *user_data),
+                              void *user_data);
 
 /*
   Iterate over RTL instructions (if any); terminate if the callback returns
@@ -82,28 +82,26 @@ GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
   These will only exist at a certain phase of the compilation
 */
 GCC_PUBLIC_API(bool)
-GccCfgBlockI_ForEachRtlInsn(GccCfgBlockI block,
-                            bool (*cb)(GccRtlInsnI insn, void *user_data),
-                            void *user_data);
+gcc_cfg_block_for_each_rtl_insn(gcc_cfg_block block,
+                                bool (*cb)(gcc_rtl_insn insn, void *user_data),
+                                void *user_data);
 
-/* GccCfgEdgeI: */
-GCC_PUBLIC_API(GccCfgBlockI)
-GccCfgEdgeI_GetSrc(GccCfgEdgeI edge);
-
-GCC_PUBLIC_API(GccCfgBlockI)
-GccCfgEdgeI_GetDest(GccCfgEdgeI edge);
-
-/* If you store a (gcc_cfg_edge*), you are explicitly responsible for calling
-   this during the "mark" phase of GCC's garbage collector */
+/* gcc_cfg_edge: */
 GCC_PUBLIC_API(void)
-GccCfgEdgeI_MarkInUse(GccCfgEdgeI edge);
+gcc_cfg_edge_mark_in_use(gcc_cfg_edge edge);
+
+GCC_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_edge_get_src(gcc_cfg_edge edge);
+
+GCC_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_edge_get_dest(gcc_cfg_edge edge);
 
 /* How many of the flags do we want to expose? */
 GCC_PUBLIC_API(bool)
-GccCfgEdgeI_IsTrueValue(GccCfgEdgeI edge);
+gcc_cfg_edge_is_true_value(gcc_cfg_edge edge);
 
 GCC_PUBLIC_API(bool)
-GccCfgEdgeI_IsFalseValue(GccCfgEdgeI edge);
+gcc_cfg_edge_is_false_value(gcc_cfg_edge edge);
 
 /* etc */
 

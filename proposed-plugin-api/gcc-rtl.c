@@ -24,15 +24,15 @@
 #include "rtl.h"
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccRtlInsnI_MarkInUse(GccRtlInsnI insn)
+gcc_rtl_insn_mark_in_use(gcc_rtl_insn insn)
 {
     gt_ggc_mx_rtx_def(insn.inner);
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct GccRtlInsnI)
-GccPrivate_make_RtlInsnI(struct rtx_def *inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_rtl_insn)
+gcc_private_make_rtl_insn(struct rtx_def *inner)
 {
-    struct GccRtlInsnI result;
+    struct gcc_rtl_insn result;
     result.inner = inner;
     return result;
 }

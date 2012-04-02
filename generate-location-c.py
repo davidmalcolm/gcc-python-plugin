@@ -38,7 +38,7 @@ def generate_location():
 static PyObject *
 gcc_Location_get_file(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_string_from_string(GccLocationI_GetFilename(self->loc));
+    return gcc_python_string_from_string(gcc_location_get_filename(self->loc));
 }
 """)
 
@@ -46,7 +46,7 @@ gcc_Location_get_file(struct PyGccLocation *self, void *closure)
 static PyObject *
 gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_int_from_long(GccLocationI_GetLine(self->loc));
+    return gcc_python_int_from_long(gcc_location_get_line(self->loc));
 }
 """)
 
@@ -54,7 +54,7 @@ gcc_Location_get_line(struct PyGccLocation *self, void *closure)
 static PyObject *
 gcc_Location_get_column(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_int_from_long(GccLocationI_GetColumn(self->loc));
+    return gcc_python_int_from_long(gcc_location_get_column(self->loc));
 }
 """)
 

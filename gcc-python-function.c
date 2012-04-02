@@ -59,7 +59,7 @@ error:
 }
 
 PyObject *
-gcc_python_make_wrapper_function(GccFunctionI func)
+gcc_python_make_wrapper_function(gcc_function func)
 {
     struct PyGccFunction *obj;
 
@@ -130,7 +130,7 @@ void
 wrtp_mark_for_PyGccFunction(PyGccFunction *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    GccFunctionI_MarkInUse(wrapper->fun);
+    gcc_function_mark_in_use(wrapper->fun);
 }
 
 

@@ -31,7 +31,7 @@ gcc_Rtl_get_location(struct PyGccRtl *self, void *closure)
 {
     int locator = INSN_LOCATOR (self->insn.inner);
     if (locator && insn_file (self->insn.inner)) {
-        return gcc_python_make_wrapper_location(GccPrivate_make_LocationI(locator_location(locator)));
+        return gcc_python_make_wrapper_location(gcc_private_make_location(locator_location(locator)));
     }
 
     Py_RETURN_NONE;
@@ -61,7 +61,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
     case 'e': /* pointer to an rtl expression */
         /* Nested expression: */
         return gcc_python_make_wrapper_rtl(
-                   GccPrivate_make_RtlInsnI(XEXP (in_rtx, idx)));
+                   gcc_private_make_rtl_insn(XEXP (in_rtx, idx)));
 
     case 'E':
     case 'V':
@@ -74,7 +74,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
             }
             for (j = 0; j < XVECLEN (in_rtx, idx); j++) {
                 PyObject *item = gcc_python_make_wrapper_rtl(
-                                     GccPrivate_make_RtlInsnI(XVECEXP (in_rtx, idx, j)));
+                                     gcc_private_make_rtl_insn(XVECEXP (in_rtx, idx, j)));
                 if (!item) {
                     Py_DECREF(list);
                     return NULL;
@@ -110,7 +110,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
 
     case 'B':
         return gcc_python_make_wrapper_basic_block(
-            GccPrivate_make_CfgBlockI(XBBDEF (in_rtx, idx)));
+            gcc_private_make_cfg_block(XBBDEF (in_rtx, idx)));
 
     default:
         gcc_unreachable ();
@@ -174,7 +174,7 @@ gcc_Rtl_str(struct PyGccRtl * self)
 }
 
 PyObject*
-gcc_python_make_wrapper_rtl(GccRtlInsnI insn)
+gcc_python_make_wrapper_rtl(gcc_rtl_insn insn)
 {
     struct PyGccRtl *rtl_obj = NULL;
     PyGccWrapperTypeObject* tp;
@@ -202,7 +202,7 @@ void
 wrtp_mark_for_PyGccRtl(PyGccRtl *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    GccRtlInsnI_MarkInUse(wrapper->insn);
+    gcc_rtl_insn_mark_in_use(wrapper->insn);
 }
 
 /*

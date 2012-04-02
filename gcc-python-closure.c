@@ -104,7 +104,7 @@ gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, Py
 	}
 
         if (add_cfun) {
-            cfun_obj = gcc_python_make_wrapper_function(Gcc_GetCurrentFunction());
+            cfun_obj = gcc_python_make_wrapper_function(gcc_get_current_function());
             if (!cfun_obj) {
                 goto error;
             }

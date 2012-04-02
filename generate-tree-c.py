@@ -163,7 +163,7 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(GccPrivate_make_LocationI(DECL_SOURCE_LOCATION(self->t)));
+    return gcc_python_make_wrapper_location(gcc_private_make_location(DECL_SOURCE_LOCATION(self->t)));
 }
 """)
 
@@ -277,7 +277,7 @@ PyObject*
         if localname in ('Reference', 'Comparison', 'Unary', 'Binary',
                          'Statement' 'VlExp', 'Expression'):
             add_simple_getter('location',
-                              'gcc_python_make_wrapper_location(GccPrivate_make_LocationI(EXPR_LOCATION(self->t)))',
+                              'gcc_python_make_wrapper_location(gcc_private_make_location(EXPR_LOCATION(self->t)))',
                               "The source location of this expression")
 
             methods.add_method('get_symbol',
@@ -504,7 +504,7 @@ def generate_tree_code_classes():
                                   None,
                                   'C++ only: the full name of this function declaration')
             add_simple_getter('function',
-                              'gcc_python_make_wrapper_function(GccPrivate_make_FunctionI(DECL_STRUCT_FUNCTION(self->t)))',
+                              'gcc_python_make_wrapper_function(gcc_private_make_function(DECL_STRUCT_FUNCTION(self->t)))',
                               'The gcc.Function (or None) for this declaration')
             add_simple_getter('arguments',
                               'gcc_tree_list_from_chain(DECL_ARGUMENTS(self->t))',
@@ -528,7 +528,7 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t))',
                               "The variable being referenced'")
             add_simple_getter('def_stmt',
-                              'gcc_python_make_wrapper_gimple(GccPrivate_make_GimpleI(SSA_NAME_DEF_STMT(self->t)))',
+                              'gcc_python_make_wrapper_gimple(gcc_private_make_gimple(SSA_NAME_DEF_STMT(self->t)))',
                               "The gcc.Gimple statement which defines this SSA name'")
             add_simple_getter('version',
                               'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',

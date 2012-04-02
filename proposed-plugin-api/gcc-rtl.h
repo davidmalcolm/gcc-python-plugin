@@ -29,4 +29,4 @@
 
 /* RTL instructions */
 GCC_PUBLIC_API(void)
-GccRtlInsnI_MarkInUse(GccRtlInsnI insn);
+gcc_rtl_insn_mark_in_use(gcc_rtl_insn insn);

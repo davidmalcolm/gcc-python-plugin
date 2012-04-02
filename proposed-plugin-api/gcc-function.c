@@ -35,49 +35,49 @@
 
 /* Declarations: functions */
 
-/* GccFunctionI */
+/* gcc_function */
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccFunctionI_MarkInUse(GccFunctionI func)
+gcc_function_mark_in_use(gcc_function func)
 {
     gt_ggc_mx_function(func.inner);
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct GccFunctionI)
-GccPrivate_make_FunctionI(struct function *inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_function)
+gcc_private_make_function(struct function *inner)
 {
-    struct GccFunctionI result;
+    struct gcc_function result;
     result.inner = inner;
     return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccCfgI)
-GccFunctionI_GetCfg(GccFunctionI func)
+GCC_IMPLEMENT_PUBLIC_API(gcc_cfg)
+gcc_function_get_cfg(gcc_function func)
 {
-    return GccPrivate_make_CfgI(func.inner->cfg);
+    return gcc_private_make_cfg(func.inner->cfg);
 }
 
 GCC_IMPLEMENT_PUBLIC_API(int)
-GccFunctionI_GetIndex(GccFunctionI func)
+gcc_function_get_index(gcc_function func)
 {
     return func.inner->funcdef_no;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccLocationI)
-GccFunctionI_GetStart(GccFunctionI func)
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_function_get_start(gcc_function func)
 {
-    return GccPrivate_make_LocationI(func.inner->function_start_locus);
+    return gcc_private_make_location(func.inner->function_start_locus);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccLocationI)
-GccFunctionI_GetEnd(GccFunctionI func)
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_function_get_end(gcc_function func)
 {
-    return GccPrivate_make_LocationI(func.inner->function_end_locus);
+    return gcc_private_make_location(func.inner->function_end_locus);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccFunctionI)
-Gcc_GetCurrentFunction(void)
+GCC_IMPLEMENT_PUBLIC_API(gcc_function)
+gcc_get_current_function(void)
 {
-    return GccPrivate_make_FunctionI(cfun);
+    return gcc_private_make_function(cfun);
 }
 
 

@@ -37,32 +37,32 @@
 #include <gcc-plugin.h>
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccGimpleI_MarkInUse(GccGimpleI stmt)
+gcc_gimple_mark_in_use(gcc_gimple stmt)
 {
     /* Mark the underlying object (recursing into its fields): */
     gt_ggc_mx_gimple_statement_d(stmt.inner);
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct GccGimplePhiI)
-GccPrivate_make_GimplePhiI(gimple inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple_phi)
+gcc_private_make_gimple_phi(gimple inner)
 {
-    struct GccGimplePhiI result;
+    struct gcc_gimple_phi result;
     result.inner = inner;
     return result;
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct GccGimpleI)
-GccPrivate_make_GimpleI(gimple inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple)
+gcc_private_make_gimple(gimple inner)
 {
-    struct GccGimpleI result;
+    struct gcc_gimple result;
     result.inner = inner;
     return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccGimpleI)
-GccGimplePhiI_Upcast(GccGimplePhiI phi)
+GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
+gcc_gimple_phi_upcast(gcc_gimple_phi phi)
 {
-    return GccPrivate_make_GimpleI(phi.inner);
+    return gcc_private_make_gimple(phi.inner);
 }
 
 /*

@@ -130,7 +130,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
     PyObject *result = NULL;
-    GccLocationI saved_loc = Gcc_GetInputLocation();
+    gcc_location saved_loc = gcc_get_input_location();
     enum plugin_event saved_event;
 
     assert(closure);
@@ -143,7 +143,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
 
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
-        Gcc_SetInputLocation(GccPrivate_make_LocationI(cfun->function_start_locus));
+        gcc_set_input_location(gcc_private_make_location(cfun->function_start_locus));
     }
 
     args = gcc_python_closure_make_args(closure, 1, wrapped_gcc_data);
@@ -171,7 +171,7 @@ cleanup:
     Py_XDECREF(result);
 
     PyGILState_Release(gstate);
-    Gcc_SetInputLocation(saved_loc);
+    gcc_set_input_location(saved_loc);
 }
 
 /*

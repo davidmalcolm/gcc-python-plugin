@@ -21,27 +21,27 @@
 
 /* Declarations: locations */
 
-/* GccLocationI */
+/* gcc_location */
 GCC_PUBLIC_API(void)
-GccLocationI_MarkInUse(GccLocationI loc);
-
-GCC_PUBLIC_API(void)
-Gcc_SetInputLocation(GccLocationI loc);
-
-GCC_PUBLIC_API(GccLocationI)
-Gcc_GetInputLocation(void);
+gcc_location_mark_in_use(gcc_location loc);
 
 GCC_PUBLIC_API(const char *)
-GccLocationI_GetFilename(GccLocationI loc);
+gcc_location_get_filename(gcc_location loc);
 
 GCC_PUBLIC_API(int)
-GccLocationI_GetLine(GccLocationI loc);
+gcc_location_get_line(gcc_location loc);
 
 GCC_PUBLIC_API(int)
-GccLocationI_GetColumn(GccLocationI loc);
+gcc_location_get_column(gcc_location loc);
 
 GCC_PUBLIC_API(bool)
-GccLocationI_IsUnknown(GccLocationI loc);
+gcc_location_is_unknown(gcc_location loc);
+
+GCC_PUBLIC_API(void)
+gcc_set_input_location(gcc_location loc);
+
+GCC_PUBLIC_API(gcc_location)
+gcc_get_input_location(void);
 
 /*
   PEP-7

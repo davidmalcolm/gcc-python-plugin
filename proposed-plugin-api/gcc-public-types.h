@@ -23,24 +23,24 @@
 #include "gcc-semiprivate-types.h"
 
 /* Opaque types: control flow graphs */
-typedef struct GccCfgI GccCfgI;
-typedef struct GccCfgBlockI GccCfgBlockI;
-typedef struct GccCfgEdgeI GccCfgEdgeI;
+typedef struct gcc_cfg gcc_cfg;
+typedef struct gcc_cfg_block gcc_cfg_block;
+typedef struct gcc_cfg_edge gcc_cfg_edge;
 
 /* Opaque types: GIMPLE representation */
-typedef struct GccGimplePhiI GccGimplePhiI;
-typedef struct GccGimpleI GccGimpleI;
+typedef struct gcc_gimple_phi gcc_gimple_phi;
+typedef struct gcc_gimple gcc_gimple;
 
 /* Opaque types: RTL representation */
-typedef struct GccRtlInsnI GccRtlInsnI;
+typedef struct gcc_rtl_insn gcc_rtl_insn;
 
 /* Opaque types: pretty-printing */
-typedef struct GccPrinterI GccPrinterI;
+typedef struct gcc_printer gcc_printer;
 
 /* Opaque types: locations */
-typedef struct GccLocationI GccLocationI;
+typedef struct gcc_location gcc_location;
 
 /* Opaque types: functions */
-typedef struct GccFunctionI GccFunctionI;
+typedef struct gcc_function gcc_function;
 
 #endif /* INCLUDED__GCC_PUBLIC_TYPES_H */

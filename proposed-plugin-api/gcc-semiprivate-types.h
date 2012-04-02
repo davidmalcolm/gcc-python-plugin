@@ -35,67 +35,67 @@
 */
 
 /* Semiprivate types: control flow graphs */
-struct GccCfgI {
+struct gcc_cfg {
   struct control_flow_graph *inner;
 };
 
-GCC_PRIVATE_API(struct GccCfgI)
-GccPrivate_make_CfgI(struct control_flow_graph *inner);
+GCC_PRIVATE_API(struct gcc_cfg)
+gcc_private_make_cfg(struct control_flow_graph *inner);
 
 
-struct GccCfgBlockI {
+struct gcc_cfg_block {
   basic_block inner;
 };
 
-GCC_PRIVATE_API(struct GccCfgBlockI)
-GccPrivate_make_CfgBlockI(basic_block inner);
+GCC_PRIVATE_API(struct gcc_cfg_block)
+gcc_private_make_cfg_block(basic_block inner);
 
-struct GccCfgEdgeI {
+struct gcc_cfg_edge {
   edge inner;
 };
 
-GCC_PRIVATE_API(struct GccCfgEdgeI)
-GccPrivate_make_CfgEdgeI(edge inner);
+GCC_PRIVATE_API(struct gcc_cfg_edge)
+gcc_private_make_cfg_edge(edge inner);
 
 
 /* Semiprivate types: GIMPLE representation */
-struct GccGimplePhiI {
+struct gcc_gimple_phi {
   gimple inner;
 };
 
-GCC_PRIVATE_API(struct GccGimplePhiI)
-GccPrivate_make_GimplePhiI(gimple inner);
+GCC_PRIVATE_API(struct gcc_gimple_phi)
+gcc_private_make_gimple_phi(gimple inner);
 
-struct GccGimpleI {
+struct gcc_gimple {
   gimple inner;
 };
 
-GCC_PRIVATE_API(struct GccGimpleI)
-GccPrivate_make_GimpleI(gimple inner);
+GCC_PRIVATE_API(struct gcc_gimple)
+gcc_private_make_gimple(gimple inner);
 
 /* Semiprivate types: RTL representation */
-struct GccRtlInsnI {
+struct gcc_rtl_insn {
   struct rtx_def *inner;
 };
 
-GCC_PRIVATE_API(struct GccRtlInsnI)
-GccPrivate_make_RtlInsnI(struct rtx_def *inner);
+GCC_PRIVATE_API(struct gcc_rtl_insn)
+gcc_private_make_rtl_insn(struct rtx_def *inner);
 
 /* Semiprivate types: locations */
-struct GccLocationI {
+struct gcc_location {
   location_t inner;
 };
 
-GCC_PRIVATE_API(struct GccLocationI)
-GccPrivate_make_LocationI(location_t inner);
+GCC_PRIVATE_API(struct gcc_location)
+gcc_private_make_location(location_t inner);
 
 /* Semiprivate types: functions */
-struct GccFunctionI {
+struct gcc_function {
   struct function *inner;
 };
 
-GCC_PRIVATE_API(struct GccFunctionI)
-GccPrivate_make_FunctionI(struct function *inner);
+GCC_PRIVATE_API(struct gcc_function)
+gcc_private_make_function(struct function *inner);
 
 
 #endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */

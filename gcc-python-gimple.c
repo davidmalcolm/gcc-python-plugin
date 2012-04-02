@@ -277,7 +277,7 @@ gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 
 
 PyObject*
-gcc_python_make_wrapper_gimple(GccGimpleI stmt)
+gcc_python_make_wrapper_gimple(gcc_gimple stmt)
 {
     struct PyGccGimple *gimple_obj = NULL;
     PyGccWrapperTypeObject* tp;
@@ -302,7 +302,7 @@ error:
 void
 wrtp_mark_for_PyGccGimple(PyGccGimple *wrapper)
 {
-    GccGimpleI_MarkInUse(wrapper->stmt);
+    gcc_gimple_mark_in_use(wrapper->stmt);
 }
 
 /*

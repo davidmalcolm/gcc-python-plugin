@@ -126,7 +126,7 @@ gcc_python_set_location(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    Gcc_SetInputLocation(loc_obj->loc);
+    gcc_set_input_location(loc_obj->loc);
 
     Py_RETURN_NONE;
 }
@@ -914,7 +914,7 @@ void gcc_python_print_exception(const char *msg)
        within passes is initialized to the top of the function; it can be
        temporarily overridden using gcc.set_location()
     */
-    error_at(Gcc_GetInputLocation().inner, "%s", msg);
+    error_at(gcc_get_input_location().inner, "%s", msg);
 
     /* Print the traceback: */
     PyErr_PrintEx(1);

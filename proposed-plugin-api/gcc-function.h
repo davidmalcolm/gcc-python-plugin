@@ -21,24 +21,24 @@
 
 /* Declarations: functions */
 
-/* GccFunctionI */
+/* gcc_function */
 GCC_PUBLIC_API(void)
-GccFunctionI_MarkInUse(GccFunctionI func);
+gcc_function_mark_in_use(gcc_function func);
 
-GCC_PUBLIC_API(GccCfgI)
-GccFunctionI_GetCfg(GccFunctionI func);
+GCC_PUBLIC_API(gcc_cfg)
+gcc_function_get_cfg(gcc_function func);
 
 GCC_PUBLIC_API(int)
-GccFunctionI_GetIndex(GccFunctionI func);
+gcc_function_get_index(gcc_function func);
 
-GCC_PUBLIC_API(GccLocationI)
-GccFunctionI_GetStart(GccFunctionI func);
+GCC_PUBLIC_API(gcc_location)
+gcc_function_get_start(gcc_function func);
 
-GCC_PUBLIC_API(GccLocationI)
-GccFunctionI_GetEnd(GccFunctionI func);
+GCC_PUBLIC_API(gcc_location)
+gcc_function_get_end(gcc_function func);
 
-GCC_PUBLIC_API(GccFunctionI)
-Gcc_GetCurrentFunction(void);
+GCC_PUBLIC_API(gcc_function)
+gcc_get_current_function(void);
 
 /*
   PEP-7

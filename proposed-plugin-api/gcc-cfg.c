@@ -33,43 +33,43 @@
 #include "rtl.h"
 
 /***********************************************************
-   GccCfgI
+   gcc_cfg
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct GccCfgI)
-GccPrivate_make_CfgI(struct control_flow_graph *inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_cfg)
+gcc_private_make_cfg(struct control_flow_graph *inner)
 {
-    struct GccCfgI result;
+    struct gcc_cfg result;
     result.inner = inner;
     return result;
 }
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccCfgI_MarkInUse(GccCfgI cfg)
+gcc_cfg_mark_in_use(gcc_cfg cfg)
 {
     gt_ggc_mx_control_flow_graph(cfg.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccCfgBlockI)
-GccCfgI_GetEntry(GccCfgI cfg)
+GCC_IMPLEMENT_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_get_entry(gcc_cfg cfg)
 {
-    return GccPrivate_make_CfgBlockI(cfg.inner->x_entry_block_ptr);
+    return gcc_private_make_cfg_block(cfg.inner->x_entry_block_ptr);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccCfgBlockI)
-GccCfgI_GetExit(GccCfgI cfg)
+GCC_IMPLEMENT_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_get_exit(gcc_cfg cfg)
 {
-    return GccPrivate_make_CfgBlockI(cfg.inner->x_exit_block_ptr);
+    return gcc_private_make_cfg_block(cfg.inner->x_exit_block_ptr);
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgI_ForEachBlock(GccCfgI cfg,
-                     bool (*cb)(GccCfgBlockI block, void *user_data),
+gcc_cfg_for_each_block(gcc_cfg cfg,
+                     bool (*cb)(gcc_cfg_block block, void *user_data),
                      void *user_data)
 {
     int i;
 
     for (i = 0; i < cfg.inner->x_n_basic_blocks; i++) {
-        if (cb(GccPrivate_make_CfgBlockI(
+        if (cb(gcc_private_make_cfg_block(
                    VEC_index(basic_block,
                              cfg.inner->x_basic_block_info,
                              i)),
@@ -82,38 +82,38 @@ GccCfgI_ForEachBlock(GccCfgI cfg,
 }
 
 /***********************************************************
-  GccCfgBlockI
+  gcc_cfg_block
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct GccCfgBlockI)
-GccPrivate_make_CfgBlockI(basic_block inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_cfg_block)
+gcc_private_make_cfg_block(basic_block inner)
 {
-    struct GccCfgBlockI result;
+    struct gcc_cfg_block result;
     result.inner = inner;
     return result;
 }
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccCfgBlockI_MarkInUse(GccCfgBlockI block)
+gcc_cfg_block_mark_in_use(gcc_cfg_block block)
 {
     gt_ggc_mx_basic_block_def(block.inner);
 }
 
 GCC_IMPLEMENT_PUBLIC_API(int)
-GccCfgBlockI_GetIndex(GccCfgBlockI block)
+gcc_cfg_block_get_index(gcc_cfg_block block)
 {
     return block.inner->index;
 }
 
 static bool
 for_each_edge(VEC(edge,gc) *vec_edges,
-              bool (*cb)(GccCfgEdgeI edge, void *user_data),
+              bool (*cb)(gcc_cfg_edge edge, void *user_data),
               void *user_data)
 {
     int i;
     edge e;
 
     FOR_EACH_VEC_ELT(edge, vec_edges, i, e) {
-        if (cb(GccPrivate_make_CfgEdgeI(e),
+        if (cb(gcc_private_make_cfg_edge(e),
                user_data)) {
             return true;
         }
@@ -123,16 +123,16 @@ for_each_edge(VEC(edge,gc) *vec_edges,
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachPredEdge(GccCfgBlockI block,
-                             bool (*cb)(GccCfgEdgeI edge, void *user_data),
+gcc_cfg_block_for_each_pred_edge(gcc_cfg_block block,
+                             bool (*cb)(gcc_cfg_edge edge, void *user_data),
                              void *user_data)
 {
     return for_each_edge(block.inner->preds, cb, user_data);
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
-                             bool (*cb)(GccCfgEdgeI edge, void *user_data),
+gcc_cfg_block_for_each_succ_edge(gcc_cfg_block block,
+                             bool (*cb)(gcc_cfg_edge edge, void *user_data),
                              void *user_data)
 {
     return for_each_edge(block.inner->succs, cb, user_data);
@@ -140,8 +140,8 @@ GccCfgBlockI_ForEachSuccEdge(GccCfgBlockI block,
 
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
-                              bool (*cb)(GccGimplePhiI phi, void *user_data),
+gcc_cfg_block_for_each_gimple_phi(gcc_cfg_block block,
+                              bool (*cb)(gcc_gimple_phi phi, void *user_data),
                               void *user_data)
 {
     gimple_stmt_iterator gsi;
@@ -159,7 +159,7 @@ GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
 	 gsi_next(&gsi)) {
 
 	gimple stmt = gsi_stmt(gsi);
-        if (cb(GccPrivate_make_GimplePhiI(stmt),
+        if (cb(gcc_private_make_gimple_phi(stmt),
                user_data)) {
             return true;
         }
@@ -169,8 +169,8 @@ GccCfgBlockI_ForEachGimplePhi(GccCfgBlockI block,
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
-                           bool (*cb)(GccGimpleI stmt, void *user_data),
+gcc_cfg_block_for_each_gimple(gcc_cfg_block block,
+                           bool (*cb)(gcc_gimple stmt, void *user_data),
                            void *user_data)
 {
     gimple_stmt_iterator gsi;
@@ -188,7 +188,7 @@ GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
 	 gsi_next(&gsi)) {
 
 	gimple stmt = gsi_stmt(gsi);
-        if (cb(GccPrivate_make_GimpleI(stmt),
+        if (cb(gcc_private_make_gimple(stmt),
                user_data)) {
             return true;
         }
@@ -198,8 +198,8 @@ GccCfgBlockI_ForEachGimple(GccCfgBlockI block,
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-GccCfgBlockI_ForEachRtlInsn(GccCfgBlockI block,
-                            bool (*cb)(GccRtlInsnI insn, void *user_data),
+gcc_cfg_block_for_each_rtl_insn(gcc_cfg_block block,
+                            bool (*cb)(gcc_rtl_insn insn, void *user_data),
                             void *user_data)
 {
     rtx insn;
@@ -209,7 +209,7 @@ GccCfgBlockI_ForEachRtlInsn(GccCfgBlockI block,
     }
 
     FOR_BB_INSNS(block.inner, insn) {
-        if (cb(GccPrivate_make_RtlInsnI(insn),
+        if (cb(gcc_private_make_rtl_insn(insn),
                user_data)) {
             return true;
         }
@@ -219,42 +219,42 @@ GccCfgBlockI_ForEachRtlInsn(GccCfgBlockI block,
 }
 
 /***********************************************************
-   GccCfgEdgeI
+   gcc_cfg_edge
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct GccCfgEdgeI)
-GccPrivate_make_CfgEdgeI(edge inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_cfg_edge)
+gcc_private_make_cfg_edge(edge inner)
 {
-    struct GccCfgEdgeI result;
+    struct gcc_cfg_edge result;
     result.inner = inner;
     return result;
 }
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-GccCfgEdgeI_MarkInUse(GccCfgEdgeI edge)
+gcc_cfg_edge_mark_in_use(gcc_cfg_edge edge)
 {
     gt_ggc_mx_edge_def(edge.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccCfgBlockI)
-GccCfgEdgeI_GetSrc(GccCfgEdgeI edge)
+GCC_IMPLEMENT_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_edge_get_src(gcc_cfg_edge edge)
 {
-    return GccPrivate_make_CfgBlockI(edge.inner->src);
+    return gcc_private_make_cfg_block(edge.inner->src);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(GccCfgBlockI)
-GccCfgEdgeI_GetDest(GccCfgEdgeI edge)
+GCC_IMPLEMENT_PUBLIC_API(gcc_cfg_block)
+gcc_cfg_edge_get_dest(gcc_cfg_edge edge)
 {
-    return GccPrivate_make_CfgBlockI(edge.inner->dest);
+    return gcc_private_make_cfg_block(edge.inner->dest);
 }
 
 GCC_PUBLIC_API(bool)
-GccCfgEdgeI_IsTrueValue(GccCfgEdgeI edge)
+gcc_cfg_edge_is_true_value(gcc_cfg_edge edge)
 {
     return (edge.inner->flags & EDGE_TRUE_VALUE) == EDGE_TRUE_VALUE;
 }
 
 GCC_PUBLIC_API(bool)
-GccCfgEdgeI_IsFalseValue(GccCfgEdgeI edge)
+gcc_cfg_edge_is_false_value(gcc_cfg_edge edge)
 {
     return (edge.inner->flags & EDGE_FALSE_VALUE) == EDGE_FALSE_VALUE;
 }

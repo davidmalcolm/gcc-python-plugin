@@ -39,13 +39,13 @@ def generate_edge():
                                    [PyGetSetDef('src',
                                                 cu.add_simple_getter('gcc_Edge_get_src',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(GccCfgEdgeI_GetSrc(self->e))'),
+                                                                     'gcc_python_make_wrapper_basic_block(gcc_cfg_edge_get_src(self->e))'),
                                                 None,
                                                 'The source gcc.BasicBlock of this edge'),
                                     PyGetSetDef('dest',
                                                 cu.add_simple_getter('gcc_Edge_get_dest',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(GccCfgEdgeI_GetDest(self->e))'),
+                                                                     'gcc_python_make_wrapper_basic_block(gcc_cfg_edge_get_dest(self->e))'),
                                                 None,
                                                 'The destination gcc.BasicBlock of this edge')],
                                    identifier_prefix = 'gcc_Edge',
@@ -57,7 +57,7 @@ def generate_edge():
         flagname = flag[5:].lower()
         getsettable.add_simple_getter(cu,
                                       flagname,
-                                      'PyBool_FromLong(GccCfgEdgeI_Is%s(self->e))' % camel_case(flagname),
+                                      'PyBool_FromLong(gcc_cfg_edge_is_%s(self->e))' % flagname,
                                       'Boolean, corresponding to flag %s' % flag)
 
     cu.add_defn(getsettable.c_defn())
@@ -111,7 +111,7 @@ def generate_basic_block():
                                    typename='PyGccBasicBlock')
     getsettable.add_simple_getter(cu,
                                   'index',
-                                  'gcc_python_int_from_long(GccCfgBlockI_GetIndex(self->bb))',
+                                  'gcc_python_int_from_long(gcc_cfg_block_get_index(self->bb))',
                                   None)
     cu.add_defn(getsettable.c_defn())
 
@@ -146,13 +146,13 @@ def generate_cfg():
                                     PyGetSetDef('entry',
                                                 cu.add_simple_getter('gcc_Cfg_get_entry',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(GccCfgI_GetEntry(self->cfg))'),
+                                                                     'gcc_python_make_wrapper_basic_block(gcc_cfg_get_entry(self->cfg))'),
                                                 None,
                                                 'The initial gcc.BasicBlock in this graph'),
                                     PyGetSetDef('exit', 
                                                 cu.add_simple_getter('gcc_Cfg_get_exit',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(GccCfgI_GetExit(self->cfg))'),
+                                                                     'gcc_python_make_wrapper_basic_block(gcc_cfg_get_exit(self->cfg))'),
                                                 None,
                                                 'The final gcc.BasicBlock in this graph'),
                                     ])
