@@ -779,3 +779,71 @@ kinds of analysis - hopefully the python-specific parts are relatively
 self-contained.  Email the `gcc-python-plugin's mailing list
 <https://fedorahosted.org/mailman/listinfo/gcc-python-plugin/>`_ if you're
 interested in adding verifiers for other kinds of code.
+
+Common mistakes
+---------------
+Here are some common mistakes made using the CPython extension API, along with
+the fixes.
+
+Missing `Py_INCREF()` on `Py_None`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following is typically incorrect: a method implementation is required to
+return a new reference, but this code isn't incrementing the reference count
+on Py_None.
+
+.. code-block:: c
+
+    PyObject*
+    some_method(PyObject *self, PyObject *args)
+    {
+        [...snip...]
+
+        /* BUG: loses a reference to Py_None */
+        return Py_None;
+    }
+
+If called enough, this could cause Py_None to be deallocated, crashing the
+interpreter::
+
+    Fatal error: deallocating None
+
+The `Py_RETURN_NONE <http://docs.python.org/c-api/none.html#Py_RETURN_NONE>`_
+macro takes care of incrementing the reference count for you:
+
+.. code-block:: c
+
+    PyObject*
+    some_method(PyObject *self, PyObject *args)
+    {
+        [...snip...]
+
+        /* Fixed version of the above: */
+        Py_RETURN_NONE;
+    }
+
+Reference leak in Py_BuildValue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Py_BuildValue <http://docs.python.org/c-api/arg.html#Py_BuildValue>`_ with
+"O" adds a new reference on the object for use by the new tuple, hence the
+following code leaks the reference already owned on the object:
+
+.. code-block:: c
+
+    /* BUG: reference leak: */
+    return Py_BuildValue("O", some_object_we_own_a_ref_on);
+
+`Py_BuildValue <http://docs.python.org/c-api/arg.html#Py_BuildValue>`_ with
+"N" steals the reference (and copes with it being NULL by propagating the
+exception):
+
+.. code-block:: c
+
+    /* Fixed version of the above: */
+    return Py_BuildValue("N", some_object_we_own_a_ref_on);
+
+
+.. TODO: other examples?
+
+   - constructing a list
