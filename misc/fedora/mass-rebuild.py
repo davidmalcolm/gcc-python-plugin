@@ -164,7 +164,9 @@ def local_rebuild_of_srpm_in_mock(srpmpath, mockcfg):
             # Copy the file from the chroot to our result location:
             run_mock(['--copyout', line, dstPath])
 
-PLUGIN_PATH='gcc-python2-plugin-0.9-1.fc16.x86_64.rpm'
+#PLUGIN_PATH='gcc-python2-plugin-0.9-1.fc16.x86_64.rpm'
+#PLUGIN_PATH='gcc-python2-plugin-0.9-1.with.git.stuff.fc16.a29cf4f671e566a7ee92cb3d604cc6ccfb25b781.x86_64.rpm'
+PLUGIN_PATH='gcc-python2-plugin-0.9-1.with.git.stuff.fc16.1e4eb81.x86_64.rpm'
 MOCK_CONFIG='fedora-16-x86_64'
 
 def prepare_bug_report(srpmpath, index):
@@ -238,13 +240,14 @@ gcc-python-plugin post-0.9 git %(gitversion)s running the checker in an *f16* ch
 
 # Rebuild all src.rpm files found in "SRPMS" as necessary:
 if 1:
+    #unimplemented_functions = {}
     for srpmpath in sorted(glob.glob('SRPMS/*.src.rpm')):
         srpmname, version, release = nvr_from_srpm_path(srpmpath)
 
         bugdb = BugReportDb()
         # print(bugdb.bugs)
         bugdb.print_summary()
-        print('Processing %s' % srpmname)
+        print('Processing %s' % srpmpath)
         statuses = bugdb.find(srpmname)
         if statuses:
             for status in statuses:
@@ -253,10 +256,34 @@ if 1:
 
         resultdir = get_result_dir(srpmpath)
         if not os.path.exists(resultdir):
+            continue #!
             local_rebuild_of_srpm_in_mock(srpmpath, MOCK_CONFIG)
+
+        from makeindex import BuildLog
+        try:
+            buildlog = BuildLog(resultdir)
+        except IOError:
+            continue
+        #for fn in buildlog.unimplemented_functions:
+        #    if fn in unimplemented_functions:
+        #        unimplemented_functions[fn] += 1
+        #    else:
+        #        unimplemented_functions[fn] = 1
+
+        #continue
+
         index = Index(resultdir, 'Errors seen in %s' % resultdir)
-        prepare_bug_report(srpmpath, index)
-        break
+        if not index.reported:
+            prepare_bug_report(srpmpath, index)
+            break
+
+if 0:
+  from pprint import pprint
+  pprint(unimplemented_functions)
+  for key, value in sorted([(k, v) for (k, v) in unimplemented_functions.iteritems()],
+                           lambda (k1,v1), (k2, v2): cmp(v2, v1)):
+      print key, value
+                         
 
 # TODO:
 # - automate grabbing the src.rpms; see e.g.:
