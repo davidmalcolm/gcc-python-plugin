@@ -488,6 +488,8 @@ class ConcreteValue(AbstractValue):
                     return ConcreteValue(gcctype, loc, self.value)
             # We might lose information e.g. truncation; be pessimistic for now:
             return UnknownValue.make(gcctype, loc)
+        elif exprcode == gcc.FixTruncExpr:
+            return ConcreteValue(gcctype, loc, int(self.value))
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
@@ -2590,7 +2592,7 @@ class State(object):
                 return UnknownValue.make(stmt.lhs.type, stmt.loc)
         # Unary expressions:
         elif stmt.exprcode in (gcc.AbsExpr, gcc.BitNotExpr, gcc.ConvertExpr,
-                               gcc.NegateExpr):
+                               gcc.NegateExpr, gcc.FixTruncExpr):
             v_rhs = self.eval_rvalue(stmt.rhs[0], stmt.loc)
             return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
         elif stmt.exprcode == gcc.BitFieldRef:
