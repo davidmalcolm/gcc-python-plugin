@@ -273,7 +273,7 @@ def main(argv):
         return "Please provide code and json filenames."
     codefile = open(argv[1])
     jsonfile = open(argv[2])
-    print HtmlPage(codefile, jsonfile)
+    print(HtmlPage(codefile, jsonfile))
 
 if __name__ == '__main__':
     from sys import argv as ARGV
