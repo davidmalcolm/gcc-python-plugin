@@ -161,7 +161,7 @@ class HtmlPage(object):
         """make the footer"""
         return E.E.footer(
             E.ATTR(id='footer'),
-            E.P(u' \xa0|\xa0 '.join((
+            E.P(' &nbsp;|&nbsp; '.join((
                 'Hackathon 7.0',
                 'Buck G, Alex M, Jason M',
                 'Yelp HQ 2012',
@@ -273,7 +273,7 @@ def main(argv):
         return "Please provide code and json filenames."
     codefile = open(argv[1])
     jsonfile = open(argv[2])
-    print HtmlPage(codefile, jsonfile)
+    print(HtmlPage(codefile, jsonfile))
 
 if __name__ == '__main__':
     from sys import argv as ARGV

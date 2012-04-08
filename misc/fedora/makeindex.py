@@ -263,7 +263,7 @@ class BuildLog:
         with open(buildlog) as f:
             for line in f.readlines():
                 if 0:
-                    print repr(line)
+                    print(repr(line))
                 m = re.match('NotImplementedError: not yet implemented: (\S+)',
                              line)
                 if m:
