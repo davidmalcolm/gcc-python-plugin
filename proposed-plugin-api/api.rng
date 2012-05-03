@@ -1,77 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+Copyright 2012 Red Hat, Inc.
 
-   This is free software: you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+This is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see
+<http://www.gnu.org/licenses/>.
 -->
 <!--
-   RelaxNG schema for the api format
+RelaxNG schema for the api format
 -->
 <grammar xmlns="http://relaxng.org/ns/structure/1.0">
-<start>
-<element name="api">
-  <attribute name="name"> <text/> </attribute>
-  <element name="doc">
-    <text/>
-  </element>
-
-  <zeroOrMore>
-    <element name="type">
+  <start>
+    <element name="api">
       <attribute name="name"> <text/> </attribute>
-      <optional>
-        <attribute name="base"> <text/> </attribute>
-      </optional>
-      <optional>
-        <attribute name="inner"> <text/> </attribute>
-      </optional>
-      <optional>
-        <attribute name="varname"> <text/> </attribute>
-      </optional>
-
-      <optional>
-        <element name="doc">
-          <text/>
-        </element>
-      </optional>
-
-      <!-- the attributes of this type -->
-      <zeroOrMore>
-        <ref name="attribute"/>
-      </zeroOrMore>
+      <element name="doc">
+        <text/>
+      </element>
 
       <zeroOrMore>
-        <element name="iterator">
+        <element name="type">
           <attribute name="name"> <text/> </attribute>
-          <attribute name="kind"> <text/> </attribute>
+          <optional>
+            <attribute name="base"> <text/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="inner"> <text/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="varname"> <text/> </attribute>
+          </optional>
+
           <optional>
             <element name="doc">
               <text/>
             </element>
           </optional>
+
+          <!-- the attributes of this type -->
+          <zeroOrMore>
+            <ref name="attribute"/>
+          </zeroOrMore>
+
+          <zeroOrMore>
+            <element name="iterator">
+              <attribute name="name"> <text/> </attribute>
+              <attribute name="kind"> <text/> </attribute>
+              <optional>
+                <element name="doc">
+                  <text/>
+                </element>
+              </optional>
+            </element>
+          </zeroOrMore>
         </element>
       </zeroOrMore>
-    </element>
-  </zeroOrMore>
 
-  <!-- global attributes -->
-  <zeroOrMore>
-    <ref name="attribute"/>
-  </zeroOrMore>
-</element>
-</start>
+      <!-- global attributes -->
+      <zeroOrMore>
+        <ref name="attribute"/>
+      </zeroOrMore>
+    </element>
+  </start>
 
   <!-- <attribute> is shared by both <type> and by <api> -->
   <define name="attribute">
