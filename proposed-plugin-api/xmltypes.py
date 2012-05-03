@@ -188,6 +188,10 @@ class Api:
         for node in self.api.findall('attribute'):
             yield Attribute(self, node)
 
+    def iter_iters(self):
+        for node in self.api.findall('iterator'):
+            yield Iterator(self, node)
+
 class Tests(unittest.TestCase):
     def test_loading_all(self):
         r = ApiRegistry()

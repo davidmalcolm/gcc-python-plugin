@@ -163,6 +163,21 @@ def write_api(api, out):
                          attr.get_varname()))
         out.write('\n')
 
+    # add iterators
+    for iter_ in api.iter_iters():
+        itertype = iter_.get_type()
+        out.write('/*\n')
+        out.write('  Iterator; terminates if the callback returns truth\n')
+        out.write('  (for linear search).\n')
+        out.write('*/\n')
+        out.write('GCC_PUBLIC_API(bool)\n'
+                  'gcc_for_each_%s(bool (*cb)(%s %s, void *user_data),\n'
+                  '    void *user_data);\n'
+                  % (iter_.get_c_name(),
+                     itertype.get_c_name(),
+                     itertype.get_varname()))
+        out.write('\n')
+
     write_footer(out)
 
 def write_public_types(registry, out):

@@ -47,9 +47,20 @@ GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple_phi)
 gcc_private_make_gimple_phi(gimple inner)
 {
     struct gcc_gimple_phi result;
+    /* FIXME: type-checking */
     result.inner = inner;
     return result;
 }
+
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple_call)
+gcc_private_make_gimple_call(gimple inner)
+{
+    struct gcc_gimple_call result;
+    /* FIXME: type-checking */
+    result.inner = inner;
+    return result;
+}
+
 
 GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple)
 gcc_private_make_gimple(gimple inner)
@@ -63,6 +74,12 @@ GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
 gcc_gimple_phi_upcast(gcc_gimple_phi phi)
 {
     return gcc_private_make_gimple(phi.inner);
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
+gcc_gimple_call_upcast(gcc_gimple_call call)
+{
+    return gcc_private_make_gimple(call.inner);
 }
 
 /*

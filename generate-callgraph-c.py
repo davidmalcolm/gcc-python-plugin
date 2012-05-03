@@ -22,7 +22,8 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("cgraph.h")
+cu.add_include("proposed-plugin-api/gcc-callgraph.h")
+cu.add_include("proposed-plugin-api/gcc-gimple.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -39,15 +40,15 @@ def generate_callgraph_edge():
                                    typename='PyGccCallgraphEdge')
     getsettable.add_simple_getter(cu,
                                   'caller',
-                                  'gcc_python_make_wrapper_cgraph_node(self->edge->caller)',
+                                  'gcc_python_make_wrapper_cgraph_node(gcc_cgraph_edge_get_caller(self->edge))',
                                   'The function that makes this call, as a gcc.CallgraphNode')
     getsettable.add_simple_getter(cu,
                                   'callee',
-                                  'gcc_python_make_wrapper_cgraph_node(self->edge->callee)',
+                                  'gcc_python_make_wrapper_cgraph_node(gcc_cgraph_edge_get_callee(self->edge))',
                                   'The function that is called here, as a gcc.CallgraphNode')
     getsettable.add_simple_getter(cu,
                                   'call_stmt',
-                                  'gcc_python_make_wrapper_gimple(gcc_private_make_gimple(self->edge->call_stmt))',
+                                  'gcc_python_make_wrapper_gimple(gcc_gimple_call_upcast(gcc_cgraph_edge_get_call_stmt(self->edge)))',
                                   'The gcc.GimpleCall statememt for the function call')
     cu.add_defn(getsettable.c_defn())
 
@@ -80,7 +81,7 @@ def generate_callgraph_node():
     # FIXME: add getters
     getsettable.add_simple_getter(cu,
                                   'decl',
-                                  'gcc_python_make_wrapper_tree(self->node->decl)',
+                                  'gcc_python_make_wrapper_tree(gcc_cgraph_node_get_decl(self->node).inner)',
                                   'The gcc.FunctionDecl for this node')
     getsettable.add_gsdef('callees',
                           'gcc_CallgraphNode_get_callees',

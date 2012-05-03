@@ -157,12 +157,12 @@ extern PyTypeObject PyGccWrapperMetaType;
 DECLARE_SIMPLE_WRAPPER(PyGccCallgraphEdge,
 		       gcc_CallgraphEdgeType,
 		       cgraph_edge,
-                       struct cgraph_edge *, edge)
+                       gcc_cgraph_edge, edge)
 
 DECLARE_SIMPLE_WRAPPER(PyGccCallgraphNode,
 		       gcc_CallgraphNodeType,
 		       cgraph_node,
-                       struct cgraph_node *, node)
+                       gcc_cgraph_node, node)
 
 DECLARE_SIMPLE_WRAPPER(PyGccPass,
 		       gcc_PassType,

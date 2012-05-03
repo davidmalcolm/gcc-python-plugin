@@ -18,7 +18,9 @@
 .PHONY: all clean debug dump_gimple plugin show-ssa tarball test-suite testcpychecker testcpybuilder
 
 PLUGIN_SOURCE_FILES= \
+  proposed-plugin-api/gcc-callgraph.c \
   proposed-plugin-api/gcc-cfg.c \
+  proposed-plugin-api/gcc-declaration.c \
   proposed-plugin-api/gcc-function.c \
   proposed-plugin-api/gcc-gimple.c \
   proposed-plugin-api/gcc-location.c \
@@ -44,6 +46,7 @@ PLUGIN_SOURCE_FILES= \
   gcc-python-wrapper.c \
 
 PROPOSED_API_SOURCE_XML:= \
+  proposed-plugin-api/callgraph.xml \
   proposed-plugin-api/cfg.xml \
   proposed-plugin-api/constant.xml \
   proposed-plugin-api/declaration.xml \
@@ -57,6 +60,7 @@ PROPOSED_API_SOURCE_XML:= \
 PROPOSED_API_GENERATED_HEADERS:= \
   proposed-plugin-api/gcc-public-types.h \
   proposed-plugin-api/gcc-semiprivate-types.h \
+  proposed-plugin-api/gcc-callgraph.h \
   proposed-plugin-api/gcc-cfg.h \
   proposed-plugin-api/gcc-constant.h \
   proposed-plugin-api/gcc-declaration.h \

@@ -53,15 +53,7 @@ RelaxNG schema for the api format
           </zeroOrMore>
 
           <zeroOrMore>
-            <element name="iterator">
-              <attribute name="name"> <text/> </attribute>
-              <attribute name="kind"> <text/> </attribute>
-              <optional>
-                <element name="doc">
-                  <text/>
-                </element>
-              </optional>
-            </element>
+            <ref name="iterator"/>
           </zeroOrMore>
         </element>
       </zeroOrMore>
@@ -69,6 +61,11 @@ RelaxNG schema for the api format
       <!-- global attributes -->
       <zeroOrMore>
         <ref name="attribute"/>
+      </zeroOrMore>
+
+      <!-- global iterators -->
+      <zeroOrMore>
+        <ref name="iterator"/>
       </zeroOrMore>
     </element>
   </start>
@@ -87,6 +84,19 @@ RelaxNG schema for the api format
         </attribute>
       </optional>
 
+      <optional>
+        <element name="doc">
+          <text/>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+  <!-- <iterator> is shared by both <type> and by <api> -->
+  <define name="iterator">
+    <element name="iterator">
+      <attribute name="name"> <text/> </attribute>
+      <attribute name="kind"> <text/> </attribute>
       <optional>
         <element name="doc">
           <text/>
