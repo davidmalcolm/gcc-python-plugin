@@ -20,7 +20,9 @@
 <!--
    RelaxNG schema for the api format
 -->
-<element name="api" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<start>
+<element name="api">
   <attribute name="name"> <text/> </attribute>
   <element name="doc">
     <text/>
@@ -47,15 +49,7 @@
 
       <!-- the attributes of this type -->
       <zeroOrMore>
-        <element name="attribute">
-          <attribute name="name"> <text/> </attribute>
-          <attribute name="kind"> <text/> </attribute>
-          <optional>
-            <element name="doc">
-              <text/>
-            </element>
-          </optional>
-        </element>
+        <ref name="attribute"/>
       </zeroOrMore>
 
       <zeroOrMore>
@@ -74,6 +68,13 @@
 
   <!-- global attributes -->
   <zeroOrMore>
+    <ref name="attribute"/>
+  </zeroOrMore>
+</element>
+</start>
+
+  <!-- <attribute> is shared by both <type> and by <api> -->
+  <define name="attribute">
     <element name="attribute">
       <attribute name="name"> <text/> </attribute>
       <attribute name="kind"> <text/> </attribute>
@@ -91,8 +92,7 @@
           <text/>
         </element>
       </optional>
-
     </element>
-  </zeroOrMore>
+  </define>
 
-</element>
+</grammar>
