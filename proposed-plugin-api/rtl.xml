@@ -1,4 +1,5 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
    Copyright 2012 David Malcolm <dmalcolm@redhat.com>
    Copyright 2012 Red Hat, Inc.
 
@@ -15,18 +16,12 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
-*/
+-->
+<api name="rtl">
 
-/* FIXME: rationalize these headers */
-#include <Python.h>
-#include "proposed-plugin-api/gcc-common.h"
-#include "gcc-python.h"
-#include "gcc-python-wrappers.h"
-#include "gcc-python-compat.h"
-#include "rtl.h"
-#include "tree-flow.h"
-#include "tree-flow-inline.h"
+  <doc>Register Transfer Language</doc>
 
-/* RTL instructions */
-GCC_PUBLIC_API(void)
-gcc_rtl_insn_mark_in_use(gcc_rtl_insn insn);
+  <type name="rtl_insn" varname="rtl" inner="struct rtx_def *">
+  </type>
+  
+</api>

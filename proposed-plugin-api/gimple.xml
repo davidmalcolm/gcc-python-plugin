@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+-->
+<api name="gimple">
+
+  <doc>GIMPLE statements</doc>
+
+  <type name="gimple" varname="stmt" inner="gimple">
+    <attribute name="location" kind="location">
+      <doc>Source code location of this statement</doc>
+    </attribute>
+    <!-- TODO: "block" -->
+  </type>
+
+  <type name="gimple_asm" base="gimple">
+    <attribute name="string" kind="string">
+      <doc>The inline assembler as a string</doc>
+    </attribute>
+  </type>
+
+  <type name="gimple_assign" base="gimple">
+    <attribute name="lhs" kind="tree">
+      <doc>The left-hand-side of the assignment</doc>
+    </attribute>
+  </type>
+
+  <type name="gimple_call" base="gimple">
+    <attribute name="lhs" kind="tree">
+      <doc>The left-hand-side of the call</doc>
+    </attribute>
+    <attribute name="fn" kind="tree">
+      <doc>The function being called</doc>
+    </attribute>
+    <attribute name="fndecl" kind="tree">
+      <doc>The declaration of the function being called (if any)</doc>
+    </attribute>
+    <attribute name="noreturn" kind="bool">
+      <doc>Has this call been marked as never returning?</doc>
+    </attribute>
+    <iterator name="args" kind="tree">
+      <doc>The arguments for the call</doc>
+    </iterator>
+  </type>
+
+  <type name="gimple_return" base="gimple">
+    <attribute name="retval" kind="tree">
+      <doc>The return value</doc>
+    </attribute>
+  </type>
+
+  <type name="gimple_cond" base="gimple">
+  </type>
+
+  <type name="gimple_phi" varname="phi" base="gimple">
+    <attribute name="lhs" kind="tree">
+      <doc>The left-hand-side of the call</doc>
+    </attribute>
+
+    <!-- In the python bindings we zip this pair of lists
+         into a list of pairs: -->
+    <iterator name="exprs" kind="tree">
+      <doc>The possible input expressions to the phi node</doc>
+    </iterator>
+    <iterator name="edges" kind="cfg_edge">
+      <doc>The possible edges leading to the phi node</doc>
+    </iterator>
+
+  </type>
+
+  <type name="gimple_switch" base="gimple">
+    <attribute name="indexvar" kind="tree">
+      <doc>The index variable used by the switch statement</doc>
+    </attribute>
+    <iterator name="labels" kind="case_label_expr">
+      <doc>The labels of the switch statement.  The initial label in the list is always the default.</doc>
+    </iterator>
+  </type>
+  
+</api>

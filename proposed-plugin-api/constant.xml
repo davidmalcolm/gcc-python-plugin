@@ -1,4 +1,5 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
    Copyright 2012 David Malcolm <dmalcolm@redhat.com>
    Copyright 2012 Red Hat, Inc.
 
@@ -15,38 +16,27 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
-*/
+-->
+<api name="constant">
+  <doc>Constant Expressions</doc>
 
-#include "proposed-plugin-api/gcc-common.h"
+  <!-- constants -->
+  <type name="constant" base="tree">
+  </type>
 
-/* Declarations: locations */
-
-/* gcc_location */
-GCC_PUBLIC_API(void)
-gcc_location_mark_in_use(gcc_location loc);
-
-GCC_PUBLIC_API(const char *)
-gcc_location_get_filename(gcc_location loc);
-
-GCC_PUBLIC_API(int)
-gcc_location_get_line(gcc_location loc);
-
-GCC_PUBLIC_API(int)
-gcc_location_get_column(gcc_location loc);
-
-GCC_PUBLIC_API(bool)
-gcc_location_is_unknown(gcc_location loc);
-
-GCC_PUBLIC_API(void)
-gcc_set_input_location(gcc_location loc);
-
-GCC_PUBLIC_API(gcc_location)
-gcc_get_input_location(void);
-
-/*
-  PEP-7
-Local variables:
-c-basic-offset: 4
-indent-tabs-mode: nil
-End:
-*/
+  <!-- "cst" vs "constant" -->
+  <type name="complex_constant" base="constant">
+  </type>
+  <type name="fixed_constant" base="constant">
+  </type>
+  <type name="integer_constant" base="constant">
+  </type>
+  <type name="ptrmem_constant" base="constant">
+  </type>
+  <type name="real_constant" base="constant">
+  </type>
+  <type name="string_constant" base="constant">
+  </type>
+  <type name="vector_constant" base="constant">
+  </type>
+</api>

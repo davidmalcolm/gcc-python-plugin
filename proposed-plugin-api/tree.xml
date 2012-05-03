@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+-->
+<api name="tree">
+
+  <doc>Trees</doc>
+
+  <type name="tree" varname="node" inner="tree">
+  </type>
+
+  <type name="binary" base="tree">
+  </type>
+
+  <type name="bitwise_and_expr" base="binary">
+  </type>
+  <type name="bitwise_ior_expr" base="binary">
+  </type>
+  <type name="bitwise_xor_expr" base="binary">
+  </type>
+<!--
+  ..            CeilDivExpr
+  ..            CeilModExpr
+  ..            CompareExpr
+  ..            CompareGExpr
+  ..            CompareLExpr
+  ..            ComplexExpr
+  ..            ExactDivExpr
+  ..            FloorDivExpr
+  ..            FloorModExpr
+  ..            LrotateExpr
+  ..            LshiftExpr
+  ..            MaxExpr
+  ..            MinExpr
+  ..            MinusExpr
+  ..            MinusNomodExpr
+  ..            MultExpr
+  ..            PlusExpr
+  ..            PlusNomodExpr
+  ..            PointerPlusExpr
+  ..            RangeExpr
+  ..            RdivExpr
+  ..            RoundDivExpr
+  ..            RoundModExpr
+  ..            RrotateExpr
+  ..            RshiftExpr
+  ..            TruncDivExpr
+  ..            TruncModExpr
+  ..            UrshiftExpr
+  ..            VecExtractevenExpr
+  ..            VecExtractoddExpr
+  ..            VecInterleavehighExpr
+  ..            VecInterleavelowExpr
+  ..            VecLshiftExpr
+  ..            VecPackFixTruncExpr
+  ..            VecPackSatExpr
+  ..            VecPackTruncExpr
+  ..            VecRshiftExpr
+  ..            WidenMultExpr
+  ..            WidenMultHiExpr
+  ..            WidenMultLoExpr
+  ..            WidenSumExpr
+-->
+  <type name="block" base="tree">
+  </type>
+
+<!--
+  ..        Comparison
+  ..            EqExpr
+  ..            GeExpr
+  ..            GtExpr
+  ..            LeExpr
+  ..            LtExpr
+  ..            LtgtExpr
+  ..            NeExpr
+  ..            OrderedExpr
+  ..            UneqExpr
+  ..            UngeExpr
+  ..            UngtExpr
+  ..            UnleExpr
+  ..            UnltExpr
+  ..            UnorderedExpr
+
+  ..        Constructor
+  ..        DefaultArg
+  ..        ErrorMark
+  ..        Expression
+  ..            AddrExpr
+  ..            AlignofExpr
+  ..            ArrowExpr
+  ..            AssertExpr
+  ..            AtEncodeExpr
+  ..            BindExpr
+  ..            CMaybeConstExpr
+  ..            ClassReferenceExpr
+  ..            CleanupPointExpr
+  ..            CompoundExpr
+  ..            CompoundLiteralExpr
+  ..            CondExpr
+  ..            CtorInitializer
+  ..            DlExpr
+  ..            DotProdExpr
+  ..            DotstarExpr
+  ..            EmptyClassExpr
+  ..            ExcessPrecisionExpr
+  ..            ExprPackExpansion
+  ..            ExprStmt
+  ..            FdescExpr
+  ..            FmaExpr
+  ..            InitExpr
+  ..            MessageSendExpr
+  ..            ModifyExpr
+  ..            ModopExpr
+  ..            MustNotThrowExpr
+  ..            NonDependentExpr
+  ..            NontypeArgumentPack
+  ..            NullExpr
+  ..            NwExpr
+  ..            ObjTypeRef
+  ..            OffsetofExpr
+  ..            PolynomialChrec
+  ..            PostdecrementExpr
+  ..            PostincrementExpr
+  ..            PredecrementExpr
+  ..            PredictExpr
+  ..            PreincrementExpr
+  ..            PropertyRef
+  ..            PseudoDtorExpr
+  ..            RealignLoad
+  ..            SaveExpr
+  ..            ScevKnown
+  ..            ScevNotKnown
+  ..            SizeofExpr
+  ..            StmtExpr
+  ..            TagDefn
+  ..            TargetExpr
+  ..            TemplateIdExpr
+  ..            ThrowExpr
+  ..            TruthAndExpr
+  ..            TruthAndifExpr
+  ..            TruthNotExpr
+  ..            TruthOrExpr
+  ..            TruthOrifExpr
+  ..            TruthXorExpr
+  ..            TypeExpr
+  ..            TypeidExpr
+  ..            VaArgExpr
+  ..            VecCondExpr
+  ..            VecDlExpr
+  ..            VecInitExpr
+  ..            VecNwExpr
+  ..            WidenMultMinusExpr
+  ..            WidenMultPlusExpr
+  ..            WithCleanupExpr
+  ..            WithSizeExpr
+  ..        IdentifierNode
+  ..        LambdaExpr
+  ..        OmpClause
+  ..        OptimizationNode
+  ..        Overload
+  ..        PlaceholderExpr
+  ..        Reference
+  ..            ArrayRangeRef
+  ..            ArrayRef
+  ..            AttrAddrExpr
+  ..            BitFieldRef
+  ..            ComponentRef
+  ..            ImagpartExpr
+  ..            IndirectRef
+  ..            MemRef
+  ..            MemberRef
+  ..            OffsetRef
+  ..            RealpartExpr
+  ..            ScopeRef
+  ..            TargetMemRef
+  ..            UnconstrainedArrayRef
+  ..            ViewConvertExpr
+  ..        SsaName
+-->
+  <type name="statement" base="tree">
+  </type>
+<!--
+  ..        Statement
+  ..            AsmExpr
+  ..            BreakStmt
+-->
+
+  <type name="case_label_expr" base="statement">
+  </type>
+
+<!--
+  ..            CatchExpr
+  ..            CleanupStmt
+  ..            ContinueStmt
+  ..            DeclExpr
+  ..            DoStmt
+  ..            EhFilterExpr
+  ..            EhSpecBlock
+  ..            ExitExpr
+  ..            ExitStmt
+  ..            ForStmt
+  ..            GotoExpr
+  ..            Handler
+  ..            IfStmt
+  ..            LabelExpr
+  ..            LoopExpr
+  ..            LoopStmt
+  ..            OmpAtomic
+  ..            OmpCritical
+  ..            OmpFor
+  ..            OmpMaster
+  ..            OmpOrdered
+  ..            OmpParallel
+  ..            OmpSection
+  ..            OmpSections
+  ..            OmpSingle
+  ..            OmpTask
+  ..            RangeForStmt
+  ..            ReturnExpr
+  ..            StmtStmt
+  ..            SwitchExpr
+  ..            SwitchStmt
+  ..            TryBlock
+  ..            TryCatchExpr
+  ..            TryFinally
+  ..            UsingDirective
+  ..            WhileStmt
+  ..        StatementList
+  ..        StaticAssert
+  ..        TargetOptionNode
+  ..        TemplateInfo
+  ..        TemplateParmIndex
+  ..        TraitExpr
+  ..        TreeBinfo
+  ..        TreeList
+  ..        TreeVec
+  ..        Unary
+  ..            AbsExpr
+  ..            AddrSpaceConvertExpr
+  ..            BitNotExpr
+  ..            CastExpr
+  ..            ConjExpr
+  ..            ConstCastExpr
+  ..            ConvertExpr
+  ..            DynamicCastExpr
+  ..            FixTruncExpr
+  ..            FixedConvertExpr
+  ..            FloatExpr
+  ..            NegateExpr
+  ..            NoexceptExpr
+  ..            NonLvalueExpr
+  ..            NopExpr
+  ..            ParenExpr
+  ..            ReducMaxExpr
+  ..            ReducMinExpr
+  ..            ReducPlusExpr
+  ..            ReinterpretCastExpr
+  ..            StaticCastExpr
+  ..            UnaryPlusExpr
+  ..            VecUnpackFloatHiExpr
+  ..            VecUnpackFloatLoExpr
+  ..            VecUnpackHiExpr
+  ..            VecUnpackLoExpr
+  ..        VlExp
+  ..            AggrInitExpr
+  ..            CallExpr
+-->
+  
+</api>

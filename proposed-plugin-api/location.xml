@@ -1,4 +1,5 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
    Copyright 2012 David Malcolm <dmalcolm@redhat.com>
    Copyright 2012 Red Hat, Inc.
 
@@ -15,35 +16,26 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
-*/
+-->
+<api name="location">
 
-#include "proposed-plugin-api/gcc-common.h"
+  <doc>Source code locations</doc>
 
-/* Declarations: functions */
+  <type name="location" varname="loc" inner="location_t">
+    <attribute name="filename" kind="string">
+    </attribute>
 
-/* gcc_function */
-GCC_PUBLIC_API(void)
-gcc_function_mark_in_use(gcc_function func);
+    <attribute name="line" kind="int">
+    </attribute>
 
-GCC_PUBLIC_API(gcc_cfg)
-gcc_function_get_cfg(gcc_function func);
+    <attribute name="column" kind="int">
+    </attribute>
 
-GCC_PUBLIC_API(int)
-gcc_function_get_index(gcc_function func);
+    <attribute name="is_unknown" kind="bool">
+    </attribute>
+  </type>
 
-GCC_PUBLIC_API(gcc_location)
-gcc_function_get_start(gcc_function func);
+  <attribute name="input_location" kind="location" access="rw">
+  </attribute>
 
-GCC_PUBLIC_API(gcc_location)
-gcc_function_get_end(gcc_function func);
-
-GCC_PUBLIC_API(gcc_function)
-gcc_get_current_function(void);
-
-/*
-  PEP-7
-Local variables:
-c-basic-offset: 4
-indent-tabs-mode: nil
-End:
-*/
+</api>
