@@ -24,6 +24,7 @@
 #include "gcc-python-wrappers.h"
 
 #include "proposed-plugin-api/gcc-location.h"
+#include "proposed-plugin-api/gcc-variable.h"
 
 int plugin_is_GPL_compatible;
 
@@ -225,34 +226,39 @@ gcc_python_get_parameters(PyObject *self, PyObject *args)
     return NULL;
 }
 
+static bool add_var_to_list(gcc_variable var, void *user_data)
+{
+    PyObject *result = (PyObject*)user_data;
+    PyObject *obj_var;
+
+    obj_var = gcc_python_make_wrapper_variable(var);
+    if (!obj_var) {
+        return true;
+    }
+    if (-1 == PyList_Append(result, obj_var)) {
+        Py_DECREF(obj_var);
+        return true;
+    }
+    /* Success: */
+    Py_DECREF(obj_var);
+    return false;
+}
+
 static PyObject *
 gcc_python_get_variables(PyObject *self, PyObject *args)
 {
     PyObject *result;
-    struct varpool_node *n;
 
     result = PyList_New(0);
     if (!result) {
-	goto error;
+        return NULL;
     }
 
-    for (n = varpool_nodes; n; n = n->next) {
-	PyObject *obj_var = gcc_python_make_wrapper_variable(n);
-	if (!obj_var) {
-	    goto error;
-	}
-	if (-1 == PyList_Append(result, obj_var)) {
-	    Py_DECREF(obj_var);
-	    goto error;
-	}
-        Py_DECREF(obj_var);
+    if (gcc_for_each_variable(add_var_to_list, result)) {
+        Py_DECREF(result);
+        return NULL;
     }
-
     return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
 }
 
 static PyObject *

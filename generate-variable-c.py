@@ -22,10 +22,7 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("tree.h")
-cu.add_include("function.h")
-cu.add_include("basic-block.h")
-cu.add_include("cgraph.h")
+cu.add_include("proposed-plugin-api/gcc-variable.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -44,7 +41,7 @@ def generate_variable():
                               doc)
 
     add_simple_getter('decl',
-                      'gcc_python_make_wrapper_tree(self->var->decl)',
+                      'gcc_python_make_wrapper_tree(gcc_variable_get_decl(self->var).inner)',
                       'The declaration of this variable, as a gcc.Tree')
 
     cu.add_defn(getsettable.c_defn())

@@ -20,13 +20,14 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "proposed-plugin-api/gcc-variable.h"
 
 PyObject *
-gcc_python_make_wrapper_variable(struct varpool_node *node)
+gcc_python_make_wrapper_variable(gcc_variable var)
 {
     struct PyGccVariable *var_obj = NULL;
 
-    if (NULL == node) {
+    if (NULL == var.inner) {
 	Py_RETURN_NONE;
     }
   
@@ -35,7 +36,7 @@ gcc_python_make_wrapper_variable(struct varpool_node *node)
         goto error;
     }
 
-    var_obj->var = node;
+    var_obj->var = var;
 
     return (PyObject*)var_obj;
       
@@ -47,7 +48,7 @@ void
 wrtp_mark_for_PyGccVariable(PyGccVariable *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_varpool_node(wrapper->var);
+    gcc_variable_mark_in_use(wrapper->var);
 }
 
 /*
