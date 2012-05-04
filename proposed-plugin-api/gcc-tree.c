@@ -42,24 +42,21 @@ gcc_private_make_tree(tree inner)
     return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_constant)
-gcc_tree_as_gcc_constant(gcc_tree node);
+#define IMPLEMENT_DOWNCAST(T_INPUT, T_OUTPUT) \
+  GCC_IMPLEMENT_PUBLIC_API(T_OUTPUT)          \
+  T_INPUT ## _as_ ## T_OUTPUT(T_INPUT input)    \
+  {                                           \
+      T_OUTPUT output;                        \
+      output.inner = input.inner;             \
+      return output;                          \
+  }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_decl)
-gcc_tree_as_gcc_decl(gcc_tree node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_binary)
-gcc_tree_as_gcc_binary(gcc_tree node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_block)
-gcc_tree_as_gcc_block(gcc_tree node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_statement)
-gcc_tree_as_gcc_statement(gcc_tree node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_type)
-gcc_tree_as_gcc_type(gcc_tree node);
-
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_constant)
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_decl)
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_binary)
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_block)
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_statement)
+IMPLEMENT_DOWNCAST(gcc_tree, gcc_type)
 
 /* gcc_binary */
 GCC_IMPLEMENT_PUBLIC_API(void)
