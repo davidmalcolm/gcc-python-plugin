@@ -19,6 +19,7 @@
 
 #include "proposed-plugin-api/gcc-common.h"
 #include "proposed-plugin-api/gcc-semiprivate-types.h"
+#include "tree.h"
 
 GCC_IMPLEMENT_PRIVATE_API(struct gcc_function_decl)
 gcc_private_make_function_decl(tree inner)
@@ -26,6 +27,12 @@ gcc_private_make_function_decl(tree inner)
     struct gcc_function_decl result;
     result.inner = inner;
     return result;
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_decl_get_location(gcc_decl decl)
+{
+    return gcc_private_make_location(DECL_SOURCE_LOCATION(decl.inner));
 }
 
 GCC_IMPLEMENT_PUBLIC_API(gcc_tree)

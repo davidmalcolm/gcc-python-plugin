@@ -22,6 +22,7 @@
   <doc>Declarations</doc>
 
   <type name="decl" base="tree">
+    <attribute name="location" kind="location"/>
   </type>
 
   <type name="class_method_decl" base="decl">

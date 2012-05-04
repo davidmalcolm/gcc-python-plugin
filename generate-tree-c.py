@@ -32,6 +32,8 @@ cu.add_include("tree.h")
 cu.add_include("function.h")
 cu.add_include("basic-block.h")
 cu.add_include("c-family/c-common.h")
+cu.add_include("proposed-plugin-api/gcc-tree.h")
+cu.add_include("proposed-plugin-api/gcc-declaration.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -163,7 +165,7 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(gcc_private_make_location(DECL_SOURCE_LOCATION(self->t.inner)));
+    return gcc_python_make_wrapper_location(gcc_decl_get_location(gcc_tree_as_gcc_decl(self->t)));
 }
 """)
 
