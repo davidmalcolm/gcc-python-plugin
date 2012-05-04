@@ -518,7 +518,7 @@ gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
     }
 
     /* See also gcc/tree-cfg.c: label_to_block_fn */
-    uid = LABEL_DECL_UID(label_decl->t);
+    uid = LABEL_DECL_UID(label_decl->t.inner);
 
     if (uid < 0 ||
         (VEC_length (basic_block, self->cfg.inner->x_label_to_block_map)

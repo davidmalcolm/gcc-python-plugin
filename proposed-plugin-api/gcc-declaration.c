@@ -28,6 +28,22 @@ gcc_private_make_function_decl(tree inner)
     return result;
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_decl_upcast(gcc_decl decl)
+{
+    gcc_tree tree;
+    tree.inner = decl.inner;
+    return tree;
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_decl)
+gcc_function_decl_upcast(gcc_function_decl fndecl)
+{
+    gcc_decl decl;
+    decl.inner = fndecl.inner;
+    return decl;
+}
+
 
 /*
   PEP-7

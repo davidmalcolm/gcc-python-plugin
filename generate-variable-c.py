@@ -41,7 +41,7 @@ def generate_variable():
                               doc)
 
     add_simple_getter('decl',
-                      'gcc_python_make_wrapper_tree(gcc_variable_get_decl(self->var).inner)',
+                      'gcc_python_make_wrapper_tree(gcc_variable_get_decl(self->var))',
                       'The declaration of this variable, as a gcc.Tree')
 
     cu.add_defn(getsettable.c_defn())

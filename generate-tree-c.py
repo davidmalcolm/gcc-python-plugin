@@ -47,13 +47,13 @@ def generate_tree():
 static PyObject *
 gcc_Tree_get_type(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_tree(TREE_TYPE(self->t));
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_TYPE(self->t.inner)));
 }
 
 static PyObject *
 gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 {
-    return PyLong_FromVoidPtr(self->t);
+    return PyLong_FromVoidPtr(self->t.inner);
 }
 
 """)
@@ -92,7 +92,7 @@ gcc_Tree_debug(PyObject *self, PyObject *args)
     PyGccTree *tree_obj;
     /* FIXME: type checking */
     tree_obj = (PyGccTree *)self;
-    debug_tree(tree_obj->t);
+    debug_tree(tree_obj->t.inner);
     Py_RETURN_NONE;
 }
 """)
@@ -154,8 +154,8 @@ def generate_intermediate_tree_classes():
 PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 {
-    if (DECL_NAME(self->t)) {
-        return gcc_python_string_from_string(IDENTIFIER_POINTER (DECL_NAME (self->t)));
+    if (DECL_NAME(self->t.inner)) {
+        return gcc_python_string_from_string(IDENTIFIER_POINTER (DECL_NAME (self->t.inner)));
     }
     Py_RETURN_NONE;
 }
@@ -163,7 +163,7 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(gcc_private_make_location(DECL_SOURCE_LOCATION(self->t)));
+    return gcc_python_make_wrapper_location(gcc_private_make_location(DECL_SOURCE_LOCATION(self->t.inner)));
 }
 """)
 
@@ -187,10 +187,10 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 
         if localname == 'Type':
             add_simple_getter('name',
-                              'gcc_python_make_wrapper_tree(TYPE_NAME(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_NAME(self->t.inner)))',
                               "The name of the type as a gcc.Tree, or None")
             add_simple_getter('pointer',
-                              'gcc_python_make_wrapper_tree(build_pointer_type(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(build_pointer_type(self->t.inner)))',
                               "The gcc.PointerType representing '(this_type *)'")
             getsettable.add_gsdef('attributes',
                                   'gcc_Type_get_attributes',
@@ -215,7 +215,7 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 PyObject*
 %s(PyObject *cls, PyObject *args)
 {
-    return gcc_python_make_wrapper_tree(%s);
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(%s));
 }
 """                         % ('gcc_Type_get_%s' % typename, c_expr_for_node))
                 if typename == 'size_t':
@@ -245,7 +245,7 @@ PyObject*
                 assert std_type.startswith('itk_')
                 stddef = std_type[4:]
                 #add_simple_getter(stddef,
-                #                  'gcc_python_make_wrapper_tree(integer_types[%s])' % std_type,
+                #                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(integer_types[%s]))' % std_type,
                 #                  "The builtin type '%s' as a gcc.Type (or None at startup before any compilation passes)" % stddef.replace('_', ' '))
                 add_type('integer_types[%s]' % std_type, stddef)
 
@@ -268,7 +268,7 @@ PyObject*
 
         if localname == 'Unary':
             add_simple_getter('operand',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND (self->t.inner, 0)))',
                               'The operand of this expression, as a gcc.Tree')
 
         # Corresponds to this gcc/tree.h macro:
@@ -277,7 +277,7 @@ PyObject*
         if localname in ('Reference', 'Comparison', 'Unary', 'Binary',
                          'Statement' 'VlExp', 'Expression'):
             add_simple_getter('location',
-                              'gcc_python_make_wrapper_location(gcc_private_make_location(EXPR_LOCATION(self->t)))',
+                              'gcc_python_make_wrapper_location(gcc_private_make_location(EXPR_LOCATION(self->t.inner)))',
                               "The source location of this expression")
 
             methods.add_method('get_symbol',
@@ -335,12 +335,12 @@ def generate_tree_code_classes():
 
         if cc == 'AddrExpr':
             add_simple_getter('operand',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND (self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND (self->t.inner, 0)))',
                               'The operand of this expression, as a gcc.Tree')
 
         if cc == 'StringCst':
             add_simple_getter('constant',
-                              'gcc_python_string_from_string(TREE_STRING_POINTER(self->t))',
+                              'gcc_python_string_from_string(TREE_STRING_POINTER(self->t.inner))',
                               'The actual value of this constant, as a str')
             tp_repr = '(reprfunc)gcc_StringConstant_repr'
 
@@ -368,93 +368,93 @@ def generate_tree_code_classes():
                              'ENUMERAL_TYPE', 'BOOLEAN_TYPE'):
             for qual in ('const', 'volatile', 'restrict'):
                 add_simple_getter(qual,
-                                  'PyBool_FromLong(TYPE_QUALS(self->t) & TYPE_QUAL_%s)' % qual.upper(),
+                                  'PyBool_FromLong(TYPE_QUALS(self->t.inner) & TYPE_QUAL_%s)' % qual.upper(),
                                   "Boolean: does this type have the '%s' modifier?" % qual)
                 add_simple_getter('%s_equivalent' % qual,
-                                  'gcc_python_make_wrapper_tree(build_qualified_type(self->t, TYPE_QUAL_%s))' % qual.upper(),
+                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(build_qualified_type(self->t.inner, TYPE_QUAL_%s)))' % qual.upper(),
                                   'The gcc.Type for the %s version of this type' % qual)
 
         if tree_type.SYM == 'INTEGER_TYPE':
             add_simple_getter('unsigned',
-                              'PyBool_FromLong(TYPE_UNSIGNED(self->t))',
+                              'PyBool_FromLong(TYPE_UNSIGNED(self->t.inner))',
                               "Boolean: True for 'unsigned', False for 'signed'")
             add_simple_getter('signed_equivalent',
-                              'gcc_python_make_wrapper_tree(c_common_signed_type(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_signed_type(self->t.inner)))',
                               'The gcc.IntegerType for the signed version of this type')
             add_simple_getter('unsigned_equivalent',
-                              'gcc_python_make_wrapper_tree(c_common_unsigned_type(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)))',
                               'The gcc.IntegerType for the unsigned version of this type')
             add_simple_getter('max_value',
-                              'gcc_python_make_wrapper_tree(TYPE_MAX_VALUE(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_MAX_VALUE(self->t.inner)))',
                               'The maximum possible value for this type, as a gcc.IntegerCst')
             add_simple_getter('min_value',
-                              'gcc_python_make_wrapper_tree(TYPE_MIN_VALUE(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_MIN_VALUE(self->t.inner)))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
             add_simple_getter('precision',
-                              'gcc_python_int_from_long(TYPE_PRECISION(self->t))',
+                              'gcc_python_int_from_long(TYPE_PRECISION(self->t.inner))',
                               'The precision of this type in bits, as an int (e.g. 32)')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
             add_simple_getter('dereference',
-                              'gcc_python_make_wrapper_tree(TREE_TYPE(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_TYPE(self->t.inner)))',
                               "The gcc.Type that this type points to'")
 
         if tree_type.SYM == 'ARRAY_TYPE':
             add_simple_getter('range',
-                              'gcc_python_make_wrapper_tree(TYPE_DOMAIN(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_DOMAIN(self->t.inner)))',
                               "The gcc.Type that is the range of this array type")
 
         if tree_type.SYM == 'ARRAY_REF':
             add_simple_getter('array',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
                               "The gcc.Tree for the array being referenced'")
             add_simple_getter('index',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
                               "The gcc.Tree for index being referenced'")
 
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
                               "The gcc.Tree that for the container of the field'")
             add_simple_getter('field',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
                               "The gcc.FieldDecl for the field within the target'")
 
         if tree_type.SYM == 'MEM_REF':
             add_simple_getter('operand',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
                               "The gcc.Tree that for the pointer expression'")
 
         if tree_type.SYM == 'BIT_FIELD_REF':
             add_simple_getter('operand',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
                               "The gcc.Tree for the structure or union expression")
             add_simple_getter('num_bits',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
                               "The number of bits being referenced, as a gcc.IntegerCst")
             add_simple_getter('position',
-                              'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 2))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 2)))',
                               "The position of the first referenced bit, as a gcc.IntegerCst")
 
         if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
             add_simple_getter('fields',
-                              'gcc_tree_list_from_chain(TYPE_FIELDS(self->t))',
+                              'gcc_tree_list_from_chain(TYPE_FIELDS(self->t.inner))',
                               "The fields of this type")
 
         if tree_type.SYM == 'IDENTIFIER_NODE':
             add_simple_getter('name',
-                              'gcc_python_string_or_none(IDENTIFIER_POINTER(self->t))',
+                              'gcc_python_string_or_none(IDENTIFIER_POINTER(self->t.inner))',
                               "The name of this gcc.IdentifierNode, as a string")
             tp_repr = '(reprfunc)gcc_IdentifierNode_repr'
 
         if tree_type.SYM == 'VAR_DECL':
             add_simple_getter('initial',
-                              'gcc_python_make_wrapper_tree(DECL_INITIAL(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(DECL_INITIAL(self->t.inner)))',
                               "The initial value for this variable as a gcc.Constructor, or None")
             add_simple_getter('static',
-                              'PyBool_FromLong(TREE_STATIC(self->t))',
+                              'PyBool_FromLong(TREE_STATIC(self->t.inner))',
                               "Boolean: is this variable to be allocated with static storage")
 
         if tree_type.SYM == 'CONSTRUCTOR':
@@ -463,15 +463,15 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'TRANSLATION_UNIT_DECL':
             add_simple_getter('block',
-                              'gcc_python_make_wrapper_tree(DECL_INITIAL(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(DECL_INITIAL(self->t.inner)))',
                                "The gcc.Block for this namespace")
             add_simple_getter('language',
-                              'gcc_python_string_from_string(TRANSLATION_UNIT_LANGUAGE(self->t))',
+                              'gcc_python_string_from_string(TRANSLATION_UNIT_LANGUAGE(self->t.inner))',
                                "The source language of this translation unit, as a string")
 
         if tree_type.SYM == 'BLOCK':
             add_simple_getter('vars',
-                              'gcc_tree_list_from_chain(BLOCK_VARS(self->t))',
+                              'gcc_tree_list_from_chain(BLOCK_VARS(self->t.inner))',
                                "The list of gcc.Tree for the declarations and labels in this block")
 
         if tree_type.SYM == 'NAMESPACE_DECL':
@@ -504,34 +504,34 @@ def generate_tree_code_classes():
                                   None,
                                   'C++ only: the full name of this function declaration')
             add_simple_getter('function',
-                              'gcc_python_make_wrapper_function(gcc_private_make_function(DECL_STRUCT_FUNCTION(self->t)))',
+                              'gcc_python_make_wrapper_function(gcc_private_make_function(DECL_STRUCT_FUNCTION(self->t.inner)))',
                               'The gcc.Function (or None) for this declaration')
             add_simple_getter('arguments',
-                              'gcc_tree_list_from_chain(DECL_ARGUMENTS(self->t))',
+                              'gcc_tree_list_from_chain(DECL_ARGUMENTS(self->t.inner))',
                               'List of gcc.ParmDecl')
             add_simple_getter('result',
-                              'gcc_python_make_wrapper_tree(DECL_RESULT_FLD(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(DECL_RESULT_FLD(self->t.inner)))',
                               'The gcc.ResultDecl for the return value')
             add_simple_getter('callgraph_node',
-                              'gcc_python_make_wrapper_cgraph_node(cgraph_get_node(self->t))',
+                              'gcc_python_make_wrapper_cgraph_node(gcc_private_make_cgraph_node(cgraph_get_node(self->t.inner)))',
                               'The gcc.CallgraphNode for this function declaration, or None')
 
             for attr in ('public', 'private', 'protected', 'static'):
                 getsettable.add_simple_getter(cu,
                                               'is_%s' % attr,
-                                              'PyBool_FromLong(TREE_%s(self->t))' % attr.upper(),
+                                              'PyBool_FromLong(TREE_%s(self->t.inner))' % attr.upper(),
                                               None)
 
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":
             add_simple_getter('var',
-                              'gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(SSA_NAME_VAR(self->t.inner)))',
                               "The variable being referenced'")
             add_simple_getter('def_stmt',
-                              'gcc_python_make_wrapper_gimple(gcc_private_make_gimple(SSA_NAME_DEF_STMT(self->t)))',
+                              'gcc_python_make_wrapper_gimple(gcc_private_make_gimple(SSA_NAME_DEF_STMT(self->t.inner)))',
                               "The gcc.Gimple statement which defines this SSA name'")
             add_simple_getter('version',
-                              'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',
+                              'gcc_python_int_from_long(SSA_NAME_VERSION(self->t.inner))',
                               "The SSA version number of this SSA name'")
 
         if tree_type.SYM == 'TREE_LIST':
@@ -540,13 +540,13 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'CASE_LABEL_EXPR':
             add_simple_getter('low',
-                              'gcc_python_make_wrapper_tree(CASE_LOW(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_LOW(self->t.inner)))',
                               "The low value of the case label, as a gcc.Tree (or None for the default)")
             add_simple_getter('high',
-                              'gcc_python_make_wrapper_tree(CASE_HIGH(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_HIGH(self->t.inner)))',
                               "The high value of the case label, if any, as a gcc.Tree (None for the default and for single-valued case labels)")
             add_simple_getter('target',
-                              'gcc_python_make_wrapper_tree(CASE_LABEL(self->t))',
+                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_LABEL(self->t.inner)))',
                               "The target of the case label, as a gcc.LabelDecl")
 
         cu.add_defn(getsettable.c_defn())
@@ -606,9 +606,9 @@ gcc_python_autogenerated_tree_type_for_tree_code(enum tree_code code, int borrow
 }
 
 PyGccWrapperTypeObject*
-gcc_python_autogenerated_tree_type_for_tree(tree t, int borrow_ref)
+gcc_python_autogenerated_tree_type_for_tree(gcc_tree t, int borrow_ref)
 {
-    enum tree_code code = TREE_CODE(t);
+    enum tree_code code = TREE_CODE(t.inner);
     /* printf("code:%i\\n", code); */
     return gcc_python_autogenerated_tree_type_for_tree_code(code, borrow_ref);
 }

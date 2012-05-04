@@ -24,6 +24,8 @@ cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("proposed-plugin-api/gcc-callgraph.h")
 cu.add_include("proposed-plugin-api/gcc-gimple.h")
+cu.add_include("proposed-plugin-api/gcc-tree.h")
+cu.add_include("proposed-plugin-api/gcc-declaration.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -81,7 +83,7 @@ def generate_callgraph_node():
     # FIXME: add getters
     getsettable.add_simple_getter(cu,
                                   'decl',
-                                  'gcc_python_make_wrapper_tree(gcc_cgraph_node_get_decl(self->node).inner)',
+                                  'gcc_python_make_wrapper_tree(gcc_decl_upcast(gcc_function_decl_upcast(gcc_cgraph_node_get_decl(self->node))))',
                                   'The gcc.FunctionDecl for this node')
     getsettable.add_gsdef('callees',
                           'gcc_CallgraphNode_get_callees',

@@ -49,7 +49,7 @@ def generate_function():
                                    typename='PyGccFunction')
     getsettable.add_simple_getter(cu,
                                   'decl', 
-                                  'gcc_python_make_wrapper_tree(self->fun.inner->decl)',
+                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(self->fun.inner->decl))',
                                   'The declaration of this function, as a gcc.FunctionDecl instance')
     getsettable.add_simple_getter(cu,
                                   'local_decls',

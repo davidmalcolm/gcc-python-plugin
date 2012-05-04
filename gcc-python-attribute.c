@@ -58,7 +58,7 @@ make_args_for_attribute_callback(tree node, tree args)
         goto error;
     }
 
-    py_node = gcc_python_make_wrapper_tree(node);
+    py_node = gcc_python_make_wrapper_tree(gcc_private_make_tree(node));
     if (!py_node) {
         goto error;
     }

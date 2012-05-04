@@ -76,7 +76,7 @@ gimple_walk_tree_callback(tree *tree_ptr, int *walk_subtrees, void *data)
 
     assert(closure);
     assert(*tree_ptr);
-    tree_obj = gcc_python_make_wrapper_tree(*tree_ptr);
+    tree_obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(*tree_ptr));
     if (!tree_obj) {
         goto error;
     }
@@ -146,7 +146,7 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
         return NULL;
     }
 
-    return gcc_python_make_wrapper_tree(result);
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(result));
 }
 
 PyObject *
@@ -165,7 +165,7 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
     
     for (i = 1 ; i < gimple_num_ops(self->stmt.inner); i++) {
 	tree t = gimple_op(self->stmt.inner, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
+	PyObject *obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
 	if (!obj) {
 	    goto error;
 	}
@@ -199,7 +199,7 @@ gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
     
     for (i = 0 ; i < num_args; i++) {
 	tree t = gimple_call_arg(self->stmt.inner, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
+	PyObject *obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
 	if (!obj) {
 	    goto error;
 	}
@@ -261,7 +261,7 @@ gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 
     for (i = 0 ; i < num_labels; i++) {
 	tree t = gimple_switch_label(self->stmt.inner, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
+	PyObject *obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
 	if (!obj) {
 	    goto error;
 	}

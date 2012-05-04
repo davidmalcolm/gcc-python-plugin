@@ -103,7 +103,7 @@ get_operand_as_object(const_rtx in_rtx, int idx, char fmt)
         Py_RETURN_NONE; /* for now */
 
     case 't':
-        return gcc_python_make_wrapper_tree(XTREE (in_rtx, idx));
+        return gcc_python_make_wrapper_tree(gcc_private_make_tree(XTREE (in_rtx, idx)));
 
     case '*':
         Py_RETURN_NONE; /* for now */

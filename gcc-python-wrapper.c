@@ -323,7 +323,7 @@ gcc_python__gc_selftest(PyObject *self, PyObject *args)
 
     /* We're called from PLUGIN_FINISH, so integer_types[] should be ready: */
     tree_intcst = build_int_cst(integer_types[itk_int], 42);
-    wrapper_intcst = gcc_python_make_wrapper_tree_unique(tree_intcst);
+    wrapper_intcst = gcc_python_make_wrapper_tree_unique(gcc_private_make_tree(tree_intcst));
     MY_ASSERT(wrapper_intcst);
 
     #define MY_TEST_STRING "I am only referenced via a python wrapper"
@@ -335,7 +335,7 @@ gcc_python__gc_selftest(PyObject *self, PyObject *args)
     //MY_ASSERT(!ggc_marked_p(str)); // this fails, why? why is it being marked?
 
     /* Wrap it with a Python object: */
-    wrapper_str = gcc_python_make_wrapper_tree_unique(tree_str);
+    wrapper_str = gcc_python_make_wrapper_tree_unique(gcc_private_make_tree(tree_str));
     MY_ASSERT(wrapper_str);
 
     /* Force a garbage collection: */

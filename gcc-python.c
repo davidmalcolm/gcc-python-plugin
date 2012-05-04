@@ -274,7 +274,7 @@ gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
     }
 
     t = maybe_get_identifier(str);
-    return gcc_python_make_wrapper_tree(t);
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
 }
 
 /*
@@ -296,7 +296,7 @@ gcc_python_get_global_namespace(PyObject *self, PyObject *args)
 {
     /* (global_namespace will be NULL outside the C++ frontend, giving a
        result of None) */
-    return gcc_python_make_wrapper_tree(global_namespace);
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(global_namespace));
 }
 
 /* Dump files */

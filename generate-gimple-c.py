@@ -198,7 +198,7 @@ gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
 static PyObject *
 gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
 {
-    return gcc_python_make_wrapper_tree(gimple_block(self->stmt.inner));
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_block(self->stmt.inner)));
 }
 """)
 
@@ -208,7 +208,7 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                                     PyGetSetDef('exprtype',
                                                 cu.add_simple_getter('gcc_Gimple_get_exprtype',
                                                                      'PyGccGimple',
-                                                                     'gcc_python_make_wrapper_tree(gimple_expr_type(self->stmt.inner))'),
+                                                                     'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_expr_type(self->stmt.inner)))'),
                                                 None,
                                                 'The type of the main expression computed by this statement, as a gcc.Tree (which might be gcc.VoidType)'),
                                     PyGetSetDef('str_no_uid',
@@ -275,7 +275,7 @@ def generate_gimple_subclasses():
                                 [PyGetSetDef('lhs',
                                              cu.add_simple_getter('gcc_GimpleAssign_get_lhs',
                                                                   'PyGccGimple',
-                                                                  'gcc_python_make_wrapper_tree(gimple_assign_lhs(self->stmt.inner))'),
+                                                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_assign_lhs(self->stmt.inner)))'),
                                              None,
                                              'Left-hand-side of the assignment, as a gcc.Tree'),
                                  exprcode_getter,
@@ -286,20 +286,20 @@ def generate_gimple_subclasses():
                                 [PyGetSetDef('lhs',
                                              cu.add_simple_getter('gcc_GimpleCall_get_lhs',
                                                                   'PyGccGimple',
-                                                                  'gcc_python_make_wrapper_tree(gimple_call_lhs(self->stmt.inner))'),
+                                                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_call_lhs(self->stmt.inner)))'),
                                              None,
                                              'Left-hand-side of the call, as a gcc.Tree'),
                                  rhs_getter,
                                  PyGetSetDef('fn',
                                              cu.add_simple_getter('gcc_GimpleCall_get_fn',
                                                                   'PyGccGimple',
-                                                                  'gcc_python_make_wrapper_tree(gimple_call_fn(self->stmt.inner))'),
+                                                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_call_fn(self->stmt.inner)))'),
                                              None,
                                              'The function being called, as a gcc.Tree'),
                                  PyGetSetDef('fndecl',
                                              cu.add_simple_getter('gcc_GimpleCall_get_fndecl',
                                                                   'PyGccGimple',
-                                                                  'gcc_python_make_wrapper_tree(gimple_call_fndecl(self->stmt.inner))'),
+                                                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_call_fndecl(self->stmt.inner)))'),
                                              None,
                                              'The declaration of the function being called (if any), as a gcc.Tree'),
                                  exprcode_getter,
@@ -321,7 +321,7 @@ def generate_gimple_subclasses():
                                 [PyGetSetDef('retval',
                                              cu.add_simple_getter('gcc_GimpleReturn_get_retval',
                                                                   'PyGccGimple',
-                                                                  'gcc_python_make_wrapper_tree(gimple_return_retval(self->stmt.inner))'),
+                                                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_return_retval(self->stmt.inner)))'),
                                              None,
                                              'The return value, as a gcc.Tree'),
                                  ])
@@ -334,19 +334,19 @@ def generate_gimple_subclasses():
                                        'PyGccGimple')
         getsettable.add_simple_getter(cu,
                                       'lhs',
-                                      'gcc_python_make_wrapper_tree(gimple_cond_lhs(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_cond_lhs(self->stmt.inner)))',
                                       None)
         getsettable.add_simple_getter(cu,
                                       'rhs',
-                                      'gcc_python_make_wrapper_tree(gimple_cond_rhs(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_cond_rhs(self->stmt.inner)))',
                                       None)
         getsettable.add_simple_getter(cu,
                                       'true_label',
-                                      'gcc_python_make_wrapper_tree(gimple_cond_true_label(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_cond_true_label(self->stmt.inner)))',
                                       None)
         getsettable.add_simple_getter(cu,
                                       'false_label',
-                                      'gcc_python_make_wrapper_tree(gimple_cond_false_label(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_cond_false_label(self->stmt.inner)))',
                                       None)
         return getsettable
 
@@ -357,7 +357,7 @@ def generate_gimple_subclasses():
                                        'PyGccGimple')
         getsettable.add_simple_getter(cu,
                                       'lhs',
-                                      'gcc_python_make_wrapper_tree(gimple_phi_result(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_phi_result(self->stmt.inner)))',
                                       None)
         getsettable.add_gsdef('args',
                               'gcc_GimplePhi_get_args',
@@ -372,7 +372,7 @@ def generate_gimple_subclasses():
                                        'PyGccGimple')
         getsettable.add_simple_getter(cu,
                                       'indexvar',
-                                      'gcc_python_make_wrapper_tree(gimple_switch_index(self->stmt.inner))',
+                                      'gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_switch_index(self->stmt.inner)))',
                                       'Get the index variable used by the switch statement, as a gcc.Tree')
         getsettable.add_gsdef('labels',
                               'gcc_GimpleSwitch_get_labels',

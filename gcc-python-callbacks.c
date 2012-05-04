@@ -191,7 +191,7 @@ gcc_python_callback_for_tree(void *gcc_data, void *user_data)
     gstate = PyGILState_Ensure();
 
     gcc_python_finish_invoking_callback(gstate, 
-					1, gcc_python_make_wrapper_tree(t),
+					1, gcc_python_make_wrapper_tree(gcc_private_make_tree(t)),
 					user_data);
 }
 

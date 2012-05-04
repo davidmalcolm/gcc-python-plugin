@@ -19,6 +19,7 @@
 
 #include "proposed-plugin-api/gcc-common.h"
 #include "proposed-plugin-api/gcc-tree.h"
+#include "ggc.h"
 
 /*
   Trees
@@ -26,7 +27,11 @@
 
 /* gcc_tree */
 GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_tree_mark_in_use(gcc_tree node);
+gcc_tree_mark_in_use(gcc_tree node)
+{
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_tree_node(node.inner);
+}
 
 GCC_IMPLEMENT_PRIVATE_API(struct gcc_tree)
 gcc_private_make_tree(tree inner)
