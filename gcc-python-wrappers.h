@@ -25,6 +25,61 @@
 #include "opts.h"
 #include "cgraph.h"
 
+/*
+  Create a callback for use in a gcc for_each iterator to make wrapper
+  objects for the underlying gcc objects being iterated, and append the
+  wrapper objects to a Python list
+*/
+#define IMPL_APPENDER(FNNAME, KIND, MAKE_WRAPPER) \
+  static bool FNNAME(KIND var, void *user_data)    \
+  {                                                \
+      PyObject *result = (PyObject*)user_data;     \
+      PyObject *obj_var;                           \
+      obj_var = MAKE_WRAPPER(var);                 \
+      if (!obj_var) {                              \
+          return true;                             \
+      }                                            \
+      if (-1 == PyList_Append(result, obj_var)) {  \
+          Py_DECREF(obj_var);                      \
+          return true;                             \
+      }                                            \
+      /* Success: */                               \
+      Py_DECREF(obj_var);                          \
+      return false;                                \
+  }
+
+/*
+  Create the body of a function that builds a list by calling a for_each
+  ITERATOR, passing in the APPENDER callback to convert the iterated items
+  into Python wrapper objects
+ */
+#define IMPL_LIST_MAKER(ITERATOR, ARG, APPENDER) \
+    PyObject *result;                            \
+    result = PyList_New(0);                      \
+    if (!result) {                               \
+        return NULL;                             \
+    }                                            \
+    if (ITERATOR((ARG), APPENDER, result)) {     \
+        Py_DECREF(result);                       \
+        return NULL;                             \
+    }                                            \
+    return result;
+
+/*
+As per IMPL_LIST_MAKER, but for a global iterator that takes no ARG
+ */
+#define IMPL_GLOBAL_LIST_MAKER(ITERATOR, APPENDER) \
+    PyObject *result;                 \
+    result = PyList_New(0);           \
+    if (!result) {                    \
+        return NULL;                  \
+    }                                 \
+    if (ITERATOR(APPENDER, result)) { \
+        Py_DECREF(result);            \
+        return NULL;                  \
+    }                                 \
+    return result;
+
 PyMODINIT_FUNC initoptpass(void);
 
 /* gcc-python-attribute.c: */

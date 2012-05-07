@@ -56,64 +56,24 @@ gcc_CallgraphNode_str(struct PyGccCallgraphNode * self)
                                          Py_TYPE(self)->tp_name);
 }
 
-static bool add_cgraph_edge_to_list(gcc_cgraph_edge edge, void *user_data)
-{
-    PyObject *result = (PyObject*)user_data;
-    PyObject *item;
-
-    item = gcc_python_make_wrapper_cgraph_edge(edge);
-    if (!item) {
-        return true;
-    }
-
-    if (-1 == PyList_Append(result, item)) {
-        Py_DECREF(item);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(item);
-    return false;
-}
+IMPL_APPENDER(add_cgraph_edge_to_list,
+              gcc_cgraph_edge,
+              gcc_python_make_wrapper_cgraph_edge)
 
 PyObject *
 gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self)
 {
-    PyObject *result;
-
-    result = PyList_New(0);
-    if (!result) {
-	return NULL;
-    }
-
-    if (gcc_cgraph_node_for_each_callee(self->node,
-                                        add_cgraph_edge_to_list,
-                                        result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cgraph_node_for_each_callee,
+                    self->node,
+                    add_cgraph_edge_to_list)
 }
 
 PyObject *
 gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self)
 {
-    PyObject *result;
-
-    result = PyList_New(0);
-    if (!result) {
-	return NULL;
-    }
-
-    if (gcc_cgraph_node_for_each_caller(self->node,
-                                        add_cgraph_edge_to_list,
-                                        result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cgraph_node_for_each_caller,
+                    self->node,
+                    add_cgraph_edge_to_list)
 }
 
 PyObject *
@@ -185,31 +145,13 @@ gcc_python_make_wrapper_cgraph_node(gcc_cgraph_node node)
 					    real_make_cgraph_node_wrapper);
 }
 
-static bool add_cgraph_node_to_list(gcc_cgraph_node node, void *user_data)
-{
-    PyObject *result = (PyObject*)user_data;
-    PyObject *item;
-
-    item = gcc_python_make_wrapper_cgraph_node(node);
-    if (!item) {
-        return true;
-    }
-
-    if (-1 == PyList_Append(result, item)) {
-        Py_DECREF(item);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(item);
-    return false;
-}
+IMPL_APPENDER(add_cgraph_node_to_list,
+              gcc_cgraph_node,
+              gcc_python_make_wrapper_cgraph_node)
 
 PyObject *
 gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
 {
-    PyObject *result;
-
     /* For debugging, see GCC's dump of things: */
     if (0) {
         fprintf(stderr, "----------------BEGIN----------------\n");
@@ -217,16 +159,8 @@ gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
         fprintf(stderr, "---------------- END ----------------\n");
     }
 
-    result = PyList_New(0);
-    if (!result) {
-	return NULL;
-    }
-
-    if (gcc_for_each_cgraph_node(add_cgraph_node_to_list, result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-    return result;
+    IMPL_GLOBAL_LIST_MAKER(gcc_for_each_cgraph_node,
+                           add_cgraph_node_to_list)
 }
 
 /*

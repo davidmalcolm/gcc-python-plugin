@@ -226,39 +226,15 @@ gcc_python_get_parameters(PyObject *self, PyObject *args)
     return NULL;
 }
 
-static bool add_var_to_list(gcc_variable var, void *user_data)
-{
-    PyObject *result = (PyObject*)user_data;
-    PyObject *obj_var;
-
-    obj_var = gcc_python_make_wrapper_variable(var);
-    if (!obj_var) {
-        return true;
-    }
-    if (-1 == PyList_Append(result, obj_var)) {
-        Py_DECREF(obj_var);
-        return true;
-    }
-    /* Success: */
-    Py_DECREF(obj_var);
-    return false;
-}
+IMPL_APPENDER(add_var_to_list,
+              gcc_variable,
+              gcc_python_make_wrapper_variable)
 
 static PyObject *
 gcc_python_get_variables(PyObject *self, PyObject *args)
 {
-    PyObject *result;
-
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_for_each_variable(add_var_to_list, result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-    return result;
+    IMPL_GLOBAL_LIST_MAKER(gcc_for_each_variable,
+                           add_var_to_list)
 }
 
 static PyObject *

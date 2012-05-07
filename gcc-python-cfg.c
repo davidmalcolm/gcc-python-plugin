@@ -67,196 +67,75 @@ wrtp_mark_for_PyGccEdge(PyGccEdge *wrapper)
     gcc_cfg_edge_mark_in_use(wrapper->e);
 }
 
-static bool add_edge_to_list(gcc_cfg_edge edge, void *user_data)
-{
-    PyObject *result = (PyObject*)user_data;
-    PyObject *item;
-
-    item = gcc_python_make_wrapper_edge(edge);
-    if (!item) {
-        return true;
-    }
-
-    if (-1 == PyList_Append(result, item)) {
-        Py_DECREF(item);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(item);
-    return false;
-}
+IMPL_APPENDER(add_edge_to_list,
+              gcc_cfg_edge,
+              gcc_python_make_wrapper_edge)
 
 PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result;
-
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_cfg_block_for_each_pred_edge(self->bb,
-                                     add_edge_to_list,
-                                     result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_block_for_each_pred_edge,
+                    self->bb,
+                    add_edge_to_list)
 }
 
 PyObject *
 gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result;
-
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_cfg_block_for_each_succ_edge(self->bb,
-                                     add_edge_to_list,
-                                     result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_block_for_each_succ_edge,
+                    self->bb,
+                    add_edge_to_list)
 }
 
-static bool
-append_gimple_to_list(gcc_gimple stmt, void *user_data)
-{
-    PyObject *result = (PyObject *)user_data;
-    PyObject *obj_stmt;
-
-    obj_stmt = gcc_python_make_wrapper_gimple(stmt);
-    if (!obj_stmt) {
-        return true;
-    }
-
-    if (PyList_Append(result, obj_stmt)) {
-        Py_DECREF(obj_stmt);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(obj_stmt);
-    return false;
-}
+IMPL_APPENDER(append_gimple_to_list,
+              gcc_gimple,
+              gcc_python_make_wrapper_gimple)
 
 PyObject *
 gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result = NULL;
-
     assert(self);
     assert(self->bb.inner);
 
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_cfg_block_for_each_gimple(self->bb,
-                                   append_gimple_to_list,
-                                   result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_block_for_each_gimple,
+                    self->bb,
+                    append_gimple_to_list)
 }
 
-static bool
-append_gimple_phi_to_list(gcc_gimple_phi stmt, void *user_data)
+static PyObject*
+gcc_python_make_wrapper_gimple_phi(gcc_gimple_phi phi)
 {
-    PyObject *result = (PyObject *)user_data;
-    PyObject *obj_stmt;
-
-    obj_stmt = gcc_python_make_wrapper_gimple(gcc_gimple_phi_upcast(stmt));
-    if (!obj_stmt) {
-        return true;
-    }
-
-    if (PyList_Append(result, obj_stmt)) {
-        Py_DECREF(obj_stmt);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(obj_stmt);
-    return false;
+    return gcc_python_make_wrapper_gimple(gcc_gimple_phi_upcast(phi));
 }
+
+IMPL_APPENDER(append_gimple_phi_to_list,
+              gcc_gimple_phi,
+              gcc_python_make_wrapper_gimple_phi)
 
 PyObject *
 gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result = NULL;
-
     assert(self);
     assert(self->bb.inner);
 
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_cfg_block_for_each_gimple_phi(self->bb,
-                                      append_gimple_phi_to_list,
-                                      result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_block_for_each_gimple_phi,
+                    self->bb,
+                    append_gimple_phi_to_list)
 }
 
-static bool
-append_rtl_to_list(gcc_rtl_insn insn, void *user_data)
-{
-    PyObject *result = (PyObject *)user_data;
-    PyObject *obj;
-
-    obj = gcc_python_make_wrapper_rtl(insn);
-    if (!obj) {
-        return true;
-    }
-
-    if (PyList_Append(result, obj)) {
-        Py_DECREF(obj);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(obj);
-    return false;
-}
+IMPL_APPENDER(append_rtl_to_list,
+              gcc_rtl_insn,
+              gcc_python_make_wrapper_rtl)
 
 PyObject *
 gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 {
-    PyObject *result = NULL;
-
     assert(self);
     assert(self->bb.inner);
 
-    result = PyList_New(0);
-    if (!result) {
-        return NULL;
-    }
-
-    if (gcc_cfg_block_for_each_rtl_insn(self->bb,
-                                    append_rtl_to_list,
-                                    result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_block_for_each_rtl_insn,
+                    self->bb,
+                    append_rtl_to_list)
 }
 
 
@@ -461,44 +340,16 @@ gcc_python_make_wrapper_basic_block(gcc_cfg_block bb)
 					    real_make_basic_block_wrapper);
 }
 
-static bool add_block_to_list(gcc_cfg_block block, void *user_data)
-{
-    PyObject *result = (PyObject*)user_data;
-    PyObject *item;
-
-    item = gcc_python_make_wrapper_basic_block(block);
-    if (!item) {
-        return true;
-    }
-
-    if (-1 == PyList_Append(result, item)) {
-        Py_DECREF(item);
-        return true;
-    }
-
-    /* Success: */
-    Py_DECREF(item);
-    return false;
-}
+IMPL_APPENDER(add_block_to_list,
+              gcc_cfg_block,
+              gcc_python_make_wrapper_basic_block)
 
 PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
 {
-    PyObject *result;
-    
-    result = PyList_New(0);
-    if (!result) {
-	return NULL;
-    }
-
-    if (gcc_cfg_for_each_block(self->cfg,
-                             add_block_to_list,
-                             result)) {
-        Py_DECREF(result);
-        return NULL;
-    }
-
-    return result;
+    IMPL_LIST_MAKER(gcc_cfg_for_each_block,
+                    self->cfg,
+                    add_block_to_list)
 }
 
 extern PyTypeObject gcc_LabelDeclType;
