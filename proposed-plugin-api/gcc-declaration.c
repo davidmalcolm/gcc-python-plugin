@@ -29,6 +29,15 @@ gcc_private_make_function_decl(tree inner)
     return result;
 }
 
+GCC_PRIVATE_API(struct gcc_translation_unit_decl)
+gcc_private_make_translation_unit_decl(tree inner)
+{
+    struct gcc_translation_unit_decl result;
+    result.inner = inner;
+    return result;
+}
+
+
 GCC_IMPLEMENT_PUBLIC_API(gcc_location)
 gcc_decl_get_location(gcc_decl decl)
 {
@@ -49,6 +58,36 @@ gcc_function_decl_upcast(gcc_function_decl fndecl)
     gcc_decl decl;
     decl.inner = fndecl.inner;
     return decl;
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_decl)
+gcc_translation_unit_decl_upcast(gcc_translation_unit_decl fndecl)
+{
+    gcc_decl decl;
+    decl.inner = fndecl.inner;
+    return decl;
+}
+
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_for_each_translation_unit_decl(
+    bool (*cb)(gcc_translation_unit_decl node, void *user_data),
+    void *user_data)
+{
+    int i;
+    tree t;
+
+    /*
+      all_translation_units was made globally visible in gcc revision 164331:
+        http://gcc.gnu.org/ml/gcc-cvs/2010-09/msg00625.html
+        http://gcc.gnu.org/viewcvs?view=revision&revision=164331
+    */
+    FOR_EACH_VEC_ELT(tree, all_translation_units, i, t) {
+        if (cb(gcc_private_make_translation_unit_decl(t),
+               user_data)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 

@@ -25,6 +25,7 @@
 
 #include "proposed-plugin-api/gcc-location.h"
 #include "proposed-plugin-api/gcc-variable.h"
+#include "proposed-plugin-api/gcc-declaration.h"
 
 int plugin_is_GPL_compatible;
 
@@ -253,15 +254,21 @@ gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
     return gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
 }
 
-/*
-  get_translation_units was made globally visible in gcc revision 164331:
-    http://gcc.gnu.org/ml/gcc-cvs/2010-09/msg00625.html
-    http://gcc.gnu.org/viewcvs?view=revision&revision=164331
-*/
+static PyObject *gcc_python_make_translation_unit_decl(gcc_translation_unit_decl decl)
+{
+    gcc_tree tree = gcc_decl_upcast(gcc_translation_unit_decl_upcast(decl));
+    return gcc_python_make_wrapper_tree(tree);
+}
+
+IMPL_APPENDER(add_translation_unit_decl_to_list,
+              gcc_translation_unit_decl,
+              gcc_python_make_translation_unit_decl)
+
 static PyObject *
 gcc_python_get_translation_units(PyObject *self, PyObject *args)
 {
-    return VEC_tree_as_PyList(all_translation_units);
+    IMPL_GLOBAL_LIST_MAKER(gcc_for_each_translation_unit_decl,
+                           add_translation_unit_decl_to_list)
 }
 
 /* Weakly import global_namespace; it will be non-NULL for the C++ frontend: */
