@@ -25,6 +25,7 @@ cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("gimple.h")
+cu.add_include("proposed-plugin-api/gcc-gimple.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -192,7 +193,7 @@ def generate_gimple():
 static PyObject *
 gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(gcc_private_make_location(gimple_location(self->stmt.inner)));
+    return gcc_python_make_wrapper_location(gcc_gimple_get_location(self->stmt));
 }
 
 static PyObject *

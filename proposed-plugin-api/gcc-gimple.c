@@ -70,6 +70,12 @@ gcc_private_make_gimple(gimple inner)
     return result;
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_gimple_get_location(gcc_gimple stmt)
+{
+    return gcc_private_make_location(gimple_location(stmt.inner));
+}
+
 GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
 gcc_gimple_phi_upcast(gcc_gimple_phi phi)
 {
