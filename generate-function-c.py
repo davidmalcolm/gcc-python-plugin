@@ -24,6 +24,8 @@ cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("function.h")
 cu.add_include("proposed-plugin-api/gcc-function.h")
+cu.add_include("proposed-plugin-api/gcc-declaration.h")
+cu.add_include("proposed-plugin-api/gcc-tree.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -49,7 +51,7 @@ def generate_function():
                                    typename='PyGccFunction')
     getsettable.add_simple_getter(cu,
                                   'decl', 
-                                  'gcc_python_make_wrapper_tree(gcc_private_make_tree(self->fun.inner->decl))',
+                                  'gcc_python_make_wrapper_tree(gcc_decl_upcast(gcc_function_decl_upcast(gcc_function_get_decl(self->fun))))',
                                   'The declaration of this function, as a gcc.FunctionDecl instance')
     getsettable.add_simple_getter(cu,
                                   'local_decls',

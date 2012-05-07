@@ -26,6 +26,7 @@
       <doc>The control flow graph for this function (can be NULL in early
       passes)</doc>
     </attribute>
+    <attribute name="decl" kind="function_decl"/>
     <attribute name="index" kind="int"/>
     <attribute name="start" kind="location"/>
     <attribute name="end" kind="location"/>

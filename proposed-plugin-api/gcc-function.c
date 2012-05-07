@@ -56,6 +56,12 @@ gcc_function_get_cfg(gcc_function func)
     return gcc_private_make_cfg(func.inner->cfg);
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_function_decl)
+gcc_function_get_decl(gcc_function func)
+{
+    return gcc_private_make_function_decl(func.inner->decl);
+}
+
 GCC_IMPLEMENT_PUBLIC_API(int)
 gcc_function_get_index(gcc_function func)
 {
