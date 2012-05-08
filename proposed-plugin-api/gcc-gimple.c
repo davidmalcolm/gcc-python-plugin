@@ -18,6 +18,7 @@
 */
 
 #include "proposed-plugin-api/gcc-gimple.h"
+#include "proposed-plugin-api/gcc-internal.h"
 
 //#include "tree.h"
 #include "gimple.h"
@@ -76,17 +77,8 @@ gcc_gimple_get_location(gcc_gimple stmt)
     return gcc_private_make_location(gimple_location(stmt.inner));
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
-gcc_gimple_phi_upcast(gcc_gimple_phi phi)
-{
-    return gcc_private_make_gimple(phi.inner);
-}
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
-gcc_gimple_call_upcast(gcc_gimple_call call)
-{
-    return gcc_private_make_gimple(call.inner);
-}
+IMPLEMENT_CAST(gcc_gimple_phi, gcc_gimple)
+IMPLEMENT_CAST(gcc_gimple_call, gcc_gimple)
 
 /*
   PEP-7

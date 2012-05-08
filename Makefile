@@ -20,12 +20,14 @@
 PLUGIN_SOURCE_FILES= \
   proposed-plugin-api/gcc-callgraph.c \
   proposed-plugin-api/gcc-cfg.c \
+  proposed-plugin-api/gcc-constant.c \
   proposed-plugin-api/gcc-declaration.c \
   proposed-plugin-api/gcc-function.c \
   proposed-plugin-api/gcc-gimple.c \
   proposed-plugin-api/gcc-location.c \
   proposed-plugin-api/gcc-rtl.c \
   proposed-plugin-api/gcc-tree.c \
+  proposed-plugin-api/gcc-type.c \
   proposed-plugin-api/gcc-variable.c \
   gcc-python.c \
   gcc-python-attribute.c \

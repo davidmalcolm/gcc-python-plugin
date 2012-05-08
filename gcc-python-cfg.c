@@ -105,7 +105,7 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 static PyObject*
 gcc_python_make_wrapper_gimple_phi(gcc_gimple_phi phi)
 {
-    return gcc_python_make_wrapper_gimple(gcc_gimple_phi_upcast(phi));
+    return gcc_python_make_wrapper_gimple(gcc_gimple_phi_as_gcc_gimple(phi));
 }
 
 IMPL_APPENDER(append_gimple_phi_to_list,

@@ -45,31 +45,10 @@ gcc_decl_get_location(gcc_decl decl)
     return gcc_private_make_location(DECL_SOURCE_LOCATION(decl.inner));
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
-gcc_decl_upcast(gcc_decl decl)
-{
-    gcc_tree tree;
-    tree.inner = decl.inner;
-    return tree;
-}
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_decl)
-gcc_function_decl_upcast(gcc_function_decl fndecl)
-{
-    gcc_decl decl;
-    decl.inner = fndecl.inner;
-    return decl;
-}
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_decl)
-gcc_translation_unit_decl_upcast(gcc_translation_unit_decl fndecl)
-{
-    gcc_decl decl;
-    decl.inner = fndecl.inner;
-    return decl;
-}
-
-IMPLEMENT_DOWNCAST(gcc_decl, gcc_translation_unit_decl)
+IMPLEMENT_CAST(gcc_decl, gcc_tree)
+IMPLEMENT_CAST(gcc_function_decl, gcc_decl)
+IMPLEMENT_CAST(gcc_translation_unit_decl, gcc_decl)
+IMPLEMENT_CAST(gcc_decl, gcc_translation_unit_decl)
 
 GCC_IMPLEMENT_PUBLIC_API(gcc_block)
 gcc_translation_unit_decl_get_block(gcc_translation_unit_decl node)

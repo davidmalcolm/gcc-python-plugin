@@ -17,11 +17,21 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#define IMPLEMENT_CAST(T_INPUT, T_OUTPUT)     \
-  GCC_IMPLEMENT_PUBLIC_API(T_OUTPUT)          \
-  T_INPUT ## _as_ ## T_OUTPUT(T_INPUT input)  \
-  {                                           \
-      T_OUTPUT output;                        \
-      output.inner = input.inner;             \
-      return output;                          \
-  }
+#include "proposed-plugin-api/gcc-common.h"
+#include "proposed-plugin-api/gcc-constant.h"
+#include "proposed-plugin-api/gcc-internal.h"
+
+/* gcc_constant */
+IMPLEMENT_CAST(gcc_constant, gcc_tree)
+
+/* gcc_integer_constant */
+IMPLEMENT_CAST(gcc_integer_constant, gcc_constant)
+
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

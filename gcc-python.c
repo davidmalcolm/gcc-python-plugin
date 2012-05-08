@@ -256,7 +256,7 @@ gcc_python_maybe_get_identifier(PyObject *self, PyObject *args)
 
 static PyObject *gcc_python_make_translation_unit_decl(gcc_translation_unit_decl decl)
 {
-    gcc_tree tree = gcc_decl_upcast(gcc_translation_unit_decl_upcast(decl));
+    gcc_tree tree = gcc_translation_unit_decl_as_gcc_tree(decl);
     return gcc_python_make_wrapper_tree(tree);
 }
 

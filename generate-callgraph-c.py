@@ -50,7 +50,7 @@ def generate_callgraph_edge():
                                   'The function that is called here, as a gcc.CallgraphNode')
     getsettable.add_simple_getter(cu,
                                   'call_stmt',
-                                  'gcc_python_make_wrapper_gimple(gcc_gimple_call_upcast(gcc_cgraph_edge_get_call_stmt(self->edge)))',
+                                  'gcc_python_make_wrapper_gimple(gcc_gimple_call_as_gcc_gimple(gcc_cgraph_edge_get_call_stmt(self->edge)))',
                                   'The gcc.GimpleCall statememt for the function call')
     cu.add_defn(getsettable.c_defn())
 
@@ -83,7 +83,7 @@ def generate_callgraph_node():
     # FIXME: add getters
     getsettable.add_simple_getter(cu,
                                   'decl',
-                                  'gcc_python_make_wrapper_tree(gcc_decl_upcast(gcc_function_decl_upcast(gcc_cgraph_node_get_decl(self->node))))',
+                                  'gcc_python_make_wrapper_tree(gcc_function_decl_as_gcc_tree(gcc_cgraph_node_get_decl(self->node)))',
                                   'The gcc.FunctionDecl for this node')
     getsettable.add_gsdef('callees',
                           'gcc_CallgraphNode_get_callees',

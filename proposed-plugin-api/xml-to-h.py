@@ -125,17 +125,18 @@ def write_api(api, out):
                          itertype.get_varname()))
             out.write('\n')
 
-        # add upcast
-        if type_.get_base():
+        # add upcasts
+        for base in type_.get_bases():
             out.write('GCC_PUBLIC_API(%s)\n'
-                      '%s_upcast(%s %s);\n'
-                      % (type_.get_base().get_c_name(),
+                      '%s_as_%s(%s %s);\n'
+                      % (base.get_c_name(),
                          type_.get_c_prefix(),
+                         base.get_c_name(),
                          type_.get_c_name(),
                          type_.get_varname()))
 
         # add downcasts
-        for subclass in type_.get_subclasses():
+        for subclass in type_.get_subclasses(recursive=True):
             out.write('GCC_PUBLIC_API(%s)\n'
                       '%s_as_%s(%s %s);\n\n'
                       % (subclass.get_c_name(),

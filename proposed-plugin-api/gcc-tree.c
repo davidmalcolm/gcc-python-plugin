@@ -53,19 +53,22 @@ gcc_private_make_block(tree inner)
     return result;
 }
 
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_constant)
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_decl)
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_binary)
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_block)
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_statement)
-IMPLEMENT_DOWNCAST(gcc_tree, gcc_type)
+IMPLEMENT_CAST(gcc_tree, gcc_constant)
+IMPLEMENT_CAST(gcc_tree, gcc_decl)
+IMPLEMENT_CAST(gcc_tree, gcc_binary)
+IMPLEMENT_CAST(gcc_tree, gcc_block)
+IMPLEMENT_CAST(gcc_tree, gcc_statement)
+IMPLEMENT_CAST(gcc_tree, gcc_type)
+IMPLEMENT_CAST(gcc_tree, gcc_integer_type)
+IMPLEMENT_CAST(gcc_tree, gcc_translation_unit_decl)
+IMPLEMENT_CAST(gcc_translation_unit_decl, gcc_tree)
+IMPLEMENT_CAST(gcc_integer_constant, gcc_tree)
+IMPLEMENT_CAST(gcc_function_decl, gcc_tree)
 
 /* gcc_binary */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_binary_mark_in_use(gcc_binary node);
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
-gcc_binary_upcast(gcc_binary node);
 GCC_IMPLEMENT_PUBLIC_API(gcc_bitwise_and_expr)
 gcc_binary_as_gcc_bitwise_and_expr(gcc_binary node);
 
@@ -80,39 +83,25 @@ gcc_binary_as_gcc_bitwise_xor_expr(gcc_binary node);
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_bitwise_and_expr_mark_in_use(gcc_bitwise_and_expr node);
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_binary)
-gcc_bitwise_and_expr_upcast(gcc_bitwise_and_expr node);
-
 /* gcc_bitwise_ior_expr */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_bitwise_ior_expr_mark_in_use(gcc_bitwise_ior_expr node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_binary)
-gcc_bitwise_ior_expr_upcast(gcc_bitwise_ior_expr node);
 
 /* gcc_bitwise_xor_expr */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_bitwise_xor_expr_mark_in_use(gcc_bitwise_xor_expr node);
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_binary)
-gcc_bitwise_xor_expr_upcast(gcc_bitwise_xor_expr node);
-
 /* gcc_block */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_block_mark_in_use(gcc_block node);
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
-gcc_block_upcast(gcc_block node);
-
-IMPLEMENT_UPCAST(gcc_block, gcc_tree)
+IMPLEMENT_CAST(gcc_block, gcc_tree)
 
 
 /* gcc_statement */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_statement_mark_in_use(gcc_statement node);
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
-gcc_statement_upcast(gcc_statement node);
 GCC_IMPLEMENT_PUBLIC_API(gcc_case_label_expr)
 gcc_statement_as_gcc_case_label_expr(gcc_statement node);
 
@@ -120,9 +109,6 @@ gcc_statement_as_gcc_case_label_expr(gcc_statement node);
 /* gcc_case_label_expr */
 GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_case_label_expr_mark_in_use(gcc_case_label_expr node);
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_statement)
-gcc_case_label_expr_upcast(gcc_case_label_expr node);
 
 /*
   PEP-7

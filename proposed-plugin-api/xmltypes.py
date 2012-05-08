@@ -61,12 +61,23 @@ class Type(XmlWrapper, HasDocsMixin):
         if basename:
             return self.api.registry.lookup_type(basename)
 
-    def get_subclasses(self):
+    def get_bases(self):
+        basename = self.node.get('base')
+        if basename:
+            base = self.api.registry.lookup_type(basename)
+            yield base
+            for base in base.get_bases():
+                yield base
+
+    def get_subclasses(self, recursive=False):
         # brute force linear search for now:
         for type_ in self.api.registry.iter_types():
             base = type_.get_base()
             if base == self:
                 yield type_
+                if recursive:
+                    for type_ in type_.get_subclasses(recursive):
+                        yield type_
 
     def get_varname(self):
         varname = self.node.get('varname')
