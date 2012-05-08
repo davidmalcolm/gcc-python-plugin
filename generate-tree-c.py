@@ -389,10 +389,10 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)))',
                               'The gcc.IntegerType for the unsigned version of this type')
             add_simple_getter('max_value',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_MAX_VALUE(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_max_value(gcc_tree_as_gcc_integer_type(self->t))))',
                               'The maximum possible value for this type, as a gcc.IntegerCst')
             add_simple_getter('min_value',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_MIN_VALUE(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_min_value(gcc_tree_as_gcc_integer_type(self->t))))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):

@@ -61,6 +61,8 @@
   </type>
 
   <type name="integer_type" base="type">
+    <attribute name="max_value" kind="integer_constant"/>
+    <attribute name="min_value" kind="integer_constant"/>
   </type>
 
   <type name="lang_type" base="type">
