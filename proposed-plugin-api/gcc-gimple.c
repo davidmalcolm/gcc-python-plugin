@@ -47,7 +47,7 @@ GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple_phi)
 gcc_private_make_gimple_phi(gimple inner)
 {
     struct gcc_gimple_phi result;
-    /* FIXME: type-checking */
+    GIMPLE_CHECK (inner, GIMPLE_PHI);
     result.inner = inner;
     return result;
 }
@@ -56,7 +56,7 @@ GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple_call)
 gcc_private_make_gimple_call(gimple inner)
 {
     struct gcc_gimple_call result;
-    /* FIXME: type-checking */
+    GIMPLE_CHECK (inner, GIMPLE_CALL);
     result.inner = inner;
     return result;
 }

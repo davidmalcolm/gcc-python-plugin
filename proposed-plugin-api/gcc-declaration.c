@@ -26,15 +26,15 @@ GCC_IMPLEMENT_PRIVATE_API(struct gcc_function_decl)
 gcc_private_make_function_decl(tree inner)
 {
     struct gcc_function_decl result;
-    result.inner = inner;
+    result.inner = FUNCTION_DECL_CHECK(inner);
     return result;
 }
 
-GCC_PRIVATE_API(struct gcc_translation_unit_decl)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_translation_unit_decl)
 gcc_private_make_translation_unit_decl(tree inner)
 {
     struct gcc_translation_unit_decl result;
-    result.inner = inner;
+    result.inner = TRANSLATION_UNIT_DECL_CHECK(inner);
     return result;
 }
 
