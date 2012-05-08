@@ -20,6 +20,9 @@
 #include "proposed-plugin-api/gcc-common.h"
 #include "proposed-plugin-api/gcc-tree.h"
 #include "ggc.h"
+#include "gcc-internal.h"
+#include <assert.h>
+#include "tree.h"
 
 /*
   Trees
@@ -42,14 +45,13 @@ gcc_private_make_tree(tree inner)
     return result;
 }
 
-#define IMPLEMENT_DOWNCAST(T_INPUT, T_OUTPUT) \
-  GCC_IMPLEMENT_PUBLIC_API(T_OUTPUT)          \
-  T_INPUT ## _as_ ## T_OUTPUT(T_INPUT input)    \
-  {                                           \
-      T_OUTPUT output;                        \
-      output.inner = input.inner;             \
-      return output;                          \
-  }
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_block)
+gcc_private_make_block(tree inner)
+{
+    struct gcc_block result;
+    result.inner = BLOCK_CHECK(inner);
+    return result;
+}
 
 IMPLEMENT_DOWNCAST(gcc_tree, gcc_constant)
 IMPLEMENT_DOWNCAST(gcc_tree, gcc_decl)
@@ -101,6 +103,9 @@ gcc_block_mark_in_use(gcc_block node);
 
 GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
 gcc_block_upcast(gcc_block node);
+
+IMPLEMENT_UPCAST(gcc_block, gcc_tree)
+
 
 /* gcc_statement */
 GCC_IMPLEMENT_PUBLIC_API(void)

@@ -465,10 +465,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'TRANSLATION_UNIT_DECL':
             add_simple_getter('block',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(DECL_INITIAL(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_block_upcast(gcc_translation_unit_decl_get_block(gcc_decl_as_gcc_translation_unit_decl(gcc_tree_as_gcc_decl(self->t)))))',
                                "The gcc.Block for this namespace")
             add_simple_getter('language',
-                              'gcc_python_string_from_string(TRANSLATION_UNIT_LANGUAGE(self->t.inner))',
+                              'gcc_python_string_from_string(gcc_translation_unit_decl_get_language(gcc_decl_as_gcc_translation_unit_decl(gcc_tree_as_gcc_decl(self->t))))',
                                "The source language of this translation unit, as a string")
 
         if tree_type.SYM == 'BLOCK':

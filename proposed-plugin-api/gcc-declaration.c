@@ -20,6 +20,7 @@
 #include "proposed-plugin-api/gcc-common.h"
 #include "proposed-plugin-api/gcc-semiprivate-types.h"
 #include "tree.h"
+#include "gcc-internal.h"
 
 GCC_IMPLEMENT_PRIVATE_API(struct gcc_function_decl)
 gcc_private_make_function_decl(tree inner)
@@ -67,6 +68,21 @@ gcc_translation_unit_decl_upcast(gcc_translation_unit_decl fndecl)
     decl.inner = fndecl.inner;
     return decl;
 }
+
+IMPLEMENT_DOWNCAST(gcc_decl, gcc_translation_unit_decl)
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_block)
+gcc_translation_unit_decl_get_block(gcc_translation_unit_decl node)
+{
+    return gcc_private_make_block(DECL_INITIAL(node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(const char*)
+gcc_translation_unit_decl_get_language(gcc_translation_unit_decl node)
+{
+    return TRANSLATION_UNIT_LANGUAGE(node.inner);
+}
+
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
 gcc_for_each_translation_unit_decl(
