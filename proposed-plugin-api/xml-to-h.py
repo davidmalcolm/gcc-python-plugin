@@ -37,13 +37,36 @@ End:
 */
 ''')
 
-def write_doc_comment(doc, out):
-    out.write('/*\n')
-    for line in doc.as_text().splitlines():
-        out.write('  %s\n' % line)
-    out.write('*/\n')
+class SourceWriter:
+    def __init__(self, out):
+        self.out = out
+        self._indent = 0
+
+    def indent(self):
+        self._indent += 1
+
+    def outdent(self):
+        self._indent -= 1
+
+    def writeln(self, line=None):
+        if line:
+            self.out.write('%s%s\n' % ('  ' * self._indent, line))
+        else:
+            self.out.write('\n')
+
+    def write_doc_comment(self, doc):
+        self.write_comment(doc.as_text())
+
+    def write_comment(self, doc):
+        self.writeln('/*')
+        self.indent()
+        for line in doc.splitlines():
+            self.writeln(line)
+        self.outdent()
+        self.writeln('*/')
 
 def write_api(api, out):
+    writer = SourceWriter(out)
     write_header(out)
 
     if api.get_xml_name() == 'rtl':
@@ -59,125 +82,118 @@ def write_api(api, out):
 ''')
     else:
         out.write('#include "proposed-plugin-api/gcc-common.h"\n')
+    writer.writeln()
 
     doc = api.get_doc()
     if doc:
-        write_doc_comment(doc, out)
+        writer.write_doc_comment(doc)
+        writer.writeln()
 
     for type_ in api.iter_types():
-        out.write('\n')
-        out.write('/* %s */\n' % type_.get_c_name())
+        writer.writeln('/* %s */\n' % type_.get_c_name())
 
         doc = type_.get_doc()
         if doc:
-            write_doc_comment(doc, out)
+            writer.write_doc_comment(doc)
 
         # mark_in_use:
-        out.write('GCC_PUBLIC_API(void)\n'
-                  '%s_mark_in_use(%s %s);\n'
-                  % (type_.get_c_prefix(),
-                     type_.get_c_name(),
-                     type_.get_varname()))
-
-        out.write('\n')
+        writer.writeln('GCC_PUBLIC_API(void)')
+        writer.writeln('%s_mark_in_use(%s %s);'
+                       % (type_.get_c_prefix(),
+                          type_.get_c_name(),
+                          type_.get_varname()))
+        writer.writeln()
 
         # add getters for attributes:
         for attr in type_.iter_attrs():
             doc = attr.get_doc()
             if doc:
-                write_doc_comment(doc, out)
+                writer.write_doc_comment(doc)
             if attr.get_c_name().startswith('is_'):
                 # "gcc_foo_is_some_boolean", rather than
                 # "gcc_foo_get_is_some_boolean":
-                out.write('GCC_PUBLIC_API(%s)\n'
-                          '%s_%s(%s %s);\n'
-                          % (attr.get_c_type(),
-                             type_.get_c_prefix(),
-                             attr.get_c_name(),
-                             type_.get_c_name(),
-                             type_.get_varname()))
+                writer.writeln('GCC_PUBLIC_API(%s)' % attr.get_c_type())
+                writer.writeln('%s_%s(%s %s);'
+                               % (type_.get_c_prefix(),
+                                  attr.get_c_name(),
+                                  type_.get_c_name(),
+                                  type_.get_varname()))
             else:
-                out.write('GCC_PUBLIC_API(%s)\n'
-                          '%s_get_%s(%s %s);\n'
-                          % (attr.get_c_type(),
-                             type_.get_c_prefix(),
-                             attr.get_c_name(),
-                             type_.get_c_name(),
-                             type_.get_varname()))
-            out.write('\n')
+                writer.writeln('GCC_PUBLIC_API(%s)' % attr.get_c_type())
+                writer.writeln('%s_get_%s(%s %s);'
+                               % (type_.get_c_prefix(),
+                                  attr.get_c_name(),
+                                  type_.get_c_name(),
+                                  type_.get_varname()))
+            writer.writeln()
 
         # add iterators
         for iter_ in type_.iter_iters():
             itertype = iter_.get_type()
-            out.write('/*\n')
-            out.write('  Iterator; terminates if the callback returns truth\n')
-            out.write('  (for linear search).\n')
-            out.write('*/\n')
-            out.write('GCC_PUBLIC_API(bool)\n'
-                      '%s_for_each_%s(%s %s,\n'
-                      '    bool (*cb)(%s %s, void *user_data),\n'
-                      '    void *user_data);\n'
-                      % (type_.get_c_prefix(),
-                         iter_.get_c_name(),
-                         type_.get_c_name(),
-                         type_.get_varname(),
-                         itertype.get_c_name(),
-                         itertype.get_varname()))
-            out.write('\n')
+            writer.write_comment('Iterator; terminates if the callback returns truth\n'
+                                 '(for linear search)')
+            writer.writeln('GCC_PUBLIC_API(bool)')
+            writer.writeln('%s_for_each_%s(%s %s,'
+                           % (type_.get_c_prefix(),
+                              iter_.get_c_name(),
+                              type_.get_c_name(),
+                              type_.get_varname()))
+            writer.writeln('    bool (*cb)(%s %s, void *user_data),'
+                           % (itertype.get_c_name(),
+                              itertype.get_varname()))
+            writer.writeln('    void *user_data);')
+            writer.writeln()
 
         # add upcasts
         for base in type_.get_bases():
-            out.write('GCC_PUBLIC_API(%s)\n'
-                      '%s_as_%s(%s %s);\n'
-                      % (base.get_c_name(),
-                         type_.get_c_prefix(),
-                         base.get_c_name(),
-                         type_.get_c_name(),
-                         type_.get_varname()))
+            writer.writeln('GCC_PUBLIC_API(%s)'
+                           % base.get_c_name())
+            writer.writeln('%s_as_%s(%s %s);'
+                           % (type_.get_c_prefix(),
+                              base.get_c_name(),
+                              type_.get_c_name(),
+                              type_.get_varname()))
+            writer.writeln()
 
         # add downcasts
         for subclass in type_.get_subclasses(recursive=True):
-            out.write('GCC_PUBLIC_API(%s)\n'
-                      '%s_as_%s(%s %s);\n\n'
-                      % (subclass.get_c_name(),
-                         type_.get_c_prefix(),
-                         subclass.get_c_name(),
-                         type_.get_c_name(),
-                         type_.get_varname()))
-
+            writer.writeln('GCC_PUBLIC_API(%s)'
+                           % subclass.get_c_name())
+            writer.writeln('%s_as_%s(%s %s);'
+                           % (type_.get_c_prefix(),
+                              subclass.get_c_name(),
+                              type_.get_c_name(),
+                              type_.get_varname()))
+            writer.writeln()
 
     # add getters for attributes:
     for attr in api.iter_attrs():
         doc = attr.get_doc()
         if doc:
-            write_doc_comment(doc, out)
+            writer.write_doc_comment(doc, out)
         if attr.is_readable():
-            out.write('GCC_PUBLIC_API(%s)\n'
-                      'gcc_get_%s(void);\n'
-                      % (attr.get_c_type(),
-                         attr.get_c_name()))
+            writer.writeln('GCC_PUBLIC_API(%s)' % attr.get_c_type())
+            writer.writeln('gcc_get_%s(void);' % attr.get_c_name())
         if attr.is_writable():
-            out.write('GCC_PUBLIC_API(void)\n'
-                      'gcc_set_%s(%s %s);\n'
-                      % (attr.get_c_name(),
-                         attr.get_c_type(),
-                         attr.get_varname()))
-        out.write('\n')
+            writer.writeln('GCC_PUBLIC_API(void)')
+            writer.writeln('gcc_set_%s(%s %s);'
+                           % (attr.get_c_name(),
+                              attr.get_c_type(),
+                              attr.get_varname()))
+        writer.writeln()
 
     # add iterators
     for iter_ in api.iter_iters():
         itertype = iter_.get_type()
-        out.write('/*\n')
-        out.write('  Iterator; terminates if the callback returns truth\n')
-        out.write('  (for linear search).\n')
-        out.write('*/\n')
-        out.write('GCC_PUBLIC_API(bool)\n'
-                  'gcc_for_each_%s(bool (*cb)(%s %s, void *user_data),\n'
-                  '    void *user_data);\n'
+        writer.write_comment('  Iterator; terminates if the callback returns truth\n'
+                             '  (for linear search).')
+        writer.writeln('GCC_PUBLIC_API(bool)')
+        writer.writeln('gcc_for_each_%s(bool (*cb)(%s %s, void *user_data),'
                   % (iter_.get_c_name(),
                      itertype.get_c_name(),
                      itertype.get_varname()))
-        out.write('\n')
+        writer.writeln('    void *user_data);')
+        writer.writeln()
 
     write_footer(out)
 
