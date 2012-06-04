@@ -31,7 +31,9 @@ cu.add_include('gcc-plugin.h')
 cu.add_include("tree.h")
 cu.add_include("function.h")
 cu.add_include("basic-block.h")
+cu.add_include("cp/cp-tree.h")
 cu.add_include("c-family/c-common.h")
+cu.add_include("cp/name-lookup.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -186,6 +188,9 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
             add_simple_getter('is_artificial',
                               'PyBool_FromLong(DECL_ARTIFICIAL(self->t))',
                               "Is this a compiler-generated entity?")
+            add_simple_getter('is_builtin',
+                              'PyBool_FromLong(DECL_IS_BUILTIN(self->t))',
+                              "Is this declaration built in by the compiler?")
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
 
         if localname == 'Type':
@@ -478,10 +483,23 @@ def generate_tree_code_classes():
                                "The list of gcc.Tree for the declarations and labels in this block")
 
         if tree_type.SYM == 'NAMESPACE_DECL':
+            add_simple_getter('alias_of',
+                              'gcc_python_make_wrapper_tree(DECL_NAMESPACE_ALIAS(self->t))',
+                              "None if not an alias, otherwise the gcc.NamespaceDecl we alias")
+            add_simple_getter('declarations',
+                              'gcc_python_namespace_decl_declarations(self->t)',
+                              'The list of gcc.Declarations within this namespace')
+            add_simple_getter('namespaces',
+                              'gcc_python_namespace_decl_namespaces(self->t)',
+                              'The list of gcc.NamespaceDecl objects and gcc.TypeDecl of Unions nested in this namespace')
             methods.add_method('lookup',
                                '(PyCFunction)gcc_NamespaceDecl_lookup',
                                'METH_VARARGS|METH_KEYWORDS',
                                "Look up the given string within this namespace")
+            methods.add_method('unalias',
+                               '(PyCFunction)gcc_NamespaceDecl_unalias',
+                               'METH_VARARGS|METH_KEYWORDS',
+                               "A gcc.NamespaceDecl of this namespace that is not an alias")
 
         if tree_type.SYM == 'TYPE_DECL':
             getsettable.add_gsdef('pointer',
