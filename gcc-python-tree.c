@@ -615,6 +615,7 @@ gcc_NamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwa
   tree t = self->t;
 
   if (NULL == DECL_NAMESPACE_ALIAS(t)) {
+    Py_INCREF(self);
     return (PyObject *)self;
   }
 
