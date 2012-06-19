@@ -533,8 +533,8 @@ class TreePrettyPrinter(DotPrettyPrinter):
         result += '}\n'
         return result
 
-def cfg_to_dot(name, cfg):
-    pp = CfgPrettyPrinter(name, cfg)
+def cfg_to_dot(cfg, name = None):
+    pp = CfgPrettyPrinter(cfg, name)
     return pp.to_dot()
 
 
