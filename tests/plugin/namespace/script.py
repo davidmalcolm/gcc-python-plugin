@@ -19,9 +19,7 @@
 import gcc
 
 def indent_print(depth, thing):
-  for i in range(depth):
-    print "  ",
-  print thing
+  print("%s%s" % ("   " * depth, thing))
 
 def print_namespace(ns, depth):
   attributes = ("name", "alias_of", "declarations", "namespaces")
@@ -43,7 +41,7 @@ def print_namespace(ns, depth):
     except Exception as e:
       indent_print(depth, (method_name, e))
 
-  print "\n",
+  print()
 
 def dump_namespaces(ns, depth):
 
