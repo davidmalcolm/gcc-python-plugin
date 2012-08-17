@@ -41,7 +41,7 @@ def print_namespace(ns, depth):
     except Exception as e:
       indent_print(depth, (method_name, e))
 
-  print()
+  print('')
 
 def dump_namespaces(ns, depth):
 
