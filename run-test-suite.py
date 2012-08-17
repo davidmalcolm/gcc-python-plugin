@@ -157,6 +157,10 @@ class TestStream:
                           r'input.c:\1:nn:',
                           line)
 
+            # Python 3.3's unicode reimplementation drops the macro redirection
+            # to narrow/wide implementations ("UCS2"/"UCS4")
+            line = re.sub('PyUnicodeUCS4_AsUTF8String', 'PyUnicode_AsUTF8String', line)
+
             result += line + '\n'
 
         return result

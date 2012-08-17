@@ -3510,7 +3510,7 @@ class CPython(Facet):
     # PyUnicode_*
     ########################################################################
 
-    def impl_PyUnicodeUCS4_AsUTF8String(self, stmt, v_unicode):
+    def impl_PyUnicode_AsUTF8String(self, stmt, v_unicode):
         fnmeta = FnMeta(name='PyUnicode_AsUTF8String',
                         docurl='http://docs.python.org/c-api/unicode.html#PyUnicode_AsUTF8String',
                         prototype='PyObject* PyUnicode_AsUTF8String(PyObject *unicode)',
@@ -3521,8 +3521,11 @@ class CPython(Facet):
         r_newobj, t_success, t_failure = self.object_ctor_bytes(stmt)
         return [t_success, t_failure]
 
-    def impl_PyUnicodeUCS4_DecodeUTF8(self, stmt, v_s, v_size, v_errors):
-        fnmeta = FnMeta(name='PyUnicodeUCS4_DecodeUTF8',
+    def impl_PyUnicodeUCS4_AsUTF8String(self, stmt, v_unicode):
+        return self.impl_PyUnicode_AsUTF8String(stmt, v_unicode)
+
+    def impl_PyUnicode_DecodeUTF8(self, stmt, v_s, v_size, v_errors):
+        fnmeta = FnMeta(name='PyUnicode_DecodeUTF8',
                         docurl='http://docs.python.org/c-api/unicode.html#PyUnicode_DecodeUTF8',
                         prototype=('PyObject *\n'
                                    'PyUnicode_DecodeUTF8(const char *s,\n'
@@ -3533,6 +3536,9 @@ class CPython(Facet):
                                                           'PyUnicodeObject',
                                                           'PyUnicode_Type')
         return [t_success, t_failure]
+
+    def impl_PyUnicodeUCS4_DecodeUTF8(self, stmt, v_s, v_size, v_errors):
+        return self.impl_PyUnicode_DecodeUTF8(stmt, v_s, v_size, v_errors)
 
     ########################################################################
     # PyWeakref_*
