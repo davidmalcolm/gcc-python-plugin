@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,12 +16,13 @@
 #   <http://www.gnu.org/licenses/>.
 
 import gcc
+from gccutils import sorted_dict_repr
 
 # Callback without any args:
 def my_callback(*args, **kwargs):
     print('my_callback:')
     print('  args: %r' % (args,))
-    print('  kwargs: %r' % (kwargs,))
+    print('  kwargs: %s' % (sorted_dict_repr(kwargs),))
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       my_callback)

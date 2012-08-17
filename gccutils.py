@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 import gcc
 
 from six.moves import xrange
+
+def sorted_dict_repr(d):
+    return '{' + ', '.join(['%r: %r' % (k, d[k])
+                            for k in sorted(d.keys())]) + '}'
 
 def get_src_for_loc(loc):
     # Given a gcc.Location, get the source line as a string
