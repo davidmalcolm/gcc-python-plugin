@@ -720,6 +720,7 @@ known to the checker are:
 `PySequence_GetItem <http://docs.python.org/c-api/sequence.html#PySequence_GetItem>`_,
 `PySequence_GetSlice <http://docs.python.org/c-api/sequence.html#PySequence_GetSlice>`_,
 `PySequence_SetItem <http://docs.python.org/c-api/sequence.html#PySequence_SetItem>`_,
+`PySequence_Size <http://docs.python.org/c-api/sequence.html#PySequence_Size>`_,
 `PyString_AsString <http://docs.python.org/c-api/string.html#PyString_AsString>`_,
 `PyString_Concat <http://docs.python.org/c-api/string.html#PyString_Concat>`_,
 `PyString_ConcatAndDel <http://docs.python.org/c-api/string.html#PyString_ConcatAndDel>`_,
