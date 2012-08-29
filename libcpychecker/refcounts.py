@@ -2971,7 +2971,7 @@ class CPython(Facet):
 
     def impl_PySequence_Size(self, stmt, v_o):
         fnmeta = FnMeta(name='PySequence_Size',
-                        docurl='http://docs.python.org/c-api/sequrnce.html#PySequence_Size',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_Size',
                         prototype='Py_ssize_t PySequence_Size(PyObject *s)',
                         defined_in='Objects/abstract.c')
 
