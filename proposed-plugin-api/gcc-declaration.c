@@ -45,6 +45,12 @@ gcc_decl_get_location(gcc_decl decl)
     return gcc_private_make_location(DECL_SOURCE_LOCATION(decl.inner));
 }
 
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_decl_is_artificial(gcc_decl decl)
+{
+    return DECL_ARTIFICIAL(decl.inner);
+}
+
 IMPLEMENT_CAST(gcc_decl, gcc_tree)
 IMPLEMENT_CAST(gcc_function_decl, gcc_decl)
 IMPLEMENT_CAST(gcc_translation_unit_decl, gcc_decl)

@@ -23,6 +23,7 @@
 
   <type name="decl" base="tree">
     <attribute name="location" kind="location"/>
+    <attribute name="is_artificial" kind="bool"/>
   </type>
 
   <type name="class_method_decl" base="decl">

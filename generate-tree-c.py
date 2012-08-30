@@ -188,7 +188,7 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   None,
                                   'The gcc.Location for this declaration')
             add_simple_getter('is_artificial',
-                              'PyBool_FromLong(DECL_ARTIFICIAL(self->t))',
+                              'PyBool_FromLong(gcc_decl_is_artificial(gcc_tree_as_gcc_decl(self->t)))',
                               "Is this a compiler-generated entity?")
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
 
