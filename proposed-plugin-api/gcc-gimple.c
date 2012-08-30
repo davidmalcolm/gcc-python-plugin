@@ -77,6 +77,12 @@ gcc_gimple_get_location(gcc_gimple stmt)
     return gcc_private_make_location(gimple_location(stmt.inner));
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_get_block(gcc_gimple stmt)
+{
+    return gcc_private_make_tree(gimple_block(stmt.inner));
+}
+
 IMPLEMENT_CAST(gcc_gimple_phi, gcc_gimple)
 IMPLEMENT_CAST(gcc_gimple_call, gcc_gimple)
 

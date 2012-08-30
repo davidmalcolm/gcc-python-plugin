@@ -25,7 +25,9 @@
     <attribute name="location" kind="location">
       <doc>Source code location of this statement</doc>
     </attribute>
-    <!-- TODO: "block" -->
+    <attribute name="block" kind="tree">
+      <doc>The The lexical block holding this statement, as a gcc_tree</doc>
+    </attribute>
   </type>
 
   <type name="gimple_asm" base="gimple">

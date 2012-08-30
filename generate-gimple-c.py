@@ -199,7 +199,7 @@ gcc_Gimple_get_location(struct PyGccGimple *self, void *closure)
 static PyObject *
 gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
 {
-    return gcc_python_make_wrapper_tree(gcc_private_make_tree(gimple_block(self->stmt.inner)));
+    return gcc_python_make_wrapper_tree(gcc_gimple_get_block(self->stmt));
 }
 """)
 
