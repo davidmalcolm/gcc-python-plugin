@@ -1,0 +1,11 @@
+Trace 0:
+  Transitions:
+    'taking False path'
+    'returning'
+  Exception:
+    (struct PyObject *)0
+Trace 0:
+  Transitions:
+    'returning'
+  Exception:
+    (struct PyObject *)0

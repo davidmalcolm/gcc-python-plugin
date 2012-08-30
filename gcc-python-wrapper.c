@@ -206,16 +206,25 @@ gcc_python_wrapper_untrack(struct PyGccWrapper *obj)
 
     assert(obj);
     assert(Py_REFCNT(obj) == 0);
-    assert(sentinel.wr_next);
-    assert(sentinel.wr_prev);
-    assert(obj->wr_prev);
-    assert(obj->wr_next);
 
-    /* Remove from linked list: */
-    obj->wr_prev->wr_next = obj->wr_next;
-    obj->wr_next->wr_prev = obj->wr_prev;
-    obj->wr_prev = NULL;
-    obj->wr_next = NULL;
+    /*
+      Remove from the linked list if it's within it
+
+      (If the object constructor fails, then we have only a
+      partially-constructed object, which might not have been
+      added to the linked list yet)
+    */
+    if (obj->wr_prev) {
+        assert(sentinel.wr_next);
+        assert(sentinel.wr_prev);
+        assert(obj->wr_next);
+
+        /* Remove from linked list: */
+        obj->wr_prev->wr_next = obj->wr_next;
+        obj->wr_next->wr_prev = obj->wr_prev;
+        obj->wr_prev = NULL;
+        obj->wr_next = NULL;
+    }
 }
 
 void

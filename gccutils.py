@@ -634,3 +634,45 @@ def check_isinstance(obj, types):
     """
     if not isinstance(obj, types):
         raise TypeError('%s / %r is not an instance of %s' % (obj, obj, types))
+
+def sorted_callgraph():
+    """
+    Return the callgraph, in topologically-sorted order
+    """
+    return topological_sort(gcc.get_callgraph_nodes(),
+                            get_srcs=lambda n: [edge.caller
+                                                for edge in n.callers
+                                                # Strip out recursive calls:
+                                                if edge.caller != n],
+                            get_dsts=lambda n: [edge.callee
+                                                for edge in n.callees
+                                                # Strip out recursive calls:
+                                                if edge.callee != n])
+
+def topological_sort(nodes, get_srcs, get_dsts):
+    """
+    Topological sort in O(n), based on depth-first traversal
+    """
+    result = []
+    visited = set()
+    debug = False
+    def visit(n):
+        if n not in visited:
+            if debug:
+                print('first visit to %s' % n.decl)
+            visited.add(n)
+            for m in get_srcs(n):
+                visit(m)
+            if debug:
+                print('adding to result: %s' % n.decl)
+            result.append(n)
+        else:
+            if debug:
+                print('already visited %s' % n.decl)
+
+    for n in nodes:
+        if not get_dsts(n):
+            visit(n)
+
+    return result
+

@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): WithinRange(gcctype='int', loc=gcc.Location(file='tests/cpychecker/refcounts/cplusplus/this/input.cc', line=36), minvalue=-0x80000000, maxvalue=0x7fffffff)
+    str(): (int)val [-0x80000000 <= val <= 0x7fffffff] from tests/cpychecker/refcounts/cplusplus/this/input.cc:36
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/cplusplus/this/input.cc:34

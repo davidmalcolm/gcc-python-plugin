@@ -98,6 +98,9 @@ def get_errors_from_file(htmlpath):
         #     <tr><td>Function:</td> <td><b>init_gst</b></td></tr>
         #     <tr><td>Error:</td> <td><b>ob_refcnt of new ref from (unknown) pygobject_init is 1 too high</b></td></tr>
         #   </table>
+        if not soup.html:
+            # broken file: error during output of HTML?
+            return
         for div in soup.html.body.findAll('div'):
             table = div.table
             if not table:
@@ -109,11 +112,15 @@ def get_errors_from_file(htmlpath):
                 return row('td')[1].b.string
             # Capture the marked up source code and notes from the report:
             htmlpre = div.div.pre
+            
+            errmsg = get_second_col(rows[2])
+            if not errmsg:
+                continue
             yield ErrorReport(htmlpath=htmlpath,
                               htmlid=div['id'],
                               filename=get_second_col(rows[0]),
                               function = get_second_col(rows[1]),
-                              errmsg = get_second_col(rows[2]),
+                              errmsg = errmsg,
                               htmlpre = htmlpre)
 
 class Severity(namedtuple('Severity', ('priority', 'title', 'description'))):
@@ -151,6 +158,14 @@ class Triager:
                             description='<p>Code paths that will lead to a segmentatation fault</p>')
 
     def classify(self, report):
+        #print('report: %r' % (dir(report), ))
+        #print('report.errmsg: %r' % report.errmsg)
+        if report.errmsg is None:
+            return Severity(priority=PRIORITY__UNCLASSIFIED,
+                            title='Unclassified errors',
+                            description='''
+<p>The triager didn't know how to classify these ones</p>
+''')
         m = re.match('ob_refcnt of (.+) too high', report.errmsg)
         if m:
             if report.might_be_borrowed_ref():
@@ -241,22 +256,67 @@ class BuildLog:
     def __init__(self, path):
         self.unimplemented_functions = set()
         self.cplusplus_failure = False
+        self.seen_rpmbuild = False
+        self.num_tracebacks = 0
 
         buildlog = os.path.join(path, 'build.log')
         with open(buildlog) as f:
             for line in f.readlines():
                 if 0:
-                    print repr(line)
+                    print(repr(line))
                 m = re.match('NotImplementedError: not yet implemented: (\S+)',
                              line)
                 if m:
                     self.unimplemented_functions.add(m.group(1))
 
-                if "AttributeError: 'NoneType' object has no attribute 'vars'" in line:
-                    self.cplusplus_failure = True
+                # Am seeing errors of this form:
+                #  The C++ compiler "/usr/bin/c++" is not able to compile a simple test
+                #  program.
+                #  It fails with the following output:
+                #   Change Dir: /builddir/build/BUILD/airrac-0.2.3/CMakeFiles/CMakeTmp
+                #  
+                #  Run Build Command:/usr/bin/gmake "cmTryCompileExec/fast"
+                #  /usr/bin/gmake -f CMakeFiles/cmTryCompileExec.dir/build.make
+                #  CMakeFiles/cmTryCompileExec.dir/build
+                #  gmake[1]: Entering directory
+                #  `/builddir/build/BUILD/airrac-0.2.3/CMakeFiles/CMakeTmp'
+                #  /usr/bin/cmake -E cmake_progress_report
+                #  /builddir/build/BUILD/airrac-0.2.3/CMakeFiles/CMakeTmp/CMakeFiles 1
+                #  Building CXX object CMakeFiles/cmTryCompileExec.dir/testCXXCompiler.cxx.o
+                #  /usr/bin/c++ -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions
+                #  -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -o
+                #  CMakeFiles/cmTryCompileExec.dir/testCXXCompiler.cxx.o -c
+                #  /builddir/build/BUILD/airrac-0.2.3/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+                #  Traceback (most recent call last):
+                #    File "/usr/bin/the-real-g++", line 53, in <module>
+                #      p = subprocess.Popen(args)
+                #    File "/usr/lib64/python2.7/subprocess.py", line 679, in __init__
+                #      errread, errwrite)
+                #    File "/usr/lib64/python2.7/subprocess.py", line 1130, in _execute_child
+                #      self.pid = os.fork()
+                #  OSError: [Errno 11] Resource temporarily unavailable
+                if 'The C++ compiler "/usr/bin/c++" is not able to compile a simple test' in line:
+                    self.cplusplus_failure = 'The C++ compiler "/usr/bin/c++" is not able to compile a simple test'
+
+                if not self.cplusplus_failure:
+                    if 'OSError: [Errno 11] Resource temporarily unavailable' in line:
+                        self.cplusplus_failure = 'OSError: [Errno 11] Resource temporarily unavailable'
+
+                if 'configure: error: C++ compiler cannot create executables' in line:
+                    self.cplusplus_failure = 'configure: error: C++ compiler cannot create executables'
+
+                if 'rpmbuild -bb' in line:
+                    self.seen_rpmbuild = True
+
+                if line.startswith('Traceback '):
+                    self.num_tracebacks += 1
 
 class Index:
     def __init__(self, path, title):
+        self.reported = False
+        self.seen_SWIG = False
+        self.seen_Cython = False
+
         outpath = os.path.join(path, 'index.html')
         with open(outpath, 'w') as f:
             f.write('<html><head><title>%s</title></head>\n' % title)
@@ -269,9 +329,18 @@ class Index:
             buildlog = BuildLog(path)
 
             if buildlog.cplusplus_failure:
-                f.write('    <p>C++ failure</p>\n')
+                f.write('    <p>C++ failure: %s</p>\n' % buildlog.cplusplus_failure)
                 srpm = Srpm.from_path(path)
-                BugReportDb.add_status(srpm, "FIXME: C++")
+                BugReportDb.add_status(srpm, "FIXME: C++ failure: %s" % buildlog.cplusplus_failure)
+                self.reported = True
+            """
+            if not buildlog.seen_rpmbuild:
+                f.write('    <p>Did not see rpmbuild -bb in build.log</p>\n')
+                srpm = Srpm.from_path(path)
+                BugReportDb.add_status(srpm, "FIXME: did not see rpmbuild -bb in build.log")
+                self.reported = True
+                return
+            """
 
             # Gather the ErrorReport by severity
             triager = Triager()
@@ -287,6 +356,8 @@ class Index:
                         #print '  ', os.path.join(dirpath, filename)
                         htmlpath = os.path.join(dirpath, filename)
                         for er in get_errors_from_file(htmlpath):
+                            if er is None:
+                                continue
                             #print(er.filename)
                             #print(er.function)
                             #print(er.errmsg)
@@ -310,6 +381,12 @@ class Index:
                                href, er.errmsg))
                 f.write('    </table>\n')
 
+                if 'SWIG' in er.function or 'SWIG' in er.errmsg:
+                    self.seen_SWIG = True
+
+                if '__pyx' in er.function or '__pyx' in er.errmsg:
+                    self.seen_Cython = True
+
             if buildlog.unimplemented_functions:
                 f.write('    <h2>Implementation notes for gcc-with-cpychecker</h2>\n')
                 f.write('    <p>The following "Py" functions were used but aren\'t\n'
@@ -324,6 +401,26 @@ class Index:
 
             f.write('  </body>\n')
             f.write('</html>\n')
+
+            if self.seen_Cython:
+                if not self.reported:
+                    srpm = Srpm.from_path(path)
+                    BugReportDb.add_status(srpm, "FIXME: Cython-built")
+                    self.reported = True
+
+            if self.seen_SWIG:
+                if not self.reported:
+                    srpm = Srpm.from_path(path)
+                    BugReportDb.add_status(srpm, "FIXME: SWIG-built")
+                    self.reported = True
+
+            if buildlog.num_tracebacks >= 5:
+                if not self.reported:
+                    srpm = Srpm.from_path(path)
+                    BugReportDb.add_status(srpm,
+                                           ("FIXME: %i tracebacks during build"
+                                            % buildlog.num_tracebacks))
+                    self.reported = True
 
     def iter_severities(self):
         for sev in sorted(self.severities.keys())[::-1]:

@@ -108,31 +108,43 @@ class BugReportDb:
                 result.append(status)
         return result
 
-    def summary(self):
+    def print_summary(self):
+        global total
         num_bugs = 0
         fixmes = 0
         others = 0
+        cplusplus = 0
+        swig = 0
+        cython = 0
         for status in self.statuses:
             if isinstance(status, BugReport):
                 num_bugs += 1
             elif isinstance(status, Unreported):
                 if 'FIXME' in status.notes or 'TODO' in status.notes:
-                    fixmes += 1
+                    if 'C++' in status.notes:
+                        cplusplus += 1
+                    elif 'SWIG' in status.notes:
+                        swig += 1
+                    elif 'Cython' in status.notes:
+                        cython += 1
+                    else:
+                        fixmes += 1
                 else:
                     others += 1
         num_src_rpms = len(glob.glob('SRPMS/*.src.rpm'))
-        return num_bugs, fixmes, others, num_src_rpms
-
-    def print_summary(self):
-        num_bugs, fixmes, others, num_src_rpms = self.summary()
+        total = 0
         def print_amount(desc, count):
+            global total
             print('* %i %s (%i%%)'
                   % (count, desc, count * 100 / num_src_rpms))
+            total += count
         print_amount('bugs filed for src.rpms, where the checker found genuine problems', num_bugs)
         print_amount('src.rpms not requiring a bug to be filed', others)
-        print_amount('src.rpms requiring followup work', fixmes)
-        print_amount('src.rpms not yet processed',
-                     num_src_rpms - (num_bugs + fixmes +others))
+        print_amount('src.rpms waiting on fix for C++ support', cplusplus)
+        print_amount('src.rpms waiting on better SWIG support', swig)
+        print_amount('src.rpms waiting on better Cython support', cython)
+        print_amount('src.rpms requiring other followup work', fixmes)
+        print_amount('src.rpms not accounted for', num_src_rpms - total)
         print('out of %i total src.rpms (that link against libpython2.7)'
               % num_src_rpms)
 

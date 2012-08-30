@@ -488,6 +488,8 @@ class ConcreteValue(AbstractValue):
                     return ConcreteValue(gcctype, loc, self.value)
             # We might lose information e.g. truncation; be pessimistic for now:
             return UnknownValue.make(gcctype, loc)
+        elif exprcode == gcc.FixTruncExpr:
+            return ConcreteValue(gcctype, loc, int(self.value))
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
@@ -1818,7 +1820,9 @@ class State(object):
 
     def make_field_region(self, target, field):
         check_isinstance(target, Region)
-        check_isinstance(field, str)
+        if field:
+            # (field can be None for C++ destructors)
+            check_isinstance(field, str)
         log('make_field_region(%r, %r)', target, field)
         if field in target.fields:
             log('reusing')
@@ -1916,9 +1920,13 @@ class State(object):
 
         nonnull_args = get_nonnull_arguments(fun.decl.type)
         for idx, parm in enumerate(fun.decl.arguments):
+            def parm_is_this():
+                if idx == 0 and parm.is_artificial and parm.name == 'this':
+                    return True
             region = RegionForLocal(parm, stack)
             self.region_for_var[parm] = region
-            if idx in nonnull_args:
+            if idx in nonnull_args or parm_is_this() \
+                    or isinstance(parm.type, gcc.ReferenceType):
                 # Make a non-NULL ptr:
                 other = Region('region-for-arg-%r' % parm, None)
                 self.region_for_var[other] = other
@@ -2584,7 +2592,7 @@ class State(object):
                 return UnknownValue.make(stmt.lhs.type, stmt.loc)
         # Unary expressions:
         elif stmt.exprcode in (gcc.AbsExpr, gcc.BitNotExpr, gcc.ConvertExpr,
-                               gcc.NegateExpr):
+                               gcc.NegateExpr, gcc.FixTruncExpr):
             v_rhs = self.eval_rvalue(stmt.rhs[0], stmt.loc)
             return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
         elif stmt.exprcode == gcc.BitFieldRef:

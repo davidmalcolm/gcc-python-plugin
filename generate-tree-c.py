@@ -153,6 +153,14 @@ def generate_intermediate_tree_classes():
                               tp_getset = getsettable.identifier,
                               tp_methods = methods.identifier)
 
+        def add_simple_getter(name, c_expression, doc):
+            getsettable.add_gsdef(name,
+                                  cu.add_simple_getter('gcc_%s_get_%s' % (localname, name),
+                                                       'PyGccTree',
+                                                       c_expression),
+                                  None,
+                                  doc)
+
         if localname == 'Declaration':
             cu.add_defn("""
 PyObject *
@@ -179,15 +187,10 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   'gcc_Declaration_get_location',
                                   None,
                                   'The gcc.Location for this declaration')
+            add_simple_getter('is_artificial',
+                              'PyBool_FromLong(DECL_ARTIFICIAL(self->t))',
+                              "Is this a compiler-generated entity?")
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
-
-        def add_simple_getter(name, c_expression, doc):
-            getsettable.add_gsdef(name,
-                                  cu.add_simple_getter('gcc_%s_get_%s' % (localname, name),
-                                                       'PyGccTree',
-                                                       c_expression),
-                                  None,
-                                  doc)
 
         if localname == 'Type':
             add_simple_getter('name',

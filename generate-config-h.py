@@ -25,13 +25,18 @@ class GccPythonPluginConfigBuilder(ConfigBuilder):
         import argparse
         parser = argparse.ArgumentParser()
         parser.add_argument('--gcc')
+        parser.add_argument('--plugindir')
         args, argv = parser.parse_known_args(argv)
         ConfigBuilder.__init__(self, argv)
         self.gcc = args.gcc
+        self.plugindir = args.plugindir
 
     def main(self):
         prefix = 'GCC_PYTHON_PLUGIN_CONFIG_'
-        plugindir = self.capture_shell_output('locating plugin directory for %s' % self.gcc,
+        if self.plugindir:
+            plugindir = self.plugindir
+        else:
+            plugindir = self.capture_shell_output('locating plugin directory for %s' % self.gcc,
                                             '%s --print-file-name=plugin' % self.gcc).strip()
         extraargs = ['-I%s' % os.path.join(plugindir, 'include')]
         self.test_for_mandatory_c_header('gcc-plugin.h', extraargs)

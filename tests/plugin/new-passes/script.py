@@ -130,3 +130,14 @@ class GimplePassSettingLocation(gcc.GimplePass):
 ps = GimplePassSettingLocation(name='gimple-pass-setting-location')
 print('registering: %r' % ps)
 ps.register_after('cfg')
+
+# Verify that the plugin doesn't crash when constructing a pass with
+# an unrecognized kwarg:
+class TestBogusKwargs(gcc.GimplePass):
+    def __init__(self):
+        gcc.GimplePass.__init__(self, 'test-bogus-kwargs')
+
+try:
+    ps = TestBogusKwargs(this_is_not_a_valid_kwarg=42)
+except:
+    pass
