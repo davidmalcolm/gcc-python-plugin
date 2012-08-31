@@ -58,7 +58,7 @@
     <attribute name="is_noreturn" kind="bool">
       <doc>Has this call been marked as never returning?</doc>
     </attribute>
-    <iterator name="args" kind="tree">
+    <iterator name="arg" kind="tree">
       <doc>The arguments for the call</doc>
     </iterator>
   </type>

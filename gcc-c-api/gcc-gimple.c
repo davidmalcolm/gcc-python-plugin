@@ -152,12 +152,22 @@ gcc_gimple_call_is_noreturn(gcc_gimple_call stmt)
     return gimple_call_noreturn_p(stmt.inner);
 }
 
-/*
 GCC_IMPLEMENT_PUBLIC_API(bool)
-gcc_gimple_call_for_each_args(gcc_gimple_call stmt,
+gcc_gimple_call_for_each_arg(gcc_gimple_call stmt,
     bool (*cb)(gcc_tree node, void *user_data),
-    void *user_data);
-*/
+    void *user_data)
+{
+    int num_args = gimple_call_num_args (stmt.inner);
+    int i;
+
+    for (i = 0 ; i < num_args; i++) {
+        if (cb (gcc_private_make_tree (gimple_call_arg (stmt.inner, i)),
+                user_data)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 IMPLEMENT_CAST(gcc_gimple_call, gcc_gimple)
 

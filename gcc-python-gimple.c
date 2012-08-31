@@ -227,32 +227,16 @@ gcc_Gimple_get_str_no_uid(struct PyGccGimple *self, void *closure)
     return do_pretty_print(self, 0, TDF_NOUID);
 }
 
+IMPL_APPENDER(add_tree_to_list,
+              gcc_tree,
+              gcc_python_make_wrapper_tree)
+
 PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
 {
-    PyObject * result = NULL;
-    int num_args = gimple_call_num_args (self->stmt.inner);
-    int i;
-
-    result = PyList_New(num_args);
-    if (!result) {
-	goto error;
-    }
-    
-    for (i = 0 ; i < num_args; i++) {
-	tree t = gimple_call_arg(self->stmt.inner, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
-	if (!obj) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, obj);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    IMPL_LIST_MAKER(gcc_gimple_call_for_each_arg,
+                    PyGccGimple_as_gcc_gimple_call(self),
+                    add_tree_to_list)
 }
 
 PyObject *
