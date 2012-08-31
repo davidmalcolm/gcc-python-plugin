@@ -65,6 +65,16 @@ class SourceWriter:
         self.outdent()
         self.writeln('*/')
 
+    def write_begin_extern_c(self):
+        self.writeln('#ifdef __cplusplus')
+        self.writeln('extern "C" {')
+        self.writeln('#endif')
+
+    def write_end_extern_c(self):
+        self.writeln('#ifdef __cplusplus')
+        self.writeln('}')
+        self.writeln('#endif')
+
 def write_api(api, out):
     writer = SourceWriter(out)
     write_header(out)
@@ -83,6 +93,8 @@ def write_api(api, out):
     else:
         out.write('#include "gcc-c-api/gcc-common.h"\n')
     writer.writeln()
+
+    writer.write_begin_extern_c()
 
     doc = api.get_doc()
     if doc:
@@ -195,15 +207,18 @@ def write_api(api, out):
         writer.writeln('    void *user_data);')
         writer.writeln()
 
+    writer.write_end_extern_c()
     write_footer(out)
 
 def write_public_types(registry, out):
+    writer = SourceWriter(out)
     write_header(out)
     out.write('#ifndef INCLUDED__GCC_PUBLIC_TYPES_H\n')
     out.write('#define INCLUDED__GCC_PUBLIC_TYPES_H\n')
     out.write('\n')
     out.write('#include "gcc-semiprivate-types.h"\n')
     out.write('\n')
+    writer.write_begin_extern_c()
     for api in registry.apis:
         out.write('/* Opaque types: %s */\n' % api.get_doc().as_text())
         for type_ in api.iter_types():
@@ -211,10 +226,12 @@ def write_public_types(registry, out):
                       % (type_.get_c_name(), type_.get_c_name()))
         out.write('\n')
 
-    out.write('#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */')
+    writer.write_end_extern_c()
+    out.write('#endif /* INCLUDED__GCC_PUBLIC_TYPES_H */\n')
     write_footer(out)
 
 def write_semiprivate_types(registry, out):
+    writer = SourceWriter(out)
     write_header(out)
     out.write('#ifndef INCLUDED__GCC_SEMIPRIVATE_TYPES_H\n')
     out.write('#define INCLUDED__GCC_SEMIPRIVATE_TYPES_H\n')
@@ -222,6 +239,7 @@ def write_semiprivate_types(registry, out):
     out.write('\n')
     out.write('#include "input.h" /* for location_t */\n')
     out.write('\n')
+    writer.write_begin_extern_c()
     out.write('/*\n')
     out.write('  These "interface types" should be treated like pointers, only that\n')
     out.write('  users are required to collaborate with the garbage-collector.\n')
@@ -247,7 +265,8 @@ def write_semiprivate_types(registry, out):
                          type_.get_inner_type()))
             out.write('\n')
 
-    out.write('#endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */')
+    writer.write_end_extern_c()
+    out.write('#endif /* INCLUDED__GCC_SEMIPRIVATE_TYPES_H */\n')
     write_footer(out)
 
 registry = ApiRegistry()
