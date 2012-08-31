@@ -171,6 +171,25 @@ gcc_python_tree_type_object_as_tree_code(PyObject *cls,
                                          enum tree_code *out);
 
 /* gcc-python-tree.c: */
+/* FIXME: autogenerate these: */
+extern gcc_integer_type
+PyGccTree_as_gcc_integer_type(struct PyGccTree * self);
+
+extern gcc_decl
+PyGccTree_as_gcc_decl(struct PyGccTree * self);
+
+extern gcc_type
+PyGccTree_as_gcc_type(struct PyGccTree * self);
+
+extern gcc_translation_unit_decl
+PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self);
+
+extern PyObject *
+PyGccBlock_New(gcc_block t);
+
+extern PyObject *
+PyGccPointerType_New(gcc_pointer_type t);
+
 PyObject *
 gcc_Tree_str(struct PyGccTree * self);
 

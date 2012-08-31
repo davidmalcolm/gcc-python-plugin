@@ -28,6 +28,7 @@
 #include "tree-flow.h" /* for op_symbol_code */
 
 #include "proposed-plugin-api/gcc-tree.h"
+#include "proposed-plugin-api/gcc-type.h"
 
 
 /*
@@ -91,6 +92,42 @@ do_pretty_print(struct PyGccTree * self, int spc, int flags)
  error:
     Py_XDECREF(ppobj);
     return NULL;
+}
+
+gcc_integer_type
+PyGccTree_as_gcc_integer_type(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_integer_type(self->t);
+}
+
+gcc_decl
+PyGccTree_as_gcc_decl(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_decl(self->t);
+}
+
+gcc_type
+PyGccTree_as_gcc_type(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_type(self->t);
+}
+
+gcc_translation_unit_decl
+PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_translation_unit_decl(self->t);
+}
+
+PyObject *
+PyGccBlock_New(gcc_block t)
+{
+    return gcc_python_make_wrapper_tree(gcc_block_as_gcc_tree(t));
+}
+
+PyObject *
+PyGccPointerType_New(gcc_pointer_type t)
+{
+    return gcc_python_make_wrapper_tree(gcc_pointer_type_as_gcc_tree(t));
 }
 
 

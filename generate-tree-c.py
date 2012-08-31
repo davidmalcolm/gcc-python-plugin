@@ -175,7 +175,7 @@ gcc_Declaration_get_name(struct PyGccTree *self, void *closure)
 static PyObject *
 gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
 {
-    return gcc_python_make_wrapper_location(gcc_decl_get_location(gcc_tree_as_gcc_decl(self->t)));
+    return gcc_python_make_wrapper_location(gcc_decl_get_location(PyGccTree_as_gcc_decl(self)));
 }
 """)
 
@@ -188,16 +188,16 @@ gcc_Declaration_get_location(struct PyGccTree *self, void *closure)
                                   None,
                                   'The gcc.Location for this declaration')
             add_simple_getter('is_artificial',
-                              'PyBool_FromLong(gcc_decl_is_artificial(gcc_tree_as_gcc_decl(self->t)))',
+                              'PyBool_FromLong(gcc_decl_is_artificial(PyGccTree_as_gcc_decl(self)))',
                               "Is this a compiler-generated entity?")
             pytype.tp_repr = '(reprfunc)gcc_Declaration_repr'
 
         if localname == 'Type':
             add_simple_getter('name',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(TYPE_NAME(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_type_get_name(PyGccTree_as_gcc_type(self)))',
                               "The name of the type as a gcc.Tree, or None")
             add_simple_getter('pointer',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(build_pointer_type(self->t.inner)))',
+                              'PyGccPointerType_New(gcc_type_get_pointer(PyGccTree_as_gcc_type(self)))',
                               "The gcc.PointerType representing '(this_type *)'")
             getsettable.add_gsdef('attributes',
                                   'gcc_Type_get_attributes',
@@ -392,10 +392,10 @@ def generate_tree_code_classes():
                               'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)))',
                               'The gcc.IntegerType for the unsigned version of this type')
             add_simple_getter('max_value',
-                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_max_value(gcc_tree_as_gcc_integer_type(self->t))))',
+                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_max_value(PyGccTree_as_gcc_integer_type(self))))',
                               'The maximum possible value for this type, as a gcc.IntegerCst')
             add_simple_getter('min_value',
-                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_min_value(gcc_tree_as_gcc_integer_type(self->t))))',
+                              'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_min_value(PyGccTree_as_gcc_integer_type(self))))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
@@ -470,10 +470,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'TRANSLATION_UNIT_DECL':
             add_simple_getter('block',
-                              'gcc_python_make_wrapper_tree(gcc_block_as_gcc_tree(gcc_translation_unit_decl_get_block(gcc_tree_as_gcc_translation_unit_decl(self->t))))',
+                              'PyGccBlock_New(gcc_translation_unit_decl_get_block(PyGccTree_as_gcc_translation_unit_decl(self)))',
                                "The gcc.Block for this namespace")
             add_simple_getter('language',
-                              'gcc_python_string_from_string(gcc_translation_unit_decl_get_language(gcc_tree_as_gcc_translation_unit_decl(self->t)))',
+                              'gcc_python_string_from_string(gcc_translation_unit_decl_get_language(PyGccTree_as_gcc_translation_unit_decl(self)))',
                                "The source language of this translation unit, as a string")
 
         if tree_type.SYM == 'BLOCK':

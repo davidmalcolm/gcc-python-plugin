@@ -22,6 +22,8 @@
   <doc>Types</doc>
 
   <type name="type" base="tree">
+    <attribute name="name" kind="tree"/>
+    <attribute name="pointer" kind="pointer_type"/>
   </type>
 
   <type name="array_type" base="type">
