@@ -57,6 +57,7 @@ IMPLEMENT_CAST(gcc_tree, gcc_constant)
 IMPLEMENT_CAST(gcc_tree, gcc_decl)
 IMPLEMENT_CAST(gcc_tree, gcc_binary)
 IMPLEMENT_CAST(gcc_tree, gcc_block)
+IMPLEMENT_CAST(gcc_tree, gcc_ssa_name)
 IMPLEMENT_CAST(gcc_tree, gcc_statement)
 IMPLEMENT_CAST(gcc_tree, gcc_type)
 IMPLEMENT_CAST(gcc_tree, gcc_integer_type)
@@ -93,6 +94,30 @@ GCC_IMPLEMENT_PUBLIC_API(void)
 gcc_block_mark_in_use(gcc_block node);
 
 IMPLEMENT_CAST(gcc_block, gcc_tree)
+
+
+/***************************************************************************
+ gcc_ssa_name
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_ssa_name_get_var(gcc_ssa_name node)
+{
+    return gcc_private_make_tree(SSA_NAME_VAR(node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_gimple)
+gcc_ssa_name_get_def_stmt(gcc_ssa_name node)
+{
+    return gcc_private_make_gimple(SSA_NAME_DEF_STMT(node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(int)
+gcc_ssa_name_get_version(gcc_ssa_name node)
+{
+    return SSA_NAME_VERSION(node.inner);
+}
+
+IMPLEMENT_CAST(gcc_ssa_name, gcc_tree)
 
 
 /* gcc_statement */

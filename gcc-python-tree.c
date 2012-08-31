@@ -118,6 +118,12 @@ PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self)
     return gcc_tree_as_gcc_translation_unit_decl(self->t);
 }
 
+gcc_ssa_name
+PyGccTree_as_gcc_ssa_name(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_ssa_name(self->t);
+}
+
 PyObject *
 PyGccBlock_New(gcc_block t)
 {

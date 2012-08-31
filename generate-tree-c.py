@@ -532,13 +532,13 @@ def generate_tree_code_classes():
         if tree_type.SYM == 'SSA_NAME':
             # c.f. "struct GTY(()) tree_ssa_name":
             add_simple_getter('var',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(SSA_NAME_VAR(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_ssa_name_get_var(PyGccTree_as_gcc_ssa_name(self)))',
                               "The variable being referenced'")
             add_simple_getter('def_stmt',
-                              'gcc_python_make_wrapper_gimple(gcc_private_make_gimple(SSA_NAME_DEF_STMT(self->t.inner)))',
+                              'gcc_python_make_wrapper_gimple(gcc_ssa_name_get_def_stmt(PyGccTree_as_gcc_ssa_name(self)))',
                               "The gcc.Gimple statement which defines this SSA name'")
             add_simple_getter('version',
-                              'gcc_python_int_from_long(SSA_NAME_VERSION(self->t.inner))',
+                              'gcc_python_int_from_long(gcc_ssa_name_get_version(PyGccTree_as_gcc_ssa_name(self)))',
                               "The SSA version number of this SSA name'")
 
         if tree_type.SYM == 'TREE_LIST':

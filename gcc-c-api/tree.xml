@@ -190,8 +190,14 @@
   ..            TargetMemRef
   ..            UnconstrainedArrayRef
   ..            ViewConvertExpr
-  ..        SsaName
 -->
+
+  <type name="ssa_name" base="tree">
+    <attribute name="var" kind="tree"/>
+    <attribute name="def_stmt" kind="gimple"/>
+    <attribute name="version" kind="int"/>
+  </type>
+
   <type name="statement" base="tree">
   </type>
 <!--
