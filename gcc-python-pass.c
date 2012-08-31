@@ -21,8 +21,8 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "diagnostic.h"
-#include "proposed-plugin-api/gcc-function.h"
-#include "proposed-plugin-api/gcc-location.h"
+#include "gcc-c-api/gcc-function.h"
+#include "gcc-c-api/gcc-location.h"
 
 /*
   Wrapper for GCC's (opt_pass *)

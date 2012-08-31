@@ -23,7 +23,7 @@
 #include "gcc-python-closure.h"
 #include "gcc-python-wrappers.h"
 
-#include "proposed-plugin-api/gcc-location.h"
+#include "gcc-c-api/gcc-location.h"
 
 /*
   Notes on the passes

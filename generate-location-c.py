@@ -22,7 +22,7 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("proposed-plugin-api/gcc-location.h")
+cu.add_include("gcc-c-api/gcc-location.h")
 
 modinit_preinit = ''
 modinit_postinit = ''

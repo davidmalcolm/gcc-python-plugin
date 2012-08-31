@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-common.h"
+#include "gcc-c-api/gcc-common.h"
 
 /* TODO: rationalize these headers */
 #include "tree.h"

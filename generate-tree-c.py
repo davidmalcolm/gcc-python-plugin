@@ -32,10 +32,10 @@ cu.add_include("tree.h")
 cu.add_include("function.h")
 cu.add_include("basic-block.h")
 cu.add_include("c-family/c-common.h")
-cu.add_include("proposed-plugin-api/gcc-tree.h")
-cu.add_include("proposed-plugin-api/gcc-constant.h")
-cu.add_include("proposed-plugin-api/gcc-declaration.h")
-cu.add_include("proposed-plugin-api/gcc-type.h")
+cu.add_include("gcc-c-api/gcc-tree.h")
+cu.add_include("gcc-c-api/gcc-constant.h")
+cu.add_include("gcc-c-api/gcc-declaration.h")
+cu.add_include("gcc-c-api/gcc-type.h")
 
 modinit_preinit = ''
 modinit_postinit = ''

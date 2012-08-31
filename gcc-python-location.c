@@ -20,7 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#include "proposed-plugin-api/gcc-location.h"
+#include "gcc-c-api/gcc-location.h"
 
 /*
   Wrapper for GCC's "location_t"

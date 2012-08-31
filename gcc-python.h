@@ -27,7 +27,7 @@
 #include "gimple.h"
 #include "params.h"
 #endif
-#include "proposed-plugin-api/gcc-cfg.h"
+#include "gcc-c-api/gcc-cfg.h"
 
 /* GCC doesn't seem to give us an ID for "invalid event", so invent one: */
 #define GCC_PYTHON_PLUGIN_BAD_EVENT (0xffff)

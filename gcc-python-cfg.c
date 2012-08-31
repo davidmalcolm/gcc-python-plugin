@@ -20,8 +20,8 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#include "proposed-plugin-api/gcc-cfg.h"
-#include "proposed-plugin-api/gcc-gimple.h"
+#include "gcc-c-api/gcc-cfg.h"
+#include "gcc-c-api/gcc-gimple.h"
 
 #if 1
 /* Ideally we wouldn't have these includes here: */

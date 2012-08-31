@@ -20,7 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#include "proposed-plugin-api/gcc-callgraph.h"
+#include "gcc-c-api/gcc-callgraph.h"
 
 /*
   Wrapper for various types in gcc/cgraph.h

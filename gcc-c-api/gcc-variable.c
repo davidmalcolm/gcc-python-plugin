@@ -17,61 +17,48 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-cfg.h"
+#include "gcc-c-api/gcc-variable.h"
+#include "ggc.h"
+#include "cgraph.h" /* for varpool_nodes */
 
 /***********************************************************
-   gcc_location
+   gcc_variable
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct gcc_location)
-gcc_private_make_location(location_t inner)
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_variable)
+gcc_private_make_variable(struct varpool_node * inner)
 {
-    struct gcc_location result;
+    struct gcc_variable result;
     result.inner = inner;
     return result;
 }
 
 GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_location_mark_in_use(gcc_location loc)
+gcc_variable_mark_in_use(gcc_variable var)
 {
-    /* empty */
+    /* Mark the underlying object (recursing into its fields): */
+    gt_ggc_mx_varpool_node(var.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(const char *)
-gcc_location_get_filename(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_variable_get_decl(gcc_variable var)
 {
-    return LOCATION_FILE(loc.inner);
+    return gcc_private_make_tree(var.inner->decl);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(int)
-gcc_location_get_line(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_for_each_variable(bool (*cb)(gcc_variable var, void *user_data),
+                      void *user_data)
 {
-    return LOCATION_LINE(loc.inner);
+    struct varpool_node *n;
+
+    for (n = varpool_nodes; n; n = n->next) {
+        if (cb(gcc_private_make_variable(n), user_data)) {
+            return true;
+        }
+    }
+    return false;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(int)
-gcc_location_get_column(gcc_location loc)
-{
-    expanded_location exploc = expand_location(loc.inner);
-    return exploc.column;
-}
-
-GCC_PUBLIC_API(bool)
-gcc_location_is_unknown(gcc_location loc)
-{
-    return UNKNOWN_LOCATION == loc.inner;
-}
-
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_set_input_location(gcc_location loc)
-{
-    input_location = loc.inner;
-}
-
-GCC_IMPLEMENT_PUBLIC_API(gcc_location)
-gcc_get_input_location(void)
-{
-    return gcc_private_make_location(input_location);
-}
 
 /*
   PEP-7

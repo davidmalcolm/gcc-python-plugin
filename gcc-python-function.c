@@ -29,7 +29,7 @@
 */
 
 #include "function.h"
-#include "proposed-plugin-api/gcc-function.h"
+#include "gcc-c-api/gcc-function.h"
 
 PyObject *
 gcc_Function_repr(struct PyGccFunction * self)

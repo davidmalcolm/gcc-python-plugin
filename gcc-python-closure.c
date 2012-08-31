@@ -24,7 +24,7 @@
 #include "gcc-python.h"
 #include "function.h"
 
-#include "proposed-plugin-api/gcc-function.h"
+#include "gcc-c-api/gcc-function.h"
 
 struct callback_closure *
 gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject *kwargs)

@@ -23,9 +23,9 @@
 #include "gcc-python-closure.h"
 #include "gcc-python-wrappers.h"
 
-#include "proposed-plugin-api/gcc-location.h"
-#include "proposed-plugin-api/gcc-variable.h"
-#include "proposed-plugin-api/gcc-declaration.h"
+#include "gcc-c-api/gcc-location.h"
+#include "gcc-c-api/gcc-variable.h"
+#include "gcc-c-api/gcc-declaration.h"
 
 int plugin_is_GPL_compatible;
 

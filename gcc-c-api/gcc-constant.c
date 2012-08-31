@@ -17,9 +17,9 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-common.h"
-#include "proposed-plugin-api/gcc-constant.h"
-#include "proposed-plugin-api/gcc-internal.h"
+#include "gcc-c-api/gcc-common.h"
+#include "gcc-c-api/gcc-constant.h"
+#include "gcc-c-api/gcc-internal.h"
 
 /* gcc_constant */
 IMPLEMENT_CAST(gcc_constant, gcc_tree)

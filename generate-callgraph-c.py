@@ -22,10 +22,10 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("proposed-plugin-api/gcc-callgraph.h")
-cu.add_include("proposed-plugin-api/gcc-gimple.h")
-cu.add_include("proposed-plugin-api/gcc-tree.h")
-cu.add_include("proposed-plugin-api/gcc-declaration.h")
+cu.add_include("gcc-c-api/gcc-callgraph.h")
+cu.add_include("gcc-c-api/gcc-gimple.h")
+cu.add_include("gcc-c-api/gcc-tree.h")
+cu.add_include("gcc-c-api/gcc-declaration.h")
 
 modinit_preinit = ''
 modinit_postinit = ''

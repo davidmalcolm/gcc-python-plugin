@@ -20,7 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#include "proposed-plugin-api/gcc-variable.h"
+#include "gcc-c-api/gcc-variable.h"
 
 PyObject *
 gcc_python_make_wrapper_variable(gcc_variable var)

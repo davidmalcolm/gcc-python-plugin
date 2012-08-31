@@ -25,7 +25,7 @@
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
-#include "proposed-plugin-api/gcc-gimple.h"
+#include "gcc-c-api/gcc-gimple.h"
 
 gcc_gimple_asm
 PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self)

@@ -27,8 +27,8 @@
 
 #include "tree-flow.h" /* for op_symbol_code */
 
-#include "proposed-plugin-api/gcc-tree.h"
-#include "proposed-plugin-api/gcc-type.h"
+#include "gcc-c-api/gcc-tree.h"
+#include "gcc-c-api/gcc-type.h"
 
 
 /*

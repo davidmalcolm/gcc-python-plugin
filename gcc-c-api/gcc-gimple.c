@@ -17,8 +17,8 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-gimple.h"
-#include "proposed-plugin-api/gcc-internal.h"
+#include "gcc-c-api/gcc-gimple.h"
+#include "gcc-c-api/gcc-internal.h"
 
 //#include "tree.h"
 #include "gimple.h"

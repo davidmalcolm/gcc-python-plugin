@@ -24,7 +24,7 @@
 #include "rtl.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
-#include "proposed-plugin-api/gcc-rtl.h"
+#include "gcc-c-api/gcc-rtl.h"
 
 PyObject *
 gcc_Rtl_get_location(struct PyGccRtl *self, void *closure)

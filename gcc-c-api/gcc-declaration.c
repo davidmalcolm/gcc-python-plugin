@@ -17,8 +17,8 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-common.h"
-#include "proposed-plugin-api/gcc-semiprivate-types.h"
+#include "gcc-c-api/gcc-common.h"
+#include "gcc-c-api/gcc-semiprivate-types.h"
 #include "tree.h"
 #include "gcc-internal.h"
 

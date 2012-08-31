@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "proposed-plugin-api/gcc-callgraph.h"
+#include "gcc-c-api/gcc-callgraph.h"
 #include "cgraph.h"
 #include "ggc.h"
 

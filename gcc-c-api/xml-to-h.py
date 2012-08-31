@@ -73,7 +73,7 @@ def write_api(api, out):
         out.write('''
 /* FIXME: rationalize these headers */
 #include <Python.h>
-#include "proposed-plugin-api/gcc-common.h"
+#include "gcc-c-api/gcc-common.h"
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
@@ -81,7 +81,7 @@ def write_api(api, out):
 #include "tree-flow.h"
 ''')
     else:
-        out.write('#include "proposed-plugin-api/gcc-common.h"\n')
+        out.write('#include "gcc-c-api/gcc-common.h"\n')
     writer.writeln()
 
     doc = api.get_doc()
