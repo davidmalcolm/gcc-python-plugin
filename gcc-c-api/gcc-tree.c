@@ -55,10 +55,12 @@ gcc_private_make_block(tree inner)
 
 IMPLEMENT_CAST(gcc_tree, gcc_constant)
 IMPLEMENT_CAST(gcc_tree, gcc_decl)
+  IMPLEMENT_CAST(gcc_tree, gcc_label_decl)
 IMPLEMENT_CAST(gcc_tree, gcc_binary)
 IMPLEMENT_CAST(gcc_tree, gcc_block)
 IMPLEMENT_CAST(gcc_tree, gcc_ssa_name)
 IMPLEMENT_CAST(gcc_tree, gcc_statement)
+IMPLEMENT_CAST(gcc_tree, gcc_case_label_expr)
 IMPLEMENT_CAST(gcc_tree, gcc_type)
 IMPLEMENT_CAST(gcc_tree, gcc_integer_type)
 IMPLEMENT_CAST(gcc_tree, gcc_translation_unit_decl)
@@ -128,9 +130,27 @@ GCC_IMPLEMENT_PUBLIC_API(gcc_case_label_expr)
 gcc_statement_as_gcc_case_label_expr(gcc_statement node);
 
 
-/* gcc_case_label_expr */
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_case_label_expr_mark_in_use(gcc_case_label_expr node);
+/***************************************************************************
+ gcc_case_label_expr
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_case_label_expr_get_low(gcc_case_label_expr node)
+{
+    return gcc_private_make_tree(CASE_LOW(node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_case_label_expr_get_high(gcc_case_label_expr node)
+{
+    return gcc_private_make_tree(CASE_HIGH(node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_label_decl)
+gcc_case_label_expr_get_target(gcc_case_label_expr node)
+{
+    return gcc_tree_as_gcc_label_decl(gcc_private_make_tree(CASE_LABEL(node.inner)));
+}
+
 
 /*
   PEP-7

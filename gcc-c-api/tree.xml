@@ -207,6 +207,9 @@
 -->
 
   <type name="case_label_expr" base="statement">
+    <attribute name="low" kind="tree"/>
+    <attribute name="high" kind="tree"/>
+    <attribute name="target" kind="label_decl"/>
   </type>
 
 <!--

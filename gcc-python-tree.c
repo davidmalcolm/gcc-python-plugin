@@ -124,6 +124,12 @@ PyGccTree_as_gcc_ssa_name(struct PyGccTree * self)
     return gcc_tree_as_gcc_ssa_name(self->t);
 }
 
+gcc_case_label_expr
+PyGccTree_as_gcc_case_label_expr(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_case_label_expr(self->t);
+}
+
 PyObject *
 PyGccBlock_New(gcc_block t)
 {

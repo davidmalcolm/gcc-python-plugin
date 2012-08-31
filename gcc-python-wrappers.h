@@ -187,6 +187,9 @@ PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self);
 extern gcc_ssa_name
 PyGccTree_as_gcc_ssa_name(struct PyGccTree * self);
 
+extern gcc_case_label_expr
+PyGccTree_as_gcc_case_label_expr(struct PyGccTree * self);
+
 extern PyObject *
 PyGccBlock_New(gcc_block t);
 

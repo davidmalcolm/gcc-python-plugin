@@ -547,13 +547,13 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'CASE_LABEL_EXPR':
             add_simple_getter('low',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_LOW(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_case_label_expr_get_low(PyGccTree_as_gcc_case_label_expr(self)))',
                               "The low value of the case label, as a gcc.Tree (or None for the default)")
             add_simple_getter('high',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_HIGH(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_case_label_expr_get_high(PyGccTree_as_gcc_case_label_expr(self)))',
                               "The high value of the case label, if any, as a gcc.Tree (None for the default and for single-valued case labels)")
             add_simple_getter('target',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(CASE_LABEL(self->t.inner)))',
+                              'gcc_python_make_wrapper_tree(gcc_label_decl_as_gcc_tree(gcc_case_label_expr_get_target(PyGccTree_as_gcc_case_label_expr(self))))',
                               "The target of the case label, as a gcc.LabelDecl")
 
         cu.add_defn(getsettable.c_defn())
