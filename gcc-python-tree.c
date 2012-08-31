@@ -142,6 +142,11 @@ PyGccPointerType_New(gcc_pointer_type t)
     return gcc_python_make_wrapper_tree(gcc_pointer_type_as_gcc_tree(t));
 }
 
+PyObject *
+PyGccCaseLabelExpr_New(gcc_case_label_expr t)
+{
+    return gcc_python_make_wrapper_tree(gcc_case_label_expr_as_gcc_tree(t));
+}
 
 PyObject *
 gcc_Tree_str(struct PyGccTree * self)

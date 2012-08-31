@@ -273,32 +273,16 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
     return NULL;
 }
 
+IMPL_APPENDER(add_case_label_expr_to_list,
+              gcc_case_label_expr,
+              PyGccCaseLabelExpr_New)
+
 PyObject *
 gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 {
-    PyObject * result = NULL;
-    unsigned num_labels = gimple_switch_num_labels(self->stmt.inner);
-    int i;
-
-    result = PyList_New(num_labels);
-    if (!result) {
-	goto error;
-    }
-
-    for (i = 0 ; i < num_labels; i++) {
-	tree t = gimple_switch_label(self->stmt.inner, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
-	if (!obj) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, obj);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    IMPL_LIST_MAKER(gcc_gimple_switch_for_each_label,
+                    PyGccGimple_as_gcc_gimple_switch(self),
+                    add_case_label_expr_to_list)
 }
 
 

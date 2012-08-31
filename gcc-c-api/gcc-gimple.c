@@ -260,9 +260,21 @@ gcc_gimple_switch_get_indexvar(gcc_gimple_switch stmt)
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)
-gcc_gimple_switch_for_each_labels(gcc_gimple_switch stmt,
+gcc_gimple_switch_for_each_label(gcc_gimple_switch stmt,
     bool (*cb)(gcc_case_label_expr node, void *user_data),
-    void *user_data);
+    void *user_data)
+{
+    unsigned num_labels = gimple_switch_num_labels (stmt.inner);
+    unsigned i;
+
+    for (i = 0 ; i < num_labels; i++) {
+        if (cb (gcc_private_make_case_label_expr (gimple_switch_label (stmt.inner, i)),
+                user_data)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 IMPLEMENT_CAST(gcc_gimple_switch, gcc_gimple)
 

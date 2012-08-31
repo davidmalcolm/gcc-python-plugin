@@ -99,7 +99,7 @@
     <attribute name="indexvar" kind="tree">
       <doc>The index variable used by the switch statement</doc>
     </attribute>
-    <iterator name="labels" kind="case_label_expr">
+    <iterator name="label" kind="case_label_expr">
       <doc>The labels of the switch statement.  The initial label in the list is always the default.</doc>
     </iterator>
   </type>

@@ -133,6 +133,15 @@ gcc_statement_as_gcc_case_label_expr(gcc_statement node);
 /***************************************************************************
  gcc_case_label_expr
  **************************************************************************/
+GCC_IMPLEMENT_PRIVATE_API(struct gcc_case_label_expr)
+gcc_private_make_case_label_expr(tree inner)
+{
+    struct gcc_case_label_expr result;
+    /* FIXME: type-checking */
+    result.inner = inner;
+    return result;
+}
+
 GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
 gcc_case_label_expr_get_low(gcc_case_label_expr node)
 {
@@ -151,6 +160,7 @@ gcc_case_label_expr_get_target(gcc_case_label_expr node)
     return gcc_tree_as_gcc_label_decl(gcc_private_make_tree(CASE_LABEL(node.inner)));
 }
 
+IMPLEMENT_CAST(gcc_case_label_expr, gcc_tree)
 
 /*
   PEP-7
