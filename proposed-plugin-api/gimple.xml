@@ -26,7 +26,10 @@
       <doc>Source code location of this statement</doc>
     </attribute>
     <attribute name="block" kind="tree">
-      <doc>The The lexical block holding this statement, as a gcc_tree</doc>
+      <doc>The lexical block holding this statement, as a gcc_tree</doc>
+    </attribute>
+    <attribute name="expr_type" kind="tree"> <!-- FIXME: as a type instead? -->
+      <doc>The type of the main expression computed by this statement, as a gcc_tree (which might be void_type.</doc>
     </attribute>
   </type>
 
@@ -52,7 +55,7 @@
     <attribute name="fndecl" kind="tree">
       <doc>The declaration of the function being called (if any)</doc>
     </attribute>
-    <attribute name="noreturn" kind="bool">
+    <attribute name="is_noreturn" kind="bool">
       <doc>Has this call been marked as never returning?</doc>
     </attribute>
     <iterator name="args" kind="tree">
@@ -67,11 +70,18 @@
   </type>
 
   <type name="gimple_cond" base="gimple">
+    <attribute name="lhs" kind="tree"/>`
+    <attribute name="rhs" kind="tree"/>
+    <attribute name="true_label" kind="tree"/>
+    <attribute name="false_label" kind="tree"/>
   </type>
 
   <type name="gimple_phi" varname="phi" base="gimple">
     <attribute name="lhs" kind="tree">
       <doc>The left-hand-side of the call</doc>
+    </attribute>
+
+    <attribute name="result" kind="tree">
     </attribute>
 
     <!-- In the python bindings we zip this pair of lists

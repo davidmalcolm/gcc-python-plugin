@@ -27,6 +27,48 @@
 #include "tree-flow-inline.h"
 #include "proposed-plugin-api/gcc-gimple.h"
 
+gcc_gimple_asm
+PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_asm(self->stmt);
+}
+
+gcc_gimple_assign
+PyGccGimple_as_gcc_gimple_assign(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_assign(self->stmt);
+}
+
+gcc_gimple_call
+PyGccGimple_as_gcc_gimple_call(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_call(self->stmt);
+}
+
+gcc_gimple_return
+PyGccGimple_as_gcc_gimple_return(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_return(self->stmt);
+}
+
+gcc_gimple_cond
+PyGccGimple_as_gcc_gimple_cond(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_cond(self->stmt);
+}
+
+gcc_gimple_phi
+PyGccGimple_as_gcc_gimple_phi(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_phi(self->stmt);
+}
+
+gcc_gimple_switch
+PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_switch(self->stmt);
+}
+
 static PyObject *
 do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 {

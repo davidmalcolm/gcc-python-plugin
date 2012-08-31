@@ -62,7 +62,6 @@ gcc_private_make_gimple_call(gimple inner)
     return result;
 }
 
-
 GCC_IMPLEMENT_PRIVATE_API(struct gcc_gimple)
 gcc_private_make_gimple(gimple inner)
 {
@@ -71,6 +70,10 @@ gcc_private_make_gimple(gimple inner)
     return result;
 }
 
+
+/***************************************************************************
+ gcc_gimple
+ **************************************************************************/
 GCC_IMPLEMENT_PUBLIC_API(gcc_location)
 gcc_gimple_get_location(gcc_gimple stmt)
 {
@@ -83,8 +86,176 @@ gcc_gimple_get_block(gcc_gimple stmt)
     return gcc_private_make_tree(gimple_block(stmt.inner));
 }
 
-IMPLEMENT_CAST(gcc_gimple_phi, gcc_gimple)
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_get_expr_type(gcc_gimple stmt)
+{
+    return gcc_private_make_tree(gimple_expr_type(stmt.inner));
+}
+
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_asm)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_assign)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_call)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_return)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_cond)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_phi)
+IMPLEMENT_CAST(gcc_gimple, gcc_gimple_switch)
+
+
+/***************************************************************************
+ gcc_gimple_asm
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(const char*)
+gcc_gimple_asm_get_string(gcc_gimple_asm stmt)
+{
+    return gimple_asm_string(stmt.inner);
+}
+
+IMPLEMENT_CAST(gcc_gimple_asm, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_assign
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_assign_get_lhs(gcc_gimple_assign stmt)
+{
+    return gcc_private_make_tree(gimple_assign_lhs(stmt.inner));
+}
+
+IMPLEMENT_CAST(gcc_gimple_assign, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_call
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_call_get_lhs(gcc_gimple_call stmt)
+{
+    return gcc_private_make_tree(gimple_call_lhs(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_call_get_fn(gcc_gimple_call stmt)
+{
+    return gcc_private_make_tree(gimple_call_fn(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_call_get_fndecl(gcc_gimple_call stmt)
+{
+    return gcc_private_make_tree(gimple_call_fndecl(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_gimple_call_is_noreturn(gcc_gimple_call stmt)
+{
+    return gimple_call_noreturn_p(stmt.inner);
+}
+
+/*
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_gimple_call_for_each_args(gcc_gimple_call stmt,
+    bool (*cb)(gcc_tree node, void *user_data),
+    void *user_data);
+*/
+
 IMPLEMENT_CAST(gcc_gimple_call, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_return
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_return_get_retval(gcc_gimple_return stmt)
+{
+    return gcc_private_make_tree(gimple_return_retval(stmt.inner));
+}
+
+IMPLEMENT_CAST(gcc_gimple_return, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_cond
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_cond_get_lhs(gcc_gimple_cond stmt)
+{
+    return gcc_private_make_tree(gimple_cond_lhs(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_cond_get_rhs(gcc_gimple_cond stmt)
+{
+    return gcc_private_make_tree(gimple_cond_rhs(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_cond_get_true_label(gcc_gimple_cond stmt)
+{
+    return gcc_private_make_tree(gimple_cond_true_label(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_cond_get_false_label(gcc_gimple_cond stmt)
+{
+    return gcc_private_make_tree(gimple_cond_false_label(stmt.inner));
+}
+
+IMPLEMENT_CAST(gcc_gimple_cond, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_phi
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_phi_get_lhs(gcc_gimple_phi phi)
+{
+    return gcc_private_make_tree(gimple_phi_result(phi.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_phi_get_result(gcc_gimple_phi phi)
+{
+    return gcc_private_make_tree(gimple_phi_result(phi.inner));
+}
+
+/*
+  Iterator; terminates if the callback returns truth
+  (for linear search)
+*/
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_gimple_phi_for_each_exprs(gcc_gimple_phi phi,
+    bool (*cb)(gcc_tree node, void *user_data),
+    void *user_data);
+
+/*
+  Iterator; terminates if the callback returns truth
+  (for linear search)
+*/
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_gimple_phi_for_each_edges(gcc_gimple_phi phi,
+    bool (*cb)(gcc_cfg_edge edge, void *user_data),
+    void *user_data);
+
+IMPLEMENT_CAST(gcc_gimple_phi, gcc_gimple)
+
+
+/***************************************************************************
+ gcc_gimple_switch
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_gimple_switch_get_indexvar(gcc_gimple_switch stmt)
+{
+    return gcc_private_make_tree(gimple_switch_index(stmt.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_gimple_switch_for_each_labels(gcc_gimple_switch stmt,
+    bool (*cb)(gcc_case_label_expr node, void *user_data),
+    void *user_data);
+
+IMPLEMENT_CAST(gcc_gimple_switch, gcc_gimple)
+
 
 /*
   PEP-7

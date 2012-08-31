@@ -241,6 +241,27 @@ PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
 
 /* gcc-python-gimple.c: */
+extern gcc_gimple_asm
+PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self);
+
+extern gcc_gimple_assign
+PyGccGimple_as_gcc_gimple_assign(struct PyGccGimple *self);
+
+extern gcc_gimple_call
+PyGccGimple_as_gcc_gimple_call(struct PyGccGimple *self);
+
+extern gcc_gimple_return
+PyGccGimple_as_gcc_gimple_return(struct PyGccGimple *self);
+
+extern gcc_gimple_cond
+PyGccGimple_as_gcc_gimple_cond(struct PyGccGimple *self);
+
+extern gcc_gimple_phi
+PyGccGimple_as_gcc_gimple_phi(struct PyGccGimple *self);
+
+extern gcc_gimple_switch
+PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self);
+
 PyObject *
 gcc_Gimple_repr(struct PyGccGimple * self);
 
