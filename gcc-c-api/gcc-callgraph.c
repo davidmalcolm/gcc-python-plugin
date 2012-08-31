@@ -130,9 +130,8 @@ gcc_for_each_cgraph_node (bool (*cb) (gcc_cgraph_node node, void *user_data),
 }
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

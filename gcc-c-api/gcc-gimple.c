@@ -267,9 +267,8 @@ gcc_gimple_switch_for_each_label (gcc_gimple_switch stmt,
 
 IMPLEMENT_CAST (gcc_gimple_switch, gcc_gimple)
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

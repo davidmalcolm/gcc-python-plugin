@@ -68,9 +68,8 @@ GCC_IMPLEMENT_PUBLIC_API (gcc_location) gcc_get_input_location (void)
 }
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

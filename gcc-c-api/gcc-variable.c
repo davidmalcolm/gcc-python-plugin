@@ -61,9 +61,8 @@ gcc_for_each_variable (bool (*cb) (gcc_variable var, void *user_data),
 
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

@@ -37,9 +37,8 @@ gcc_private_make_rtl_insn (struct rtx_def *inner)
 }
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

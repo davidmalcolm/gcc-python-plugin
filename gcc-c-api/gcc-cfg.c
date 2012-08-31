@@ -266,9 +266,8 @@ GCC_PUBLIC_API (bool) gcc_cfg_edge_is_false_value (gcc_cfg_edge edge)
 }
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

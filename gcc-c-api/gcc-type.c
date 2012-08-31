@@ -279,9 +279,8 @@ IMPLEMENT_CAST (gcc_vector_type, gcc_tree)
   IMPLEMENT_CAST (gcc_void_type, gcc_type)
 IMPLEMENT_CAST (gcc_void_type, gcc_tree)
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

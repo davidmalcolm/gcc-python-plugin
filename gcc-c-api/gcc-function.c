@@ -85,9 +85,8 @@ GCC_IMPLEMENT_PUBLIC_API (gcc_function) gcc_get_current_function (void)
 
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

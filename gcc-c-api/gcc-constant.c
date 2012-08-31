@@ -27,9 +27,8 @@ IMPLEMENT_CAST (gcc_constant, gcc_tree)
   IMPLEMENT_CAST (gcc_integer_constant, gcc_constant)
 IMPLEMENT_CAST (gcc_integer_constant, gcc_tree)
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

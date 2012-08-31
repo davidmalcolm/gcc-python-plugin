@@ -155,9 +155,8 @@ gcc_case_label_expr_get_target (gcc_case_label_expr node)
 
 IMPLEMENT_CAST (gcc_case_label_expr, gcc_tree)
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */

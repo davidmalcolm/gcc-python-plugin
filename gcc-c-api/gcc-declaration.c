@@ -242,9 +242,8 @@ gcc_for_each_translation_unit_decl (bool (*cb)
 
 
 /*
-  PEP-7
 Local variables:
-c-basic-offset: 4
+c-basic-offset: 2
 indent-tabs-mode: nil
 End:
 */
