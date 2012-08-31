@@ -19,44 +19,44 @@
 
 #include "gcc-variable.h"
 #include "ggc.h"
-#include "cgraph.h" /* for varpool_nodes */
+#include "cgraph.h"		/* for varpool_nodes */
 
 /***********************************************************
    gcc_variable
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct gcc_variable)
-gcc_private_make_variable(struct varpool_node * inner)
+GCC_IMPLEMENT_PRIVATE_API (struct gcc_variable)
+gcc_private_make_variable (struct varpool_node *inner)
 {
-    struct gcc_variable result;
-    result.inner = inner;
-    return result;
+  struct gcc_variable result;
+  result.inner = inner;
+  return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_variable_mark_in_use(gcc_variable var)
+GCC_IMPLEMENT_PUBLIC_API (void) gcc_variable_mark_in_use (gcc_variable var)
 {
-    /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_varpool_node(var.inner);
+  /* Mark the underlying object (recursing into its fields): */
+  gt_ggc_mx_varpool_node (var.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
-gcc_variable_get_decl(gcc_variable var)
+GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_variable_get_decl (gcc_variable var)
 {
-    return gcc_private_make_tree(var.inner->decl);
+  return gcc_private_make_tree (var.inner->decl);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(bool)
-gcc_for_each_variable(bool (*cb)(gcc_variable var, void *user_data),
-                      void *user_data)
+GCC_IMPLEMENT_PUBLIC_API (bool)
+gcc_for_each_variable (bool (*cb) (gcc_variable var, void *user_data),
+		       void *user_data)
 {
-    struct varpool_node *n;
+  struct varpool_node *n;
 
-    for (n = varpool_nodes; n; n = n->next) {
-        if (cb(gcc_private_make_variable(n), user_data)) {
-            return true;
-        }
+  for (n = varpool_nodes; n; n = n->next)
+    {
+      if (cb (gcc_private_make_variable (n), user_data))
+	{
+	  return true;
+	}
     }
-    return false;
+  return false;
 }
 
 

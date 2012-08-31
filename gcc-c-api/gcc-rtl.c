@@ -23,18 +23,17 @@
 #include "tree.h"
 #include "rtl.h"
 
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_rtl_insn_mark_in_use(gcc_rtl_insn insn)
+GCC_IMPLEMENT_PUBLIC_API (void) gcc_rtl_insn_mark_in_use (gcc_rtl_insn insn)
 {
-    gt_ggc_mx_rtx_def(insn.inner);
+  gt_ggc_mx_rtx_def (insn.inner);
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct gcc_rtl_insn)
-gcc_private_make_rtl_insn(struct rtx_def *inner)
+GCC_IMPLEMENT_PRIVATE_API (struct gcc_rtl_insn)
+gcc_private_make_rtl_insn (struct rtx_def *inner)
 {
-    struct gcc_rtl_insn result;
-    result.inner = inner;
-    return result;
+  struct gcc_rtl_insn result;
+  result.inner = inner;
+  return result;
 }
 
 /*

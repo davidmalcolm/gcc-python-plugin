@@ -24,67 +24,63 @@
 #include "tree.h"
 #include "gimple.h"
 #include "params.h"
-#include "cp/name-lookup.h" /* for global_namespace */
+#include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"
 #include "function.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "opts.h"
-#include "c-family/c-pragma.h" /* for parse_in */
+#include "c-family/c-pragma.h"	/* for parse_in */
 #include "basic-block.h"
 #include "rtl.h"
 
 /* Declarations: functions */
 
 /* gcc_function */
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_function_mark_in_use(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (void) gcc_function_mark_in_use (gcc_function func)
 {
-    gt_ggc_mx_function(func.inner);
+  gt_ggc_mx_function (func.inner);
 }
 
-GCC_IMPLEMENT_PRIVATE_API(struct gcc_function)
-gcc_private_make_function(struct function *inner)
+GCC_IMPLEMENT_PRIVATE_API (struct gcc_function)
+gcc_private_make_function (struct function *inner)
 {
-    struct gcc_function result;
-    result.inner = inner;
-    return result;
+  struct gcc_function result;
+  result.inner = inner;
+  return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_cfg)
-gcc_function_get_cfg(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (gcc_cfg) gcc_function_get_cfg (gcc_function func)
 {
-    return gcc_private_make_cfg(func.inner->cfg);
+  return gcc_private_make_cfg (func.inner->cfg);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_function_decl)
-gcc_function_get_decl(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (gcc_function_decl)
+gcc_function_get_decl (gcc_function func)
 {
-    return gcc_private_make_function_decl(func.inner->decl);
+  return gcc_private_make_function_decl (func.inner->decl);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(int)
-gcc_function_get_index(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (int) gcc_function_get_index (gcc_function func)
 {
-    return func.inner->funcdef_no;
+  return func.inner->funcdef_no;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_location)
-gcc_function_get_start(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (gcc_location)
+gcc_function_get_start (gcc_function func)
 {
-    return gcc_private_make_location(func.inner->function_start_locus);
+  return gcc_private_make_location (func.inner->function_start_locus);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_location)
-gcc_function_get_end(gcc_function func)
+GCC_IMPLEMENT_PUBLIC_API (gcc_location)
+gcc_function_get_end (gcc_function func)
 {
-    return gcc_private_make_location(func.inner->function_end_locus);
+  return gcc_private_make_location (func.inner->function_end_locus);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_function)
-gcc_get_current_function(void)
+GCC_IMPLEMENT_PUBLIC_API (gcc_function) gcc_get_current_function (void)
 {
-    return gcc_private_make_function(cfun);
+  return gcc_private_make_function (cfun);
 }
 
 

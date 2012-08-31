@@ -22,55 +22,49 @@
 /***********************************************************
    gcc_location
 ************************************************************/
-GCC_IMPLEMENT_PRIVATE_API(struct gcc_location)
-gcc_private_make_location(location_t inner)
+GCC_IMPLEMENT_PRIVATE_API (struct gcc_location)
+gcc_private_make_location (location_t inner)
 {
-    struct gcc_location result;
-    result.inner = inner;
-    return result;
+  struct gcc_location result;
+  result.inner = inner;
+  return result;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_location_mark_in_use(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API (void) gcc_location_mark_in_use (gcc_location loc)
 {
-    /* empty */
+  /* empty */
 }
 
-GCC_IMPLEMENT_PUBLIC_API(const char *)
-gcc_location_get_filename(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API (const char *)
+gcc_location_get_filename (gcc_location loc)
 {
-    return LOCATION_FILE(loc.inner);
+  return LOCATION_FILE (loc.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(int)
-gcc_location_get_line(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API (int) gcc_location_get_line (gcc_location loc)
 {
-    return LOCATION_LINE(loc.inner);
+  return LOCATION_LINE (loc.inner);
 }
 
-GCC_IMPLEMENT_PUBLIC_API(int)
-gcc_location_get_column(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API (int) gcc_location_get_column (gcc_location loc)
 {
-    expanded_location exploc = expand_location(loc.inner);
-    return exploc.column;
+  expanded_location exploc = expand_location (loc.inner);
+  return exploc.column;
 }
 
-GCC_PUBLIC_API(bool)
-gcc_location_is_unknown(gcc_location loc)
+GCC_PUBLIC_API (bool) gcc_location_is_unknown (gcc_location loc)
 {
-    return UNKNOWN_LOCATION == loc.inner;
+  return UNKNOWN_LOCATION == loc.inner;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(void)
-gcc_set_input_location(gcc_location loc)
+GCC_IMPLEMENT_PUBLIC_API (void) gcc_set_input_location (gcc_location loc)
 {
-    input_location = loc.inner;
+  input_location = loc.inner;
 }
 
-GCC_IMPLEMENT_PUBLIC_API(gcc_location)
-gcc_get_input_location(void)
+GCC_IMPLEMENT_PUBLIC_API (gcc_location) gcc_get_input_location (void)
 {
-    return gcc_private_make_location(input_location);
+  return gcc_private_make_location (input_location);
 }
 
 /*
