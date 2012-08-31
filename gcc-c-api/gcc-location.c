@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-cfg.h"
+#include "gcc-c-api/gcc-location.h"
 
 /***********************************************************
    gcc_location

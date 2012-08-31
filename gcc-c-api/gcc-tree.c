@@ -61,9 +61,6 @@ IMPLEMENT_CAST(gcc_tree, gcc_statement)
 IMPLEMENT_CAST(gcc_tree, gcc_type)
 IMPLEMENT_CAST(gcc_tree, gcc_integer_type)
 IMPLEMENT_CAST(gcc_tree, gcc_translation_unit_decl)
-IMPLEMENT_CAST(gcc_translation_unit_decl, gcc_tree)
-IMPLEMENT_CAST(gcc_integer_constant, gcc_tree)
-IMPLEMENT_CAST(gcc_function_decl, gcc_tree)
 
 /* gcc_binary */
 GCC_IMPLEMENT_PUBLIC_API(void)

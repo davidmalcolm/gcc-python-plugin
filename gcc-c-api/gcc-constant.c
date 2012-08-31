@@ -26,6 +26,7 @@ IMPLEMENT_CAST(gcc_constant, gcc_tree)
 
 /* gcc_integer_constant */
 IMPLEMENT_CAST(gcc_integer_constant, gcc_constant)
+IMPLEMENT_CAST(gcc_integer_constant, gcc_tree)
 
 
 /*

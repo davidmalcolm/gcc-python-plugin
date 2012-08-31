@@ -18,6 +18,7 @@
 */
 
 #include "gcc-c-api/gcc-common.h"
+#include "gcc-c-api/gcc-function.h"
 
 /* TODO: rationalize these headers */
 #include "tree.h"
