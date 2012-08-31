@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-cfg.h"
+#include "gcc-cfg.h"
 
 #include "tree.h"
 #include "gimple.h"

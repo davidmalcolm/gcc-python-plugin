@@ -17,11 +17,11 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-common.h"
-#include "gcc-c-api/gcc-type.h"
-#include "gcc-c-api/gcc-constant.h"
-#include "gcc-c-api/gcc-tree.h"
-#include "gcc-c-api/gcc-internal.h"
+#include "gcc-common.h"
+#include "gcc-type.h"
+#include "gcc-constant.h"
+#include "gcc-tree.h"
+#include "gcc-internal.h"
 #include "tree.h"
 
 /*

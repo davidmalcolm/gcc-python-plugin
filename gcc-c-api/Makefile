@@ -1,0 +1,94 @@
+#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012 Red Hat, Inc.
+#
+#   This is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see
+#   <http://www.gnu.org/licenses/>.
+
+.PHONY: all clean check-api
+
+SOURCE_FILES = \
+  gcc-callgraph.c \
+  gcc-cfg.c \
+  gcc-constant.c \
+  gcc-declaration.c \
+  gcc-function.c \
+  gcc-gimple.c \
+  gcc-location.c \
+  gcc-rtl.c \
+  gcc-tree.c \
+  gcc-type.c \
+  gcc-variable.c
+
+OBJECT_FILES:= $(patsubst %.c,%.o,$(SOURCE_FILES))
+
+SOURCE_XML:= \
+  callgraph.xml \
+  cfg.xml \
+  constant.xml \
+  declaration.xml \
+  function.xml \
+  gimple.xml \
+  location.xml \
+  rtl.xml \
+  tree.xml \
+  type.xml \
+  variable.xml
+
+GENERATED_HEADERS:= \
+  gcc-public-types.h \
+  gcc-semiprivate-types.h \
+  gcc-callgraph.h \
+  gcc-cfg.h \
+  gcc-constant.h \
+  gcc-declaration.h \
+  gcc-function.h \
+  gcc-gimple.h \
+  gcc-location.h \
+  gcc-rtl.h \
+  gcc-tree.h \
+  gcc-type.h \
+  gcc-variable.h
+
+GCCPLUGINS_DIR:= $(shell $(CC) --print-file-name=plugin)
+
+GCC_C_API_SO	:= gcc-c-api.so
+
+CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I$(GCCPLUGINS_DIR)/include/c-family -I.
+# Allow user to pick optimization, choose whether warnings are fatal,
+# and choose debugging information level.
+CFLAGS?=-O2 -Werror -g
+# Force these settings
+CFLAGS+= -fPIC -fno-strict-aliasing -Wall
+
+all: $(GCC_C_API_SO)
+
+$(GCC_C_API_SO): $(OBJECT_FILES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -shared $^ -o $@ $(LIBS)
+
+# This is the standard .c->.o recipe, but it needs to be stated
+# explicitly to support the case that $(srcdir) is not blank.
+$(OBJECT_FILES): %.o: $(srcdir)%.c $(GENERATED_HEADERS)
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+clean:
+	$(RM) *.so *.o $(GENERATED_HEADERS)
+
+# The python interpreter to use:
+PYTHON=python
+
+$(GENERATED_HEADERS): $(SOURCE_XML) xml-to-h.py xmltypes.py
+	$(PYTHON) xml-to-h.py
+
+check-api:
+	xmllint --noout --relaxng api.rng *.xml

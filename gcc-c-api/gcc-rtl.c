@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-rtl.h"
+#include "gcc-rtl.h"
 
 #include <gcc-plugin.h>
 #include "tree.h"

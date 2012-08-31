@@ -17,8 +17,8 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-common.h"
-#include "gcc-c-api/gcc-function.h"
+#include "gcc-common.h"
+#include "gcc-function.h"
 
 /* TODO: rationalize these headers */
 #include "tree.h"

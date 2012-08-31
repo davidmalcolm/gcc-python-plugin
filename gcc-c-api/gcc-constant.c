@@ -17,9 +17,9 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-common.h"
-#include "gcc-c-api/gcc-constant.h"
-#include "gcc-c-api/gcc-internal.h"
+#include "gcc-common.h"
+#include "gcc-constant.h"
+#include "gcc-internal.h"
 
 /* gcc_constant */
 IMPLEMENT_CAST(gcc_constant, gcc_tree)

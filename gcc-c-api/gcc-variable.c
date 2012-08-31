@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.
 */
 
-#include "gcc-c-api/gcc-variable.h"
+#include "gcc-variable.h"
 #include "ggc.h"
 #include "cgraph.h" /* for varpool_nodes */
 
