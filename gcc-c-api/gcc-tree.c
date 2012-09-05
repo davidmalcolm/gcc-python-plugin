@@ -61,7 +61,9 @@ IMPLEMENT_CAST (gcc_tree, gcc_ssa_name)
 IMPLEMENT_CAST (gcc_tree, gcc_statement)
 IMPLEMENT_CAST (gcc_tree, gcc_case_label_expr)
 IMPLEMENT_CAST (gcc_tree, gcc_type)
+IMPLEMENT_CAST (gcc_tree, gcc_fixed_point_type)
 IMPLEMENT_CAST (gcc_tree, gcc_integer_type)
+IMPLEMENT_CAST (gcc_tree, gcc_real_type)
 IMPLEMENT_CAST (gcc_tree, gcc_translation_unit_decl)
 /* gcc_binary */
   GCC_IMPLEMENT_PUBLIC_API (void) gcc_binary_mark_in_use (gcc_binary node);

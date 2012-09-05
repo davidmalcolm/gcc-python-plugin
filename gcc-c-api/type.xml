@@ -57,6 +57,9 @@
   </type>
 
   <type name="fixed_point_type" base="type">
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
   </type>
 
   <type name="function_type" base="type">
@@ -65,6 +68,9 @@
   <type name="integer_type" base="type">
     <attribute name="max_value" kind="integer_constant"/>
     <attribute name="min_value" kind="integer_constant"/>
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
   </type>
 
   <type name="lang_type" base="type">
@@ -89,6 +95,9 @@
   </type>
 
   <type name="real_type" base="type">
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
   </type>
 
   <type name="record_type" base="type">

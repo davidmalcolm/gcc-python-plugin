@@ -94,12 +94,6 @@ do_pretty_print(struct PyGccTree * self, int spc, int flags)
     return NULL;
 }
 
-gcc_integer_type
-PyGccTree_as_gcc_integer_type(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_integer_type(self->t);
-}
-
 gcc_decl
 PyGccTree_as_gcc_decl(struct PyGccTree * self)
 {
@@ -110,6 +104,24 @@ gcc_type
 PyGccTree_as_gcc_type(struct PyGccTree * self)
 {
     return gcc_tree_as_gcc_type(self->t);
+}
+
+gcc_fixed_point_type
+PyGccTree_as_gcc_fixed_point_type(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_fixed_point_type(self->t);
+}
+
+gcc_integer_type
+PyGccTree_as_gcc_integer_type(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_integer_type(self->t);
+}
+
+gcc_real_type
+PyGccTree_as_gcc_real_type(struct PyGccTree * self)
+{
+    return gcc_tree_as_gcc_real_type(self->t);
 }
 
 gcc_translation_unit_decl

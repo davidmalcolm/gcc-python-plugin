@@ -139,6 +139,13 @@ IMPLEMENT_CAST (gcc_enumeral_type, gcc_tree)
 /***************************************************************************
  gcc_fixed_point_type
  **************************************************************************/
+
+GCC_IMPLEMENT_PUBLIC_API (int)
+gcc_fixed_point_type_get_precision (gcc_fixed_point_type node)
+{
+  return TYPE_PRECISION (node.inner);
+}
+
   IMPLEMENT_CAST (gcc_fixed_point_type, gcc_type)
 IMPLEMENT_CAST (gcc_fixed_point_type, gcc_tree)
 /***************************************************************************
@@ -159,6 +166,12 @@ GCC_IMPLEMENT_PUBLIC_API (gcc_integer_constant)
 gcc_integer_type_get_min_value (gcc_integer_type node)
 {
   return gcc_private_make_integer_constant (TYPE_MIN_VALUE (node.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API (int)
+gcc_integer_type_get_precision (gcc_integer_type node)
+{
+  return TYPE_PRECISION (node.inner);
 }
 
 IMPLEMENT_CAST (gcc_integer_type, gcc_type)
@@ -211,6 +224,12 @@ IMPLEMENT_CAST (gcc_qual_union_type, gcc_tree)
 /***************************************************************************
  gcc_real_type
  **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API (int)
+gcc_real_type_get_precision (gcc_real_type node)
+{
+  return TYPE_PRECISION (node.inner);
+}
+
   IMPLEMENT_CAST (gcc_real_type, gcc_type)
 IMPLEMENT_CAST (gcc_real_type, gcc_tree)
 /***************************************************************************

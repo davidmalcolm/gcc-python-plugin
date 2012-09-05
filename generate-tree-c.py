@@ -399,8 +399,9 @@ def generate_tree_code_classes():
                               'The minimum possible value for this type, as a gcc.IntegerCst')
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
+            prefix = 'gcc_%s' % tree_type.SYM.lower()
             add_simple_getter('precision',
-                              'gcc_python_int_from_long(TYPE_PRECISION(self->t.inner))',
+                              'gcc_python_int_from_long(%s_get_precision(PyGccTree_as_%s(self)))' % (prefix, prefix),
                               'The precision of this type in bits, as an int (e.g. 32)')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):

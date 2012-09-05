@@ -172,14 +172,20 @@ gcc_python_tree_type_object_as_tree_code(PyObject *cls,
 
 /* gcc-python-tree.c: */
 /* FIXME: autogenerate these: */
-extern gcc_integer_type
-PyGccTree_as_gcc_integer_type(struct PyGccTree * self);
-
 extern gcc_decl
 PyGccTree_as_gcc_decl(struct PyGccTree * self);
 
 extern gcc_type
 PyGccTree_as_gcc_type(struct PyGccTree * self);
+
+extern gcc_fixed_point_type
+PyGccTree_as_gcc_fixed_point_type(struct PyGccTree * self);
+
+extern gcc_integer_type
+PyGccTree_as_gcc_integer_type(struct PyGccTree * self);
+
+extern gcc_real_type
+PyGccTree_as_gcc_real_type(struct PyGccTree * self);
 
 extern gcc_translation_unit_decl
 PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self);
