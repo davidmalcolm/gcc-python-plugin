@@ -1111,6 +1111,15 @@ def describe_stmt(stmt):
     else:
         return str(stmt.loc)
 
+def get_locations(fun):
+    # given a gcc.Function, get all Location instances within it
+    result = []
+    for bb in fun.cfg.basic_blocks:
+        if bb.gimple:
+            for idx, stmt in enumerate(bb.gimple):
+                result.append(Location(bb, idx))
+    return result
+
 class Location(object):
     """A location within a CFG: a gcc.BasicBlock together with an index into
     the gimple list.  (We don't support SSA passes)"""
@@ -1122,6 +1131,9 @@ class Location(object):
         self.bb = bb
         self.idx = idx
 
+    def __hash__(self):
+        return hash(self.bb) ^ hash(self.idx)
+
     def __repr__(self):
         return ('Location(bb=%i, idx=%i)'
                 % (self.bb.index, self.idx))
@@ -1130,6 +1142,16 @@ class Location(object):
         stmt = self.get_stmt()
         return ('block %i stmt:%i : %20r : %s'
                 % (self.bb.index, self.idx, stmt, stmt))
+
+    def prev_locs(self):
+        if self.bb.gimple and self.idx > 0:
+            # Previous gimple statement within this BB:
+            return [(Location(self.bb, self.idx - 1), None)]
+        else:
+            # At start of gimple statements: prior BBs:
+            return [(Location.get_block_end(inedge.src), inedge)
+                    for inedge in self.bb.preds
+                    if inedge.src.gimple]
 
     def next_locs(self):
         """Get a list of Location instances, for what can happen next"""
@@ -1152,6 +1174,11 @@ class Location(object):
 
     def __eq__(self, other):
         return self.bb == other.bb and self.idx == other.idx
+
+    @classmethod
+    def get_block_end(cls, bb):
+        # Don't bother iterating through phi_nodes if there aren't any:
+        return Location(bb, len(bb.gimple) - 1)
 
     @classmethod
     def get_block_start(cls, bb):
