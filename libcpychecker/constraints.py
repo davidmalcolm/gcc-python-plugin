@@ -47,7 +47,7 @@ class Boolean(Constraint):
             #   And(..., And(a, b, c), ....)
             # to:
             #   And(..., a, b, c, ...)
-            # and analogously for Or()
+            # and analogously for Or(..., Or(), ...)
             if term.__class__ == self.__class__:
                 for innerterm in term.terms:
                     newterms.add(innerterm)
@@ -67,7 +67,7 @@ class Boolean(Constraint):
                         return Bottom()
                 newterms.add(term)
 
-        # Now that we're handled the "always True" and "impossible" case, strip
+        # Now that we've handled the "always True" and "impossible" case, strip
         # remaining "Top()" and "Bottom()" terms, as long as there are
         # other terms (in which case they are redundant):
         if len(newterms) > 1:
