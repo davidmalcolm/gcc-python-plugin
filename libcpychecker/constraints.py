@@ -15,6 +15,12 @@ class Constraint:
     def simplify(self, fubar):
         return self
 
+    def delete(self, term):
+        # Recursively delete the constraints on the given term
+        # For use when handling assignment, to remove the constraints from
+        # the old value of the LHS.
+        raise NotImplementedError()
+
     def as_html(self):
         raise NotImplementedError()
 
@@ -108,6 +114,13 @@ class Boolean(Constraint):
 
         return self.__class__(newterms)
 
+    def delete(self, term):
+        newterms = set()
+        for t in self.terms:
+            t = t.delete(term)
+            newterms.add(t)
+        return self.__class__(newterms).simplify(True)
+
     def as_html(self):
         return ('(\n' +
                 ('\n %s\n' % self.name).join(
@@ -186,8 +199,41 @@ class Predicate(Constraint):
                         else:
                             # second clause is a better condition:
                             return other
+                    elif self.op == '==' and other.op == '<=':
+                        if self.rhs <= other.rhs:
+                            # second clause is redundant:
+                            return self
+                        else:
+                            # impossible:
+                            return Bottom()
+                    elif self.op == '==' and other.op == '<':
+                        if self.rhs < other.rhs:
+                            # second clause is redundant:
+                            return self
+                        else:
+                            # impossible:
+                            return Bottom()
+                    elif self.op == '==' and other.op == '>=':
+                        if self.rhs >= other.rhs:
+                            # second clause is redundant:
+                            return self
+                        else:
+                            # impossible:
+                            return Bottom()
+                    elif self.op == '==' and other.op == '>':
+                        if self.rhs > other.rhs:
+                            # second clause is redundant:
+                            return self
+                        else:
+                            # impossible:
+                            return Bottom()
 
         return Constraint.__and__(self, other)
+
+    def delete(self, term):
+        if self.lhs == term or self.rhs == term:
+            return Top()
+        return self
 
     def as_html(self):
         return '%s %s %s' % (self.lhs, self.op, self.rhs)
@@ -220,6 +266,9 @@ class Note(Constraint):
     def __str__(self):
         return repr(self.msg)
 
+    def delete(self, term):
+        return self
+
     def as_html(self):
         return '%s' % self.msg
 
@@ -237,6 +286,9 @@ class Top(Constraint):
     def __hash__(self):
         return 1
 
+    def delete(self, term):
+        return self
+
     def as_html(self):
         return 'Top()'
 
@@ -253,6 +305,9 @@ class Bottom(Constraint):
 
     def __hash__(self):
         return 0
+
+    def delete(self, term):
+        return self
 
     def as_html(self):
         return 'Bottom()'
@@ -315,6 +370,8 @@ class Solution:
             return expr
         if isinstance(expr, gcc.Constant):
             return expr.constant
+        if isinstance(expr, gcc.ArrayRef):
+            return expr
         if isinstance(expr, DummyExpr):
             return expr
         if expr is None:
@@ -337,9 +394,10 @@ class Solution:
             def __str__(self):
                 return '%s->%s' % (self.ptr, self.fieldname)
 
-        #srcconstraint = self.loc_to_constraint[srcloc]
         stmt = srcloc.get_stmt()
         print('  %s ' % stmt)
+
+        srcconstraint = self.loc_to_constraint[srcloc]
 
         if isinstance(stmt, gcc.GimpleAssign):
             print('    %r %r %r' % (stmt.lhs, stmt.rhs, stmt.exprcode))
@@ -353,7 +411,9 @@ class Solution:
                 rhs = DummyExpr(str(stmt)) # FIXME
             else:
                 raise UnhandledAssignment()
-            return Predicate(self.eval(stmt.lhs), '==', rhs)
+            lhs = self.eval(stmt.lhs)
+            # Remove old value from srcconstraint:
+            return srcconstraint.delete(lhs) & Predicate(lhs, '==', rhs)
 
         elif isinstance(stmt, gcc.GimpleCall):
             print('%r %r %r' % (stmt.lhs, stmt.fn, stmt.args))
@@ -378,7 +438,7 @@ class Solution:
                         success = make_success('==', 1)
                         # FIXME: also update the args ^^^
                         failure = make_failure('==', 0)
-                        return success | failure
+                        return srcconstraint & (success | failure)
                     elif fnname == 'PyList_New':
 
                         newobj = NewObj() # FIXME
@@ -393,12 +453,12 @@ class Solution:
                                    )
                         """
                         failure = make_failure('==', 0)
-                        return success | failure
+                        return srcconstraint & (success | failure)
                     elif fnname == 'PyList_Append':
                         # etc
                         success = make_success('==', 0)
                         failure = make_failure('==', -1)
-                        return success | failure
+                        return srcconstraint & (success | failure)
                     elif fnname == 'PyLong_FromLong':
                         newobj = NewObj() # FIXME
                         success = make_success('!=', 0)
@@ -412,11 +472,11 @@ class Solution:
                                    )
                         """
                         failure = make_failure('==', 0)
-                        return success | failure
+                        return srcconstraint & (success | failure)
 
                     elif fnname == 'random':
                         # FIXME: only listing this one for completeness
-                        return Top() # FIXME: make lhs not be uninitialized
+                        return srcconstraint & Top() # FIXME: make lhs not be uninitialized
                     else:
                         # Unknown function:
 
@@ -433,13 +493,15 @@ class Solution:
                 op = '==' if edge.true_value else '!='
             elif stmt.exprcode == gcc.LtExpr:
                 op = '<' if edge.true_value else '>='
+            elif stmt.exprcode == gcc.LeExpr:
+                op = '<=' if edge.true_value else '>'
             else:
                 raise UnhandledConditional() # FIXME
 
             cond = Predicate(self.eval(stmt.lhs), op, self.eval(stmt.rhs))
-            return cond
+            return srcconstraint & cond
         elif isinstance(stmt, gcc.GimpleLabel):
-            return Top()
+            return srcconstraint & Top()
         else:
             raise UnhandledStatementType()
         raise ShouldntGetHere()
@@ -494,7 +556,7 @@ class Solver:
                             value = oldsol.get_constraint_for_edge(prevloc, loc, edge)
                             print(' str(value): %s' % value)
                             print('repr(value): %r' % value)
-                            newval = newval | (oldsol.loc_to_constraint[prevloc] & value)
+                            newval = newval | value
                             newval = newval.simplify(True)
                             print('  new value: %s' % newval)
 
