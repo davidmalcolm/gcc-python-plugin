@@ -37,8 +37,8 @@ int two_ptrs(void)
 {
   void *p = malloc(4096);
   void *q = malloc(4096);
-  if (random()) {
-    memset(p, 0, 4096); /* BUG: not checked */
+  if (p) {
+    memset(p, 0, 4096); /* Not a bug: checked */
   } else {
     memset(q, 0, 4096); /* BUG: not checked */
   }
@@ -66,6 +66,7 @@ void fancy_control_flow(int i, int j)
       break;
     }
   }
+  memset(ptr, 0, 4096);
   free(ptr);
 }
 #endif

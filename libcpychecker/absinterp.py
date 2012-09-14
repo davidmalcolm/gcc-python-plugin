@@ -1144,6 +1144,7 @@ class Location(object):
                 % (self.bb.index, self.idx, stmt, stmt))
 
     def prev_locs(self):
+        """Get a list of (Location, gcc.Edge) instances, for where we came from"""
         if self.bb.gimple and self.idx > 0:
             # Previous gimple statement within this BB:
             return [(Location(self.bb, self.idx - 1), None)]
@@ -1154,13 +1155,14 @@ class Location(object):
                     if inedge.src.gimple]
 
     def next_locs(self):
-        """Get a list of Location instances, for what can happen next"""
+        """Get a list of (Location, gcc.Edge) instances, for what can happen next"""
         if self.bb.gimple and len(self.bb.gimple) > self.idx + 1:
             # Next gimple statement:
-            return [Location(self.bb, self.idx + 1)]
+            return [(Location(self.bb, self.idx + 1), None)]
         else:
             # At end of gimple statements: successor BBs:
-            return [Location.get_block_start(outedge.dest) for outedge in self.bb.succs]
+            return [(Location.get_block_start(outedge.dest), outedge)
+                    for outedge in self.bb.succs]
 
     def next_loc(self):
         """Get the next Location, for when it's unique"""
@@ -2108,7 +2110,7 @@ class State(object):
             return self._get_transitions_for_stmt(stmt)
         else:
             result = []
-            for loc in self.loc.next_locs():
+            for loc, edge in self.loc.next_locs():
                 newstate = self.copy()
                 newstate.loc = loc
                 result.append(Transition(self, newstate, ''))
