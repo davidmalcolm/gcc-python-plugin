@@ -1,0 +1,8 @@
+tests/sm/examples/malloc-checker/input.c: In function 'fancy_control_flow':
+tests/sm/examples/malloc-checker/input.c:69:nn: error: use of possibly-NULL pointer ptr
+tests/sm/examples/malloc-checker/input.c: In function 'two_ptrs':
+tests/sm/examples/malloc-checker/input.c:43:nn: error: use of possibly-NULL pointer q
+tests/sm/examples/malloc-checker/input.c: In function 'unchecked_malloc':
+tests/sm/examples/malloc-checker/input.c:19:nn: error: use of possibly-NULL pointer ptr
+tests/sm/examples/malloc-checker/input.c: In function 'double_free':
+tests/sm/examples/malloc-checker/input.c:10:nn: error: double-free of ptr
