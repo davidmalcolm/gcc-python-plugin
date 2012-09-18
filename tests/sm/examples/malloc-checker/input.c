@@ -70,3 +70,18 @@ void fancy_control_flow(int i, int j)
   free(ptr);
 }
 #endif
+
+#if 1
+void foo(void *ptr);
+
+void use_after_free(int i)
+{
+  void *p;
+
+  p = malloc(1024);
+  if (p) {
+    free(p);
+    foo(p);
+  }
+}
+#endif

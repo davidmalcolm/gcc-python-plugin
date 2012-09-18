@@ -1,0 +1,2 @@
+tests/sm/patterns/result-of-fn-call/input.c: In function 'test1':
+tests/sm/patterns/result-of-fn-call/input.c:5:nn: error: never_call_this was called ptr

@@ -22,223 +22,7 @@ from libcpychecker.interval import *
 
 from gccutils import DotPrettyPrinter, invoke_dot
 
-############################################################################
-# State machines
-############################################################################
-
-class SmPrettyPrinter(DotPrettyPrinter):
-    def __init__(self, sm, name):
-        self.sm = sm
-        self.name = name
-
-    def to_dot(self):
-        if hasattr(self, 'name'):
-            name = self.name
-        else:
-            name = 'G'
-        result = 'digraph %s {\n' % name
-        for state in self.sm.states:
-            result += ('  %s [label=<%s>];\n'
-                       % (state.name, self.state_to_dot_label(state)))
-
-            for t in state.transitions:
-                result += self.transition_to_dot(t)
-        result += '}\n'
-        return result
-
-    def state_to_dot_label(self, state):
-        return '%s' % state.name
-
-    def transition_to_dot(self, t):
-        if t.output:
-            label = '%s : <i>%s</i>' % (t.condition, t.output)
-        else:
-            label = t.condition
-        return ('    %s -> %s [label=<%s>];\n'
-                % (t.src.name,
-                   t.dst.name,
-                   label))
-
-class Sm:
-    def __init__(self):
-        self.states = []
-
-    def add_state(self, name):
-        s = State(name)
-        self.states.append(s)
-        return s
-
-    def to_dot(self):
-        pp = SmPrettyPrinter(self, 'foo')
-        return pp.to_dot()
-
-class State:
-    def __init__(self, name):
-        self.name = name
-        self.transitions = []
-
-    def __repr__(self):
-        return 'State(%r)' % self.name
-
-    def add_transition(self, condition, dst, output = None):
-        t = Transition(self, condition, dst, output)
-        self.transitions.append(t)
-        return t
-
-class Transition:
-    def __init__(self, src, condition, dst, output):
-        assert isinstance(src, State)
-        assert isinstance(condition, StmtCondition)
-        assert isinstance(dst, State)
-        self.src = src
-        self.condition = condition
-        self.dst = dst
-        self.output = output
-
-    def __repr__(self):
-        return 'Transition(%s, %s, %s, %s)' % (self.src, self.condition, self.dst, self.output)
-
-class StmtCondition:
-    def matched_by(self, stmt, edge):
-        print(self)
-        print(stmt)
-        raise NotImplementedError()
-
-# Various conditions:
-
-class FunctionCall(StmtCondition):
-    """
-    Is this a call of the form:
-        ... = FNNAME(...)
-    """
-    def __init__(self, fnname):
-        self.fnname = fnname
-
-    def __repr__(self):
-        return 'FunctionCall(%r)' % self.fnname
-
-    def __str__(self):
-        return '%s(...)' % self.fnname
-
-    def matched_by(self, stmt, edge):
-        if isinstance(stmt, gcc.GimpleCall):
-            if isinstance(stmt.fn, gcc.AddrExpr):
-                if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-                    if stmt.fn.operand.name == self.fnname:
-                        # We have a matching function name
-                        return True
-
-class ResultOfFunctionCall(FunctionCall):
-    """
-    Is this a call of the form:
-        LHS = FNNAME(...)
-    """
-    def __init__(self, lhs, fnname):
-        FunctionCall.__init__(self, fnname)
-        self.lhs = lhs
-
-    def __repr__(self):
-        return 'ResultOfFunctionCall(%r, %r)' % (self.lhs, self.fnname)
-
-    def __str__(self):
-        return '%s = %s(...)' % (self.lhs, self.fnname)
-
-    def matched_by(self, stmt, edge):
-        if not FunctionCall.matched_by(self, stmt, edge):
-            return False
-        # FIXME: check the lhs
-        return True
-
-
-class FunctionCallWithArg(FunctionCall):
-    """
-    Is this a call of the form:
-        ... = FNNAME(..., ARG_i, ...)
-    (1-based indices)
-    """
-    def __init__(self, fnname, idx, arg):
-        FunctionCall.__init__(self, fnname)
-        self.idx = idx
-        self.arg = arg
-
-    def __repr__(self):
-        return 'FunctionCallWithArg(%r, %i, %r)' % (self.lhs, self.idx, self.arg)
-
-    def __str__(self):
-        return '%s(..., %s, ...)' % (self.fnname, self.arg)
-
-    def matched_by(self, stmt, edge):
-        if not FunctionCall.matched_by(self, stmt, edge):
-            return False
-        if stmt.args[self.idx - 1] == self.arg:
-            return True
-
-class ConditionalHasValue(StmtCondition):
-    def __init__(self, lhs, op, rhs, boolval):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs
-        self.boolval = boolval
-
-    def __repr__(self):
-        return 'ConditionalHasValue(%r, %r, %r, %r)' % (self.lhs, self.op, self.rhs, self.boolval)
-
-    def __str__(self):
-        return '(%s %s %s) is %s' % (self.lhs, self.op, self.rhs, self.boolval)
-
-    def matched_by(self, stmt, edge):
-        if isinstance(stmt, gcc.GimpleCond):
-            if 0:
-                print('    %r %r %r %r %r' % (stmt.lhs, stmt.rhs, stmt.exprcode, stmt.true_label, stmt.false_label))
-                print('edge: %r' % edge)
-                print('edge.true_value: %r' % edge.true_value)
-                print('edge.false_value: %r' % edge.false_value)
-
-            # For now, specialcase:
-            if self.op == '==':
-                exprcode = gcc.EqExpr
-                if stmt.exprcode == exprcode:
-                    if stmt.lhs == self.lhs:
-                        #raise 'bar'
-                        if isinstance(stmt.rhs, gcc.IntegerCst) and stmt.rhs.constant == self.rhs:
-                            if edge.true_value and self.boolval:
-                                return True
-                            if edge.false_value and not self.boolval:
-                                return True
-                            return False
-            elif self.op == '!=':
-                exprcode = gcc.NeExpr
-                if stmt.exprcode == exprcode:
-                    if stmt.lhs == self.lhs:
-                        if isinstance(stmt.rhs, gcc.IntegerCst) and stmt.rhs.constant == self.rhs:
-                            if edge.true_value and self.boolval:
-                                return True
-                            if edge.false_value and not self.boolval:
-                                return True
-                            return False
-            else:
-                raise UnhandledConditional() # FIXME
-            """
-            if stmt.exprcode == gcc.EqExpr:
-                op = '==' if edge.true_value else '!='
-            elif stmt.exprcode == gcc.LtExpr:
-                op = '<' if edge.true_value else '>='
-            elif stmt.exprcode == gcc.LeExpr:
-                op = '<=' if edge.true_value else '>'
-            """
-
-class DummyCondition(StmtCondition):
-    def __init__(self, text):
-        self.text = text
-
-    def __repr__(self):
-        return 'DummyCondition(%r)' % self.text
-
-    def __str__(self):
-        return self.text
-
-    def matched_by(self, stmt, edge):
-        return False # it's a placeholder
+import sm.parser
 
 ############################################################################
 # Solver: what states are possible at each location?
@@ -477,14 +261,14 @@ class ExplodedEdge:
         self.dstexpnode = dstexpnode
 
 
-def make_exploded_graph(fun, sm):
+def make_exploded_graph(fun, ctxt):
     locations = get_locations(fun) # these will be our nodes
 
     # The initial state is the first block after entry (which has no statements):
     initbb = fun.cfg.entry.succs[0].dest
     initloc = Location(initbb, 0)
     expgraph = ExplodedGraph()
-    expnode = expgraph.lazily_add_node(initloc, sm.states[0]) # initial state
+    expnode = expgraph.lazily_add_node(initloc, ctxt.statenames[0]) # initial state
     worklist = [expnode]
     while worklist:
         def lazily_add_node(loc, state):
@@ -504,72 +288,93 @@ def make_exploded_graph(fun, sm):
                 print('         to: %s' % dstloc)
             srcstate = srcexpnode.state
             matches = []
-            for t in srcstate.transitions:
-                if t.condition.matched_by(stmt, edge):
-                    dststate = t.dst
-                    dstexpnode = lazily_add_node(dstloc, dststate)
-                    expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
-                    if t.output:
-                        gcc.error(srcloc.get_gcc_loc(), t.output)
-                    matches.append(t)
+            for sc in ctxt.sm.stateclauses:
+                if srcstate in sc.statelist:
+                    for pr in sc.patternrulelist:
+                        # print('%r: %r' %(srcstate, pr))
+                        if pr.pattern.matched_by(stmt, edge, ctxt):
+                            assert len(pr.outcomes) > 0
+                            for outcome in pr.outcomes:
+                                # print 'outcome: %r' % outcome
+                                def handle_outcome(outcome):
+                                    # print('handle_outcome(%r)' % outcome)
+                                    if isinstance(outcome, sm.parser.BooleanOutcome):
+                                        if 0:
+                                            print(edge.true_value)
+                                            print(edge.false_value)
+                                            print(outcome.guard)
+                                        if edge.true_value and outcome.guard:
+                                            handle_outcome(outcome.outcome)
+                                        if edge.false_value and not outcome.guard:
+                                            handle_outcome(outcome.outcome)
+                                    elif isinstance(outcome, sm.parser.TransitionTo):
+                                        # print('transition to %s' % outcome.state)
+                                        dststate = outcome.state
+                                        dstexpnode = lazily_add_node(dstloc, dststate)
+                                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
+                                    elif isinstance(outcome, sm.parser.PythonOutcome):
+                                        ctxt.srcloc = srcloc
+                                        outcome.run(ctxt)
+                                    else:
+                                        print(outcome)
+                                        raise UnknownOutcome(outcome)
+                                handle_outcome(outcome)
+                            matches.append(pr)
             if not matches:
                 dstexpnode = lazily_add_node(dstloc, srcstate)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
     return expgraph
 
-def solve(fun, var):
-    assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
-
-    # Example state machine:
-    sm = Sm()
-    s_all = sm.add_state('all')
-    s_unknown = sm.add_state('unknown')
-    s_null = sm.add_state('null')
-    s_nonnull = sm.add_state('nonnull')
-    s_freed = sm.add_state('freed')
-
-    s_all.add_transition(ResultOfFunctionCall(var, 'malloc'), s_unknown)
-    for s_src in s_unknown, s_null, s_nonnull:
-        s_src.add_transition(ConditionalHasValue(var, '==', 0, True), s_null)
-        s_src.add_transition(ConditionalHasValue(var, '==', 0, False), s_nonnull)
-        s_src.add_transition(ConditionalHasValue(var, '!=', 0, True), s_nonnull)
-        s_src.add_transition(ConditionalHasValue(var, '!=', 0, False), s_null)
-    s_unknown.add_transition(DummyCondition('*%s' % var), s_unknown, 'use of possibly-NULL pointer %s' % var)
-    s_null.add_transition(DummyCondition('*%s' % var), s_null, 'use of NULL pointer %s' % var)
-
-    for s_src in s_all, s_unknown, s_null, s_nonnull:
-        s_src.add_transition(FunctionCallWithArg('free', 1, var), s_freed)
-
-    s_freed.add_transition(FunctionCallWithArg('free', 1, var), s_freed, 'double-free of %s' % var)
-    s_freed.add_transition(DummyCondition('%s' % var), s_freed, 'use-after-free of %s' % var)
-
-    s_unknown.add_transition(FunctionCallWithArg('memset', 1, var), s_unknown, 'use of possibly-NULL pointer %s' % var)
-    s_null.add_transition(FunctionCallWithArg('memset', 1, var), s_null, 'use of NULL pointer %s' % var)
-    s_freed.add_transition(FunctionCallWithArg('memset', 1, var), s_freed, 'use-after-free of %s' % var)
-
+def solve(fun, ctxt):
     if 0:
-        dot = sm.to_dot()
-        print(dot)
-        invoke_dot(dot)
-
-    if 0:
-        solver = Solver(fun, sm)
+        solver = Solver(fun, ctxt)
         solver.solve()
 
     if 1:
-        expgraph = make_exploded_graph(fun, sm)
+        expgraph = make_exploded_graph(fun, ctxt)
         if 0:
+            # Debug: view the exploded graph:
             dot = expgraph.to_dot()
             # print(dot)
-            invoke_dot(dot)
+            invoke_dot(dot, fun.decl.name)
+
+class Context:
+    # An sm.parser.Sm in contect, with a mapping from its vars to gcc.VarDecl
+    # (or ParmDecl) instances
+    def __init__(self, sm, var):
+        assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+        self.sm = sm
+        self.var = var
+        self.statenames = list(sm.iter_states())
+
+    def __repr__(self):
+        return 'Context(%r)' % (self.statenames, )
+
+    def compare(self, gccexpr, smexpr):
+        if gccexpr == self.var:
+            # print '%r' % self.sm.varclauses.name
+            if smexpr == self.sm.varclauses.name:
+                return True
+
+        if isinstance(gccexpr, gcc.IntegerCst) and isinstance(smexpr, (int, long)):
+            if gccexpr.constant == smexpr:
+                return True
+
+        return False
+        print('compare:')
+        print('  gccexpr: %r' % gccexpr)
+        print('  smexpr: %r' % smexpr)
+        raise UnhandledComparison()
 
 class SmPass(gcc.GimplePass):
-    def __init__(self):
+    def __init__(self, checkers):
         gcc.GimplePass.__init__(self, 'sm-pass-gimple')
+        self.checkers = checkers
 
     def execute(self, fun):
         if 0:
             print(fun)
+            print(self.checkers)
 
         if 0:
             # Dump location information
@@ -582,23 +387,24 @@ class SmPass(gcc.GimplePass):
 
         #print('locals: %s' % fun.local_decls)
         #print('args: %s' % fun.decl.arguments)
+        for checker in self.checkers:
+            for sm in checker.sms:
+                vars_ = fun.local_decls + fun.decl.arguments
+                if 0:
+                    print('vars_: %s' % vars_)
 
-        vars_ = fun.local_decls + fun.decl.arguments
-        if 0:
-            print('vars_: %s' % vars_)
+                for var in vars_:
+                    if 0:
+                        print(var)
+                        print(var.type)
+                    if isinstance(var.type, gcc.PointerType):
+                        # got pointer type
+                        ctxt = Context(sm, var)
+                        #print('ctxt: %r' % ctxt)
+                        solve(fun, ctxt)
 
-        for var in vars_:
-            if 0:
-                print(var)
-                print(var.type)
-            if isinstance(var.type, gcc.PointerType):
-                # got pointer type
-                solve(fun, var)
-                #print('foo')
-
-
-def main():
-    gimple_ps = SmPass()
+def main(checkers):
+    gimple_ps = SmPass(checkers)
     if 1:
         # non-SSA version:
         gimple_ps.register_before('*warn_function_return')

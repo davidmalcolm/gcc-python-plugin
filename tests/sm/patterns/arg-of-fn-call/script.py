@@ -20,40 +20,11 @@ from sm import main
 from sm.parser import parse_string
 
 SCRIPT = '''
-sm malloc_checker {
+sm arg_of_fn_call {
   state decl any_pointer ptr;
 
   ptr.all:
-    { ptr = malloc() } =>  ptr.unknown;
-
-  ptr.unknown, ptr.null, ptr.nonnull:
-      { ptr == 0 } => true=ptr.null, false=ptr.nonnull
-    | { ptr != 0 } => true=ptr.nonnull, false=ptr.null
-    ;
-
-  ptr.unknown:
-    { *ptr } => { error('use of possibly-NULL pointer %s' % ptr)};
-
-  ptr.null:
-    { *ptr } => { error('use of NULL pointer %s' % ptr)};
-
-  ptr.all, ptr.unknown, ptr.null, ptr.nonnull:
-    { free(ptr) } => ptr.free;
-
-  ptr.free:
-      { free(ptr) } => { error('double-free of %s' % ptr)}
-    | { ptr } => {error('use-after-free of %s' % ptr)}
-    ;
-
-  ptr.unknown:
-      { memset(ptr) } => { error('use of possibly-NULL pointer %s' % ptr)};
-
-  ptr.null:
-      { memset(ptr) } => { error('use of NULL pointer %s' % ptr)};
-
-  ptr.freed:
-      { memset(ptr) } => { error('use-after-free of %s' % ptr)};
-
+    { test2(ptr) } => { error('test2() was called with %s' % ptr)};
 }
 '''
 

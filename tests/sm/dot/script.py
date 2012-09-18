@@ -16,9 +16,6 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-from sm import main
-from sm.parser import parse_string
-
 SCRIPT = '''
 sm malloc_checker {
   state decl any_pointer ptr;
@@ -44,18 +41,15 @@ sm malloc_checker {
       { free(ptr) } => { error('double-free of %s' % ptr)}
     | { ptr } => {error('use-after-free of %s' % ptr)}
     ;
-
-  ptr.unknown:
-      { memset(ptr) } => { error('use of possibly-NULL pointer %s' % ptr)};
-
-  ptr.null:
-      { memset(ptr) } => { error('use of NULL pointer %s' % ptr)};
-
-  ptr.freed:
-      { memset(ptr) } => { error('use-after-free of %s' % ptr)};
-
 }
 '''
 
-checker = parse_string(SCRIPT)
-main([checker])
+from sm.parser import parse_string
+ch = parse_string(SCRIPT)
+if 0:
+    print(ch)
+dot = ch.to_dot('test_script')
+print(dot)
+if 0:
+    from gccutils import invoke_dot
+    invoke_dot(dot)

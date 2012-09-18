@@ -1,0 +1,38 @@
+digraph test_script {
+  subgraph malloc_checker {
+    ptr_all [label=<ptr.all>];
+    ptr_unknown [label=<ptr.unknown>];
+    ptr_null [label=<ptr.null>];
+    ptr_nonnull [label=<ptr.nonnull>];
+    ptr_unknown [label=<ptr.unknown>];
+    ptr_null [label=<ptr.null>];
+    ptr_all [label=<ptr.all>];
+    ptr_unknown [label=<ptr.unknown>];
+    ptr_null [label=<ptr.null>];
+    ptr_nonnull [label=<ptr.nonnull>];
+    ptr_free [label=<ptr.free>];
+
+    ptr_all -> ptr_unknown [label=<ptr = malloc(...)>];
+    ptr_unknown -> ptr_null [label=<(ptr == 0) is True>];
+    ptr_unknown -> ptr_nonnull [label=<(ptr == 0) is False>];
+    ptr_unknown -> ptr_nonnull [label=<(ptr != 0) is True>];
+    ptr_unknown -> ptr_null [label=<(ptr != 0) is False>];
+    ptr_null -> ptr_null [label=<(ptr == 0) is True>];
+    ptr_null -> ptr_nonnull [label=<(ptr == 0) is False>];
+    ptr_null -> ptr_nonnull [label=<(ptr != 0) is True>];
+    ptr_null -> ptr_null [label=<(ptr != 0) is False>];
+    ptr_nonnull -> ptr_null [label=<(ptr == 0) is True>];
+    ptr_nonnull -> ptr_nonnull [label=<(ptr == 0) is False>];
+    ptr_nonnull -> ptr_nonnull [label=<(ptr != 0) is True>];
+    ptr_nonnull -> ptr_null [label=<(ptr != 0) is False>];
+    ptr_unknown -> ptr_unknown [label=<*ptr: error('use of possibly-NULL pointer %s'%ptr)>];
+    ptr_null -> ptr_null [label=<*ptr: error('use of NULL pointer %s'%ptr)>];
+    ptr_all -> ptr_free [label=<free(..., ptr, ...)>];
+    ptr_unknown -> ptr_free [label=<free(..., ptr, ...)>];
+    ptr_null -> ptr_free [label=<free(..., ptr, ...)>];
+    ptr_nonnull -> ptr_free [label=<free(..., ptr, ...)>];
+    ptr_free -> ptr_free [label=<free(..., ptr, ...): error('double-free of %s'%ptr)>];
+    ptr_free -> ptr_free [label=<ptr: error('use-after-free of %s'%ptr)>];
+  }
+}
+
