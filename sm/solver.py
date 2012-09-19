@@ -22,47 +22,60 @@
 import gcc
 
 from gccutils import DotPrettyPrinter, invoke_dot
+from gccutils.graph import Graph, Node, Edge
+from gccutils.dot import to_html
 
 from libcpychecker.absinterp import Location, get_locations
 
 import sm.parser
 
-class ExplodedGraphPrettyPrinter(DotPrettyPrinter):
-    def __init__(self, expgraph, name):
-        self.expgraph = expgraph
-        self.name = name
+class ExplodedGraph(Graph):
+    """
+    A graph of (innernode, state) pairs, where "innernode" refers to
+    nodes in an underlying graph (e.g. a CFG)
+    """
+    def __init__(self):
+        Graph.__init__(self)
+        # Mapping from (innernode, state) to ExplodedNode:
+        self._nodedict = {}
+        self._edgeset = set()
 
-    def to_dot(self):
-        if hasattr(self, 'name'):
-            name = self.name
-        else:
-            name = 'G'
-        result = 'digraph %s {\n' % name
-        for expnode in self.expgraph.iter_nodes():
-            result += ('  %s [label=<%s>];\n'
-                       % (self.expnode_to_id(expnode),
-                          self.expnode_to_dot_label(expnode)))
+    def _make_edge(self, srcnode, dstnode):
+        return ExplodedEdge(srcnode, dstnode)
 
-        for expedge in self.expgraph.edges:
-            result += self.expedge_to_dot(expedge)
-        result += '}\n'
-        return result
+    def lazily_add_node(self, innernode, state):
+        key = (innernode, state)
+        if key not in self._nodedict:
+            node = self.add_node(ExplodedNode(innernode, state))
+            self._nodedict[key] = node
+        return self._nodedict[key]
 
-    def expnode_to_id(self, expnode):
-        return '%s' % id(expnode)
+    def lazily_add_edge(self, srcnode, dstnode):
+        if (srcnode, dstnode) not in self._edgeset:
+            e = self.add_edge(srcnode, dstnode)
+            self._edgeset.add((srcnode, dstnode))
 
-    def expnode_to_dot_label(self, expnode):
+class ExplodedNode(Node):
+    def __init__(self, innernode, state):
+        Node.__init__(self)
+        self.innernode = innernode
+        self.state = state
+
+    def __repr__(self):
+        return 'ExplodedNode(%r, %r)' % (self.innernode, self.state)
+
+    def to_dot_label(self):
         result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
         result += ('<tr> <td>%s</td> <td>%s</td> </tr>\n'
-                   % (self.to_html(str(expnode.node)), expnode.state))
+                   % (to_html(str(self.innernode)), self.state))
         from gccutils import get_src_for_loc
-        stmt = expnode.node.get_stmt()
-        loc = expnode.node.get_gcc_loc()
+        stmt = self.innernode.get_stmt()
+        loc = self.innernode.get_gcc_loc()
         if loc:
             code = get_src_for_loc(loc).rstrip()
-            pseudohtml = self.to_html(code)
+            pseudohtml = to_html(code)
             result += ('<tr><td align="left">'
-                       + self.to_html('%4i ' % stmt.loc.line)
+                       + to_html('%4i ' % stmt.loc.line)
                        + pseudohtml
                        + '<br/>'
                        + (' ' * (5 + stmt.loc.column-1)) + '^'
@@ -71,95 +84,12 @@ class ExplodedGraphPrettyPrinter(DotPrettyPrinter):
         result += '</table></font>\n'
         return result
 
-    def expedge_to_dot(self, expedge):
-        if expedge.srcexpnode.state != expedge.dstexpnode.state:
-            label = self.to_html('%s -> %s' % (expedge.srcexpnode.state.name, expedge.dstexpnode.state.name))
+class ExplodedEdge(Edge):
+    def to_dot_label(self):
+        if self.srcnode.state != self.dstnode.state:
+            return to_html('%s -> %s' % (self.srcnode.state, self.dstnode.state))
         else:
-            label = ''
-        return ('    %s -> %s [label=<%s>];\n'
-                % (self.expnode_to_id(expedge.srcexpnode),
-                   self.expnode_to_id(expedge.dstexpnode),
-                   label))
-
-class ExplodedGraph:
-    """Like a CFG, but with (node, state) pairs"""
-    def __init__(self):
-        # Mapping from (node, state) to ExplodedNode:
-        self.nodedict = {}
-        self.edges = set()
-        self.initial = None
-
-    def lazily_add_node(self, node, state):
-        key = (node, state)
-        if key not in self.nodedict:
-            self.nodedict[key] = ExplodedNode(node, state)
-            if not self.initial:
-                self.initial = self.nodedict[key]
-        return self.nodedict[key]
-
-    def lazily_add_edge(self, srcnode, dstnode):
-        self.edges.add(ExplodedEdge(srcnode, dstnode))
-
-    def iter_nodes(self):
-        for key in self.nodedict:
-            yield self.nodedict[key]
-
-    def to_dot(self):
-        pp = ExplodedGraphPrettyPrinter(self, 'foo')
-        return pp.to_dot()
-
-    def get_shortest_path(self, dstnode, dststate):
-        '''
-        Locate paths that go from the initial state to the
-        destination (node, state) pair
-        '''
-        # Dijkstra's algorithm
-        # dict from (node,state) to length of shortest known path to the target
-        # state
-        distance = {}
-        previous = {}
-        INFINITY = 0x80000000
-        for expnode in self.nodedict.itervalues():
-            distance[expnode] = INFINITY
-            previous[expnode] = None
-
-        distance[self.initial] = 0
-        worklist = list(self.nodedict.itervalues())
-        while worklist:
-            # we don't actually need to do a full sort each time, we could
-            # just update the position of the item that changed
-            worklist.sort(lambda en1, en2: distance[en1] - distance[en2])
-            expnode = worklist[0]
-            if expnode.node == dstnode and expnode.state == dststate:
-                # We've found the target node:
-                path = [expnode]
-                while previous[expnode]:
-                    path = [previous[expnode]] + path
-                    expnode = previous[expnode]
-                return path
-            worklist = worklist[1:]
-            if distance[expnode] == INFINITY:
-                # disjoint
-                break
-            for edge in self.edges:
-                if edge.srcexpnode.node == expnode.node and edge.srcexpnode.state == expnode.state:
-                    alt = distance[expnode] + 1
-                    if alt < distance[edge.dstexpnode]:
-                        distance[edge.dstexpnode] = alt
-                        previous[edge.dstexpnode] = expnode
-
-class ExplodedNode:
-    def __init__(self, node, state):
-        self.node = node
-        self.state = state
-
-    def __repr__(self):
-        return 'ExplodedNode(%r, %r)' % (self.node, self.state)
-
-class ExplodedEdge:
-    def __init__(self, srcexpnode, dstexpnode):
-        self.srcexpnode = srcexpnode
-        self.dstexpnode = dstexpnode
+            return ''
 
 def make_exploded_graph(fun, ctxt):
     locations = get_locations(fun) # these will be our nodes
@@ -172,7 +102,7 @@ def make_exploded_graph(fun, ctxt):
     worklist = [expnode]
     while worklist:
         def lazily_add_node(loc, state):
-            if (loc, state) not in expgraph.nodedict:
+            if (loc, state) not in expgraph._nodedict:
                 expnode = expgraph.lazily_add_node(loc, state)
                 worklist.append(expnode)
             else:
@@ -180,7 +110,7 @@ def make_exploded_graph(fun, ctxt):
                 expnode = expgraph.lazily_add_node(loc, state)
             return expnode
         srcexpnode = worklist.pop()
-        srcloc = srcexpnode.node
+        srcloc = srcexpnode.innernode
         stmt = srcloc.get_stmt()
         for dstloc, edge in srcloc.next_locs():
             if 0:
@@ -214,7 +144,8 @@ def make_exploded_graph(fun, ctxt):
                                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
                                     elif isinstance(outcome, sm.parser.PythonOutcome):
                                         ctxt.srcloc = srcloc
-                                        outcome.run(ctxt, expgraph, srcloc, srcstate)
+                                        expnode = expgraph.lazily_add_node(srcloc, srcstate)
+                                        outcome.run(ctxt, expgraph, expnode)
                                     else:
                                         print(outcome)
                                         raise UnknownOutcome(outcome)
@@ -234,7 +165,7 @@ def solve(fun, ctxt):
         expgraph = make_exploded_graph(fun, ctxt)
         if 0:
             # Debug: view the exploded graph:
-            dot = expgraph.to_dot()
+            dot = expgraph.to_dot(fun.decl.name)
             # print(dot)
             invoke_dot(dot, fun.decl.name)
 

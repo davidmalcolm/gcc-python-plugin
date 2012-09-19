@@ -232,20 +232,8 @@ class DotPrettyPrinter(PrettyPrinter):
     # Base class for various kinds of data visualizations that use graphviz
     # (aka ".dot" source files)
     def to_html(self, text):
-        html_escape_table = {
-            "&": "&amp;",
-            '"': "&quot;",
-            "'": "&apos;",
-            ">": "&gt;",
-            "<": "&lt;",
-            
-            # 'dot' doesn't seem to like these:
-            '{': '&#123;',
-            '}': '&#125;',
-
-            ']': '&#93;',
-          }
-        return "".join(html_escape_table.get(c,c) for c in str(text))
+        from gccutils.dot import to_html
+        return to_html(text)
 
     def _dot_td(self, text, align="left", colspan=1, escape=1, bgcolor=None,
                 port=None):
