@@ -292,6 +292,10 @@ def run_test(testdir):
     # and the source file goes at the end:
     args += [inputfile]
 
+    if options.show:
+        # Show the gcc invocation:
+        print(' '.join(args))
+
     # Invoke the compiler:
     p = Popen(args, env=env, stdout=PIPE, stderr=PIPE)
     out.actual, err.actual = p.communicate()
@@ -301,6 +305,11 @@ def run_test(testdir):
     #print 'out: %r' % out.actual
     #print 'err: %r' % err.actual
     exitcode_actual = p.wait()
+
+    if options.show:
+        # then the user wants to see the gcc invocation directly
+        sys.stdout.write(out.actual)
+        sys.stderr.write(err.actual)
 
     # Expected exit code
     # By default, we expect success if the expected stderr is empty, and
@@ -335,6 +344,9 @@ parser.add_option("-x", "--exclude",
                   type="string",
                   dest="excluded_dirs",
                   help="exclude tests in DIR and below", metavar="DIR")
+parser.add_option("-s", "--show",
+                  action="store_true", dest="show", default=False,
+                  help="Show stdout, stderr and the command line for each test")
 (options, args) = parser.parse_args()
 
 # print (options, args)
