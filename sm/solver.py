@@ -87,11 +87,14 @@ class ExplodedGraph:
         # Mapping from (node, state) to ExplodedNode:
         self.nodedict = {}
         self.edges = set()
+        self.initial = None
 
     def lazily_add_node(self, node, state):
         key = (node, state)
         if key not in self.nodedict:
             self.nodedict[key] = ExplodedNode(node, state)
+            if not self.initial:
+                self.initial = self.nodedict[key]
         return self.nodedict[key]
 
     def lazily_add_edge(self, srcnode, dstnode):
@@ -105,10 +108,53 @@ class ExplodedGraph:
         pp = ExplodedGraphPrettyPrinter(self, 'foo')
         return pp.to_dot()
 
+    def get_shortest_path(self, dstnode, dststate):
+        '''
+        Locate paths that go from the initial state to the
+        destination (node, state) pair
+        '''
+        # Dijkstra's algorithm
+        # dict from (node,state) to length of shortest known path to the target
+        # state
+        distance = {}
+        previous = {}
+        INFINITY = 0x80000000
+        for expnode in self.nodedict.itervalues():
+            distance[expnode] = INFINITY
+            previous[expnode] = None
+
+        distance[self.initial] = 0
+        worklist = list(self.nodedict.itervalues())
+        while worklist:
+            # we don't actually need to do a full sort each time, we could
+            # just update the position of the item that changed
+            worklist.sort(lambda en1, en2: distance[en1] - distance[en2])
+            expnode = worklist[0]
+            if expnode.node == dstnode and expnode.state == dststate:
+                # We've found the target node:
+                path = [expnode]
+                while previous[expnode]:
+                    path = [previous[expnode]] + path
+                    expnode = previous[expnode]
+                return path
+            worklist = worklist[1:]
+            if distance[expnode] == INFINITY:
+                # disjoint
+                break
+            for edge in self.edges:
+                if edge.srcexpnode.node == expnode.node and edge.srcexpnode.state == expnode.state:
+                    alt = distance[expnode] + 1
+                    if alt < distance[edge.dstexpnode]:
+                        distance[edge.dstexpnode] = alt
+                        previous[edge.dstexpnode] = expnode
+
 class ExplodedNode:
     def __init__(self, node, state):
         self.node = node
         self.state = state
+
+    def __repr__(self):
+        return 'ExplodedNode(%r, %r)' % (self.node, self.state)
 
 class ExplodedEdge:
     def __init__(self, srcexpnode, dstexpnode):
@@ -168,7 +214,7 @@ def make_exploded_graph(fun, ctxt):
                                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
                                     elif isinstance(outcome, sm.parser.PythonOutcome):
                                         ctxt.srcloc = srcloc
-                                        outcome.run(ctxt)
+                                        outcome.run(ctxt, expgraph, srcloc, srcstate)
                                     else:
                                         print(outcome)
                                         raise UnknownOutcome(outcome)

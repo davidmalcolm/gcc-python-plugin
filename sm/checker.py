@@ -272,10 +272,13 @@ class PythonOutcome(Outcome):
             print('expr: %r' % expr)
         return expr
 
-    def run(self, ctxt):
+    def run(self, ctxt, expgraph, loc, state):
         if 0:
             print('run(): %r' % self)
             print('  ctxt.var: %r' % ctxt.var)
+            print('  expgraph: %r' % expgraph)
+            print('  loc: %r' % loc)
+            print('  state: %r' % state)
 
         # Get at python code.
         expr = self.get_src()
@@ -283,6 +286,19 @@ class PythonOutcome(Outcome):
         # Create environment for execution of the code:
         def error(msg):
             gcc.error(ctxt.srcloc.get_gcc_loc(), msg)
+            path = expgraph.get_shortest_path(loc, state)
+            # print('path: %r' % path)
+            oldstate = ctxt.statenames[0]
+            for i, expnode in enumerate(path):
+                # print(expnode)
+                if i > 0 and expnode.state != oldstate:
+                    gccloc = path[i - 1].node.get_gcc_loc()
+                    if gccloc:
+                        gcc.inform(gccloc, '%s: %s -> %s' % (ctxt.sm.name, oldstate, expnode.state))
+                    oldstate = expnode.state
+            # repeat the message at the end of the path:
+            if len(path) > 1:
+                gcc.inform(path[-1].node.get_gcc_loc(), msg)
 
         locals_ = {}
         globals_ = {'error' : error}
