@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from gccutils.dot import to_html
+
 # Generic directed graphs
 class Graph:
     def __init__(self):
@@ -35,17 +37,18 @@ class Graph:
     def _make_edge(self, srcnode, dstnode):
         return Edge(srcnode, dstnode)
 
-    def to_dot(self, name):
+    def to_dot(self, name, ctxt=None):
         result = 'digraph %s {\n' % name
+        result += '  node [shape=box];\n'
         for node in self.nodes:
             result += ('  %s [label=<%s>];\n'
                        % (node.to_dot_id(),
-                          node.to_dot_label()))
+                          node.to_dot_label(ctxt)))
         for edge in self.edges:
             result += ('    %s -> %s [label=<%s>];\n'
                        % (edge.srcnode.to_dot_id(),
                           edge.dstnode.to_dot_id(),
-                          edge.to_dot_label()))
+                          edge.to_dot_label(ctxt)))
         result += '}\n'
         return result
 
@@ -104,8 +107,8 @@ class Node:
     def to_dot_id(self):
         return '%s' % id(self)
 
-    def to_dot_label(self):
-        return str(self)
+    def to_dot_label(self, ctxt):
+        return to_html(str(self))
 
 class Edge:
     def __init__(self, srcnode, dstnode):
@@ -115,5 +118,5 @@ class Edge:
     def __repr__(self):
         return '%s(srcnode=%r, dstnode=%r)' % (self.__class__.__name__, self.srcnode, self.dstnode)
 
-    def to_dot_label(self):
+    def to_dot_label(self, ctxt):
         return ''

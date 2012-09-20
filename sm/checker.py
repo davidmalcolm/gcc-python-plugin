@@ -80,6 +80,13 @@ class Pattern:
         print('self: %r' % self)
         raise NotImplementedError()
 
+    def description(self, ctxt):
+        print('self: %r' % self)
+        raise NotImplementedError()
+
+    def __hash__(self):
+        return id(self)
+
 class FunctionCall(Pattern):
     def __init__(self, fnname):
         self.fnname = fnname
@@ -113,8 +120,12 @@ class ResultOfFnCall(FunctionCall):
     def matched_by(self, stmt, edge, ctxt):
         if not FunctionCall.matched_by(self, stmt, edge, ctxt):
             return False
-        # FIXME: check the lhs
-        return True
+        if ctxt.compare(stmt.lhs, self.lhs):
+            return True
+
+    def description(self, ctxt):
+        return '%s assigned to the result of %s()' % (ctxt.describe(self.lhs), self.func)
+
 
 class ArgOfFnCall(FunctionCall):
     def __init__(self, func, arg):
@@ -137,6 +148,9 @@ class ArgOfFnCall(FunctionCall):
         # FIXME: index hardcoded to 0 for now...
         if ctxt.compare(stmt.args[0], self.arg):
             return True
+
+    def description(self, ctxt):
+        return '%s passed to %s()' % (ctxt.describe(self.arg), self.func)
 
 class Comparison(Pattern):
     def __init__(self, lhs, op, rhs):
@@ -186,6 +200,9 @@ class Comparison(Pattern):
                 op = '<=' if edge.true_value else '>'
             """
 
+    def description(self, ctxt):
+        return '%s compared against %s' % (ctxt.describe(self.lhs), ctxt.describe(self.rhs))
+
 class VarDereference(Pattern):
     def __init__(self, var):
         self.var = var
@@ -205,6 +222,9 @@ class VarDereference(Pattern):
         if stmt.walk_tree(check_for_match, stmt.loc):
             return True
 
+    def description(self, ctxt):
+        return 'dereference of %s' % ctxt.describe(self.var)
+
 class VarUsage(Pattern):
     def __init__(self, var):
         self.var = var
@@ -223,6 +243,9 @@ class VarUsage(Pattern):
                 return True
         if stmt.walk_tree(check_for_match, stmt.loc):
             return True
+
+    def description(self, ctxt):
+        return 'usage of %s' % ctxt.describe(self.var)
 
 class Outcome:
     pass
@@ -287,14 +310,20 @@ class PythonOutcome(Outcome):
             gcc.error(ctxt.srcloc.get_gcc_loc(), msg)
             path = expgraph.get_shortest_path(expgraph.nodes[0], expnode)
             # print('path: %r' % path)
-            for i, expedge in enumerate(path):
+            for expedge in path:
                 # print(expnode)
                 if expedge.srcnode.state != expedge.dstnode.state:
                     gccloc = expedge.srcnode.innernode.get_gcc_loc()
                     if gccloc:
-                        gcc.inform(gccloc,
-                                   '%s: %s -> %s'
+                        if 1:
+                            # Describe state change:
+                            desc = expedge.pattern.description(ctxt)
+                        else:
+                            # Debugging information on state change:
+                            desc = ('%s: %s -> %s'
                                    % (ctxt.sm.name, expedge.srcnode.state, expedge.dstnode.state))
+                        gcc.inform(gccloc, desc)
+
             # repeat the message at the end of the path:
             if path:
                 gcc.inform(path[-1].dstnode.innernode.get_gcc_loc(), msg)

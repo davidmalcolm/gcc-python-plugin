@@ -27,6 +27,7 @@ from gccutils.dot import to_html
 
 from libcpychecker.absinterp import Location, get_locations
 
+import sm.checker
 import sm.parser
 
 class ExplodedGraph(Graph):
@@ -38,10 +39,12 @@ class ExplodedGraph(Graph):
         Graph.__init__(self)
         # Mapping from (innernode, state) to ExplodedNode:
         self._nodedict = {}
+
+        # Set of (srcnode, dstnode, pattern) tuples, where pattern can be None:
         self._edgeset = set()
 
-    def _make_edge(self, srcnode, dstnode):
-        return ExplodedEdge(srcnode, dstnode)
+    def _make_edge(self, srcnode, dstnode, pattern):
+        return ExplodedEdge(srcnode, dstnode, pattern)
 
     def lazily_add_node(self, innernode, state):
         key = (innernode, state)
@@ -50,10 +53,13 @@ class ExplodedGraph(Graph):
             self._nodedict[key] = node
         return self._nodedict[key]
 
-    def lazily_add_edge(self, srcnode, dstnode):
-        if (srcnode, dstnode) not in self._edgeset:
-            e = self.add_edge(srcnode, dstnode)
-            self._edgeset.add((srcnode, dstnode))
+    def lazily_add_edge(self, srcnode, dstnode, pattern):
+        if pattern:
+            assert isinstance(pattern, sm.checker.Pattern)
+        key = (srcnode, dstnode, pattern)
+        if key not in self._edgeset:
+            e = self.add_edge(srcnode, dstnode, pattern)
+            self._edgeset.add(key)
 
 class ExplodedNode(Node):
     def __init__(self, innernode, state):
@@ -64,10 +70,10 @@ class ExplodedNode(Node):
     def __repr__(self):
         return 'ExplodedNode(%r, %r)' % (self.innernode, self.state)
 
-    def to_dot_label(self):
+    def to_dot_label(self, ctxt):
         result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
         result += ('<tr> <td>%s</td> <td>%s</td> </tr>\n'
-                   % (to_html(str(self.innernode)), self.state))
+                   % (to_html(str(self.innernode)), to_html(str(self.state))))
         from gccutils import get_src_for_loc
         stmt = self.innernode.get_stmt()
         loc = self.innernode.get_gcc_loc()
@@ -85,7 +91,15 @@ class ExplodedNode(Node):
         return result
 
 class ExplodedEdge(Edge):
-    def to_dot_label(self):
+    def __init__(self, srcnode, dstnode, pattern):
+        Edge.__init__(self, srcnode, dstnode)
+        if pattern:
+            assert isinstance(pattern, sm.checker.Pattern)
+        self.pattern = pattern
+
+    def to_dot_label(self, ctxt):
+        if self.pattern:
+            return to_html(self.pattern.description(ctxt))
         if self.srcnode.state != self.dstnode.state:
             return to_html('%s -> %s' % (self.srcnode.state, self.dstnode.state))
         else:
@@ -128,7 +142,7 @@ def make_exploded_graph(fun, ctxt):
                                 # print 'outcome: %r' % outcome
                                 def handle_outcome(outcome):
                                     # print('handle_outcome(%r)' % outcome)
-                                    if isinstance(outcome, sm.parser.BooleanOutcome):
+                                    if isinstance(outcome, sm.checker.BooleanOutcome):
                                         if 0:
                                             print(edge.true_value)
                                             print(edge.false_value)
@@ -137,12 +151,13 @@ def make_exploded_graph(fun, ctxt):
                                             handle_outcome(outcome.outcome)
                                         if edge.false_value and not outcome.guard:
                                             handle_outcome(outcome.outcome)
-                                    elif isinstance(outcome, sm.parser.TransitionTo):
+                                    elif isinstance(outcome, sm.checker.TransitionTo):
                                         # print('transition to %s' % outcome.state)
                                         dststate = outcome.state
                                         dstexpnode = lazily_add_node(dstloc, dststate)
-                                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
-                                    elif isinstance(outcome, sm.parser.PythonOutcome):
+                                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                                                           pr.pattern)
+                                    elif isinstance(outcome, sm.checker.PythonOutcome):
                                         ctxt.srcloc = srcloc
                                         expnode = expgraph.lazily_add_node(srcloc, srcstate)
                                         outcome.run(ctxt, expgraph, expnode)
@@ -153,7 +168,7 @@ def make_exploded_graph(fun, ctxt):
                             matches.append(pr)
             if not matches:
                 dstexpnode = lazily_add_node(dstloc, srcstate)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode)
+                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode, None)
     return expgraph
 
 def solve(fun, ctxt):
@@ -165,12 +180,13 @@ def solve(fun, ctxt):
         expgraph = make_exploded_graph(fun, ctxt)
         if 0:
             # Debug: view the exploded graph:
-            dot = expgraph.to_dot(fun.decl.name)
+            name = '%s_on_%s_%s' % (ctxt.sm.name, fun.decl.name, ctxt.var.name)
+            dot = expgraph.to_dot(name, ctxt)
             # print(dot)
-            invoke_dot(dot, fun.decl.name)
+            invoke_dot(dot, name)
 
 class Context:
-    # An sm.parser.Sm in contect, with a mapping from its vars to gcc.VarDecl
+    # An sm.checker.Sm in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
     def __init__(self, sm, var):
         assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
@@ -199,3 +215,10 @@ class Context:
         print('  smexpr: %r' % smexpr)
         raise UnhandledComparison()
 
+    def describe(self, smexpr):
+        if smexpr == self.sm.varclauses.name:
+            return str(self.var)
+        if isinstance(smexpr, (int, long)):
+            return str(smexpr)
+        print('smexpr: %r' % smexpr)
+        raise UnhandledDescription()
