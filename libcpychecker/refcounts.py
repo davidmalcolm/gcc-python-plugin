@@ -122,6 +122,110 @@ def stmt_is_return_of_objptr(stmt):
 def make_null_pyobject_ptr(stmt):
     return make_null_ptr(get_PyObjectPtr(), stmt.loc)
 
+############################################################################
+# API for describing the effect of a function call, attempting to abstract
+# away the internals of the checker
+############################################################################
+class FunctionCall:
+    # A way to describe the behaviors of a function
+    def __init__(self, s_src, stmt, fnmeta):
+        check_isinstance(s_src, State)
+        self.s_src = s_src
+        self.stmt = stmt
+        self.fnmeta = fnmeta
+        self.outcomes = []
+
+    def add_outcome(self, desc):
+        s_new = self.s_src.copy()
+        s_new.loc = self.s_src.loc.next_loc()
+        oc_new = Outcome(self, desc, s_new)
+        self.outcomes.append(oc_new)
+        return oc_new
+
+    def can_succeed(self):
+        return self.add_outcome(self.fnmeta.desc_when_call_succeeds())
+
+    def can_fail(self):
+        return self.add_outcome(self.fnmeta.desc_when_call_fails())
+
+    def can_succeed_new_ref(self, name=None, typeobjregion=None):
+        if name is None:
+            name = 'new ref from %s()' % self.fnmeta.name
+        oc = self.add_outcome(self.fnmeta.desc_when_call_succeeds())
+        s_new, r_nonnull = self.s_src.cpython.mkstate_new_ref(self.stmt, name, typeobjregion)
+        oc.state = s_new
+        oc.returns_ptr(r_nonnull)
+        return oc
+
+    def get_transitions(self):
+        # Sanity-check:
+        if self.stmt.lhs:
+            for oc in self.outcomes:
+                if not oc._has_return:
+                    class OutcomeHasNoReturnValue(Exception):
+                        def __init__(self, oc):
+                            self.oc = oc
+                        def __str__(self):
+                            return str(oc)
+                    raise OutcomeHasNoReturnValue(oc)
+        return [self._make_transition(oc) for oc in self.outcomes]
+
+    def _make_transition(self, oc):
+        t_new = Transition(self.s_src, oc.state, oc.desc)
+        return t_new
+
+class Outcome:
+    # A particular outcome of a FunctionCall
+    # Naming convention "oc_*"
+    def __init__(self, fncall, desc, state):
+        check_isinstance(state, State)
+        self.fncall = fncall
+        self.desc = desc
+        self.state = state
+        # Use this to ensure that the client sets up the return value:
+        self._has_return = False
+
+    def __str__(self):
+        return 'outcome %r' % self.desc
+
+    def get_stmt(self):
+        return self.fncall.stmt
+
+    def get_return_type(self):
+        return self.get_stmt().fn.type.dereference.type
+
+    def returns(self, value):
+        check_isinstance(value, numeric_types)
+        self._has_return = True
+        if self.get_stmt().lhs:
+            self.state.assign(self.get_stmt().lhs,
+                              ConcreteValue(self.get_stmt().lhs.type, self.get_stmt().loc, value),
+                              self.get_stmt().loc)
+
+    def returns_ptr(self, region):
+        check_isinstance(region, Region)
+        self._has_return = True
+        if self.get_stmt().lhs:
+            self.state.assign(self.get_stmt().lhs,
+                              PointerToRegion(self.get_return_type(),
+                                              self.get_stmt().loc,
+                                              region),
+                              self.get_stmt().loc)
+
+    def returns_NULL(self):
+        self._has_return = True
+        if self.get_stmt().lhs:
+            self.state.assign(self.get_stmt().lhs,
+                              ConcreteValue(self.get_return_type(),
+                                            self.get_stmt().loc,
+                                            0),
+                              self.get_stmt().loc)
+
+    def sets_exception(self, exc_name):
+        self.state.cpython.set_exception(exc_name, self.get_stmt().loc)
+
+############################################################################
+
 class RefcountValue(AbstractValue):
     """
     Value for an ob_refcnt field.
@@ -2682,19 +2786,17 @@ class CPython(Facet):
                why=invokes_Py_TYPE_via_macro(fnmeta,
                                              'PyString_Check'))
 
-        # The "success" case:
-        s_success, nonnull = self.mkstate_new_ref(stmt, 'new ref from %s()' % fnmeta.name)
-        t_success = Transition(self.state,
-                               s_success,
-                               fnmeta.desc_when_call_succeeds())
-        # The "failure" case:
-        returntype = stmt.fn.type.dereference.type
-        t_failure = self.state.mktrans_assignment(stmt.lhs,
-                                       ConcreteValue(returntype, stmt.loc, 0),
-                                                  fnmeta.desc_when_call_fails())
-        t_failure.dest.cpython.set_exception('PyExc_MemoryError', stmt.loc)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
 
-        return [t_success, t_failure]
+        # The "success" case:
+        oc_success = fncall.can_succeed_new_ref()
+
+        # The "failure" case:
+        oc_failure = fncall.can_fail()
+        oc_failure.returns_NULL()
+        oc_failure.sets_exception('PyExc_MemoryError')
+
+        return fncall.get_transitions()
 
     def impl_PyObject_GenericSetAttr(self, stmt, v_o, v_name, v_value):
         fnmeta = FnMeta(name='PyObject_GenericSetAttr',
@@ -2709,16 +2811,15 @@ class CPython(Facet):
                                              'PyString_Check'))
         # (it appears that value can legitimately be NULL)
 
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_AttributeError', stmt.loc)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        oc_success = fncall.can_succeed()
+        oc_success.returns(0)
 
-        return [Transition(self.state,
-                           s_success,
-                           fnmeta.desc_when_call_succeeds()),
-                Transition(self.state,
-                           s_failure,
-                           fnmeta.desc_when_call_fails())]
+        oc_failure = fncall.can_fail()
+        oc_failure.returns(-1)
+        oc_failure.sets_exception('PyExc_AttributeError')
+
+        return fncall.get_transitions()
 
     def impl_PyObject_HasAttrString(self, stmt, v_o, v_attr_name):
         fnmeta = FnMeta(name='PyObject_HasAttrString',
@@ -2735,28 +2836,31 @@ class CPython(Facet):
         #     PyString_FromString(str) <-- must be non-NULL
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name)
 
-        s_true = self.state.mkstate_concrete_return_of(stmt, 1)
-        s_false = self.state.mkstate_concrete_return_of(stmt, 0)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        oc_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
+        oc_true.returns(1)
 
-        return [Transition(self.state, s_true,
-                           fnmeta.desc_when_call_returns_value('1 (true)')),
-                Transition(self.state, s_false,
-                           fnmeta.desc_when_call_returns_value('0 (false)'))]
+        oc_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
+        oc_false.returns(0)
+
+        return fncall.get_transitions()
 
     def impl_PyObject_IsTrue(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_IsTrue',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_IsTrue')
-        s_true = self.state.mkstate_concrete_return_of(stmt, 1)
-        s_false = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc) # arbitrarily chosen error
 
-        return [Transition(self.state, s_true,
-                           fnmeta.desc_when_call_returns_value('1 (true)')),
-                Transition(self.state, s_false,
-                           fnmeta.desc_when_call_returns_value('0 (false)')),
-                Transition(self.state, s_failure,
-                           fnmeta.desc_when_call_returns_value('-1 (failure)'))]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        oc_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
+        oc_true.returns(1)
+
+        oc_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
+        oc_false.returns(0)
+
+        oc_failure = fncall.add_outcome(fnmeta.desc_when_call_returns_value('-1 (failure)'))
+        oc_failure.returns(-1)
+        oc_failure.sets_exception('PyExc_MemoryError') # arbitrarily chosen error
+
+        return fncall.get_transitions()
 
     def impl__PyObject_New(self, stmt, v_typeptr):
         fnmeta = FnMeta(name='_PyObject_New',
