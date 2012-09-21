@@ -176,7 +176,7 @@ class FunctionCall:
 
 class Outcome:
     # A particular outcome of a FunctionCall
-    # Naming convention "oc_*"
+    # Naming convention "oc_*" or "on_*" within an implementation
     def __init__(self, fncall, desc, state):
         check_isinstance(state, State)
         self.fncall = fncall
@@ -2789,12 +2789,12 @@ class CPython(Facet):
         fncall = FunctionCall(self.state, stmt, fnmeta)
 
         # The "success" case:
-        oc_success = fncall.can_succeed_new_ref()
+        on_success = fncall.can_succeed_new_ref()
 
         # The "failure" case:
-        oc_failure = fncall.can_fail()
-        oc_failure.returns_NULL()
-        oc_failure.sets_exception('PyExc_MemoryError')
+        on_failure = fncall.can_fail()
+        on_failure.returns_NULL()
+        on_failure.sets_exception('PyExc_MemoryError')
 
         return fncall.get_transitions()
 
@@ -2812,12 +2812,12 @@ class CPython(Facet):
         # (it appears that value can legitimately be NULL)
 
         fncall = FunctionCall(self.state, stmt, fnmeta)
-        oc_success = fncall.can_succeed()
-        oc_success.returns(0)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
 
-        oc_failure = fncall.can_fail()
-        oc_failure.returns(-1)
-        oc_failure.sets_exception('PyExc_AttributeError')
+        on_failure = fncall.can_fail()
+        on_failure.returns(-1)
+        on_failure.sets_exception('PyExc_AttributeError')
 
         return fncall.get_transitions()
 
@@ -2837,11 +2837,11 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name)
 
         fncall = FunctionCall(self.state, stmt, fnmeta)
-        oc_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
-        oc_true.returns(1)
+        on_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
+        on_true.returns(1)
 
-        oc_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
-        oc_false.returns(0)
+        on_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
+        on_false.returns(0)
 
         return fncall.get_transitions()
 
@@ -2850,15 +2850,15 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/object.html#PyObject_IsTrue')
 
         fncall = FunctionCall(self.state, stmt, fnmeta)
-        oc_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
-        oc_true.returns(1)
+        on_true = fncall.add_outcome(fnmeta.desc_when_call_returns_value('1 (true)'))
+        on_true.returns(1)
 
-        oc_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
-        oc_false.returns(0)
+        on_false = fncall.add_outcome(fnmeta.desc_when_call_returns_value('0 (false)'))
+        on_false.returns(0)
 
-        oc_failure = fncall.add_outcome(fnmeta.desc_when_call_returns_value('-1 (failure)'))
-        oc_failure.returns(-1)
-        oc_failure.sets_exception('PyExc_MemoryError') # arbitrarily chosen error
+        on_failure = fncall.add_outcome(fnmeta.desc_when_call_returns_value('-1 (failure)'))
+        on_failure.returns(-1)
+        on_failure.sets_exception('PyExc_MemoryError') # arbitrarily chosen error
 
         return fncall.get_transitions()
 
@@ -2913,11 +2913,16 @@ class CPython(Facet):
         self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name,
                why=invokes_Py_TYPE_via_macro(fnmeta, 'PyString_Check'))
         # v_v can be NULL: clears the attribute
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc) # e.g.
-        return self.state.make_transitions_for_fncall(stmt, fnmeta,
-                                                      s_success, s_failure)
+
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
+
+        on_failure = fncall.can_fail()
+        on_failure.returns(-1)
+        on_failure.sets_exception('PyExc_TypeError') # e.g.
+
+        return fncall.get_transitions()
 
     def impl_PyObject_SetAttrString(self, stmt,
                                     v_o, v_attr_name, v_v):
@@ -2932,11 +2937,15 @@ class CPython(Facet):
                                                     'which calls PyString_FromString(), '
                                                     'which requires a non-NULL pointer' % fnmeta.name))
         # v_v can be NULL: clears the attribute
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc) # e.g.
-        return self.state.make_transitions_for_fncall(stmt, fnmeta,
-                                                      s_success, s_failure)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
+
+        on_failure = fncall.can_fail()
+        on_failure.returns(-1)
+        on_failure.sets_exception('PyExc_TypeError') # e.g.
+
+        return fncall.get_transitions()
 
     def impl_PyObject_Str(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_Str',
@@ -2970,21 +2979,30 @@ class CPython(Facet):
                                      v_closeit, v_flags):
         fnmeta = FnMeta(name='PyRun_SimpleFileExFlags',
                         docurl='http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags')
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
+
+        on_failure = fncall.can_fail()
+        on_failure.returns(-1)
         # (no way to get the exception on failure)
+
         # (FIXME: handle the potential autoclosing of the FILE*)
-        return self.state.make_transitions_for_fncall(stmt, fnmeta,
-                                                      s_success, s_failure)
+
+        return fncall.get_transitions()
 
     def impl_PyRun_SimpleStringFlags(self, stmt, v_command, v_flags):
         fnmeta = FnMeta(name='PyRun_SimpleStringFlags',
                         docurl='http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags')
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
+
+        on_failure = fncall.can_fail()
+        oc_failure.returns(-1)
         # (no way to get the exception on failure)
-        return self.state.make_transitions_for_fncall(stmt, fnmeta,
-                                                      s_success, s_failure)
+
+        return fncall.get_transitions()
 
     ########################################################################
     # PySequence_*
