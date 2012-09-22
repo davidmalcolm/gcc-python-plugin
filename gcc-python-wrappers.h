@@ -134,6 +134,12 @@ gcc_Tree_get_symbol(PyObject *cls, PyObject *args);
 PyObject *
 gcc_Function_repr(struct PyGccFunction * self);
 
+long
+gcc_Function_hash(struct PyGccFunction * self);
+
+PyObject *
+gcc_Function_richcompare(PyObject *o1, PyObject *o2, int op);
+
 PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure);
 
@@ -201,6 +207,12 @@ gcc_Gimple_repr(struct PyGccGimple * self);
 
 PyObject *
 gcc_Gimple_str(struct PyGccGimple * self);
+
+long
+gcc_Gimple_hash(struct PyGccGimple * self);
+
+PyObject *
+gcc_Gimple_richcompare(PyObject *o1, PyObject *o2, int op);
 
 PyObject *
 gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs);

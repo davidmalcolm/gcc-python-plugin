@@ -227,6 +227,8 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Gimple_repr',
                           tp_str = '(reprfunc)gcc_Gimple_str',
+                          tp_hash = '(hashfunc)gcc_Gimple_hash',
+                          tp_richcompare = 'gcc_Gimple_richcompare',
                           tp_flags = 'Py_TPFLAGS_BASETYPE',
                           )
     methods = PyMethodTable('gcc_Gimple_methods', [])
