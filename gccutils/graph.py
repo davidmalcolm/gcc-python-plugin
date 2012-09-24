@@ -209,9 +209,15 @@ class EntryNode(StmtNode):
     def __str__(self):
         return 'ENTRY %s' % self.fun.decl.name
 
+    def __repr__(self):
+        return 'EntryNode(%r)' % self.fun.decl.name
+
 class ExitNode(StmtNode):
     def __str__(self):
         return 'EXIT %s' % self.fun.decl.name
+
+    def __repr__(self):
+        return 'ExitNode(%r)' % self.fun.decl.name
 
 class StmtEdge(Edge):
     def __init__(self, srcnode, dstnode, cfgedge):
@@ -346,6 +352,9 @@ class SupergraphNode(Node):
 
     def __str__(self):
         return str(self.innernode)
+
+    def __repr__(self):
+        return 'SupergraphNode(%r)' % self.innernode
 
     def get_stmt(self):
         return self.innernode.get_stmt()
