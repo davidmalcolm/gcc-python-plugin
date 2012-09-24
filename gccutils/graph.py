@@ -184,6 +184,9 @@ class StmtGraph(Graph):
     def _make_edge(self, srcnode, dstnode, edge):
         return StmtEdge(srcnode, dstnode, edge)
 
+    def get_entry_nodes(self):
+        return [self.entry]
+
 class StmtNode(Node):
     def __init__(self, fun, stmt):
         Node.__init__(self)
@@ -192,6 +195,15 @@ class StmtNode(Node):
 
     def __str__(self):
         return str(self.stmt)
+
+    def get_stmt(self):
+        return self.stmt
+
+    def get_gcc_loc(self):
+        if self.stmt:
+            return self.stmt.loc
+        else:
+            return None
 
 class EntryNode(StmtNode):
     def __str__(self):
@@ -213,6 +225,16 @@ class StmtEdge(Edge):
             elif self.cfgedge.false_value:
                 return 'false'
         return ''
+
+    @property
+    def true_value(self):
+        if self.cfgedge:
+            return self.cfgedge.true_value
+
+    @property
+    def false_value(self):
+        if self.cfgedge:
+            return self.cfgedge.false_value
 
 ############################################################################
 # Supergraph of all CFGs, built from each functions' StmtGraph.
@@ -307,6 +329,13 @@ class Supergraph(Graph):
             result += '  }\n'
         return result
 
+    def get_entry_nodes(self):
+        # For now, assume all non-static functions are possible entrypoints:
+        for fun in self.stmtg_for_fun:
+            # FIXME: exclude static functions
+            stmtg = self.stmtg_for_fun[fun]
+            yield stmtg.snode_for_stmtnode[stmtg.entry]
+
 class SupergraphNode(Node):
     """
     A node in the supergraph, wrapping a StmtNode
@@ -317,6 +346,12 @@ class SupergraphNode(Node):
 
     def __str__(self):
         return str(self.innernode)
+
+    def get_stmt(self):
+        return self.innernode.get_stmt()
+
+    def get_gcc_loc(self):
+        return self.innernode.get_gcc_loc()
 
 class SupergraphEdge(Edge):
     """
@@ -329,6 +364,14 @@ class SupergraphEdge(Edge):
 
     def to_dot_label(self, ctxt):
         return self.inneredge.to_dot_label(ctxt)
+
+    @property
+    def true_value(self):
+        return self.inneredge.true_value
+
+    @property
+    def false_value(self):
+        return self.inneredge.false_value
 
 class CallToReturnSiteEdge(SupergraphEdge):
     """

@@ -33,18 +33,18 @@ import sm.parser
 class ExplodedGraph(Graph):
     """
     A graph of (innernode, state) pairs, where "innernode" refers to
-    nodes in an underlying graph (e.g. a CFG)
+    nodes in an underlying graph (e.g. a StmtGraph or a Supergraph)
     """
     def __init__(self):
         Graph.__init__(self)
         # Mapping from (innernode, state) to ExplodedNode:
         self._nodedict = {}
 
-        # Set of (srcnode, dstnode, pattern) tuples, where pattern can be None:
+        # Set of (srcexpnode, dstexpnode, pattern) tuples, where pattern can be None:
         self._edgeset = set()
 
-    def _make_edge(self, srcnode, dstnode, pattern):
-        return ExplodedEdge(srcnode, dstnode, pattern)
+    def _make_edge(self, srcexpnode, dstexpnode, pattern):
+        return ExplodedEdge(srcexpnode, dstexpnode, pattern)
 
     def lazily_add_node(self, innernode, state):
         key = (innernode, state)
@@ -53,12 +53,12 @@ class ExplodedGraph(Graph):
             self._nodedict[key] = node
         return self._nodedict[key]
 
-    def lazily_add_edge(self, srcnode, dstnode, pattern):
+    def lazily_add_edge(self, srcexpnode, dstexpnode, pattern):
         if pattern:
             assert isinstance(pattern, sm.checker.Pattern)
-        key = (srcnode, dstnode, pattern)
+        key = (srcexpnode, dstexpnode, pattern)
         if key not in self._edgeset:
-            e = self.add_edge(srcnode, dstnode, pattern)
+            e = self.add_edge(srcexpnode, dstexpnode, pattern)
             self._edgeset.add(key)
 
 class ExplodedNode(Node):
@@ -91,8 +91,8 @@ class ExplodedNode(Node):
         return result
 
 class ExplodedEdge(Edge):
-    def __init__(self, srcnode, dstnode, pattern):
-        Edge.__init__(self, srcnode, dstnode)
+    def __init__(self, srcexpnode, dstexpnode, pattern):
+        Edge.__init__(self, srcexpnode, dstexpnode)
         if pattern:
             assert isinstance(pattern, sm.checker.Pattern)
         self.pattern = pattern
@@ -100,20 +100,17 @@ class ExplodedEdge(Edge):
     def to_dot_label(self, ctxt):
         if self.pattern:
             return to_html(self.pattern.description(ctxt))
-        if self.srcnode.state != self.dstnode.state:
-            return to_html('%s -> %s' % (self.srcnode.state, self.dstnode.state))
+        if self.srcexpnode.state != self.dstexpnode.state:
+            return to_html('%s -> %s' % (self.srcexpnode.state, self.dstexpnode.state))
         else:
             return ''
 
-def make_exploded_graph(fun, ctxt):
-    locations = get_locations(fun) # these will be our nodes
-
-    # The initial state is the first block after entry (which has no statements):
-    initbb = fun.cfg.entry.succs[0].dest
-    initloc = Location(initbb, 0)
+def make_exploded_graph(fun, ctxt, innergraph):
     expgraph = ExplodedGraph()
-    expnode = expgraph.lazily_add_node(initloc, ctxt.statenames[0]) # initial state
-    worklist = [expnode]
+    worklist = []
+    for entry in innergraph.get_entry_nodes():
+        expnode = expgraph.lazily_add_node(entry, ctxt.statenames[0]) # initial state
+        worklist.append(expnode)
     while worklist:
         def lazily_add_node(loc, state):
             if (loc, state) not in expgraph._nodedict:
@@ -124,18 +121,23 @@ def make_exploded_graph(fun, ctxt):
                 expnode = expgraph.lazily_add_node(loc, state)
             return expnode
         srcexpnode = worklist.pop()
-        srcloc = srcexpnode.innernode
-        stmt = srcloc.get_stmt()
-        for dstloc, edge in srcloc.next_locs():
+        srcnode = srcexpnode.innernode
+        stmt = srcnode.get_stmt()
+        for edge in srcnode.succs:
+            dstnode = edge.dstnode
             if 0:
-                print('  edge from: %s' % srcloc)
-                print('         to: %s' % dstloc)
+                print('  edge from: %s' % srcnode)
+                print('         to: %s' % dstnode)
             srcstate = srcexpnode.state
             matches = []
             for sc in ctxt.sm.stateclauses:
                 if srcstate in sc.statelist:
                     for pr in sc.patternrulelist:
                         # print('%r: %r' %(srcstate, pr))
+                        # For now, skip interprocedural calls and the
+                        # ENTRY/EXIT nodes:
+                        if not stmt:
+                            continue
                         if pr.pattern.matched_by(stmt, edge, ctxt):
                             assert len(pr.outcomes) > 0
                             for outcome in pr.outcomes:
@@ -154,12 +156,12 @@ def make_exploded_graph(fun, ctxt):
                                     elif isinstance(outcome, sm.checker.TransitionTo):
                                         # print('transition to %s' % outcome.state)
                                         dststate = outcome.state
-                                        dstexpnode = lazily_add_node(dstloc, dststate)
+                                        dstexpnode = lazily_add_node(dstnode, dststate)
                                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                                            pr.pattern)
                                     elif isinstance(outcome, sm.checker.PythonOutcome):
-                                        ctxt.srcloc = srcloc
-                                        expnode = expgraph.lazily_add_node(srcloc, srcstate)
+                                        ctxt.srcnode = srcnode
+                                        expnode = expgraph.lazily_add_node(srcnode, srcstate)
                                         outcome.run(ctxt, expgraph, expnode)
                                     else:
                                         print(outcome)
@@ -167,17 +169,17 @@ def make_exploded_graph(fun, ctxt):
                                 handle_outcome(outcome)
                             matches.append(pr)
             if not matches:
-                dstexpnode = lazily_add_node(dstloc, srcstate)
+                dstexpnode = lazily_add_node(dstnode, srcstate)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode, None)
     return expgraph
 
-def solve(fun, ctxt):
+def solve(fun, ctxt, graph):
     if 0:
         solver = Solver(fun, ctxt)
         solver.solve()
 
     if 1:
-        expgraph = make_exploded_graph(fun, ctxt)
+        expgraph = make_exploded_graph(fun, ctxt, graph)
         if 0:
             # Debug: view the exploded graph:
             name = '%s_on_%s_%s' % (ctxt.sm.name, fun.decl.name, ctxt.var.name)

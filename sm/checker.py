@@ -307,7 +307,7 @@ class PythonOutcome(Outcome):
 
         # Create environment for execution of the code:
         def error(msg):
-            gcc.error(ctxt.srcloc.get_gcc_loc(), msg)
+            gcc.error(ctxt.srcnode.get_gcc_loc(), msg)
             path = expgraph.get_shortest_path(expgraph.nodes[0], expnode)
             # print('path: %r' % path)
             for expedge in path:
@@ -325,7 +325,7 @@ class PythonOutcome(Outcome):
                         gcc.inform(gccloc, desc)
 
             # repeat the message at the end of the path:
-            if path:
+            if len(path) > 1:
                 gcc.inform(path[-1].dstnode.innernode.get_gcc_loc(), msg)
 
         locals_ = {}
