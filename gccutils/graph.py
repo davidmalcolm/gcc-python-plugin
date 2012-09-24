@@ -42,16 +42,21 @@ class Graph:
     def to_dot(self, name, ctxt=None):
         result = 'digraph %s {\n' % name
         result += '  node [shape=box];\n'
-        for node in self.nodes:
-            result += ('  %s [label=<%s>];\n'
-                       % (node.to_dot_id(),
-                          node.to_dot_label(ctxt)))
+        result += self._nodes_to_dot(ctxt)
         for edge in self.edges:
             result += ('    %s -> %s [label=<%s>];\n'
                        % (edge.srcnode.to_dot_id(),
                           edge.dstnode.to_dot_id(),
                           edge.to_dot_label(ctxt)))
         result += '}\n'
+        return result
+
+    def _nodes_to_dot(self, ctxt):
+        result = ''
+        for node in self.nodes:
+            result += ('  %s [label=<%s>];\n'
+                       % (node.to_dot_id(),
+                          node.to_dot_label(ctxt)))
         return result
 
     def get_shortest_path(self, srcnode, dstnode):
@@ -231,13 +236,12 @@ class Supergraph(Graph):
         # 2nd pass: construct a StmtGraph for each function in the callgraph
         # and add nodes and edges to "self" wrapping the nodes and edges
         # within each StmtGraph:
-        stmtg_for_fun = {}
+        self.stmtg_for_fun = {}
         for node in get_callgraph_nodes():
             fun = node.decl.function
             if fun:
-                from gccutils.graph import StmtGraph
                 stmtg = StmtGraph(fun)
-                stmtg_for_fun[fun] = stmtg
+                self.stmtg_for_fun[fun] = stmtg
                 # Clone the stmtg nodes and edges into the Supergraph:
                 stmtg.snode_for_stmtnode = {}
                 for node in stmtg.nodes:
@@ -259,8 +263,8 @@ class Supergraph(Graph):
             if fun:
                 for edge in node.callees:
                     if edge.callee.decl.function:
-                        calling_stmtg = stmtg_for_fun[fun]
-                        called_stmtg = stmtg_for_fun[edge.callee.decl.function]
+                        calling_stmtg = self.stmtg_for_fun[fun]
+                        called_stmtg = self.stmtg_for_fun[edge.callee.decl.function]
 
                         calling_stmtnode = calling_stmtg.node_for_stmt[edge.call_stmt]
                         assert calling_stmtnode
@@ -287,6 +291,21 @@ class Supergraph(Graph):
 
     def _make_edge(self, srcnode, dstnode, cls, edge):
         return cls(srcnode, dstnode, edge)
+
+    def _nodes_to_dot(self, ctxt):
+        # group the nodes into subgraphs within their original
+        # functions
+        result = ''
+        for fun in self.stmtg_for_fun:
+            result += '  subgraph cluster_%s {\n' % fun.decl.name
+            stmtg = self.stmtg_for_fun[fun]
+            for node in stmtg.nodes:
+                snode = stmtg.snode_for_stmtnode[node]
+                result += ('    %s [label=<%s>];\n'
+                           % (snode.to_dot_id(),
+                              snode.to_dot_label(ctxt)))
+            result += '  }\n'
+        return result
 
 class SupergraphNode(Node):
     """
