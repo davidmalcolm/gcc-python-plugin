@@ -128,16 +128,23 @@ def make_null_pyobject_ptr(stmt):
 ############################################################################
 class FunctionCall:
     # A way to describe the behaviors of a function
-    def __init__(self, s_src, stmt, fnmeta):
+    def __init__(self, s_src, stmt, fnmeta, args=None, varargs=None):
         check_isinstance(s_src, State)
         self.s_src = s_src
         self.stmt = stmt
         self.fnmeta = fnmeta
+        self.args = args
+        self.varargs = varargs
+        self._crashes_on_null_arg = []
         self.outcomes = []
 
-    def add_outcome(self, desc):
-        s_new = self.s_src.copy()
-        s_new.loc = self.s_src.loc.next_loc()
+    def crashes_on_null_arg(self, argidx, why):
+        self._crashes_on_null_arg.append( (argidx, why) )
+
+    def add_outcome(self, desc, s_new=None):
+        if s_new is None:
+            s_new = self.s_src.copy()
+            s_new.loc = self.s_src.loc.next_loc()
         oc_new = Outcome(self, desc, s_new)
         self.outcomes.append(oc_new)
         return oc_new
@@ -157,18 +164,35 @@ class FunctionCall:
         oc.returns_ptr(r_nonnull)
         return oc
 
+    def new_ref_or_fail(self, objname=None):
+        # Return (on_success, on_failure) pair of Outcome instances
+        if objname is None:
+            objname = 'new ref from call to %s' % self.fnmeta.name
+        on_success = self.can_succeed_new_ref(objname)
+        on_failure = self.can_fail()
+        on_failure.sets_exception('PyExc_MemoryError')
+        on_failure.returns_NULL()
+        return on_success, on_failure
+
     def get_transitions(self):
         # Sanity-check:
         if self.stmt.lhs:
             for oc in self.outcomes:
-                if not oc._has_return:
+                if not oc.v_return:
                     class OutcomeHasNoReturnValue(Exception):
                         def __init__(self, oc):
                             self.oc = oc
                         def __str__(self):
-                            return str(oc)
+                            return '%s does not define a return value' % oc
                     raise OutcomeHasNoReturnValue(oc)
-        return [self._make_transition(oc) for oc in self.outcomes]
+        # Check for null args:
+        for argidx, why in self._crashes_on_null_arg:
+            assert self.args
+            self.s_src.raise_any_null_ptr_func_arg(self.stmt, argidx,
+                                                   self.args[argidx],
+                                                   why)
+        return [self._make_transition(oc)
+                for oc in self.outcomes if oc.is_possible]
 
     def _make_transition(self, oc):
         t_new = Transition(self.s_src, oc.state, oc.desc)
@@ -182,8 +206,9 @@ class Outcome:
         self.fncall = fncall
         self.desc = desc
         self.state = state
+        self.is_possible = True
         # Use this to ensure that the client sets up the return value:
-        self._has_return = False
+        self.v_return = None
 
     def __str__(self):
         return 'outcome %r' % self.desc
@@ -196,29 +221,25 @@ class Outcome:
 
     def returns(self, value):
         check_isinstance(value, numeric_types)
-        self._has_return = True
-        if self.get_stmt().lhs:
-            self.state.assign(self.get_stmt().lhs,
-                              ConcreteValue(self.get_stmt().lhs.type, self.get_stmt().loc, value),
-                              self.get_stmt().loc)
-
+        self._returns(ConcreteValue(self.get_stmt().lhs.type,
+                                    self.get_stmt().loc,
+                                    value))
     def returns_ptr(self, region):
         check_isinstance(region, Region)
-        self._has_return = True
-        if self.get_stmt().lhs:
-            self.state.assign(self.get_stmt().lhs,
-                              PointerToRegion(self.get_return_type(),
-                                              self.get_stmt().loc,
-                                              region),
-                              self.get_stmt().loc)
+        self._returns(PointerToRegion(self.get_return_type(),
+                                      self.get_stmt().loc,
+                                      region))
 
     def returns_NULL(self):
-        self._has_return = True
+        self._returns(ConcreteValue(self.get_return_type(),
+                                    self.get_stmt().loc,
+                                    0))
+
+    def _returns(self, v_return):
+        self.v_return = v_return
         if self.get_stmt().lhs:
             self.state.assign(self.get_stmt().lhs,
-                              ConcreteValue(self.get_return_type(),
-                                            self.get_stmt().loc,
-                                            0),
+                              v_return,
                               self.get_stmt().loc)
 
     def sets_exception(self, exc_name):
@@ -1765,15 +1786,14 @@ class CPython(Facet):
                                    'PyEval_CallMethod(PyObject *obj, const char *methodname, const char *format, ...)'),
                         declared_in='ceval.h',
                         defined_in='Python/modsupport.c')
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_obj,
-               why=invokes_Py_TYPE(fnmeta,
-                                   within='PyObject_GetAttrString'))
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_method)
-
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_obj, v_method, v_fmt),
+                              varargs=v_varargs)
+        fncall.crashes_on_null_arg(0,
+            why=invokes_Py_TYPE(fnmeta, within='PyObject_GetAttrString'))
         # not affected by PY_SSIZE_T_CLEAN
-        return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_obj, v_fmt, v_varargs,
-                                                with_size_t=False)
+        self._handle_PyObject_CallMethod(fncall, 2, with_size_t=False)
+        return fncall.get_transitions()
 
     def impl_PyEval_CallObjectWithKeywords(self, stmt, v_func, v_arg, v_kw):
         fnmeta = FnMeta(name='PyEval_CallObjectWithKeywords',
@@ -2541,18 +2561,17 @@ class CPython(Facet):
     ########################################################################
     # PyObject_*
     ########################################################################
-    def _handle_PyObject_CallMethod(self, stmt, fnmeta,
-                                    v_o, v_fmt, v_varargs, with_size_t):
+    def _handle_PyObject_CallMethod(self, fncall, fmtargidx, with_size_t):
         """
         For functions in Objects/abstract.c that use Py_VaBuildValue or
         _Py_VaBuildValue_SizeT, then use call_function_tail
         (e.g. handles PyObject_CallFunction also)
         Also used by PyEval_CallMethod
         """
-        check_isinstance(v_o, AbstractValue)
-        check_isinstance(v_fmt, AbstractValue)
-        check_isinstance(v_varargs, tuple) # of AbstractValue
+        check_isinstance(fncall, FunctionCall)
         check_isinstance(with_size_t, bool)
+
+        on_success, on_failure = fncall.new_ref_or_fail()
 
         # The function can succeed or fail
         # If any of the PyObject* inputs are NULL, it is doomed to failure
@@ -2561,7 +2580,7 @@ class CPython(Facet):
             Returns a boolean: is success of the function possible?
             """
             exptypes = fmt.iter_exp_types()
-            for v_vararg, (unit, exptype) in zip(v_varargs, exptypes):
+            for v_vararg, (unit, exptype) in zip(fncall.varargs, exptypes):
                 if 0:
                     print('v_vararg: %r' % v_vararg)
                     print('  unit: %r' % unit)
@@ -2578,22 +2597,20 @@ class CPython(Facet):
                     # by the call.  Hence args with code "N" lose a ref:
                     if isinstance(v_vararg, PointerToRegion):
                         if isinstance(unit, CodeN):
-                            t_success.dest.cpython.dec_ref(v_vararg, stmt.loc)
-                            t_failure.dest.cpython.dec_ref(v_vararg, stmt.loc)
+                            on_success.state.cpython.dec_ref(v_vararg, fncall.stmt.loc)
+                            on_failure.state.cpython.dec_ref(v_vararg, fncall.stmt.loc)
             return True
 
-        t_success, t_failure = self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
-
-        fmt_string = v_fmt.as_string_constant()
+        fmt_string = fncall.args[fmtargidx].as_string_constant()
         if fmt_string:
             try:
                 fmt = PyBuildValueFmt.from_string(fmt_string, with_size_t)
                 if not _handle_successful_parse(fmt):
-                    return [t_failure]
+                    on_success.is_possible = False
             except FormatStringWarning:
                 pass
 
-        return [t_success, t_failure]
+        return fncall.get_transitions()
 
     def impl_PyObject_AsFileDescriptor(self, stmt, v_o):
         fnmeta = FnMeta(name='PyObject_AsFileDescriptor',
@@ -2630,19 +2647,22 @@ class CPython(Facet):
                         defined_in='Objects/abstract.c',
                         prototype='PyObject* PyObject_CallFunction(PyObject *callable, char *format, ...)')
         # callable can be NULL
-
-        return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_callable, v_format,
-                                                args, with_size_t=False)
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_callable, v_format),
+                              varargs=args)
+        self._handle_PyObject_CallMethod(fncall, 1, with_size_t=False)
+        return fncall.get_transitions()
 
     def impl__PyObject_CallFunction_SizeT(self, stmt, v_callable, v_format, *args):
         fnmeta = FnMeta(name='_PyObject_CallFunction_SizeT',
                         docurl='http://docs.python.org/c-api/object.html#PyObject_CallFunction',
                         defined_in='Objects/abstract.c',
                         prototype='PyObject * _PyObject_CallFunction_SizeT(PyObject *callable, char *format, ...)')
-        return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_callable, v_format,
-                                                args, with_size_t=True)
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_callable, v_format),
+                              varargs=args)
+        self._handle_PyObject_CallMethod(fncall, 1, with_size_t=True)
+        return fncall.get_transitions()
 
     def _check_objargs(self, stmt, fnmeta, args, base_idx):
         """
@@ -2689,9 +2709,11 @@ class CPython(Facet):
                         defined_in='Objects/abstract.c',
                         prototype=('PyObject *\n'
                                    'PyObject_CallMethod(PyObject *o, char *name, char *format, ...)'))
-        return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_o, v_format,
-                                                args, with_size_t=False)
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_o, v_name, v_format),
+                              varargs=args)
+        self._handle_PyObject_CallMethod(fncall, 2, with_size_t=False)
+        return fncall.get_transitions()
 
     def impl__PyObject_CallMethod_SizeT(self, stmt, v_o, v_name, v_format, *args):
         fnmeta = FnMeta(name='_PyObject_CallMethod_SizeT',
@@ -2703,9 +2725,11 @@ class CPython(Facet):
                         defined_in='Objects/abstract.c')
         #   PyObject *
         #   _PyObject_CallMethod_SizeT(PyObject *o, char *name, char *format, ...)
-        return self._handle_PyObject_CallMethod(stmt, fnmeta,
-                                                v_o, v_format,
-                                                args, with_size_t=True)
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_o, v_name, v_format),
+                              varargs=args)
+        self._handle_PyObject_CallMethod(fncall, 2, with_size_t=True)
+        return fncall.get_transitions()
 
     def impl_PyObject_CallMethodObjArgs(self, stmt, v_o, v_name, *args):
         fnmeta = FnMeta(name='PyObject_CallMethodObjArgs',
@@ -2780,13 +2804,12 @@ class CPython(Facet):
                         prototype='PyObject* PyObject_GenericGetAttr(PyObject *o, PyObject *name)',
                         defined_in='Objects/object.c')
 
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
-               why=invokes_Py_TYPE(fnmeta))
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
-               why=invokes_Py_TYPE_via_macro(fnmeta,
-                                             'PyString_Check'))
-
-        fncall = FunctionCall(self.state, stmt, fnmeta)
+        fncall = FunctionCall(self.state, stmt, fnmeta, (v_o, v_name))
+        fncall.crashes_on_null_arg(0,
+                                   why=invokes_Py_TYPE(fnmeta))
+        fncall.crashes_on_null_arg(1,
+                                   why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                                 'PyString_Check'))
 
         # The "success" case:
         on_success = fncall.can_succeed_new_ref()
@@ -2804,14 +2827,14 @@ class CPython(Facet):
                         prototype='PyObject_GenericSetAttr(PyObject *o, PyObject *name, PyObject *value)',
                         defined_in='Objects/object.c')
 
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
-               why=invokes_Py_TYPE(fnmeta))
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_name,
-               why=invokes_Py_TYPE_via_macro(fnmeta,
-                                             'PyString_Check'))
+        fncall = FunctionCall(self.state, stmt, fnmeta, (v_o, v_name, v_value))
+        fncall.crashes_on_null_arg(0,
+                                   why=invokes_Py_TYPE(fnmeta))
+        fncall.crashes_on_null_arg(1,
+                                   why=invokes_Py_TYPE_via_macro(fnmeta,
+                                                                 'PyString_Check'))
         # (it appears that value can legitimately be NULL)
 
-        fncall = FunctionCall(self.state, stmt, fnmeta)
         on_success = fncall.can_succeed()
         on_success.returns(0)
 
