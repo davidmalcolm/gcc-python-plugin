@@ -263,6 +263,11 @@ class Outcome:
     def sets_exception_ptr(self, v_ptr):
         self.state.cpython.exception_rvalue = v_ptr
 
+    def adds_external_ref(self, v_ptr):
+        if isinstance(v_ptr, PointerToRegion):
+            self.state.cpython.add_external_ref(v_ptr, self.get_stmt().loc)
+
+
 ############################################################################
 
 class RefcountValue(AbstractValue):
@@ -1694,11 +1699,11 @@ class CPython(Facet):
                         declared_in='pythonrun.h',
                         prototype='PyAPI_FUNC(void) PyErr_Print(void);',
                         defined_in='Python/pythonrun.c',)
-
-        t_next = self.state.mktrans_nop(stmt, 'PyErr_Print')
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        always = fncall.always()
         # Clear the error indicator:
-        t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
-        return [t_next]
+        always.sets_exception_ptr(make_null_pyobject_ptr(stmt))
+        return fncall.get_transitions()
 
     def impl_PyErr_PrintEx(self, stmt, v_int):
         fnmeta = FnMeta(name='PyErr_PrintEx',
@@ -1733,12 +1738,11 @@ class CPython(Facet):
         #   PyErr_SetFromErrnoWithFilename(PyObject *exc, const char *filename)
         #
         # "filename" can be NULL.
-
-        t_next = self.state.mktrans_assignment(stmt.lhs,
-                                         make_null_pyobject_ptr(stmt),
-                                         'PyErr_SetFromErrnoWithFilename()')
-        t_next.dest.cpython.exception_rvalue = v_exc
-        return [t_next]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        always = fncall.always()
+        always.returns_NULL()
+        always.sets_exception_ptr(v_exc)
+        return fncall.get_transitions()
 
     def impl_PyErr_SetNone(self, stmt, v_exc):
         fnmeta = FnMeta(name='PyErr_SetNone',
@@ -1748,11 +1752,11 @@ class CPython(Facet):
         #   PyErr_SetNone(PyObject *exception)
 
         # It's acceptable for v_exc to be NULL
-        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetNone')
-        t_next.dest.cpython.exception_rvalue = v_exc
-        if isinstance(v_exc, PointerToRegion):
-            t_next.dest.cpython.add_external_ref(v_exc, stmt.loc)
-        return [t_next]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        always = fncall.always()
+        always.sets_exception_ptr(v_exc)
+        always.adds_external_ref(v_exc)
+        return fncall.get_transitions()
 
     def impl_PyErr_SetObject(self, stmt, v_exc, v_value):
         fnmeta = FnMeta(name='PyErr_SetObject',
@@ -1764,13 +1768,12 @@ class CPython(Facet):
         #   PyErr_SetObject(PyObject *exception, PyObject *value)
         #
         # It's acceptable for each of v_exc and v_value to be NULL
-        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetObject')
-        t_next.dest.cpython.exception_rvalue = v_exc
-        if isinstance(v_exc, PointerToRegion):
-            t_next.dest.cpython.add_external_ref(v_exc, stmt.loc)
-        if isinstance(v_value, PointerToRegion):
-            t_next.dest.cpython.add_external_ref(v_value, stmt.loc)
-        return [t_next]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        always = fncall.always()
+        always.sets_exception_ptr(v_exc)
+        always.adds_external_ref(v_exc)
+        always.adds_external_ref(v_value)
+        return fncall.get_transitions()
 
     def impl_PyErr_SetString(self, stmt, v_exc, v_string):
         fnmeta = FnMeta(name='PyErr_SetString',
@@ -1778,9 +1781,10 @@ class CPython(Facet):
                         declared_in='pyerrors.h',
                         prototype='PyAPI_FUNC(void) PyErr_SetString(PyObject *, const char *);',
                         defined_in='Python/errors.c',)
-        t_next = self.state.mktrans_nop(stmt, 'PyErr_SetString')
-        t_next.dest.cpython.exception_rvalue = v_exc
-        return [t_next]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        always = fncall.always()
+        always.sets_exception_ptr(v_exc)
+        return fncall.get_transitions()
 
     def impl_PyErr_WarnEx(self, stmt, v_category, v_text, v_stack_level):
         fnmeta = FnMeta(name='PyErr_WarnEx',
@@ -1790,11 +1794,15 @@ class CPython(Facet):
         # returns 0 on OK
         # returns -1 if an exception is raised
                         defined_in='Python/_warnings.c')
-        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
-        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
-        s_failure.cpython.set_exception('PyExc_MemoryError', stmt.loc)
-        return self.state.make_transitions_for_fncall(stmt, fnmeta,
-                                                      s_success, s_failure)
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        on_success = fncall.can_succeed()
+        on_success.returns(0)
+
+        on_failure = fncall.can_fail()
+        on_failure.returns(-1)
+        on_failure.sets_exception('PyExc_MemoryError')
+
+        return fncall.get_transitions()
 
     ########################################################################
     # PyEval_InitThreads()
@@ -1820,11 +1828,15 @@ class CPython(Facet):
                         prototype=('PyObject *\n'
                                    'PyEval_CallObjectWithKeywords(PyObject *func, PyObject *arg, PyObject *kw)'),
                         defined_in='Python/ceval.c')
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_func,
-                                               why='looks up func->ob_type within inner call to PyObject_Call()')
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_func, v_arg, v_kw))
+        fncall.crashes_on_null_arg(0,
+            why='looks up func->ob_type within inner call to PyObject_Call()')
         # arg and kw can each be NULL, though
 
-        return self.make_transitions_for_new_ref_or_fail(stmt, fnmeta)
+        fncall.new_ref_or_fail()
+
+        return fncall.get_transitions()
 
     def impl_PyEval_InitThreads(self, stmt):
         fnmeta = FnMeta(name='PyEval_InitThreads',
@@ -2951,13 +2963,14 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/object.html#PyObject_SetAttr',
                         defined_in='Objects/object.c',
                         prototype='int PyObject_SetAttr(PyObject *o, PyObject *attr_name, PyObject *v)')
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_o, v_attr_name, v_v))
+        fncall.crashes_on_null_arg(0,
                why=invokes_Py_TYPE(fnmeta))
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name,
+        fncall.crashes_on_null_arg(1,
                why=invokes_Py_TYPE_via_macro(fnmeta, 'PyString_Check'))
         # v_v can be NULL: clears the attribute
 
-        fncall = FunctionCall(self.state, stmt, fnmeta)
         on_success = fncall.can_succeed()
         on_success.returns(0)
 
@@ -2973,14 +2986,15 @@ class CPython(Facet):
                         docurl='http://docs.python.org/c-api/object.html#PyObject_SetAttrString',
                         defined_in='Objects/object.c',
                         prototype='int PyObject_SetAttrString(PyObject *o, const char *attr_name, PyObject *v)')
-        self.state.raise_any_null_ptr_func_arg(stmt, 0, v_o,
-               why=invokes_Py_TYPE(fnmeta))
-        self.state.raise_any_null_ptr_func_arg(stmt, 1, v_attr_name,
-                                               why=('%s() can call PyString_InternFromString(), '
-                                                    'which calls PyString_FromString(), '
-                                                    'which requires a non-NULL pointer' % fnmeta.name))
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_o, v_attr_name, v_v))
+        fncall.crashes_on_null_arg(0,
+            why=invokes_Py_TYPE(fnmeta))
+        fncall.crashes_on_null_arg(1,
+            why=('%s() can call PyString_InternFromString(), '
+                 'which calls PyString_FromString(), '
+                 'which requires a non-NULL pointer' % fnmeta.name))
         # v_v can be NULL: clears the attribute
-        fncall = FunctionCall(self.state, stmt, fnmeta)
         on_success = fncall.can_succeed()
         on_success.returns(0)
 
