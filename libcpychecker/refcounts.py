@@ -149,6 +149,10 @@ class FunctionCall:
         self.outcomes.append(oc_new)
         return oc_new
 
+    def always(self):
+        # For functions with a single outcome
+        return self.add_outcome('%s()' % self.fnmeta.name)
+
     def can_succeed(self):
         return self.add_outcome(self.fnmeta.desc_when_call_succeeds())
 
@@ -244,6 +248,9 @@ class Outcome:
 
     def sets_exception(self, exc_name):
         self.state.cpython.set_exception(exc_name, self.get_stmt().loc)
+
+    def sets_exception_ptr(self, v_ptr):
+        self.state.cpython.exception_rvalue = v_ptr
 
 ############################################################################
 
@@ -1698,11 +1705,12 @@ class CPython(Facet):
         fnmeta = FnMeta(name='PyErr_SetFromErrno',
                         docurl='http://docs.python.org/c-api/exceptions.html#PyErr_SetFromErrno',
                         notes='Always returns NULL',)
-        t_next = self.state.mktrans_assignment(stmt.lhs,
-                                         make_null_pyobject_ptr(stmt),
-                                         'PyErr_SetFromErrno()')
-        t_next.dest.cpython.exception_rvalue = v_exc
-        return [t_next]
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_exc, ))
+        always = fncall.always()
+        always.returns_NULL()
+        always.sets_exception_ptr(v_exc)
+        return fncall.get_transitions()
 
     def impl_PyErr_SetFromErrnoWithFilename(self, stmt, v_exc, v_filename):
         fnmeta = FnMeta(name='PyErr_SetFromErrnoWithFilename',
