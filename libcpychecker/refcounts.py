@@ -1495,7 +1495,7 @@ class CPython(Facet):
                         defined_in='Objects/dictobject.c',
                         notes=('Returns a borrowed reference, or NULL if not'
                                ' found.  It does *not* set an exception (for'
-                               ' historical reasons)'''))
+                               ' historical reasons)'))
         self.state.raise_any_null_ptr_func_arg(stmt, 0, v_mp,
                           why=invokes_Py_TYPE_via_macro(fnmeta,
                                                         'PyDict_Check'))
