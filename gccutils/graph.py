@@ -44,10 +44,11 @@ class Graph:
         result += '  node [shape=box];\n'
         result += self._nodes_to_dot(ctxt)
         for edge in self.edges:
-            result += ('    %s -> %s [label=<%s>];\n'
+            result += ('    %s -> %s [label=<%s>%s];\n'
                        % (edge.srcnode.to_dot_id(),
                           edge.dstnode.to_dot_id(),
-                          edge.to_dot_label(ctxt)))
+                          edge.to_dot_label(ctxt),
+                          edge.to_dot_attrs(ctxt)))
         result += '}\n'
         return result
 
@@ -128,6 +129,9 @@ class Edge:
     def to_dot_label(self, ctxt):
         return ''
 
+    def to_dot_attrs(self, ctxt):
+        return ''
+
 ############################################################################
 # A CFG, but with individual statements for nodes, rather than lumping them
 # together within basic blocks
@@ -206,6 +210,29 @@ class StmtNode(Node):
             return None
 
 class EntryNode(StmtNode):
+    def to_dot_label(self, ctxt):
+        from gccutils.dot import Table, Tr, Td, Text
+
+        funtype = self.fun.decl.type
+        args = ','.join(['%s %s' % (arg.type, arg.name)
+                         for arg in self.fun.decl.arguments])
+        signature = '%s %s(%s)' % (funtype.type, self.fun.decl.name, args)
+
+        table = Table([
+            Tr([
+                Td([
+                    Text('ENTRY %s' % signature)
+                    ])
+                ])
+            ])
+        for var in self.fun.local_decls:
+            table.add_child(Tr([
+                        Td([
+                                Text('%s %s;' % (var.type, var))
+                                ])
+                        ]))
+        return table.to_html()
+
     def __str__(self):
         return 'ENTRY %s' % self.fun.decl.name
 
@@ -350,6 +377,9 @@ class SupergraphNode(Node):
         Node.__init__(self)
         self.innernode = innernode
 
+    def to_dot_label(self, ctxt):
+        return self.innernode.to_dot_label(ctxt)
+
     def __str__(self):
         return str(self.innernode)
 
@@ -390,6 +420,9 @@ class CallToReturnSiteEdge(SupergraphEdge):
     def to_dot_label(self, ctxt):
         return 'within function'
 
+    def to_dot_attrs(self, ctxt):
+        return ' penwidth=2'
+
 class CallToStart(SupergraphEdge):
     """
     The interprocedural edge for the start of a function call: from
@@ -397,6 +430,10 @@ class CallToStart(SupergraphEdge):
     """
     def to_dot_label(self, ctxt):
         return 'call'
+
+    def to_dot_attrs(self, ctxt):
+        #return ' constraint=false, style=dotted'
+        return ' style=dotted'
 
 class ExitToReturnSite(SupergraphEdge):
     """
@@ -406,3 +443,7 @@ class ExitToReturnSite(SupergraphEdge):
     """
     def to_dot_label(self, ctxt):
         return 'return'
+
+    def to_dot_attrs(self, ctxt):
+        #return ' constraint=false, style=dotted'
+        return ' style=dotted'

@@ -30,3 +30,59 @@ def to_html(text):
         ']': '&#93;',
       }
     return "".join(html_escape_table.get(c,c) for c in str(text))
+
+
+# An easy way to construct graphviz' pseudo-html:
+class Node:
+    def to_html(self):
+        raise NotImplementedError()
+
+class Element(Node):
+    def __init__(self, children=None, **kwargs):
+        if children is None:
+            children = []
+        else:
+            assert isinstance(children, list)
+        self.children = children
+        self.attrs = kwargs
+
+    def to_html(self):
+        if self.attrs:
+            attrstr = ''.join(' %s="%s"' % (attr, value)
+                              for attr, value in self.attrs.items())
+        else:
+            attrstr = ''
+        result = '<%s%s>' % (self.name, attrstr)
+        for child in self.children:
+            result += child.to_html()
+        result += '</%s>\n' % self.name
+        return result
+
+    def add_child(self, child):
+        self.children.append(child)
+        return child
+
+class Table(Element):
+    def to_html(self):
+        result = '<table cellborder="0" border="0" cellspacing="0">\n'
+        for row in self.children:
+            result += row.to_html()
+        result += '</table>\n'
+        return result
+
+class Tr(Element):
+    name = 'tr'
+
+class Td(Element):
+    name = 'td'
+
+class Text(Node):
+    def __init__(self, text):
+        self.text = text
+
+    def to_html(self):
+        return to_html(self.text)
+
+class Br(Element):
+    def to_html(self):
+        return '<br/>'

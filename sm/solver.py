@@ -71,24 +71,26 @@ class ExplodedNode(Node):
         return 'ExplodedNode(%r, %r)' % (self.innernode, self.state)
 
     def to_dot_label(self, ctxt):
-        result = '<font face="monospace"><table cellborder="0" border="0" cellspacing="0">\n'
-        result += ('<tr> <td>%s</td> <td>%s</td> </tr>\n'
-                   % (to_html(str(self.innernode)), to_html(str(self.state))))
+        from gccutils.dot import Table, Tr, Td, Text, Br
+
+        table = Table()
+        tr = table.add_child(Tr())
+        tr.add_child(Td([Text(str(self.innernode))]))
+        tr.add_child(Td([Text(str(self.state))]))
+
         from gccutils import get_src_for_loc
         stmt = self.innernode.get_stmt()
         loc = self.innernode.get_gcc_loc()
+
         if loc:
             code = get_src_for_loc(loc).rstrip()
             pseudohtml = to_html(code)
-            result += ('<tr><td align="left">'
-                       + to_html('%4i ' % stmt.loc.line)
-                       + pseudohtml
-                       + '<br/>'
-                       + (' ' * (5 + stmt.loc.column-1)) + '^'
-                       + '</td></tr>')
-        #result += '<tr><td></td>' + to_html(stmt, stmtidx) + '</tr>\n'
-        result += '</table></font>\n'
-        return result
+            tr = table.add_child(Tr())
+            td = tr.add_child(Td(align='left'))
+            td.add_child(Text('%4i %s' % (stmt.loc.line, pseudohtml)))
+            td.add_child(Br())
+            td.add_child(Text(' ' * (5 + stmt.loc.column-1) + '^'))
+        return '<font face="monospace">' + table.to_html() + '</font>\n'
 
 class ExplodedEdge(Edge):
     def __init__(self, srcexpnode, dstexpnode, pattern):
@@ -100,8 +102,8 @@ class ExplodedEdge(Edge):
     def to_dot_label(self, ctxt):
         if self.pattern:
             return to_html(self.pattern.description(ctxt))
-        if self.srcexpnode.state != self.dstexpnode.state:
-            return to_html('%s -> %s' % (self.srcexpnode.state, self.dstexpnode.state))
+        if self.srcnode.state != self.dstnode.state:
+            return to_html('%s -> %s' % (self.srcnode.state, self.dstnode.state))
         else:
             return ''
 
