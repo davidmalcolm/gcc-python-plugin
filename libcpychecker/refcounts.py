@@ -137,11 +137,17 @@ class FunctionCall:
         self.varargs = varargs
         self._crashes_on_null_arg = []
         self.outcomes = []
+        self._never_returns = False
 
     def crashes_on_null_arg(self, argidx, why):
         self._crashes_on_null_arg.append( (argidx, why) )
 
+    def never_returns(self):
+        assert self.outcomes == []
+        self._never_returns = True
+
     def add_outcome(self, desc, s_new=None):
+        assert not self._never_returns
         if s_new is None:
             s_new = self.s_src.copy()
             s_new.loc = self.s_src.loc.next_loc()
@@ -195,6 +201,11 @@ class FunctionCall:
             self.s_src.raise_any_null_ptr_func_arg(self.stmt, argidx,
                                                    self.args[argidx],
                                                    why)
+        if self._never_returns:
+            # Terminates the process; no further transitions:
+            return [self.s_src.mktrans_not_returning('calling %s() and exiting'
+                                                     % self.fnmeta.name)]
+
         return [self._make_transition(oc)
                 for oc in self.outcomes if oc.is_possible]
 
@@ -1856,9 +1867,9 @@ class CPython(Facet):
         fnmeta = FnMeta(name='Py_FatalError',
                         docurl='http://docs.python.org/c-api/sys.html#Py_FatalError',
                         prototype='void Py_FatalError(const char *message)')
-        # Terminates the process; no further transitions:
-        return [self.state.mktrans_not_returning('calling %s() and exiting'
-                                                 % fnmeta.name)]
+        fncall = FunctionCall(self.state, stmt, fnmeta)
+        fncall.never_returns()
+        return fncall.get_transitions()
 
     ########################################################################
     # PyFile_*
