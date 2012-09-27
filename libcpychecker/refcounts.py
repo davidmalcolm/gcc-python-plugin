@@ -151,7 +151,7 @@ class FunctionCall:
 
     def always(self):
         # For functions with a single outcome
-        return self.add_outcome('%s()' % self.fnmeta.name)
+        return self.add_outcome('calling %s()' % self.fnmeta.name)
 
     def can_succeed(self):
         return self.add_outcome(self.fnmeta.desc_when_call_succeeds())
@@ -1695,11 +1695,12 @@ class CPython(Facet):
                         declared_in='pythonrun.h',
                         prototype='PyAPI_FUNC(void) PyErr_PrintEx(int);',
                         defined_in='Python/pythonrun.c',)
-
-        t_next = self.state.mktrans_nop(stmt, 'PyErr_PrintEx')
+        fncall = FunctionCall(self.state, stmt, fnmeta,
+                              args=(v_int, ))
+        always = fncall.always()
         # Clear the error indicator:
-        t_next.dest.cpython.exception_rvalue = make_null_pyobject_ptr(stmt)
-        return [t_next]
+        always.sets_exception_ptr(make_null_pyobject_ptr(stmt))
+        return fncall.get_transitions()
 
     def impl_PyErr_SetFromErrno(self, stmt, v_exc):
         fnmeta = FnMeta(name='PyErr_SetFromErrno',
