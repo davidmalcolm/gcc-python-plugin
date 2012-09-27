@@ -308,7 +308,7 @@ class PythonOutcome(Outcome):
         # Create environment for execution of the code:
         def error(msg):
             gcc.error(ctxt.srcnode.get_gcc_loc(), msg)
-            path = expgraph.get_shortest_path(expgraph.nodes[0], expnode)
+            path = expgraph.get_shortest_path_to(expnode)
             # print('path: %r' % path)
             for expedge in path:
                 # print(expnode)

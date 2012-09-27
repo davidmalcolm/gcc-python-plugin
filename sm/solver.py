@@ -43,6 +43,8 @@ class ExplodedGraph(Graph):
         # Set of (srcexpnode, dstexpnode, pattern) tuples, where pattern can be None:
         self._edgeset = set()
 
+        self.entrypoints = []
+
     def _make_edge(self, srcexpnode, dstexpnode, pattern):
         return ExplodedEdge(srcexpnode, dstexpnode, pattern)
 
@@ -60,6 +62,18 @@ class ExplodedGraph(Graph):
         if key not in self._edgeset:
             e = self.add_edge(srcexpnode, dstexpnode, pattern)
             self._edgeset.add(key)
+
+    def get_shortest_path_to(self, dstexpnode):
+        result = None
+        for srcexpnode in self.entrypoints:
+            path = self.get_shortest_path(srcexpnode, dstexpnode)
+            if path:
+                if result:
+                    if len(path) < len(result):
+                        result = path
+                else:
+                    result = path
+        return result
 
 class ExplodedNode(Node):
     def __init__(self, innernode, state):
@@ -113,6 +127,7 @@ def make_exploded_graph(fun, ctxt, innergraph):
     for entry in innergraph.get_entry_nodes():
         expnode = expgraph.lazily_add_node(entry, ctxt.statenames[0]) # initial state
         worklist.append(expnode)
+        expgraph.entrypoints.append(expnode)
     while worklist:
         def lazily_add_node(loc, state):
             if (loc, state) not in expgraph._nodedict:
