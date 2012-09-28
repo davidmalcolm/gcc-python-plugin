@@ -30,7 +30,7 @@ class ShowSupergraph(gcc.SimpleIpaPass):
         # (the callgraph should be set up by this point)
         sg = Supergraph()
         dot = sg.to_dot('supergraph')
-        invoke_dot(dot)
+        invoke_dot(dot, 'supergraph')
 
 ps = ShowSupergraph(name='show-supergraph')
 ps.register_before('early_local_cleanups')

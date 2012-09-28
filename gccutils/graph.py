@@ -43,21 +43,44 @@ class Graph:
         result = 'digraph %s {\n' % name
         result += '  node [shape=box];\n'
         result += self._nodes_to_dot(ctxt)
+        result += self._edges_to_dot(ctxt)
+        result += '}\n'
+        return result
+
+    def _nodes_to_dot(self, ctxt):
+        # 1st pass: split nodes out by subgraph:
+        from collections import OrderedDict
+        subgraphs = OrderedDict()
+        for node in self.nodes:
+            subgraph = node.get_subgraph(ctxt)
+            if subgraph in subgraphs:
+                subgraphs[subgraph].append(node)
+            else:
+                subgraphs[subgraph] = [node]
+
+        # 2nd pass: render the subgraphs (and the "None" subgraph, at the
+        # top level):
+        result = ''
+        for subgraph in subgraphs:
+            if subgraph:
+                result += '  subgraph cluster_%s {\n' % subgraph
+            for node in subgraphs[subgraph]:
+                result += ('  %s [label=<%s>];\n'
+                           % (node.to_dot_id(),
+                              node.to_dot_label(ctxt)))
+            if subgraph:
+                result += '  }\n'
+
+        return result
+
+    def _edges_to_dot(self, ctxt):
+        result = ''
         for edge in self.edges:
             result += ('    %s -> %s [label=<%s>%s];\n'
                        % (edge.srcnode.to_dot_id(),
                           edge.dstnode.to_dot_id(),
                           edge.to_dot_label(ctxt),
                           edge.to_dot_attrs(ctxt)))
-        result += '}\n'
-        return result
-
-    def _nodes_to_dot(self, ctxt):
-        result = ''
-        for node in self.nodes:
-            result += ('  %s [label=<%s>];\n'
-                       % (node.to_dot_id(),
-                          node.to_dot_label(ctxt)))
         return result
 
     def get_shortest_path(self, srcnode, dstnode):
@@ -116,7 +139,19 @@ class Node:
         return '%s' % id(self)
 
     def to_dot_label(self, ctxt):
-        return to_html(str(self))
+        node = self.to_dot_html(ctxt)
+        if node:
+            return node.to_html()
+        else:
+            return to_html(str(self))
+
+    def to_dot_html(self, ctxt):
+        # Optionally, build a tree of gccutils.dot.Node
+        return None
+
+    def get_subgraph(self, ctxt):
+        # Optionally, allow nodes to be partitioned into subgraphs (by name)
+        return None
 
 class Edge:
     def __init__(self, srcnode, dstnode):
@@ -142,6 +177,7 @@ class Edge:
 class StmtGraph(Graph):
     def __init__(self, fun):
         Graph.__init__(self)
+        self.fun = fun
         self.entry = None
         self.exit = None
         # Mappings from gcc.BasicBlock to StmtNode so that we can wire up
@@ -209,8 +245,28 @@ class StmtNode(Node):
         else:
             return None
 
+    def to_dot_html(self, ctxt):
+        from gccutils.dot import Table, Tr, Td, Text, Br, Font
+        from gccutils import get_src_for_loc
+
+        loc = self.get_gcc_loc()
+        if loc:
+            table = Table()
+            code = get_src_for_loc(loc).rstrip()
+            tr = table.add_child(Tr())
+            td = tr.add_child(Td(align='left'))
+            td.add_child(Text('%4i %s' % (self.stmt.loc.line, code)))
+            td.add_child(Br())
+            td.add_child(Text(' ' * (5 + self.stmt.loc.column-1) + '^'))
+            td.add_child(Br())
+            td.add_child(Text(str(self)))
+            return table
+            # return Font([table], face="monospace")
+        else:
+            return Text(str(self))
+
 class EntryNode(StmtNode):
-    def to_dot_label(self, ctxt):
+    def to_dot_html(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text
 
         funtype = self.fun.decl.type
@@ -231,7 +287,7 @@ class EntryNode(StmtNode):
                                 Text('%s %s;' % (var.type, var))
                                 ])
                         ]))
-        return table.to_html()
+        return table
 
     def __str__(self):
         return 'ENTRY %s' % self.fun.decl.name
@@ -300,7 +356,7 @@ class Supergraph(Graph):
                 # Clone the stmtg nodes and edges into the Supergraph:
                 stmtg.snode_for_stmtnode = {}
                 for node in stmtg.nodes:
-                    stmtg.snode_for_stmtnode[node] = self.add_node(SupergraphNode(node))
+                    stmtg.snode_for_stmtnode[node] = self.add_node(SupergraphNode(node, stmtg))
                 for edge in stmtg.edges:
                     # FIXME: mark the intraprocedural call edges
                     edgecls = SupergraphEdge
@@ -347,21 +403,6 @@ class Supergraph(Graph):
     def _make_edge(self, srcnode, dstnode, cls, edge):
         return cls(srcnode, dstnode, edge)
 
-    def _nodes_to_dot(self, ctxt):
-        # group the nodes into subgraphs within their original
-        # functions
-        result = ''
-        for fun in self.stmtg_for_fun:
-            result += '  subgraph cluster_%s {\n' % fun.decl.name
-            stmtg = self.stmtg_for_fun[fun]
-            for node in stmtg.nodes:
-                snode = stmtg.snode_for_stmtnode[node]
-                result += ('    %s [label=<%s>];\n'
-                           % (snode.to_dot_id(),
-                              snode.to_dot_label(ctxt)))
-            result += '  }\n'
-        return result
-
     def get_entry_nodes(self):
         # For now, assume all non-static functions are possible entrypoints:
         for fun in self.stmtg_for_fun:
@@ -373,12 +414,16 @@ class SupergraphNode(Node):
     """
     A node in the supergraph, wrapping a StmtNode
     """
-    def __init__(self, innernode):
+    def __init__(self, innernode, stmtg):
         Node.__init__(self)
         self.innernode = innernode
+        self.stmtg = stmtg
 
     def to_dot_label(self, ctxt):
         return self.innernode.to_dot_label(ctxt)
+
+    def to_dot_html(self, ctxt):
+        return self.innernode.to_dot_html(ctxt)
 
     def __str__(self):
         return str(self.innernode)
@@ -391,6 +436,9 @@ class SupergraphNode(Node):
 
     def get_gcc_loc(self):
         return self.innernode.get_gcc_loc()
+
+    def get_subgraph(self, ctxt):
+        return self.stmtg.fun.decl.name
 
 class SupergraphEdge(Edge):
     """

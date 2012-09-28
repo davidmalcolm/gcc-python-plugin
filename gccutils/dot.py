@@ -55,7 +55,7 @@ class Element(Node):
         result = '<%s%s>' % (self.name, attrstr)
         for child in self.children:
             result += child.to_html()
-        result += '</%s>\n' % self.name
+        result += '</%s>' % self.name
         return result
 
     def add_child(self, child):
@@ -67,7 +67,7 @@ class Table(Element):
         result = '<table cellborder="0" border="0" cellspacing="0">\n'
         for row in self.children:
             result += row.to_html()
-        result += '</table>\n'
+        result += '</table>'
         return result
 
 class Tr(Element):
@@ -86,3 +86,6 @@ class Text(Node):
 class Br(Element):
     def to_html(self):
         return '<br/>'
+
+class Font(Element):
+    name = 'font'

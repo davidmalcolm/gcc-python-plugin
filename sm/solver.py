@@ -91,21 +91,15 @@ class ExplodedNode(Node):
         tr = table.add_child(Tr())
         tr.add_child(Td([Text('STATE: %s' % str(self.state))]))
         tr = table.add_child(Tr())
-        tr.add_child(Td([Text(str(self.innernode))]))
-
-        from gccutils import get_src_for_loc
-        stmt = self.innernode.get_stmt()
-        loc = self.innernode.get_gcc_loc()
-
-        if loc:
-            code = get_src_for_loc(loc).rstrip()
-            pseudohtml = to_html(code)
-            tr = table.add_child(Tr())
-            td = tr.add_child(Td(align='left'))
-            td.add_child(Text('%4i %s' % (stmt.loc.line, pseudohtml)))
-            td.add_child(Br())
-            td.add_child(Text(' ' * (5 + stmt.loc.column-1) + '^'))
+        innerhtml = self.innernode.to_dot_html(ctxt)
+        if innerhtml:
+            tr.add_child(Td([innerhtml]))
+        else:
+            tr.add_child(Td([Text(str(self.innernode))]))
         return '<font face="monospace">' + table.to_html() + '</font>\n'
+
+    def get_subgraph(self, ctxt):
+        return self.innernode.get_subgraph(ctxt)
 
 class ExplodedEdge(Edge):
     def __init__(self, srcexpnode, dstexpnode, inneredge, pattern):
