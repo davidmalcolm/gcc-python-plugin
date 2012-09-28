@@ -89,8 +89,9 @@ class ExplodedNode(Node):
 
         table = Table()
         tr = table.add_child(Tr())
+        tr.add_child(Td([Text('STATE: %s' % str(self.state))]))
+        tr = table.add_child(Tr())
         tr.add_child(Td([Text(str(self.innernode))]))
-        tr.add_child(Td([Text(str(self.state))]))
 
         from gccutils import get_src_for_loc
         stmt = self.innernode.get_stmt()
