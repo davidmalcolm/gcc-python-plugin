@@ -45,8 +45,8 @@ class ExplodedGraph(Graph):
 
         self.entrypoints = []
 
-    def _make_edge(self, srcexpnode, dstexpnode, pattern):
-        return ExplodedEdge(srcexpnode, dstexpnode, pattern)
+    def _make_edge(self, srcexpnode, dstexpnode, inneredge, pattern):
+        return ExplodedEdge(srcexpnode, dstexpnode, inneredge, pattern)
 
     def lazily_add_node(self, innernode, state):
         key = (innernode, state)
@@ -55,12 +55,12 @@ class ExplodedGraph(Graph):
             self._nodedict[key] = node
         return self._nodedict[key]
 
-    def lazily_add_edge(self, srcexpnode, dstexpnode, pattern):
+    def lazily_add_edge(self, srcexpnode, dstexpnode, inneredge, pattern):
         if pattern:
             assert isinstance(pattern, sm.checker.Pattern)
         key = (srcexpnode, dstexpnode, pattern)
         if key not in self._edgeset:
-            e = self.add_edge(srcexpnode, dstexpnode, pattern)
+            e = self.add_edge(srcexpnode, dstexpnode, inneredge, pattern)
             self._edgeset.add(key)
 
     def get_shortest_path_to(self, dstexpnode):
@@ -107,8 +107,9 @@ class ExplodedNode(Node):
         return '<font face="monospace">' + table.to_html() + '</font>\n'
 
 class ExplodedEdge(Edge):
-    def __init__(self, srcexpnode, dstexpnode, pattern):
+    def __init__(self, srcexpnode, dstexpnode, inneredge, pattern):
         Edge.__init__(self, srcexpnode, dstexpnode)
+        self.inneredge = inneredge
         if pattern:
             assert isinstance(pattern, sm.checker.Pattern)
         self.pattern = pattern
@@ -119,7 +120,11 @@ class ExplodedEdge(Edge):
         if self.srcnode.state != self.dstnode.state:
             return to_html('%s -> %s' % (self.srcnode.state, self.dstnode.state))
         else:
-            return ''
+            return self.inneredge.to_dot_label(ctxt)
+
+    def to_dot_attrs(self, ctxt):
+        return self.inneredge.to_dot_attrs(ctxt)
+
 
 def make_exploded_graph(fun, ctxt, innergraph):
     expgraph = ExplodedGraph()
@@ -175,7 +180,7 @@ def make_exploded_graph(fun, ctxt, innergraph):
                                         dststate = outcome.state
                                         dstexpnode = lazily_add_node(dstnode, dststate)
                                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                                           pr.pattern)
+                                                                           edge, pr.pattern)
                                     elif isinstance(outcome, sm.checker.PythonOutcome):
                                         ctxt.srcnode = srcnode
                                         expnode = expgraph.lazily_add_node(srcnode, srcstate)
@@ -187,7 +192,8 @@ def make_exploded_graph(fun, ctxt, innergraph):
                             matches.append(pr)
             if not matches:
                 dstexpnode = lazily_add_node(dstnode, srcstate)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode, None)
+                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                                   edge, None)
     return expgraph
 
 def solve(fun, ctxt, graph):
