@@ -299,13 +299,19 @@ def p_error(p):
 ############################################################################
 # Interface:
 ############################################################################
-# Entry point:
+# Entry points:
 def parse_string(s):
     if 0:
         test_lexer(s)
     if 0:
         print(s)
     parser = yacc.yacc(debug=0, write_tables=0)
+    return parser.parse(s)#, debug=1)
+
+def parse_file(filename):
+    parser = yacc.yacc(debug=0, write_tables=0)
+    with open(filename) as f:
+        s = f.read()
     return parser.parse(s)#, debug=1)
 
 def test_lexer(s):
