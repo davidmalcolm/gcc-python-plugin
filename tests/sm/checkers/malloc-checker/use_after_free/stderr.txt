@@ -1,0 +1,6 @@
+tests/sm/checkers/malloc-checker/use_after_free/input.c: In function 'test':
+tests/sm/checkers/malloc-checker/use_after_free/input.c:13:nn: error: use-after-free of p
+tests/sm/checkers/malloc-checker/use_after_free/input.c:10:nn: note: p assigned to the result of malloc()
+tests/sm/checkers/malloc-checker/use_after_free/input.c:11:nn: note: p compared against 0
+tests/sm/checkers/malloc-checker/use_after_free/input.c:12:nn: note: p passed to free()
+tests/sm/checkers/malloc-checker/use_after_free/input.c:13:nn: note: use-after-free of p
