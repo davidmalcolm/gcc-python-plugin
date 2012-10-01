@@ -30,6 +30,8 @@ class Graph:
         return node
 
     def add_edge(self, srcnode, dstnode, *args, **kwargs):
+        assert isinstance(srcnode, Node)
+        assert isinstance(dstnode, Node)
         e = self._make_edge(srcnode, dstnode, *args, **kwargs)
         self.edges.append(e)
         srcnode.succs.append(e)
@@ -161,6 +163,9 @@ class Edge:
     def __repr__(self):
         return '%s(srcnode=%r, dstnode=%r)' % (self.__class__.__name__, self.srcnode, self.dstnode)
 
+    def __str__(self):
+        return '%s -> %s' % (self.srcnode, self.dstnode)
+
     def to_dot_label(self, ctxt):
         return ''
 
@@ -235,6 +240,9 @@ class StmtNode(Node):
 
     def __str__(self):
         return str(self.stmt)
+
+    def __repr__(self):
+        return 'StmtNode(%r)' % self.stmt
 
     def get_stmt(self):
         return self.stmt
@@ -365,19 +373,32 @@ class Supergraph(Graph):
                 stmtg = StmtGraph(fun)
                 self.stmtg_for_fun[fun] = stmtg
                 # Clone the stmtg nodes and edges into the Supergraph:
-                stmtg.snode_for_stmtnode = {}
+                stmtg.supernode_for_stmtnode = {}
                 for node in stmtg.nodes:
-                    stmtg.snode_for_stmtnode[node] = self.add_node(SupergraphNode(node, stmtg))
+                    if node.stmt in ipcalls:
+                        # These nodes will have two supernodes, a CallNode
+                        # and a ReturnNode:
+                        callnode = self.add_node(CallNode(node, stmtg))
+                        returnnode = self.add_node(ReturnNode(node, stmtg))
+                        stmtg.supernode_for_stmtnode[node] = (callnode, returnnode)
+                        self.add_edge(
+                            callnode, returnnode,
+                            CallToReturnSiteEdge, None)
+                    else:
+                        stmtg.supernode_for_stmtnode[node] = \
+                            self.add_node(SupergraphNode(node, stmtg))
                 for edge in stmtg.edges:
-                    # FIXME: mark the intraprocedural call edges
-                    edgecls = SupergraphEdge
                     if edge.srcnode.stmt in ipcalls:
-                        edgecls = CallToReturnSiteEdge
-                    sedge = self.add_edge(
-                        stmtg.snode_for_stmtnode[edge.srcnode],
-                        stmtg.snode_for_stmtnode[edge.dstnode],
-                        edgecls,
-                        edge)
+                        # Begin the superedge from the ReturnNode:
+                        srcsupernode = stmtg.supernode_for_stmtnode[edge.srcnode][1]
+                    else:
+                        srcsupernode = stmtg.supernode_for_stmtnode[edge.srcnode]
+                    if edge.dstnode.stmt in ipcalls:
+                        # End the superedge at the CallNode:
+                        dstsupernode = stmtg.supernode_for_stmtnode[edge.dstnode][0]
+                    else:
+                        dstsupernode = stmtg.supernode_for_stmtnode[edge.dstnode]
+                    sedge = self.add_edge(srcsupernode, dstsupernode, SupergraphEdge, edge)
 
         # 3rd pass: add the interprocedural edges (call and return):
         for node in get_callgraph_nodes():
@@ -401,13 +422,13 @@ class Supergraph(Graph):
                         assert returnsite_stmtnode
 
                         sedge_call = self.add_edge(
-                            calling_stmtg.snode_for_stmtnode[calling_stmtnode],
-                            called_stmtg.snode_for_stmtnode[entry_stmtnode],
+                            calling_stmtg.supernode_for_stmtnode[calling_stmtnode][0],
+                            called_stmtg.supernode_for_stmtnode[entry_stmtnode],
                             CallToStart,
                             None)
                         sedge_return = self.add_edge(
-                            called_stmtg.snode_for_stmtnode[exit_stmtnode],
-                            calling_stmtg.snode_for_stmtnode[returnsite_stmtnode],
+                            called_stmtg.supernode_for_stmtnode[exit_stmtnode],
+                            calling_stmtg.supernode_for_stmtnode[calling_stmtnode][1],
                             ExitToReturnSite,
                             None)
                         sedge_return.calling_stmtnode = calling_stmtnode
@@ -432,7 +453,7 @@ class Supergraph(Graph):
             # Only for non-static functions:
             if fun.decl.is_public:
                 stmtg = self.stmtg_for_fun[fun]
-                yield stmtg.snode_for_stmtnode[stmtg.entry]
+                yield stmtg.supernode_for_stmtnode[stmtg.entry]
 
 class SupergraphNode(Node):
     """
@@ -474,6 +495,22 @@ class SupergraphNode(Node):
         Get the gcc.Function for this node
         """
         return self.stmtg.fun
+
+class CallNode(SupergraphNode):
+    """
+    A first node for a gcc.GimpleCall, representing the invocation of the
+    function.
+    It has the same stmt (the gcc.GimpleCall) as the ReturnNode
+    """
+    pass
+
+class ReturnNode(SupergraphNode):
+    """
+    A second node for a gcc.GimpleCall, representing the assignment of the
+    return value from the completed call into the LHS.
+    It has the same stmt (the gcc.GimpleCall) as the CallNode
+    """
+    pass
 
 class SupergraphEdge(Edge):
     """

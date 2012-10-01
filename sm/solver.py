@@ -186,6 +186,12 @@ class ExplodedNode(Node):
     def __repr__(self):
         return 'ExplodedNode(%r, %r)' % (self.innernode, self.shape)
 
+    def __str__(self):
+        return 'ExplodedNode(%s, %s)' % (self.innernode, self.shape)
+
+    def get_gcc_loc(self):
+        return self.innernode.get_gcc_loc()
+
     def to_dot_label(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text, Br
 
@@ -219,6 +225,11 @@ class ExplodedEdge(Edge):
         if match:
             assert isinstance(match, sm.checker.Match)
         self.match = match
+
+    def __repr__(self):
+        return ('%s(srcnode=%r, dstnode=%r, inneredge=%r, match=%r)'
+                % (self.__class__.__name__, self.srcnode, self.dstnode,
+                   self.inneredge.__class__, self.match))
 
     def to_dot_label(self, ctxt):
         result = self.inneredge.to_dot_label(ctxt)
