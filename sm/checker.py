@@ -75,17 +75,61 @@ class PatternRule:
     def __repr__(self):
         return 'PatternRule(pattern=%r, outcomes=%r)' % (self.pattern, self.outcomes)
 
+class Match:
+    """
+    A match of a pattern
+    """
+    def __init__(self, pattern, var):
+        self.pattern = pattern
+        self.var = var
+
+    def __eq__(self, other):
+        if isinstance(other, Match):
+            return self.pattern == other.pattern and self.var == other.var
+
+    def __hash__(self):
+        return hash(self.pattern) ^ hash(self.var)
+
+    def __repr__(self):
+        return 'Match(%r, %r)' % (self.pattern, self.var)
+
+    def description(self, ctxt):
+        return self.pattern.description(self, ctxt)
+
 class Pattern:
-    def matched_by(self, stmt, edge, ctxt):
+    def iter_matches(self, stmt, edge, ctxt):
         print('self: %r' % self)
         raise NotImplementedError()
 
-    def description(self, ctxt):
+    def description(self, match, ctxt):
         print('self: %r' % self)
         raise NotImplementedError()
 
     def __hash__(self):
         return id(self)
+
+class AssignmentFromLiteral(Pattern):
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+    def __repr__(self):
+        return 'AssignmentFromLiteral(lhs=%r, rhs=%r)' % (self.lhs, self.rhs)
+    def __str__(self):
+        return '%s = %s' % (self.lhs, self.rhs)
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            if self.lhs == other.lhs:
+                if self.rhs == other.rhs:
+                    return True
+
+    def iter_matches(self, stmt, edge, ctxt):
+        if isinstance(stmt, gcc.GimpleAssign):
+            if ctxt.compare(stmt.lhs, self.lhs):
+                if ctxt.compare(stmt.rhs[0], self.rhs):
+                    yield Match(self, var=stmt.lhs)
+
+    def description(self, match, ctxt):
+        return '%s assigned to %s' % (ctxt.describe(match.var), self.rhs)
 
 class FunctionCall(Pattern):
     def __init__(self, fnname):
@@ -94,13 +138,13 @@ class FunctionCall(Pattern):
     def __str__(self):
         return '%s(...)' % self.fnname
 
-    def matched_by(self, stmt, edge, ctxt):
+    def iter_matches(self, stmt, edge, ctxt):
         if isinstance(stmt, gcc.GimpleCall):
             if isinstance(stmt.fn, gcc.AddrExpr):
                 if isinstance(stmt.fn.operand, gcc.FunctionDecl):
                     if stmt.fn.operand.name == self.fnname:
                         # We have a matching function name
-                        return True
+                        yield Match(self, None)
 
 class ResultOfFnCall(FunctionCall):
     def __init__(self, lhs, func):
@@ -117,14 +161,13 @@ class ResultOfFnCall(FunctionCall):
                 if self.func == other.func:
                     return True
 
-    def matched_by(self, stmt, edge, ctxt):
-        if not FunctionCall.matched_by(self, stmt, edge, ctxt):
-            return False
-        if ctxt.compare(stmt.lhs, self.lhs):
-            return True
+    def iter_matches(self, stmt, edge, ctxt):
+        for m in FunctionCall.iter_matches(self, stmt, edge, ctxt):
+            if ctxt.compare(stmt.lhs, self.lhs):
+                yield Match(self, var=stmt.lhs)
 
-    def description(self, ctxt):
-        return '%s assigned to the result of %s()' % (ctxt.describe(self.lhs), self.func)
+    def description(self, match, ctxt):
+        return '%s assigned to the result of %s()' % (ctxt.describe(match.var), self.func)
 
 
 class ArgOfFnCall(FunctionCall):
@@ -142,15 +185,14 @@ class ArgOfFnCall(FunctionCall):
                 if self.arg == other.arg:
                     return True
 
-    def matched_by(self, stmt, edge, ctxt):
-        if not FunctionCall.matched_by(self, stmt, edge, ctxt):
-            return False
-        # FIXME: index hardcoded to 0 for now...
-        if ctxt.compare(stmt.args[0], self.arg):
-            return True
+    def iter_matches(self, stmt, edge, ctxt):
+        for m in FunctionCall.iter_matches(self, stmt, edge, ctxt):
+            # FIXME: index hardcoded to 0 for now...
+            if ctxt.compare(stmt.args[0], self.arg):
+                yield Match(self, var=stmt.args[0])
 
-    def description(self, ctxt):
-        return '%s passed to %s()' % (ctxt.describe(self.arg), self.func)
+    def description(self, match, ctxt):
+        return '%s passed to %s()' % (ctxt.describe(match.var), self.func)
 
 class Comparison(Pattern):
     def __init__(self, lhs, op, rhs):
@@ -168,7 +210,7 @@ class Comparison(Pattern):
                     if self.rhs == other.rhs:
                         return True
 
-    def matched_by(self, stmt, edge, ctxt):
+    def iter_matches(self, stmt, edge, ctxt):
         if isinstance(stmt, gcc.GimpleCond):
             if 0:
                 print('    %r %r %r %r %r' % (stmt.lhs, stmt.rhs, stmt.exprcode, stmt.true_label, stmt.false_label))
@@ -182,13 +224,13 @@ class Comparison(Pattern):
                 if stmt.exprcode == exprcode:
                     if ctxt.compare(stmt.lhs, self.lhs):
                         if ctxt.compare(stmt.rhs, self.rhs):
-                            return True
+                            yield Match(self, stmt.lhs)
             elif self.op == '!=':
                 exprcode = gcc.NeExpr
                 if stmt.exprcode == exprcode:
                     if ctxt.compare(stmt.lhs, self.lhs):
                         if ctxt.compare(stmt.rhs, self.rhs):
-                            return True
+                            yield Match(self, stmt.lhs)
             else:
                 raise UnhandledConditional() # FIXME
             """
@@ -200,8 +242,8 @@ class Comparison(Pattern):
                 op = '<=' if edge.true_value else '>'
             """
 
-    def description(self, ctxt):
-        return '%s compared against %s' % (ctxt.describe(self.lhs), ctxt.describe(self.rhs))
+    def description(self, match, ctxt):
+        return '%s compared against %s' % (ctxt.describe(match.var), ctxt.describe(self.rhs))
 
 class VarDereference(Pattern):
     def __init__(self, var):
@@ -214,16 +256,17 @@ class VarDereference(Pattern):
         if self.__class__ == other.__class__:
             if self.var == other.var:
                 return True
-    def matched_by(self, stmt, edge, ctxt):
+    def iter_matches(self, stmt, edge, ctxt):
         def check_for_match(node, loc):
             if isinstance(node, gcc.MemRef):
                 if ctxt.compare(node.operand, self.var):
                     return True
-        if stmt.walk_tree(check_for_match, stmt.loc):
-            return True
+        t = stmt.walk_tree(check_for_match, stmt.loc)
+        if t:
+            yield Match(self, var=t.operand)
 
-    def description(self, ctxt):
-        return 'dereference of %s' % ctxt.describe(self.var)
+    def description(self, match, ctxt):
+        return 'dereference of %s' % ctxt.describe(match.var)
 
 class VarUsage(Pattern):
     def __init__(self, var):
@@ -236,16 +279,17 @@ class VarUsage(Pattern):
         if self.__class__ == other.__class__:
             if self.var == other.var:
                 return True
-    def matched_by(self, stmt, edge, ctxt):
+    def iter_matches(self, stmt, edge, ctxt):
         def check_for_match(node, loc):
             # print('check_for_match(%r, %r)' % (node, loc))
             if ctxt.compare(node, self.var):
                 return True
-        if stmt.walk_tree(check_for_match, stmt.loc):
-            return True
+        t = stmt.walk_tree(check_for_match, stmt.loc)
+        if t:
+            yield Match(self, var=t)
 
-    def description(self, ctxt):
-        return 'usage of %s' % ctxt.describe(self.var)
+    def description(self, match, ctxt):
+        return 'usage of %s' % ctxt.describe(match.var)
 
 class Outcome:
     pass
@@ -295,10 +339,10 @@ class PythonOutcome(Outcome):
             print('expr: %r' % expr)
         return expr
 
-    def run(self, ctxt, expgraph, expnode):
+    def run(self, ctxt, match, expgraph, expnode):
         if 0:
             print('run(): %r' % self)
-            print('  ctxt.var: %r' % ctxt.var)
+            print('  match: %r' % match)
             print('  expgraph: %r' % expgraph)
             print('  expnode: %r' % expnode)
 
@@ -307,27 +351,7 @@ class PythonOutcome(Outcome):
 
         # Create environment for execution of the code:
         def error(msg):
-            gcc.error(ctxt.srcnode.get_gcc_loc(), msg)
-            path = expgraph.get_shortest_path_to(expnode)
-            # print('path: %r' % path)
-            for expedge in path:
-                # print(expnode)
-                if expedge.srcnode.state != expedge.dstnode.state:
-                    gccloc = expedge.srcnode.innernode.get_gcc_loc()
-                    if gccloc:
-                        if 1:
-                            # Describe state change:
-                            desc = expedge.pattern.description(ctxt)
-                        else:
-                            # Debugging information on state change:
-                            desc = ('%s: %s -> %s'
-                                   % (ctxt.sm.name, expedge.srcnode.state, expedge.dstnode.state))
-                        gcc.inform(gccloc, desc)
-
-            # repeat the message at the end of the path:
-            if len(path) > 1:
-                gcc.inform(path[-1].dstnode.innernode.get_gcc_loc(), msg)
-
+            ctxt.add_error(expnode, match, msg)
         locals_ = {}
         globals_ = {'error' : error}
 
@@ -338,7 +362,7 @@ class PythonOutcome(Outcome):
         #      void *q;
         # then we bind the string "ptr" to the string "q"
         assert isinstance(ctxt.sm.varclauses, Var)
-        locals_[ctxt.sm.varclauses.name] = ctxt.var.name
+        locals_[ctxt.sm.varclauses.name] = match.var.name
         if 0:
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)

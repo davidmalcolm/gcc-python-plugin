@@ -80,37 +80,15 @@ class IpaSmPass(gcc.SimpleIpaPass):
             print(dot)
             invoke_dot(dot)
 
-        for node in gcc.get_callgraph_nodes():
-            fun = node.decl.function
-            if fun:
-                self.analyze_function(fun, sg)
-
-    def analyze_function(self, fun, sg):
-        #print('locals: %s' % fun.local_decls)
-        #print('args: %s' % fun.decl.arguments)
         for checker in self.checkers:
             for sm in checker.sms:
-                vars_ = fun.local_decls + fun.decl.arguments
-                if 0:
-                    print('vars_: %s' % vars_)
-
-
-                for var in vars_:
-                    if 0:
-                        print(var)
-                        print(var.type)
-                    if isinstance(var.type, gcc.PointerType):
-                        # got pointer type
-                        ctxt = Context(sm, var)
-                        #print('ctxt: %r' % ctxt)
-                        solve(fun, ctxt, sg)
+                ctxt = Context(sm)
+                solve(ctxt, sg, 'supergraph')
 
 def main(checkers):
-    if 1:
+    if 0:
         ps = NonIpaSmPass(checkers)
         ps.register_before('*warn_function_return')
     else:
         ps = IpaSmPass(checkers)
         ps.register_before('early_local_cleanups') # looks like we can only register within the top-level
-
-# TODO: doing it via an IPA pass make us lose the "In function 'use_after_free':" headers

@@ -302,6 +302,17 @@ class ExitNode(StmtNode):
     def __repr__(self):
         return 'ExitNode(%r)' % self.fun.decl.name
 
+    @property
+    def returnnode(self):
+        """
+        Get the gcc.GimpleReturn statement associated with this function exit
+        """
+        import gcc
+        assert len(self.preds) == 1
+        node = self.preds[0].srcnode
+        assert isinstance(node.stmt, gcc.GimpleReturn)
+        return node
+
 class StmtEdge(Edge):
     def __init__(self, srcnode, dstnode, cfgedge):
         Edge.__init__(self, srcnode, dstnode)
@@ -399,16 +410,29 @@ class Supergraph(Graph):
                             calling_stmtg.snode_for_stmtnode[returnsite_stmtnode],
                             ExitToReturnSite,
                             None)
+                        sedge_return.calling_stmtnode = calling_stmtnode
 
     def _make_edge(self, srcnode, dstnode, cls, edge):
         return cls(srcnode, dstnode, edge)
 
     def get_entry_nodes(self):
+        """
+	/* At file scope, the presence of a `static' or `register' storage
+	   class specifier, or the absence of all storage class specifiers
+	   makes this declaration a definition (perhaps tentative).  Also,
+	   the absence of `static' makes it public.  */
+	if (current_scope == file_scope)
+	  {
+	    TREE_PUBLIC (decl) = storage_class != csc_static;
+	    TREE_STATIC (decl) = !extern_ref;
+	  }
+          """
         # For now, assume all non-static functions are possible entrypoints:
         for fun in self.stmtg_for_fun:
-            # FIXME: exclude static functions
-            stmtg = self.stmtg_for_fun[fun]
-            yield stmtg.snode_for_stmtnode[stmtg.entry]
+            # Only for non-static functions:
+            if fun.decl.is_public:
+                stmtg = self.stmtg_for_fun[fun]
+                yield stmtg.snode_for_stmtnode[stmtg.entry]
 
 class SupergraphNode(Node):
     """
@@ -431,6 +455,10 @@ class SupergraphNode(Node):
     def __repr__(self):
         return 'SupergraphNode(%r)' % self.innernode
 
+    @property
+    def stmt(self):
+        return self.innernode.get_stmt()
+
     def get_stmt(self):
         return self.innernode.get_stmt()
 
@@ -439,6 +467,13 @@ class SupergraphNode(Node):
 
     def get_subgraph(self, ctxt):
         return self.stmtg.fun.decl.name
+
+    @property
+    def function(self):
+        """
+        Get the gcc.Function for this node
+        """
+        return self.stmtg.fun
 
 class SupergraphEdge(Edge):
     """
@@ -477,7 +512,7 @@ class CallToStart(SupergraphEdge):
     the gcc.GimpleCall to the entry node of the callee
     """
     def to_dot_label(self, ctxt):
-        return 'call'
+        return 'call of %s' % self.dstnode.function.decl.name
 
     def to_dot_attrs(self, ctxt):
         #return ' constraint=false, style=dotted'
@@ -490,7 +525,7 @@ class ExitToReturnSite(SupergraphEdge):
     gcc.GimpleCall within the caller
     """
     def to_dot_label(self, ctxt):
-        return 'return'
+        return 'return to %s' % self.dstnode.function.decl.name
 
     def to_dot_attrs(self, ctxt):
         #return ' constraint=false, style=dotted'

@@ -22,6 +22,7 @@
 # Split into tokenizer, then grammar, then external interface
 
 from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
+    AssignmentFromLiteral, \
     ResultOfFnCall, ArgOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
 
@@ -190,6 +191,14 @@ def p_patternrule(p):
     p[0] = PatternRule(pattern=p[2], outcomes=p[5])
 
 # Various kinds of "pattern":
+def p_pattern_assignment_from_literal(p):
+    '''
+    pattern : ID ASSIGNMENT LITERAL_STRING
+            | ID ASSIGNMENT LITERAL_NUMBER
+    '''
+    # e.g. "q = 0"
+    p[0] = AssignmentFromLiteral(lhs=p[1], rhs=p[3])
+
 def p_pattern_result_of_fn_call(p):
     'pattern : ID ASSIGNMENT ID LPAREN RPAREN'
     # e.g. "ptr = malloc()"
@@ -258,7 +267,7 @@ class ParserError(Exception):
     @classmethod
     def from_token(cls, t, msg="Parse error"):
         return ParserError(t.lexer.lexdata,
-                           t.lexer.lexpos - len(t.value),
+                           t.lexer.lexpos - len(str(t.value)),
                            t.value,
                            msg)
 
@@ -270,7 +279,7 @@ class ParserError(Exception):
 
         # Locate the line with the error:
         startidx = pos
-        endidx = pos + len(value)
+        endidx = pos + len(str(value))
         while startidx >= 1 and input_[startidx - 1] != '\n':
             startidx -= 1
         while endidx < (len(input_) - 1) and input_[endidx + 1] != '\n':
@@ -282,7 +291,7 @@ class ParserError(Exception):
         return ('%s at "%s":\n%s\n%s'
                 % (self.msg, self.value,
                    self.errline,
-                   ' '*self.errpos + '^'*len(self.value)))
+                   ' '*self.errpos + '^'*len(str(self.value))))
 
 def p_error(p):
     raise ParserError.from_token(p)
@@ -296,11 +305,8 @@ def parse_string(s):
         test_lexer(s)
     if 0:
         print(s)
-    try:
-        parser = yacc.yacc(debug=0, write_tables=0)
-        return parser.parse(s)#, debug=1)
-    except ParserError, e:
-        print(e)
+    parser = yacc.yacc(debug=0, write_tables=0)
+    return parser.parse(s)#, debug=1)
 
 def test_lexer(s):
     print(s)
