@@ -371,20 +371,6 @@ def make_exploded_graph(ctxt, innergraph):
                                                    edge, None)
     return expgraph
 
-def solve(ctxt, graph, name):
-    # print('running %s' % ctxt.sm.name)
-    expgraph = make_exploded_graph(ctxt, graph)
-    if 0:
-        # Debug: view the exploded graph:
-        dot = expgraph.to_dot(name, ctxt)
-        # print(dot)
-        invoke_dot(dot, name)
-
-    # Now report the errors, grouped by function, and in source order:
-    ctxt._errors.sort()
-
-    ctxt.emit_errors(expgraph)
-
 class Error:
     # A stored error
     def __init__(self, expnode, match, msg):
@@ -515,3 +501,17 @@ class Context:
             if isinstance(gccexpr.type, gcc.PointerType):
                 # TODO: the sm may impose further constraints
                 return True
+
+def solve(ctxt, graph, name):
+    # print('running %s' % ctxt.sm.name)
+    expgraph = make_exploded_graph(ctxt, graph)
+    if 0:
+        # Debug: view the exploded graph:
+        dot = expgraph.to_dot(name, ctxt)
+        # print(dot)
+        invoke_dot(dot, name)
+
+    # Now report the errors, grouped by function, and in source order:
+    ctxt._errors.sort()
+
+    ctxt.emit_errors(expgraph)
