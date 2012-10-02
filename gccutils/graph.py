@@ -210,7 +210,10 @@ class StmtGraph(Graph):
                 elif bb == fun.cfg.exit:
                     cls = ExitNode
                 else:
-                    assert 0
+                    # gcc appears to create empty BBs for functions
+                    # returning void that contain multiple "return;"
+                    # statements:
+                    cls = StmtNode
                 node = self.add_node(cls(fun, None))
                 self.entry_of_bb[bb] = node
                 self.exit_of_bb[bb] = node

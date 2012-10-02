@@ -45,7 +45,7 @@ class StateVar:
     def __eq__(self, other):
         if isinstance(other, StateVar):
             # Note that although two StateVars may have equal state, we
-            # also are about identity.
+            # also care about identity.
             return self.state == other.state
 
     def __hash__(self):
@@ -59,9 +59,6 @@ class Shape:
         self._dict = {}
         # initial state is empty, an eligible var that isn't listed is assumed
         # to have its own unique StateVar value in the default state
-
-        # The reverse mapping, from StateVar instances to list of vars
-        self._aliases = {}
 
     def __hash__(self):
         result = 0
@@ -101,10 +98,6 @@ class Shape:
         for var, shapevar in self._dict.iteritems():
             clone._dict[var] = shapevars[id(shapevar)]
 
-        # 3rd pass: set up clone._aliases
-        for shapevar, aliases in self._aliases.iteritems():
-            clone._aliases[shapevars[id(shapevar)]] = aliases[:]
-
         return clone, shapevars
 
     def get_state(self, var):
@@ -122,28 +115,25 @@ class Shape:
         else:
             sv = StateVar(state)
             self._dict[var] = sv
-            self._aliases[sv] = [var]
+
+    def iter_aliases(self, statevar):
+        for gccvar in sorted(self._dict.keys()):
+            if self._dict[gccvar] is statevar:
+                yield gccvar
 
     def _assign_var(self, dstvar, srcvar):
         # print('Shape.assign_var(%r, %r)' % (dst, src))
         if srcvar not in self._dict:
             # Set a state, so that we can track that dst is now aliased to src
             self.set_state(srcvar, self.ctxt.get_default_state())
-        if dstvar in self._dict:
-            self._aliases[self._dict[dstvar]].remove(dstvar)
         self._dict[dstvar] = self._dict[srcvar]
         shapevar = self._dict[dstvar]
-        if shapevar in self._aliases:
-            self._aliases[shapevar].append(dstvar)
-        else:
-            self._aliases[shapevar] = [dstvar]
 
     def _purge_locals(self, fun):
         vars_ = fun.local_decls + fun.decl.arguments
-        for var in vars_:
-            if var in self._dict:
-                self._aliases[self._dict[var]].remove(var)
-                del self._dict[var]
+        for gccvar in vars_:
+            if gccvar in self._dict:
+                del self._dict[gccvar]
 
 class ShapeChange:
     """
@@ -165,7 +155,8 @@ class ShapeChange:
         for srcshapevar in self.srcshape._dict.values():
             dstshapevar = self._shapevars[id(srcshapevar)]
             if dstshapevar not in dstshapevars:
-                for gccvar in self.srcshape._aliases[srcshapevar]:
+                # the ShapeVar has leaked:
+                for gccvar in self.srcshape.iter_aliases(srcshapevar):
                     yield gccvar
 
 class ExplodedGraph(Graph):

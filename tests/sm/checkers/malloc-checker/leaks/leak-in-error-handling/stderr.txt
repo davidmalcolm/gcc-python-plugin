@@ -1,0 +1,4 @@
+tests/sm/checkers/malloc-checker/leaks/leak-in-error-handling/input.c: In function 'test':
+tests/sm/checkers/malloc-checker/leaks/leak-in-error-handling/input.c:23:nn: error: leak of p
+tests/sm/checkers/malloc-checker/leaks/leak-in-error-handling/input.c:8:nn: note: p assigned to the result of malloc()
+tests/sm/checkers/malloc-checker/leaks/leak-in-error-handling/input.c:9:nn: note: p compared against 0
