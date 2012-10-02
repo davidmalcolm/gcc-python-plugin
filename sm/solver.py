@@ -220,15 +220,10 @@ class ExplodedGraph(Graph):
             # Locate any rules that could apply, regardless of the current
             # state:
             for pr in sc.patternrulelist:
-                # print('%r: %r' % (srcshape, pr))
-                # For now, skip interprocedural calls and the
-                # ENTRY/EXIT nodes:
-
-                # Now see if the rules apply for the current state:
                 for match in pr.pattern.iter_expedge_matches(expedge, self):
+                    # Now see if the rules apply for this state:
                     srcstate = expedge.srcnode.shape.get_state(match.var)
                     if srcstate in sc.statelist:
-                        assert len(pr.outcomes) > 0
                         mctxt = MatchContext(match, self, srcexpnode, inneredge)
                         for outcome in pr.outcomes:
                             outcome.apply(mctxt)
