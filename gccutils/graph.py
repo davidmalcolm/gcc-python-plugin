@@ -398,7 +398,8 @@ class Supergraph(Graph):
                         dstsupernode = stmtg.supernode_for_stmtnode[edge.dstnode][0]
                     else:
                         dstsupernode = stmtg.supernode_for_stmtnode[edge.dstnode]
-                    sedge = self.add_edge(srcsupernode, dstsupernode, SupergraphEdge, edge)
+                    superedge = self.add_edge(srcsupernode, dstsupernode,
+                                              SupergraphEdge, edge)
 
         # 3rd pass: add the interprocedural edges (call and return):
         for node in get_callgraph_nodes():
@@ -418,20 +419,17 @@ class Supergraph(Graph):
                         exit_stmtnode = called_stmtg.exit
                         assert exit_stmtnode
 
-                        returnsite_stmtnode = calling_stmtnode.succs[0].dstnode
-                        assert returnsite_stmtnode
-
-                        sedge_call = self.add_edge(
+                        superedge_call = self.add_edge(
                             calling_stmtg.supernode_for_stmtnode[calling_stmtnode][0],
                             called_stmtg.supernode_for_stmtnode[entry_stmtnode],
                             CallToStart,
                             None)
-                        sedge_return = self.add_edge(
+                        superedge_return = self.add_edge(
                             called_stmtg.supernode_for_stmtnode[exit_stmtnode],
                             calling_stmtg.supernode_for_stmtnode[calling_stmtnode][1],
                             ExitToReturnSite,
                             None)
-                        sedge_return.calling_stmtnode = calling_stmtnode
+                        superedge_return.calling_stmtnode = calling_stmtnode
 
     def _make_edge(self, srcnode, dstnode, cls, edge):
         return cls(srcnode, dstnode, edge)
