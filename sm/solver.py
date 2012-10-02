@@ -137,8 +137,11 @@ class ExplodedGraph(Graph):
     A graph of (innernode, shape) pairs, where "innernode" refers to
     nodes in an underlying graph (e.g. a StmtGraph or a Supergraph)
     """
-    def __init__(self):
+    def __init__(self, ctxt):
         Graph.__init__(self)
+
+        self.ctxt = ctxt
+
         # Mapping from (innernode, shape) to ExplodedNode:
         self._nodedict = {}
 
@@ -147,14 +150,21 @@ class ExplodedGraph(Graph):
 
         self.entrypoints = []
 
+        # List of ExplodedNode still to be processed by solver
+        self.worklist = []
+
     def _make_edge(self, srcexpnode, dstexpnode, inneredge, match):
         return ExplodedEdge(srcexpnode, dstexpnode, inneredge, match)
 
     def lazily_add_node(self, innernode, shape):
+        from gccutils.graph import SupergraphNode
+        assert isinstance(innernode, SupergraphNode)
+        assert isinstance(shape, Shape)
         key = (innernode, shape)
         if key not in self._nodedict:
-            node = self.add_node(ExplodedNode(innernode, shape))
-            self._nodedict[key] = node
+            expnode = self.add_node(ExplodedNode(innernode, shape))
+            self._nodedict[key] = expnode
+            self.worklist.append(expnode)
         return self._nodedict[key]
 
     def lazily_add_edge(self, srcexpnode, dstexpnode, inneredge, match):
@@ -242,25 +252,39 @@ class ExplodedEdge(Edge):
     def to_dot_attrs(self, ctxt):
         return self.inneredge.to_dot_attrs(ctxt)
 
+class MatchContext:
+    """
+    A match of a specific rule, to be supplied to Outcome.apply()
+    """
+    def __init__(self, match, expgraph, srcexpnode, inneredge):
+        from sm.checker import Match
+        from gccutils.graph import SupergraphEdge
+        assert isinstance(match, Match)
+        assert isinstance(expgraph, ExplodedGraph)
+        assert isinstance(srcexpnode, ExplodedNode)
+        assert isinstance(inneredge, SupergraphEdge)
+        self.match = match
+        self.expgraph = expgraph
+        self.srcexpnode = srcexpnode
+        self.inneredge = inneredge
+
+    @property
+    def srcshape(self):
+        return self.srcexpnode.shape
+
+    @property
+    def dstnode(self):
+        return self.inneredge.dstnode
 
 def make_exploded_graph(ctxt, innergraph):
-    expgraph = ExplodedGraph()
-    worklist = []
+    expgraph = ExplodedGraph(ctxt)
     for entry in innergraph.get_entry_nodes():
         expnode = expgraph.lazily_add_node(entry, Shape(ctxt)) # initial shape
-        worklist.append(expnode)
         expgraph.entrypoints.append(expnode)
-    while worklist:
-        def lazily_add_node(loc, shape):
-            if (loc, shape) not in expgraph._nodedict:
-                expnode = expgraph.lazily_add_node(loc, shape)
-                worklist.append(expnode)
-            else:
-                # (won't do anything)
-                expnode = expgraph.lazily_add_node(loc, shape)
-            return expnode
-        srcexpnode = worklist.pop()
+    while expgraph.worklist:
+        srcexpnode = expgraph.worklist.pop()
         srcnode = srcexpnode.innernode
+        #assert isinstance(srcnode, Node)
         stmt = srcnode.get_stmt()
         for edge in srcnode.succs:
             dstnode = edge.dstnode
@@ -288,7 +312,7 @@ def make_exploded_graph(ctxt, innergraph):
                     if ctxt.is_stateful_var(arg):
                         dstshape.assign_var(param, arg)
                 # print('dstshape: %r' % dstshape)
-                dstexpnode = lazily_add_node(dstnode, dstshape)
+                dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None)
                 continue
@@ -306,7 +330,7 @@ def make_exploded_graph(ctxt, innergraph):
                         dstshape.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
                 # ...and purge all local state:
                 dstshape.purge_locals(edge.srcnode.function)
-                dstexpnode = lazily_add_node(dstnode, dstshape)
+                dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None)
                 continue
@@ -321,7 +345,7 @@ def make_exploded_graph(ctxt, innergraph):
                 if stmt.exprcode == gcc.VarDecl:
                     dstshape = srcshape.copy()
                     dstshape.assign_var(stmt.lhs, stmt.rhs[0])
-                    dstexpnode = lazily_add_node(dstnode, dstshape)
+                    dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
                     expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                        edge, None)
                     continue
@@ -344,40 +368,12 @@ def make_exploded_graph(ctxt, innergraph):
                         srcstate = srcshape.get_state(match.var)
                         if srcstate in sc.statelist:
                             assert len(pr.outcomes) > 0
+                            mctxt = MatchContext(match, expgraph, srcexpnode, edge)
                             for outcome in pr.outcomes:
-                                # print 'outcome: %r' % outcome
-                                def handle_outcome(outcome):
-                                    # print('handle_outcome(%r)' % outcome)
-                                    if isinstance(outcome, sm.checker.BooleanOutcome):
-                                        if 0:
-                                            print(edge.true_value)
-                                            print(edge.false_value)
-                                            print(outcome.guard)
-                                        if edge.true_value and outcome.guard:
-                                            handle_outcome(outcome.outcome)
-                                        if edge.false_value and not outcome.guard:
-                                            handle_outcome(outcome.outcome)
-                                    elif isinstance(outcome, sm.checker.TransitionTo):
-                                        # print('transition %s to %s' % (match.var, outcome.state))
-                                        dststate = outcome.state
-                                        dstshape = srcshape.copy()
-                                        dstshape.set_state(match.var, dststate)
-                                        dstexpnode = lazily_add_node(dstnode, dstshape)
-                                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                                           edge, match)
-                                    elif isinstance(outcome, sm.checker.PythonOutcome):
-                                        #ctxt.srcnode = srcnode
-                                        #expnode = expgraph.lazily_add_node(srcnode, srcshape)
-                                        outcome.run(ctxt, match, expgraph, srcexpnode)
-                                        # FIXME: should we also some (dstnode, dstshape)
-                                        # so that analysis continues?
-                                    else:
-                                        print(outcome)
-                                        raise UnknownOutcome(outcome)
-                                handle_outcome(outcome)
+                                outcome.apply(mctxt)
                             matches.append(pr)
             if not matches:
-                dstexpnode = lazily_add_node(dstnode, srcshape)
+                dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None)
     return expgraph

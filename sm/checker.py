@@ -303,6 +303,14 @@ class TransitionTo(Outcome):
         if self.__class__ == other.__class__:
             if self.state == other.state:
                 return True
+    def apply(self, mctxt):
+        # print('transition %s to %s' % (match.var, outcome.state))
+        dststate = self.state
+        dstshape = mctxt.srcshape.copy()
+        dstshape.set_state(mctxt.match.var, dststate)
+        dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
+        expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
+                                                 mctxt.inneredge, mctxt.match)
 
 class BooleanOutcome(Outcome):
     def __init__(self, guard, outcome):
@@ -315,6 +323,11 @@ class BooleanOutcome(Outcome):
             if self.guard == other.guard:
                 if self.outcome == other.outcome:
                     return True
+    def apply(self, mctxt):
+        if mctxt.inneredge.true_value and self.guard:
+            self.outcome.apply(mctxt)
+        if mctxt.inneredge.false_value and not self.guard:
+            self.outcome.apply(mctxt)
 
 class PythonOutcome(Outcome):
     def __init__(self, src):
@@ -339,7 +352,8 @@ class PythonOutcome(Outcome):
             print('expr: %r' % expr)
         return expr
 
-    def run(self, ctxt, match, expgraph, expnode):
+    def apply(self, mctxt):
+        ctxt = mctxt.expgraph.ctxt
         if 0:
             print('run(): %r' % self)
             print('  match: %r' % match)
@@ -351,7 +365,7 @@ class PythonOutcome(Outcome):
 
         # Create environment for execution of the code:
         def error(msg):
-            ctxt.add_error(expnode, match, msg)
+            ctxt.add_error(mctxt.srcexpnode, mctxt.match, msg)
         locals_ = {}
         globals_ = {'error' : error}
 
@@ -362,7 +376,7 @@ class PythonOutcome(Outcome):
         #      void *q;
         # then we bind the string "ptr" to the string "q"
         assert isinstance(ctxt.sm.varclauses, Var)
-        locals_[ctxt.sm.varclauses.name] = match.var.name
+        locals_[ctxt.sm.varclauses.name] = mctxt.match.var.name
         if 0:
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)
