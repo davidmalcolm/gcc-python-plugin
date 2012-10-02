@@ -19,6 +19,7 @@
 import unittest
 
 from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
+    LeakedPattern, \
     ResultOfFnCall, ArgOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
 from sm.parser import parse_string
@@ -52,6 +53,9 @@ sm malloc_checker {
       { free(ptr) } => { error('double-free of %s' % ptr)}
     | { ptr } => {error('use-after-free of %s' % ptr)}
     ;
+
+  ptr.unknown, ptr.nonnull:
+      $leaked$ => { error('leak of %s' % ptr)};
 }
 ''')
         self.assert_(isinstance(ch, Checker))
@@ -61,7 +65,7 @@ sm malloc_checker {
         self.assertEqual(sm.name, 'malloc_checker')
         self.assertEqual(sm.varclauses, Var('ptr'))
 
-        self.assertEqual(len(sm.stateclauses), 6)
+        self.assertEqual(len(sm.stateclauses), 7)
 
         # Verify parsing of:
         #   ptr.all:
@@ -150,6 +154,18 @@ sm malloc_checker {
         self.assertEqual(pr.pattern, VarUsage(var='ptr'))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=('error', '(', 'use-after-free of %s', '%', 'ptr', ')', ))])
+
+        # Verify parsing of:
+        #   ptr.unknown, ptr.nonnull:
+        #       $leaked$ => { error('leak of %s' % ptr)};
+        sc = sm.stateclauses[6]
+        self.assertEqual(sc.statelist,
+                         ['ptr.unknown', 'ptr.nonnull'])
+        self.assertEqual(len(sc.patternrulelist), 1)
+        pr = sc.patternrulelist[0]
+        self.assertEqual(pr.pattern, LeakedPattern())
+        self.assertEqual(pr.outcomes,
+                         [PythonOutcome(src=('error', '(', 'leak of %s', '%', 'ptr', ')', ))])
 
 import sys
 sys.argv = ['foo', '-v']

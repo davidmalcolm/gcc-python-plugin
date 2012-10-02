@@ -60,9 +60,8 @@ class Shape:
         # initial state is empty, an eligible var that isn't listed is assumed
         # to have its own unique StateVar value in the default state
 
-        # FIXME:
         # The reverse mapping, from StateVar instances to list of vars
-        # self._aliases = {}
+        self._aliases = {}
 
     def __hash__(self):
         result = 0
@@ -88,7 +87,7 @@ class Shape:
     def __repr__(self):
         return repr(self._dict)
 
-    def copy(self):
+    def _copy(self):
         clone = Shape(self.ctxt)
         # 1st pass: clone the ShapeVar instances:
         shapevars = {}
@@ -102,7 +101,11 @@ class Shape:
         for var, shapevar in self._dict.iteritems():
             clone._dict[var] = shapevars[id(shapevar)]
 
-        return clone
+        # 3rd pass: set up clone._aliases
+        for shapevar, aliases in self._aliases.iteritems():
+            clone._aliases[shapevars[id(shapevar)]] = aliases[:]
+
+        return clone, shapevars
 
     def get_state(self, var):
         assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
@@ -117,20 +120,53 @@ class Shape:
             # aliases):
             self._dict[var].state = state
         else:
-            self._dict[var] = StateVar(state)
+            sv = StateVar(state)
+            self._dict[var] = sv
+            self._aliases[sv] = [var]
 
-    def assign_var(self, dst, src):
+    def _assign_var(self, dstvar, srcvar):
         # print('Shape.assign_var(%r, %r)' % (dst, src))
-        if src not in self._dict:
+        if srcvar not in self._dict:
             # Set a state, so that we can track that dst is now aliased to src
-            self.set_state(src, self.ctxt.get_default_state())
-        self._dict[dst] = self._dict[src]
+            self.set_state(srcvar, self.ctxt.get_default_state())
+        if dstvar in self._dict:
+            self._aliases[self._dict[dstvar]].remove(dstvar)
+        self._dict[dstvar] = self._dict[srcvar]
+        shapevar = self._dict[dstvar]
+        if shapevar in self._aliases:
+            self._aliases[shapevar].append(dstvar)
+        else:
+            self._aliases[shapevar] = [dstvar]
 
-    def purge_locals(self, fun):
+    def _purge_locals(self, fun):
         vars_ = fun.local_decls + fun.decl.arguments
         for var in vars_:
             if var in self._dict:
+                self._aliases[self._dict[var]].remove(var)
                 del self._dict[var]
+
+class ShapeChange:
+    """
+    Captures the aliasing changes that occur to a Shape along an ExplodedEdge
+    Does not capture changes to the states within the StateVar instances
+    """
+    def __init__(self, srcshape):
+        self.srcshape = srcshape
+        self.dstshape, self._shapevars = srcshape._copy()
+
+    def assign_var(self, dstvar, srcvar):
+        self.dstshape._assign_var(dstvar, srcvar)
+
+    def purge_locals(self, fun):
+        self.dstshape._purge_locals(fun)
+
+    def iter_leaks(self):
+        dstshapevars = self.dstshape._dict.values()
+        for srcshapevar in self.srcshape._dict.values():
+            dstshapevar = self._shapevars[id(srcshapevar)]
+            if dstshapevar not in dstshapevars:
+                for gccvar in self.srcshape._aliases[srcshapevar]:
+                    yield gccvar
 
 class ExplodedGraph(Graph):
     """
@@ -145,16 +181,19 @@ class ExplodedGraph(Graph):
         # Mapping from (innernode, shape) to ExplodedNode:
         self._nodedict = {}
 
-        # Set of (srcexpnode, dstexpnode, match) tuples, where pattern can be None:
-        self._edgeset = set()
+        # Mapping from
+        #   (srcexpnode, dstexpnode, match, shapechange) tuples, where
+        #   pattern can be None
+        # to ExplodedEdge
+        self._edgedict = {}
 
         self.entrypoints = []
 
         # List of ExplodedNode still to be processed by solver
         self.worklist = []
 
-    def _make_edge(self, srcexpnode, dstexpnode, inneredge, match):
-        return ExplodedEdge(srcexpnode, dstexpnode, inneredge, match)
+    def _make_edge(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
+        return ExplodedEdge(srcexpnode, dstexpnode, inneredge, match, shapechange)
 
     def lazily_add_node(self, innernode, shape):
         from gccutils.graph import SupergraphNode
@@ -167,13 +206,32 @@ class ExplodedGraph(Graph):
             self.worklist.append(expnode)
         return self._nodedict[key]
 
-    def lazily_add_edge(self, srcexpnode, dstexpnode, inneredge, match):
+    def lazily_add_edge(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
         if match:
             assert isinstance(match, sm.checker.Match)
-        key = (srcexpnode, dstexpnode, match)
-        if key not in self._edgeset:
-            e = self.add_edge(srcexpnode, dstexpnode, inneredge, match)
-            self._edgeset.add(key)
+        key = (srcexpnode, dstexpnode, match, shapechange)
+        if key not in self._edgedict:
+            expedge = self.add_edge(srcexpnode, dstexpnode, inneredge, match, shapechange)
+            self._edgedict[key] = expedge
+        expedge = self._edgedict[key]
+
+        # Some patterns match on ExplodedEdges (based on the src state):
+        for sc in self.ctxt.sm.stateclauses:
+            # Locate any rules that could apply, regardless of the current
+            # state:
+            for pr in sc.patternrulelist:
+                # print('%r: %r' % (srcshape, pr))
+                # For now, skip interprocedural calls and the
+                # ENTRY/EXIT nodes:
+
+                # Now see if the rules apply for the current state:
+                for match in pr.pattern.iter_expedge_matches(expedge, self):
+                    srcstate = expedge.srcnode.shape.get_state(match.var)
+                    if srcstate in sc.statelist:
+                        assert len(pr.outcomes) > 0
+                        mctxt = MatchContext(match, self, srcexpnode, inneredge)
+                        for outcome in pr.outcomes:
+                            outcome.apply(mctxt)
 
     def get_shortest_path_to(self, dstexpnode):
         result = None
@@ -229,15 +287,16 @@ class ExplodedNode(Node):
         return self.innernode.function
 
 class ExplodedEdge(Edge):
-    def __init__(self, srcexpnode, dstexpnode, inneredge, match):
+    def __init__(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
         Edge.__init__(self, srcexpnode, dstexpnode)
         self.inneredge = inneredge
         if match:
             assert isinstance(match, sm.checker.Match)
         self.match = match
+        self.shapechange = shapechange
 
     def __repr__(self):
-        return ('%s(srcnode=%r, dstnode=%r, inneredge=%r, match=%r)'
+        return ('%s(srcnode=%r, dstnode=%r, inneredge=%r, match=%r, shapechange=%r)'
                 % (self.__class__.__name__, self.srcnode, self.dstnode,
                    self.inneredge.__class__, self.match))
 
@@ -301,7 +360,7 @@ def make_exploded_graph(ctxt, innergraph):
                 # Alias the parameters with the arguments as necessary, so
                 # e.g. a function that free()s an arg has the caller's var
                 # marked as free also:
-                dstshape = srcshape.copy()
+                shapechange = ShapeChange(srcshape)
                 assert isinstance(srcnode.stmt, gcc.GimpleCall)
                 # print(srcnode.stmt)
                 for param, arg  in zip(srcnode.stmt.fndecl.arguments, srcnode.stmt.args):
@@ -310,14 +369,14 @@ def make_exploded_graph(ctxt, innergraph):
                         print('  param: %r' % param)
                         print('  arg: %r' % arg)
                     if ctxt.is_stateful_var(arg):
-                        dstshape.assign_var(param, arg)
+                        shapechange.assign_var(param, arg)
                 # print('dstshape: %r' % dstshape)
-                dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
+                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None)
+                                                   edge, None, shapechange)
                 continue
             elif isinstance(edge, ExitToReturnSite):
-                dstshape = srcshape.copy()
+                shapechange = ShapeChange(srcshape)
                 # Propagate state through the return value:
                 # print('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
                 if edge.calling_stmtnode.stmt.lhs:
@@ -327,12 +386,12 @@ def make_exploded_graph(ctxt, innergraph):
                     assert isinstance(returnstmtnode.stmt, gcc.GimpleReturn)
                     retval = returnstmtnode.stmt.retval
                     if ctxt.is_stateful_var(retval):
-                        dstshape.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
+                        shapechange.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
                 # ...and purge all local state:
-                dstshape.purge_locals(edge.srcnode.function)
-                dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
+                shapechange.purge_locals(edge.srcnode.function)
+                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None)
+                                                   edge, None, shapechange)
                 continue
 
             # Handle simple assignments so that variables inherit state:
@@ -343,11 +402,11 @@ def make_exploded_graph(ctxt, innergraph):
                     print('stmt.rhs: %r' % stmt.rhs)
                     print('stmt.exprcode: %r' % stmt.exprcode)
                 if stmt.exprcode == gcc.VarDecl:
-                    dstshape = srcshape.copy()
-                    dstshape.assign_var(stmt.lhs, stmt.rhs[0])
-                    dstexpnode = expgraph.lazily_add_node(dstnode, dstshape)
+                    shapechange = ShapeChange(srcshape)
+                    shapechange.assign_var(stmt.lhs, stmt.rhs[0])
+                    dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                     expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                       edge, None)
+                                                       edge, None, shapechange)
                     continue
 
             matches = []
@@ -375,7 +434,7 @@ def make_exploded_graph(ctxt, innergraph):
             if not matches:
                 dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None)
+                                                   edge, None, None)
     return expgraph
 
 class Error:
@@ -387,7 +446,10 @@ class Error:
 
     @property
     def gccloc(self):
-        return self.expnode.innernode.get_gcc_loc()
+        gccloc = self.expnode.innernode.get_gcc_loc()
+        if gccloc is None:
+            gccloc = self.function.end
+        return gccloc
 
     @property
     def function(self):
@@ -423,20 +485,23 @@ class Error:
                     else:
                         # Debugging information on state change:
                         desc = ('%s: %s -> %s'
-                               % (ctxt.sm.name, expedge.srcnode.state, expedge.dstnode.state))
+                               % (ctxt.sm.name, srcstate, dststate))
                     gcc.inform(gccloc, desc)
 
         # repeat the message at the end of the path:
         if len(path) > 1:
-            gcc.inform(path[-1].dstnode.innernode.get_gcc_loc(), self.msg)
+            gccloc = path[-1].dstnode.innernode.get_gcc_loc()
+            if gccloc:
+                gcc.inform(gccloc, self.msg)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
 
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
-    def __init__(self, sm): # , var):
-        #assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+    def __init__(self, sm, options):
+        self.options = options
+
         self.sm = sm
         #self.var = var
         self.statenames = list(sm.iter_states())
@@ -448,8 +513,13 @@ class Context:
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )
 
-    def add_error(self, expnode, match, msg):
-        self._errors.append(Error(expnode, match, msg))
+    def add_error(self, expgraph, expnode, match, msg):
+        err = Error(expnode, match, msg)
+        if self.options.cache_errors:
+            self._errors.append(err)
+        else:
+            # Easier to debug tracebacks this way:
+            err.emit(self, expgraph)
 
     def emit_errors(self, expgraph):
         curfun = None

@@ -101,6 +101,9 @@ class Pattern:
         print('self: %r' % self)
         raise NotImplementedError()
 
+    def iter_expedge_matches(self, expedge, ctxt):
+        return []
+
     def description(self, match, ctxt):
         print('self: %r' % self)
         raise NotImplementedError()
@@ -291,6 +294,33 @@ class VarUsage(Pattern):
     def description(self, match, ctxt):
         return 'usage of %s' % ctxt.describe(match.var)
 
+class SpecialPattern(Pattern):
+    @classmethod
+    def make(cls, name):
+        if name == 'leaked':
+            return LeakedPattern()
+
+        class UnknownSpecialPattern(Exception):
+            def __init__(self, name):
+                self.name = name
+        raise UnknownSpecialPattern(name)
+
+class LeakedPattern(SpecialPattern):
+    def iter_matches(self, stmt, edge, ctxt):
+        return []
+
+    def iter_expedge_matches(self, expedge, expgraph):
+        if expedge.shapechange:
+            for srcgccvar in expedge.shapechange.iter_leaks():
+                yield Match(self, var=srcgccvar)
+
+    def description(self, match, ctxt):
+        return 'leak of %s' % ctxt.describe(match.var)
+
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return True
+
 class Outcome:
     pass
 
@@ -306,11 +336,11 @@ class TransitionTo(Outcome):
     def apply(self, mctxt):
         # print('transition %s to %s' % (match.var, outcome.state))
         dststate = self.state
-        dstshape = mctxt.srcshape.copy()
+        dstshape, shapevars = mctxt.srcshape._copy()
         dstshape.set_state(mctxt.match.var, dststate)
         dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
         expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
-                                                 mctxt.inneredge, mctxt.match)
+                                                 mctxt.inneredge, mctxt.match, None)
 
 class BooleanOutcome(Outcome):
     def __init__(self, guard, outcome):
@@ -365,7 +395,7 @@ class PythonOutcome(Outcome):
 
         # Create environment for execution of the code:
         def error(msg):
-            ctxt.add_error(mctxt.srcexpnode, mctxt.match, msg)
+            ctxt.add_error(mctxt.expgraph, mctxt.srcexpnode, mctxt.match, msg)
         locals_ = {}
         globals_ = {'error' : error}
 

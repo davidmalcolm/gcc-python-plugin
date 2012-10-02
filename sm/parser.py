@@ -22,6 +22,7 @@
 # Split into tokenizer, then grammar, then external interface
 
 from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
+    SpecialPattern, \
     AssignmentFromLiteral, \
     ResultOfFnCall, ArgOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
@@ -41,6 +42,7 @@ tokens = [
     'COLON', 'SEMICOLON',
     'ASSIGNMENT', 'STAR', 'PIPE', 'PERCENT',
     'COMPARISON',
+    'DOLLARPATTERN',
     ] + reserved
 
 t_ACTION     = r'=>'
@@ -85,6 +87,12 @@ def t_LITERAL_NUMBER(t):
 def t_LITERAL_STRING(t):
     r'"([^"]*)"|\'([^\']*)\''
     # Drop the quotes:
+    t.value = t.value[1:-1]
+    return t
+
+def t_DOLLARPATTERN(t):
+    r'\$[a-zA-Z_][a-zA-Z_0-9]*\$'
+    # Drop the dollars:
     t.value = t.value[1:-1]
     return t
 
@@ -186,9 +194,16 @@ def p_statename(p):
         p[0] = p[1]
 
 def p_patternrule(p):
-    'patternrule : LBRACE pattern RBRACE ACTION outcomes'
+    '''
+    patternrule : LBRACE pattern RBRACE ACTION outcomes
+                | DOLLARPATTERN ACTION outcomes
+    '''
     # e.g. "{ ptr = malloc() } =>  ptr.unknown"
-    p[0] = PatternRule(pattern=p[2], outcomes=p[5])
+    # e.g. "$leaked$ => ptr.leaked"
+    if p[1] == '{':
+        p[0] = PatternRule(pattern=p[2], outcomes=p[5])
+    else:
+        p[0] = PatternRule(pattern=SpecialPattern.make(p[1]), outcomes=p[3])
 
 # Various kinds of "pattern":
 def p_pattern_assignment_from_literal(p):
@@ -273,6 +288,7 @@ class ParserError(Exception):
 
     def __init__(self, input_, pos, value, msg):
         self.input_ = input_
+        self.filename = None
         self.pos = pos
         self.value = value
         self.msg = msg
@@ -288,10 +304,13 @@ class ParserError(Exception):
         self.errpos = pos - startidx
 
     def __str__(self):
-        return ('%s at "%s":\n%s\n%s'
-                % (self.msg, self.value,
-                   self.errline,
-                   ' '*self.errpos + '^'*len(str(self.value))))
+        result = ('%s at "%s":\n%s\n%s'
+                  % (self.msg, self.value,
+                     self.errline,
+                     ' '*self.errpos + '^'*len(str(self.value))))
+        if self.filename:
+            result = '%s: %s' % (self.filename, result)
+        return result
 
 def p_error(p):
     raise ParserError.from_token(p)
@@ -312,7 +331,11 @@ def parse_file(filename):
     parser = yacc.yacc(debug=0, write_tables=0)
     with open(filename) as f:
         s = f.read()
-    return parser.parse(s)#, debug=1)
+    try:
+        return parser.parse(s)#, debug=1)
+    except ParserError, err:
+        err.filename = filename
+        raise err
 
 def test_lexer(s):
     print(s)

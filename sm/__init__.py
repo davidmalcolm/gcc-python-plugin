@@ -61,9 +61,10 @@ class NonIpaSmPass(gcc.GimplePass):
                         solve(fun, ctxt, graph)
 
 class IpaSmPass(gcc.SimpleIpaPass):
-    def __init__(self, checkers):
+    def __init__(self, checkers, options):
         gcc.SimpleIpaPass.__init__(self, 'sm-pass-gimple')
         self.checkers = checkers
+        self.options = options
 
     def execute(self):
         if 0:
@@ -82,13 +83,19 @@ class IpaSmPass(gcc.SimpleIpaPass):
 
         for checker in self.checkers:
             for sm in checker.sms:
-                ctxt = Context(sm)
+                ctxt = Context(sm, self.options)
                 solve(ctxt, sg, 'supergraph')
 
-def main(checkers):
+class Options:
+    def __init__(self, cache_errors):
+        self.cache_errors = cache_errors
+
+def main(checkers, options=None):
+    if not options:
+        options = Options(cache_errors=True)
     if 0:
         ps = NonIpaSmPass(checkers)
         ps.register_before('*warn_function_return')
     else:
-        ps = IpaSmPass(checkers)
+        ps = IpaSmPass(checkers, options)
         ps.register_before('early_local_cleanups') # looks like we can only register within the top-level

@@ -35,4 +35,7 @@ sm malloc_checker {
   ptr.freed:
       { memset(ptr) } => { error('use-after-free of %s' % ptr)};
 
+  ptr.unknown, ptr.nonnull:
+      $leaked$ => { error('leak of %s' % ptr)};
+
 }
