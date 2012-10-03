@@ -306,6 +306,7 @@ class ParserError(Exception):
             endidx += 1
         self.errline = input_[startidx:endidx]
         self.errpos = pos - startidx
+        self.lineno = input_[:startidx].count('\n')
 
     def __str__(self):
         result = ('%s at "%s":\n%s\n%s'
@@ -313,7 +314,10 @@ class ParserError(Exception):
                      self.errline,
                      ' '*self.errpos + '^'*len(str(self.value))))
         if self.filename:
-            result = '%s: %s' % (self.filename, result)
+            result = ('\n%s:%i:%i: %s'
+                      % (self.filename,
+                         self.lineno + 1, self.errpos + 1,
+                         result))
         return result
 
 def p_error(p):
