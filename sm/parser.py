@@ -30,18 +30,26 @@ from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
 ############################################################################
 import ply.lex as lex
 
-reserved = ['DECL', 'SM', 'STATE', 'TRUE', 'FALSE',
-            'ANY_POINTER']
+reserved = ['decl', 'sm', 'state', 'true', 'false',
+            'any_pointer']
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
     'ACTION',
     'LBRACE','RBRACE', 'LPAREN', 'RPAREN',
     'COMMA', 'DOT',
     'COLON', 'SEMICOLON',
-    'ASSIGNMENT', 'STAR', 'PIPE', 'PERCENT',
+    'ASSIGNMENT', 'STAR', 'PIPE',
     'COMPARISON',
     'DOLLARPATTERN',
-    ] + reserved
+    'PYTHON',
+    ] + [r.upper() for r in reserved]
+
+def t_PYTHON(t):
+    r'\{\{.*\}\}'
+    # matched double-braces, with arbitrary text (and whitespace) inside:
+    # Drop the double-braces:
+    t.value = t.value[2:-2]
+    return t
 
 t_ACTION     = r'=>'
 t_LPAREN     = r'\('
@@ -55,7 +63,6 @@ t_SEMICOLON  = r';'
 t_ASSIGNMENT = r'='
 t_STAR       = r'\*'
 t_PIPE       = r'\|'
-t_PERCENT    = r'%'
 
 def t_COMMENT(t):
     r'/\*(.|\n)*\*/'
@@ -64,8 +71,8 @@ def t_COMMENT(t):
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    # Check for reserved words (case insensitive):
-    if t.value.upper() in reserved:
+    # Check for reserved words:
+    if t.value in reserved:
         t.type = t.value.upper()
     else:
         t.type = 'ID'
@@ -263,15 +270,9 @@ def p_outcome_boolean_outcome(p):
                           outcome=p[3])
 
 def p_outcome_python(p):
-    'outcome : LBRACE python RBRACE'
+    'outcome : PYTHON'
     # e.g. "{ error('use of possibly-NULL pointer %s' % ptr)}"
-    p[0] = PythonOutcome(src=p[2])
-
-def p_python(p):
-    'python : ID LPAREN LITERAL_STRING PERCENT ID RPAREN'
-    # e.g. "error('use-after-free of %s' % ptr)"
-    # (for now)
-    p[0] = (p[1], p[2], p[3], p[4], p[5], p[6])
+    p[0] = PythonOutcome(src=p[1])
 
 class ParserError(Exception):
     @classmethod

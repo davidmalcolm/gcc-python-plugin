@@ -24,7 +24,7 @@ sm var_dereference {
   state decl any_pointer ptr;
 
   ptr.all:
-    { *ptr } => { error('%s was dereferenced' % ptr)};
+    { *ptr } => {{ error('%s was dereferenced' % ptr) }};
 }
 '''
 

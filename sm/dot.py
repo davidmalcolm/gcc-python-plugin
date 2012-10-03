@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from gccutils.dot import to_html
+
 from sm.checker import TransitionTo, BooleanOutcome, PythonOutcome
 
 def checker_to_dot(checker, name):
@@ -31,7 +33,7 @@ def pattern_to_dot(pattern):
     return str(pattern)
 
 def python_to_dot(outcome):
-    return outcome.get_src()
+    return to_html(outcome.src)
 
 def sm_to_dot(sm):
     result = '  subgraph %s {\n' % sm.name

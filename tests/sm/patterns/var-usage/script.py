@@ -24,7 +24,7 @@ sm result_of_fn_call {
   state decl any_pointer ptr;
 
   ptr.all:
-    { ptr } => { error('%s was used' % ptr)};
+    { ptr } => {{ error('%s was used' % ptr) }};
 }
 '''
 

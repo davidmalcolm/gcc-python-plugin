@@ -1,6 +1,7 @@
 digraph test_script {
   subgraph malloc_checker {
     ptr_all [label=<ptr.all>];
+    ptr_all [label=<ptr.all>];
     ptr_unknown [label=<ptr.unknown>];
     ptr_null [label=<ptr.null>];
     ptr_nonnull [label=<ptr.nonnull>];
@@ -11,8 +12,14 @@ digraph test_script {
     ptr_null [label=<ptr.null>];
     ptr_nonnull [label=<ptr.nonnull>];
     ptr_free [label=<ptr.free>];
+    ptr_unknown [label=<ptr.unknown>];
+    ptr_null [label=<ptr.null>];
+    ptr_freed [label=<ptr.freed>];
+    ptr_unknown [label=<ptr.unknown>];
+    ptr_nonnull [label=<ptr.nonnull>];
 
     ptr_all -> ptr_unknown [label=<ptr = malloc(...)>];
+    ptr_all -> ptr_null [label=<ptr = 0>];
     ptr_unknown -> ptr_null [label=<(ptr == 0) is True>];
     ptr_unknown -> ptr_nonnull [label=<(ptr == 0) is False>];
     ptr_unknown -> ptr_nonnull [label=<(ptr != 0) is True>];
@@ -25,14 +32,20 @@ digraph test_script {
     ptr_nonnull -> ptr_nonnull [label=<(ptr == 0) is False>];
     ptr_nonnull -> ptr_nonnull [label=<(ptr != 0) is True>];
     ptr_nonnull -> ptr_null [label=<(ptr != 0) is False>];
-    ptr_unknown -> ptr_unknown [label=<*ptr: error('use of possibly-NULL pointer %s'%ptr)>];
-    ptr_null -> ptr_null [label=<*ptr: error('use of NULL pointer %s'%ptr)>];
+    ptr_unknown -> ptr_unknown [label=<*ptr:  error(&apos;use of possibly-NULL pointer %s&apos; % ptr) >];
+    ptr_unknown -> ptr_nonnull [label=<*ptr>];
+    ptr_null -> ptr_null [label=<*ptr:  error(&apos;use of NULL pointer %s&apos; % ptr) >];
     ptr_all -> ptr_free [label=<free(..., ptr, ...)>];
     ptr_unknown -> ptr_free [label=<free(..., ptr, ...)>];
     ptr_null -> ptr_free [label=<free(..., ptr, ...)>];
     ptr_nonnull -> ptr_free [label=<free(..., ptr, ...)>];
-    ptr_free -> ptr_free [label=<free(..., ptr, ...): error('double-free of %s'%ptr)>];
-    ptr_free -> ptr_free [label=<ptr: error('use-after-free of %s'%ptr)>];
+    ptr_free -> ptr_free [label=<free(..., ptr, ...):  error(&apos;double-free of %s&apos; % ptr) >];
+    ptr_free -> ptr_free [label=<ptr:  error(&apos;use-after-free of %s&apos; % ptr) >];
+    ptr_unknown -> ptr_unknown [label=<memset(..., ptr, ...):  error(&apos;use of possibly-NULL pointer %s&apos; % ptr) >];
+    ptr_null -> ptr_null [label=<memset(..., ptr, ...):  error(&apos;use of NULL pointer %s&apos; % ptr) >];
+    ptr_freed -> ptr_freed [label=<memset(..., ptr, ...):  error(&apos;use-after-free of %s&apos; % ptr) >];
+    ptr_unknown -> ptr_unknown [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
+    ptr_nonnull -> ptr_nonnull [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
   }
 }
 

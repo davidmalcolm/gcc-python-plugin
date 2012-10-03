@@ -44,8 +44,8 @@ sm malloc_checker {
 }
 '''
 
-from sm.parser import parse_string
-ch = parse_string(SCRIPT)
+from sm.parser import parse_file
+ch = parse_file('sm/checkers/malloc_checker.sm')
 if 0:
     print(ch)
 dot = ch.to_dot('test_script')

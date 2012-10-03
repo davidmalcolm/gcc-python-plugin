@@ -295,10 +295,16 @@ class VarUsage(Pattern):
         return 'usage of %s' % ctxt.describe(match.var)
 
 class SpecialPattern(Pattern):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return '$%s$' % self.name
+
     @classmethod
     def make(cls, name):
         if name == 'leaked':
-            return LeakedPattern()
+            return LeakedPattern(name)
 
         class UnknownSpecialPattern(Exception):
             def __init__(self, name):
@@ -369,19 +375,6 @@ class PythonOutcome(Outcome):
             if self.src == other.src:
                 return True
 
-    def get_src(self):
-        # Currently we only support a very limited subset:
-        assert self.src[0] == 'error'
-        assert self.src[1] == '('
-        assert isinstance(self.src[2], str)
-        assert self.src[3] == '%'
-        assert self.src[4] == 'ptr'
-        assert self.src[5] == ')'
-        expr = '%s%s%r%s%s%s' % self.src
-        if 0:
-            print('expr: %r' % expr)
-        return expr
-
     def apply(self, mctxt):
         ctxt = mctxt.expgraph.ctxt
         if 0:
@@ -391,7 +384,7 @@ class PythonOutcome(Outcome):
             print('  expnode: %r' % expnode)
 
         # Get at python code.
-        expr = self.get_src()
+        expr = self.src
 
         # Create environment for execution of the code:
         def error(msg):

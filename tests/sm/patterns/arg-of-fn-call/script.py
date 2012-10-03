@@ -24,7 +24,7 @@ sm arg_of_fn_call {
   state decl any_pointer ptr;
 
   ptr.all:
-    { test2(ptr) } => { error('test2() was called with %s' % ptr)};
+    { test2(ptr) } => {{ error('test2() was called with %s' % ptr) }};
 }
 '''
 
