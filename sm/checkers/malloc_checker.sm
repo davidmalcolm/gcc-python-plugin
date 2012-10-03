@@ -1,3 +1,6 @@
+/*
+    Work-in-progress checker for malloc/free usage
+ */
 sm malloc_checker {
   state decl any_pointer ptr;
 

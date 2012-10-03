@@ -59,6 +59,10 @@ t_STAR       = r'\*'
 t_PIPE       = r'\|'
 t_PERCENT    = r'%'
 
+def t_COMMENT(t):
+    r'/\*(.|\n)*\*/'
+    # C-style comments
+    pass
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
