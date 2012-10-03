@@ -15,11 +15,9 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-# Query language for the heap
+# parser for ".sm" files
 
 # Uses "ply", so we'll need python-ply on Fedora
-
-# Split into tokenizer, then grammar, then external interface
 
 from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
     SpecialPattern, \
