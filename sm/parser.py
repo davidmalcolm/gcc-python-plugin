@@ -66,8 +66,9 @@ t_STAR       = r'\*'
 t_PIPE       = r'\|'
 
 def t_COMMENT(t):
-    r'/\*(.|\n)*\*/'
+    r'/\*(.|\n)*?\*/'
     # C-style comments
+    # print('skipping comment: %r' % t)
     pass
 
 def t_ID(t):
