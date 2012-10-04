@@ -187,7 +187,7 @@ class TestStream:
         from difflib import unified_diff
         result = ''
         for line in unified_diff(self.expdata.splitlines(),
-                                 self.actual.splitlines(),
+                                 self._cleanup(self.actual).splitlines(),
                                  fromfile='Expected %s' % label,
                                  tofile='Actual %s' % label,
                                  lineterm=""):
