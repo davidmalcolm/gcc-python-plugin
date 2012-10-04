@@ -112,6 +112,17 @@ class AnyExpr(Decl):
     def matched_by(self, gccexpr):
         return True
 
+class NamedPattern(Clause):
+    """
+    The definition of a named pattern
+    """
+    def __init__(self, name, pattern):
+        self.name = name
+        self.pattern = pattern
+
+    def __str__(self):
+        return 'pat %s %s;' % (self.name, self.pattern)
+
 class StateClause(Clause):
     def __init__(self, statelist, patternrulelist):
         self.statelist = statelist
@@ -423,6 +434,17 @@ class VarUsage(Pattern):
     def description(self, match, ctxt):
         return ('usage of %s' % match.describe(self.rhs))
 
+class NamedPatternReference(Pattern):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+    def iter_matches(self, stmt, edge, ctxt):
+        namedpattern = ctxt.lookup_pattern(self.name)
+        return namedpattern.pattern.iter_matches(stmt, edge, ctxt)
+
 class SpecialPattern(Pattern):
     def __init__(self, name):
         self.name = name
@@ -457,6 +479,22 @@ class LeakedPattern(SpecialPattern):
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             return True
+
+class OrPattern(Pattern):
+    """
+    A compound pattern which matches if any of its component patterns match
+    """
+    def __init__(self, *patterns):
+        self.patterns = patterns
+
+    def __str__(self):
+        return ' | '.join([str(pat)
+                           for pat in self.patterns])
+
+    def iter_matches(self, stmt, edge, ctxt):
+        for pattern in self.patterns:
+            for match in pattern.iter_matches(stmt, edge, ctxt):
+                yield match
 
 class Outcome:
     pass

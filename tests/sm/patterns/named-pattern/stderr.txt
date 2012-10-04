@@ -1,0 +1,3 @@
+tests/sm/patterns/named-pattern/input.c: In function 'test1':
+tests/sm/patterns/named-pattern/input.c:6:nn: error: ptr was checked against NULL
+tests/sm/patterns/named-pattern/input.c:6:nn: error: ptr was checked against NULL

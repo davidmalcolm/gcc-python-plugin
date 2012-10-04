@@ -514,16 +514,21 @@ class Context:
         #   the stateful decl, if any:
         self._stateful_decl = None
 
+        #   a mapping from str (pattern names) to NamedPattern instances
+        self._namedpatterns = {}
+
         #   all StateClause instance, in order:
         self._stateclauses = []
 
         # Set up the above attributes:
-        from sm.checker import Decl, StateClause
+        from sm.checker import Decl, NamedPattern, StateClause
         for clause in sm.clauses:
             if isinstance(clause, Decl):
                 self._decls[clause.name] = clause
                 if clause.has_state:
                     self._stateful_decl = clause
+            elif isinstance(clause, NamedPattern):
+                self._namedpatterns[clause.name] = clause
             elif isinstance(clause, StateClause):
                 self._stateclauses.append(clause)
 
@@ -543,6 +548,17 @@ class Context:
         if declname not in self._decls:
             raise UnknownDecl(declname)
         return self._decls[declname]
+
+    def lookup_pattern(self, patname):
+        '''Lookup a named pattern'''
+        class UnknownNamedPattern(Exception):
+            def __init__(self, patname):
+                self.patname = patname
+            def __str__(self):
+                return repr(patname)
+        if patname not in self._namedpatterns:
+            raise UnknownNamedPattern(patname)
+        return self._namedpatterns[patname]
 
     def add_error(self, expgraph, expnode, match, msg):
         err = Error(expnode, match, msg)

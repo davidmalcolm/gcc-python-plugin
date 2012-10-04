@@ -19,8 +19,9 @@
 
 # Uses "ply", so we'll need python-ply on Fedora
 
-from sm.checker import Checker, Sm, Decl, StateClause, PatternRule, \
-    SpecialPattern, \
+from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
+    PatternRule, \
+    NamedPatternReference, SpecialPattern, OrPattern, \
     AssignmentFromLiteral, \
     ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
@@ -31,7 +32,7 @@ from sm.checker import Checker, Sm, Decl, StateClause, PatternRule, \
 import ply.lex as lex
 
 reserved = ['decl', 'sm', 'state', 'true', 'false',
-            'any_pointer', 'any_expr']
+            'any_pointer', 'any_expr', 'pat']
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
     'ACTION',
@@ -182,6 +183,13 @@ def p_smclause_decl(p):
     name = p[4]
     p[0] = Decl.make(has_state, declkind, name)
 
+def p_smclause_namedpatterndefinition(p):
+    '''
+    smclause : PAT ID pattern SEMICOLON
+    '''
+    p[0] = NamedPattern(name=p[2],
+                        pattern=p[3])
+
 def p_smclause_stateclause(p):
     'smclause : statelist COLON patternrulelist SEMICOLON'
     # e.g.
@@ -224,29 +232,58 @@ def p_statename(p):
     else:
         p[0] = p[1]
 
+# Various kinds of pattern:
+def p_pattern_cpattern(p):
+    '''
+    pattern : LBRACE cpattern RBRACE
+    '''
+    # e.g.
+    #   { ptr = malloc() }
+    p[0] = p[2]
+
+def p_pattern_namedpatternreference(p):
+    '''
+    pattern : ID
+    '''
+    # e.g.
+    #   checked_against_0
+    p[0] = NamedPatternReference(p[1])
+
+def p_pattern_dollarpattern(p):
+    '''
+    pattern : DOLLARPATTERN
+    '''
+    # e.g.
+    #   $leaked$
+    p[0] = SpecialPattern.make(p[1])
+
+def p_pattern_or(p):
+    '''
+    pattern : pattern PIPE pattern
+    '''
+    # e.g.
+    #   $leaked$ | { x == 0 }
+    p[0] = OrPattern(p[1], p[3])
+
 def p_patternrule(p):
     '''
-    patternrule : LBRACE pattern RBRACE ACTION outcomes
-                | DOLLARPATTERN ACTION outcomes
+    patternrule : pattern ACTION outcomes
     '''
     # e.g. "{ ptr = malloc() } =>  ptr.unknown"
     # e.g. "$leaked$ => ptr.leaked"
-    if p[1] == '{':
-        p[0] = PatternRule(pattern=p[2], outcomes=p[5])
-    else:
-        p[0] = PatternRule(pattern=SpecialPattern.make(p[1]), outcomes=p[3])
+    p[0] = PatternRule(pattern=p[1], outcomes=p[3])
 
-# Various kinds of "pattern":
-def p_pattern_assignment_from_literal(p):
+# Various kinds of "cpattern":
+def p_cpattern_assignment_from_literal(p):
     '''
-    pattern : ID ASSIGNMENT LITERAL_STRING
-            | ID ASSIGNMENT LITERAL_NUMBER
+    cpattern : ID ASSIGNMENT LITERAL_STRING
+             | ID ASSIGNMENT LITERAL_NUMBER
     '''
     # e.g. "q = 0"
     p[0] = AssignmentFromLiteral(lhs=p[1], rhs=p[3])
 
-def p_pattern_result_of_fn_call(p):
-    'pattern : ID ASSIGNMENT ID LPAREN RPAREN'
+def p_cpattern_result_of_fn_call(p):
+    'cpattern : ID ASSIGNMENT ID LPAREN RPAREN'
     # e.g. "ptr = malloc()"
     p[0] = ResultOfFnCall(lhs=p[1], func=p[3])
 
@@ -268,23 +305,26 @@ def p_fncall_args(p):
     else:
         p[0] = p[1] + [p[3]]
 
-def p_pattern_arg_of_fn_call(p):
-    'pattern : ID LPAREN fncall_args RPAREN'
+def p_cpattern_arg_of_fn_call(p):
+    'cpattern : ID LPAREN fncall_args RPAREN'
     # e.g. "free(ptr)"
     p[0] = ArgsOfFnCall(func=p[1], args=p[3])
 
-def p_pattern_comparison(p):
-    'pattern : ID COMPARISON LITERAL_NUMBER'
+def p_cpattern_comparison(p):
+    '''
+    cpattern : ID COMPARISON LITERAL_NUMBER
+             | ID COMPARISON ID
+    '''
     # e.g. "ptr == 0"
     p[0] = Comparison(lhs=p[1], op=p[2], rhs=p[3])
 
-def p_pattern_dereference(p):
-    'pattern : STAR ID'
+def p_cpattern_dereference(p):
+    'cpattern : STAR ID'
     # e.g. "*ptr"
     p[0] = VarDereference(var=p[2])
 
-def p_pattern_usage(p):
-    'pattern : ID'
+def p_cpattern_usage(p):
+    'cpattern : ID'
     # e.g. "ptr"
     p[0] = VarUsage(var=p[1])
 
