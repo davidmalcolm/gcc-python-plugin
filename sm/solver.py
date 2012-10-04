@@ -207,7 +207,7 @@ class ExplodedGraph(Graph):
         expedge = self._edgedict[key]
 
         # Some patterns match on ExplodedEdges (based on the src state):
-        for sc in self.ctxt.sm.stateclauses:
+        for sc in self.ctxt._stateclauses:
             # Locate any rules that could apply, regardless of the current
             # state:
             for pr in sc.patternrulelist:
@@ -400,7 +400,7 @@ def make_exploded_graph(ctxt, innergraph):
                     continue
 
             matches = []
-            for sc in ctxt.sm.stateclauses:
+            for sc in ctxt._stateclauses:
                 # Locate any rules that could apply, regardless of the current
                 # state:
                 for pr in sc.patternrulelist:
@@ -501,19 +501,31 @@ class Context:
         self.options = options
 
         self.sm = sm
-        #self.var = var
+
+        # The Context caches some information about the sm to help
+        # process it efficiently:
+        #
+        #   all state names:
         self.statenames = list(sm.iter_states())
 
-        # A mapping from str (decl names) to Decl instances
+        #   a mapping from str (decl names) to Decl instances
         self._decls = {}
-        for decl in sm.decls:
-            self._decls[decl.name] = decl
 
-        # The stateful decl, if any:
+        #   the stateful decl, if any:
         self._stateful_decl = None
-        for decl in sm.decls:
-            if decl.has_state:
-                self._stateful_decl = decl
+
+        #   all StateClause instance, in order:
+        self._stateclauses = []
+
+        # Set up the above attributes:
+        from sm.checker import Decl, StateClause
+        for clause in sm.clauses:
+            if isinstance(clause, Decl):
+                self._decls[clause.name] = clause
+                if clause.has_state:
+                    self._stateful_decl = clause
+            elif isinstance(clause, StateClause):
+                self._stateclauses.append(clause)
 
         # Store the errors so that we can play them back in source order
         # (for greater predicability of selftests):

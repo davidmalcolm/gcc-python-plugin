@@ -32,23 +32,28 @@ class Checker:
         return checker_to_dot(self, name)
 
 class Sm:
-    def __init__(self, name, decls, stateclauses):
+    def __init__(self, name, clauses):
         self.name = name
-        self.decls = decls
-        self.stateclauses = stateclauses
+        self.clauses = clauses
 
     def __repr__(self):
-        return ('Sm(name=%r, decls=%r, stateclauses=%r)'
-                % (self.name, self.decls, self.stateclauses))
+        return ('Sm(name=%r, clauses=%r)'
+                % (self.name, self.clauses))
 
     def iter_states(self):
         statenames = set()
-        for sc in self.stateclauses:
-            for statename in sc.statelist:
-                if statename not in statenames:
-                    yield statename
+        for sc in self.clauses:
+            if isinstance(sc, StateClause):
+                for statename in sc.statelist:
+                    if statename not in statenames:
+                        statenames.add(statename)
+                        yield statename
 
-class Decl:
+class Clause:
+    # top-level item within an sm
+    pass
+
+class Decl(Clause):
     # a matchable thing
     def __init__(self, has_state, name):
         self.has_state = has_state
@@ -85,7 +90,7 @@ class AnyExpr(Decl):
     def matched_by(self, gccexpr):
         return True
 
-class StateClause:
+class StateClause(Clause):
     def __init__(self, statelist, patternrulelist):
         self.statelist = statelist
         self.patternrulelist = patternrulelist

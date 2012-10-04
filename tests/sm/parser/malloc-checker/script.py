@@ -63,14 +63,15 @@ sm malloc_checker {
         self.assertEqual(len(ch.sms), 1)
         sm = ch.sms[0]
         self.assertEqual(sm.name, 'malloc_checker')
-        self.assertEqual(sm.decls, [AnyPointer(has_state=True, name='ptr')])
+        self.assertEqual(len(sm.clauses), 8)
 
-        self.assertEqual(len(sm.stateclauses), 7)
+        decl = sm.clauses[0]
+        self.assertEqual(decl, AnyPointer(has_state=True, name='ptr'))
 
         # Verify parsing of:
         #   ptr.all:
         #     { ptr = malloc() } =>  ptr.unknown;
-        sc = sm.stateclauses[0]
+        sc = sm.clauses[1]
         self.assertEqual(sc.statelist, ['ptr.all'])
         self.assertEqual(len(sc.patternrulelist), 1)
         pr = sc.patternrulelist[0]
@@ -85,7 +86,7 @@ sm malloc_checker {
         #       { ptr == 0 } => true=ptr.null, false=ptr.nonnull
         #     | { ptr != 0 } => true=ptr.nonnull, false=ptr.null
         #     ;
-        sc = sm.stateclauses[1]
+        sc = sm.clauses[2]
         self.assertEqual(sc.statelist,
                          ['ptr.unknown', 'ptr.null', 'ptr.nonnull'])
         self.assertEqual(len(sc.patternrulelist), 2)
@@ -104,7 +105,7 @@ sm malloc_checker {
         # Verify parsing of:
         #   ptr.unknown:
         #     { *ptr } => {{ error('use of possibly-NULL pointer %s' % ptr) }};
-        sc = sm.stateclauses[2]
+        sc = sm.clauses[3]
         self.assertEqual(sc.statelist,
                          ['ptr.unknown'])
         self.assertEqual(len(sc.patternrulelist), 1)
@@ -116,7 +117,7 @@ sm malloc_checker {
         # Verify parsing of:
         #   ptr.null:
         #     { *ptr } => {{ error('use of NULL pointer %s' % ptr) }};
-        sc = sm.stateclauses[3]
+        sc = sm.clauses[4]
         self.assertEqual(sc.statelist,
                          ['ptr.null'])
         self.assertEqual(len(sc.patternrulelist), 1)
@@ -128,7 +129,7 @@ sm malloc_checker {
         # Verify parsing of:
         #   ptr.all, ptr.unknown, ptr.null, ptr.nonnull:
         #     { free(ptr) } => ptr.free;
-        sc = sm.stateclauses[4]
+        sc = sm.clauses[5]
         self.assertEqual(sc.statelist,
                          ['ptr.all', 'ptr.unknown', 'ptr.null', 'ptr.nonnull'])
         self.assertEqual(len(sc.patternrulelist), 1)
@@ -141,7 +142,7 @@ sm malloc_checker {
         #   ptr.free:
         #     { free(ptr) } => {{ error('double-free of %s' % ptr) }}
         #     | { ptr } => {{ error('use-after-free of %s' % ptr) }}
-        sc = sm.stateclauses[5]
+        sc = sm.clauses[6]
         self.assertEqual(sc.statelist,
                          ['ptr.free'])
         self.assertEqual(len(sc.patternrulelist), 2)
@@ -157,7 +158,7 @@ sm malloc_checker {
         # Verify parsing of:
         #   ptr.unknown, ptr.nonnull:
         #       $leaked$ => {{ error('leak of %s' % ptr) }};
-        sc = sm.stateclauses[6]
+        sc = sm.clauses[7]
         self.assertEqual(sc.statelist,
                          ['ptr.unknown', 'ptr.nonnull'])
         self.assertEqual(len(sc.patternrulelist), 1)

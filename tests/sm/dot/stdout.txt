@@ -1,22 +1,11 @@
 digraph test_script {
   subgraph malloc_checker {
     ptr_all [label=<ptr.all>];
-    ptr_all [label=<ptr.all>];
-    ptr_unknown [label=<ptr.unknown>];
-    ptr_null [label=<ptr.null>];
-    ptr_nonnull [label=<ptr.nonnull>];
-    ptr_unknown [label=<ptr.unknown>];
-    ptr_null [label=<ptr.null>];
-    ptr_all [label=<ptr.all>];
     ptr_unknown [label=<ptr.unknown>];
     ptr_null [label=<ptr.null>];
     ptr_nonnull [label=<ptr.nonnull>];
     ptr_free [label=<ptr.free>];
-    ptr_unknown [label=<ptr.unknown>];
-    ptr_null [label=<ptr.null>];
     ptr_freed [label=<ptr.freed>];
-    ptr_unknown [label=<ptr.unknown>];
-    ptr_nonnull [label=<ptr.nonnull>];
 
     ptr_all -> ptr_unknown [label=<ptr = malloc(...)>];
     ptr_all -> ptr_null [label=<ptr = 0>];

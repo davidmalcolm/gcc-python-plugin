@@ -142,8 +142,16 @@ def p_checker(p):
         p[0] = Checker([p[1]] + p[2].sms)
 
 def p_sm(p):
-    'sm : SM ID LBRACE declclauses stateclauses RBRACE'
-    p[0] = Sm(name=p[2], decls=p[4], stateclauses=p[5])
+    'sm : SM ID LBRACE smclauses RBRACE'
+    p[0] = Sm(name=p[2], clauses=p[4])
+
+def p_smclauses(p):
+    '''smclauses : smclause
+                    | smclauses smclause'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
 
 def p_empty(p):
     'empty :'
@@ -163,17 +171,9 @@ def p_declkind(p):
     '''
     p[0] = p[1]
 
-def p_declclauses(p):
-    '''declclauses : declclause
-                    | declclauses declclause'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = p[1] + [p[2]]
-
-def p_declclause(p):
+def p_smclause_decl(p):
     '''
-    declclause : optional_state DECL declkind ID SEMICOLON
+    smclause : optional_state DECL declkind ID SEMICOLON
     '''
     # e.g. "state decl any_pointer ptr;"
     # e.g. "decl any_expr x;"
@@ -182,16 +182,8 @@ def p_declclause(p):
     name = p[4]
     p[0] = Decl.make(has_state, declkind, name)
 
-def p_stateclauses(p):
-    '''stateclauses : stateclause
-                    | stateclauses stateclause'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = p[1] + [p[2]]
-
-def p_stateclause(p):
-    'stateclause : statelist COLON patternrulelist SEMICOLON'
+def p_smclause_stateclause(p):
+    'smclause : statelist COLON patternrulelist SEMICOLON'
     # e.g.
     #   ptr.unknown, ptr.null, ptr.nonnull:
     #      { ptr == 0 } => true=ptr.null, false=ptr.nonnull

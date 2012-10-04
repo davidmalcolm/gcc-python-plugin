@@ -17,7 +17,8 @@
 
 from gccutils.dot import to_html
 
-from sm.checker import TransitionTo, BooleanOutcome, PythonOutcome
+from sm.checker import TransitionTo, BooleanOutcome, PythonOutcome, \
+    StateClause
 
 def checker_to_dot(checker, name):
     result = 'digraph %s {\n' % name
@@ -40,7 +41,9 @@ def sm_to_dot(sm):
     for state in sm.iter_states():
         result += '    %s [label=<%s>];\n' % (state_to_dot(state), state)
     result += '\n'
-    for sc in sm.stateclauses:
+    for sc in sm.clauses:
+        if not isinstance(sc, StateClause):
+            continue
         for state in sc.statelist:
             for pr in sc.patternrulelist:
                 for outcome in pr.outcomes:
