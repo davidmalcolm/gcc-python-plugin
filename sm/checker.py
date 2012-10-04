@@ -346,30 +346,18 @@ class Comparison(Pattern):
                 print('edge.false_value: %r' % edge.false_value)
 
             # For now, specialcase:
-            if self.op == '==':
-                exprcode = gcc.EqExpr
-                if stmt.exprcode == exprcode:
-                    m = Match(self)
-                    if m.match_term(ctxt, stmt.lhs, self.lhs):
-                        if m.match_term(ctxt, stmt.rhs, self.rhs):
-                            yield m
-            elif self.op == '!=':
-                exprcode = gcc.NeExpr
-                if stmt.exprcode == exprcode:
-                    m = Match(self)
-                    if m.match_term(ctxt, stmt.lhs, self.lhs):
-                        if m.match_term(ctxt, stmt.rhs, self.rhs):
-                            yield m
-            else:
-                raise UnhandledConditional() # FIXME
-            """
-            if stmt.exprcode == gcc.EqExpr:
-                op = '==' if edge.true_value else '!='
-            elif stmt.exprcode == gcc.LtExpr:
-                op = '<' if edge.true_value else '>='
-            elif stmt.exprcode == gcc.LeExpr:
-                op = '<=' if edge.true_value else '>'
-            """
+            codes_for_ops = {'==' : gcc.EqExpr,
+                             '!=' : gcc.NeExpr,
+                             '<'  : gcc.LtExpr,
+                             '<=' : gcc.LeExpr,
+                             '>'  : gcc.GtExpr,
+                             '>=' : gcc.GeExpr}
+            exprcode = codes_for_ops[self.op]
+            if stmt.exprcode == exprcode:
+                m = Match(self)
+                if m.match_term(ctxt, stmt.lhs, self.lhs):
+                    if m.match_term(ctxt, stmt.rhs, self.rhs):
+                        yield m
 
     def description(self, match, ctxt):
         return ('%s compared against %s'
