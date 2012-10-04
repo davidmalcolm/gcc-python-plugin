@@ -19,6 +19,10 @@ import gcc
 
 from gccutils.graph import ReturnNode
 
+def indent(text):
+    return '\n'.join(['  %s' % line
+                      for line in text.splitlines()])
+
 class Checker:
     # Top-level object representing a .sm file
     def __init__(self, sms):
@@ -26,6 +30,9 @@ class Checker:
 
     def __repr__(self):
         return 'Checker(%r)' % self.sms
+
+    def __str__(self):
+        return '\n'.join(str(sm) for sm in self.sms)
 
     def to_dot(self, name):
         from sm.dot import checker_to_dot
@@ -35,6 +42,13 @@ class Sm:
     def __init__(self, name, clauses):
         self.name = name
         self.clauses = clauses
+
+    def __str__(self):
+        result = 'sm %s {\n' % self.name
+        for clause in self.clauses:
+            result += indent(str(clause)) + '\n\n'
+        result += '}\n'
+        return result
 
     def __repr__(self):
         return ('Sm(name=%r, clauses=%r)'
@@ -58,6 +72,12 @@ class Decl(Clause):
     def __init__(self, has_state, name):
         self.has_state = has_state
         self.name = name
+
+    def __str__(self):
+        return ('%sdecl %s %s;\n'
+                % ('state ' if self.has_state else '',
+                   self.kind,
+                   self.name))
 
     def __hash__(self):
         return hash(self.name)
@@ -83,10 +103,12 @@ class Decl(Clause):
         raise NotImplementedError()
 
 class AnyPointer(Decl):
+    kind = 'any_pointer'
     def matched_by(self, gccexpr):
         return isinstance(gccexpr.type, gcc.PointerType)
 
 class AnyExpr(Decl):
+    kind = 'any_expr'
     def matched_by(self, gccexpr):
         return True
 
@@ -95,6 +117,15 @@ class StateClause(Clause):
         self.statelist = statelist
         self.patternrulelist = patternrulelist
 
+    def __str__(self):
+        result = ('%s:\n'
+                  % (', '.join([str(state)
+                                for state in self.statelist])))
+        prs = '\n| '.join([str(pr)
+                            for pr in self.patternrulelist])
+        result += indent(prs)
+        return result
+
     def __repr__(self):
         return 'StateClause(statelist=%r, patternrulelist=%r)' % (self.statelist, self.patternrulelist)
 
@@ -102,6 +133,13 @@ class PatternRule:
     def __init__(self, pattern, outcomes):
         self.pattern = pattern
         self.outcomes = outcomes
+
+    def __str__(self):
+        result = '%s => ' % self.pattern
+        result += ', '.join([str(outcome)
+                             for outcome in self.outcomes])
+        result += ';'
+        return result
 
     def __repr__(self):
         return 'PatternRule(pattern=%r, outcomes=%r)' % (self.pattern, self.outcomes)
@@ -182,7 +220,7 @@ class AssignmentFromLiteral(Pattern):
     def __repr__(self):
         return 'AssignmentFromLiteral(lhs=%r, rhs=%r)' % (self.lhs, self.rhs)
     def __str__(self):
-        return '%s = %s' % (self.lhs, self.rhs)
+        return '{ %s = %s }' % (self.lhs, self.rhs)
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.lhs == other.lhs:
@@ -205,7 +243,7 @@ class FunctionCall(Pattern):
         self.fnname = fnname
 
     def __str__(self):
-        return '%s(...)' % self.fnname
+        return '{ %s(...) }' % self.fnname
 
     def iter_matches(self, stmt, edge, ctxt):
         if isinstance(stmt, gcc.GimpleCall):
@@ -224,7 +262,7 @@ class ResultOfFnCall(FunctionCall):
     def __repr__(self):
         return 'ResultOfFnCall(lhs=%r, func=%r)' % (self.lhs, self.func)
     def __str__(self):
-        return '%s = %s(...)' % (self.lhs, self.func)
+        return '{ %s = %s(...) }' % (self.lhs, self.func)
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.lhs == other.lhs:
@@ -249,9 +287,9 @@ class ArgsOfFnCall(FunctionCall):
     def __repr__(self):
         return 'ArgsOfFnCall(func=%r, args=%r)' % (self.func, self.args)
     def __str__(self):
-        return '%s(%s)' % (self.fnname,
-                           ', '.join([str(arg)
-                                      for arg in self.args]))
+        return '{ %s(%s) } ' % (self.fnname,
+                                ', '.join([str(arg)
+                                           for arg in self.args]))
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.func == other.func:
@@ -280,7 +318,7 @@ class Comparison(Pattern):
     def __repr__(self):
         return 'Comparison(%r, %r, %r)' % (self.lhs, self.op, self.rhs)
     def __str__(self):
-        return '(%s %s %s)' % (self.lhs, self.op, self.rhs)
+        return '{ %s %s %s }' % (self.lhs, self.op, self.rhs)
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.lhs == other.lhs:
@@ -333,7 +371,7 @@ class VarDereference(Pattern):
     def __repr__(self):
         return 'VarDereference(var=%r)' % self.var
     def __str__(self):
-        return '*%s' % self.var
+        return '{ *%s }' % self.var
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.var == other.var:
@@ -362,7 +400,7 @@ class VarUsage(Pattern):
     def __repr__(self):
         return 'VarUsage(var=%r)' % self.var
     def __str__(self):
-        return '%s' % self.var
+        return '{ %s }' % self.var
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.var == other.var:
@@ -426,6 +464,8 @@ class Outcome:
 class TransitionTo(Outcome):
     def __init__(self, state):
         self.state = state
+    def __str__(self):
+        return str(self.state)
     def __repr__(self):
         return 'TransitionTo(state=%r)' % self.state
     def __eq__(self, other):
@@ -445,6 +485,9 @@ class BooleanOutcome(Outcome):
     def __init__(self, guard, outcome):
         self.guard = guard
         self.outcome = outcome
+    def __str__(self):
+        return ('%s=%s' % ('true' if self.guard else 'false',
+                           self.outcome))
     def __repr__(self):
         return 'BooleanOutcome(guard=%r, outcome=%r)' % (self.guard, self.outcome)
     def __eq__(self, other):
@@ -461,6 +504,8 @@ class BooleanOutcome(Outcome):
 class PythonOutcome(Outcome):
     def __init__(self, src):
         self.src = src
+    def __str__(self):
+        return '{{%s}}' % self.src
     def __repr__(self):
         return 'PythonOutcome(%r)' % (self.src, )
     def __eq__(self, other):

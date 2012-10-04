@@ -59,7 +59,37 @@ sm malloc_checker {
 }
 ''')
         self.assert_(isinstance(ch, Checker))
-        # print(ch)
+
+        # Verify that the str() of the parsed Checker looks sane:
+        self.assertEqual(str(ch).splitlines(),
+'''sm malloc_checker {
+  state decl any_pointer ptr;
+
+  ptr.all:
+    { ptr = malloc(...) } => ptr.unknown;
+
+  ptr.unknown, ptr.null, ptr.nonnull:
+    { ptr == 0 } => true=ptr.null, false=ptr.nonnull;
+    | { ptr != 0 } => true=ptr.nonnull, false=ptr.null;
+
+  ptr.unknown:
+    { *ptr } => {{ error('use of possibly-NULL pointer %s' % ptr) }};
+
+  ptr.null:
+    { *ptr } => {{ error('use of NULL pointer %s' % ptr) }};
+
+  ptr.all, ptr.unknown, ptr.null, ptr.nonnull:
+    { free(ptr) }  => ptr.free;
+
+  ptr.free:
+    { free(ptr) }  => {{ error('double-free of %s' % ptr) }};
+    | { ptr } => {{ error('use-after-free of %s' % ptr) }};
+
+  ptr.unknown, ptr.nonnull:
+    $leaked$ => {{ error('leak of %s' % ptr) }};
+
+}'''.splitlines())
+
         self.assertEqual(len(ch.sms), 1)
         sm = ch.sms[0]
         self.assertEqual(sm.name, 'malloc_checker')
