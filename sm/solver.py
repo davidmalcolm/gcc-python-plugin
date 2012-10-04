@@ -213,7 +213,8 @@ class ExplodedGraph(Graph):
             for pr in sc.patternrulelist:
                 for match in pr.pattern.iter_expedge_matches(expedge, self):
                     # Now see if the rules apply for this state:
-                    srcstate = expedge.srcnode.shape.get_state(match.var)
+                    stateful_gccvar = match.get_stateful_gccvar(self.ctxt)
+                    srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
                     if srcstate in sc.statelist:
                         mctxt = MatchContext(match, self, srcexpnode, inneredge)
                         for outcome in pr.outcomes:
@@ -321,6 +322,9 @@ class MatchContext:
     def dstnode(self):
         return self.inneredge.dstnode
 
+    def get_stateful_gccvar(self):
+        return self.match.get_stateful_gccvar(self.expgraph.ctxt)
+
 def make_exploded_graph(ctxt, innergraph):
     expgraph = ExplodedGraph(ctxt)
     for entry in innergraph.get_entry_nodes():
@@ -409,10 +413,16 @@ def make_exploded_graph(ctxt, innergraph):
                     for match in pr.pattern.iter_matches(stmt, edge, ctxt):
                         # print('pr.pattern: %r' % pr.pattern)
                         # print('match: %r' % match)
-                        # print(match.var)
-                        srcstate = srcshape.get_state(match.var)
+                        srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
                         if srcstate in sc.statelist:
                             assert len(pr.outcomes) > 0
+                            if 0:
+                                print('%s: got match in state %r of %r at %r: %s'
+                                      % (ctxt.sm.name,
+                                         srcstate,
+                                         str(pr.pattern),
+                                         str(stmt),
+                                         match))
                             mctxt = MatchContext(match, expgraph, srcexpnode, edge)
                             for outcome in pr.outcomes:
                                 outcome.apply(mctxt)
@@ -460,8 +470,10 @@ class Error:
             # we should also report relevant aliasing information
             # ("foo" passed to fn bar as "baz"; "baz" returned from fn bar into "foo")
             # TODO: backtrace down the path, tracking the StateVar aliases of interest...
-            srcstate = expedge.srcnode.shape.get_state(self.match.var)
-            dststate = expedge.dstnode.shape.get_state(self.match.var)
+
+            stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
+            srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
+            dststate = expedge.dstnode.shape.get_state(stateful_gccvar)
             if srcstate != dststate:
                 gccloc = expedge.srcnode.innernode.get_gcc_loc()
                 if gccloc:
@@ -492,12 +504,33 @@ class Context:
         #self.var = var
         self.statenames = list(sm.iter_states())
 
+        # A mapping from str (decl names) to Decl instances
+        self._decls = {}
+        for decl in sm.decls:
+            self._decls[decl.name] = decl
+
+        # The stateful decl, if any:
+        self._stateful_decl = None
+        for decl in sm.decls:
+            if decl.has_state:
+                self._stateful_decl = decl
+
         # Store the errors so that we can play them back in source order
         # (for greater predicability of selftests):
         self._errors = []
 
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )
+
+    def lookup_decl(self, declname):
+        class UnknownDecl(Exception):
+            def __init__(self, declname):
+                self.declname = declname
+            def __str__(self):
+                return repr(declname)
+        if declname not in self._decls:
+            raise UnknownDecl(declname)
+        return self._decls[declname]
 
     def add_error(self, expgraph, expnode, match, msg):
         err = Error(expnode, match, msg)
@@ -524,34 +557,31 @@ class Context:
             error.emit(self, expgraph)
 
     def compare(self, gccexpr, smexpr):
-        #print('compare(%r, %r)' % (gccexpr, smexpr))
+        if 0:
+            print('  compare(%r, %r)' % (gccexpr, smexpr))
+
         #print('self.var: %r' % self.var)
         if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl)):
             #if gccexpr == self.var:
             # print '%r' % self.sm.varclauses.name
-            if smexpr == self.sm.varclauses.name:
-                return True
+            #if smexpr == self.sm.varclauses.name:
+            decl = self.lookup_decl(smexpr)
+            return decl.matched_by(gccexpr)
 
-        if isinstance(gccexpr, gcc.IntegerCst) and isinstance(smexpr, (int, long)):
-            if gccexpr.constant == smexpr:
-                return True
+        if isinstance(gccexpr, gcc.IntegerCst):
+            if isinstance(smexpr, (int, long)):
+                if gccexpr.constant == smexpr:
+                    return True
+            if isinstance(smexpr, str):
+                decl = self.lookup_decl(smexpr)
+                if decl.matched_by(gccexpr):
+                    return True
 
         return False
         print('compare:')
         print('  gccexpr: %r' % gccexpr)
         print('  smexpr: %r' % smexpr)
         raise UnhandledComparison()
-
-    def describe(self, smexpr):
-        return str(smexpr)
-
-        return 'Context.describe()'
-        if smexpr == self.sm.varclauses.name:
-            return str(self.var)
-        if isinstance(smexpr, (int, long)):
-            return str(smexpr)
-        print('smexpr: %r' % smexpr)
-        raise UnhandledDescription()
 
     def get_default_state(self):
         return self.statenames[0]

@@ -1,0 +1,2 @@
+tests/sm/patterns/args-of-fn-call/input.c: In function 'test1':
+tests/sm/patterns/args-of-fn-call/input.c:5:nn: error: test2() was called with arg0:ptr arg1:0 arg2:65

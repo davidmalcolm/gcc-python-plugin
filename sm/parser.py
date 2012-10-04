@@ -19,10 +19,10 @@
 
 # Uses "ply", so we'll need python-ply on Fedora
 
-from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
+from sm.checker import Checker, Sm, Decl, StateClause, PatternRule, \
     SpecialPattern, \
     AssignmentFromLiteral, \
-    ResultOfFnCall, ArgOfFnCall, Comparison, VarDereference, VarUsage, \
+    ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
 
 ############################################################################
@@ -31,7 +31,7 @@ from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
 import ply.lex as lex
 
 reserved = ['decl', 'sm', 'state', 'true', 'false',
-            'any_pointer']
+            'any_pointer', 'any_expr']
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
     'ACTION',
@@ -113,8 +113,7 @@ def t_newline(t):
     t.lexer.lineno += t.value.count("\n")
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+    raise ParserError.from_token(t, "Illegal character '%s'" % t.value[0])
 
 lexer = lex.lex()
 
@@ -143,14 +142,45 @@ def p_checker(p):
         p[0] = Checker([p[1]] + p[2].sms)
 
 def p_sm(p):
-    'sm : SM ID LBRACE var stateclauses RBRACE'
-    p[0] = Sm(name=p[2], varclauses=p[4], stateclauses=p[5])
+    'sm : SM ID LBRACE declclauses stateclauses RBRACE'
+    p[0] = Sm(name=p[2], decls=p[4], stateclauses=p[5])
 
-def p_var(p):
-    'var : STATE DECL ANY_POINTER ID SEMICOLON'
+def p_empty(p):
+    'empty :'
+    pass
+
+def p_optional_state(p):
+    '''
+    optional_state : STATE
+                   | empty
+    '''
+    p[0] = p[1]
+
+def p_declkind(p):
+    '''
+    declkind : ANY_POINTER
+             | ANY_EXPR
+    '''
+    p[0] = p[1]
+
+def p_declclauses(p):
+    '''declclauses : declclause
+                    | declclauses declclause'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_declclause(p):
+    '''
+    declclause : optional_state DECL declkind ID SEMICOLON
+    '''
     # e.g. "state decl any_pointer ptr;"
-    # FIXME: "state" is optional, and ANY_POINTER needs to change
-    p[0] = Var(p[4])
+    # e.g. "decl any_expr x;"
+    has_state = (p[1] == 'state')
+    declkind = p[3]
+    name = p[4]
+    p[0] = Decl.make(has_state, declkind, name)
 
 def p_stateclauses(p):
     '''stateclauses : stateclause
@@ -228,10 +258,28 @@ def p_pattern_result_of_fn_call(p):
     # e.g. "ptr = malloc()"
     p[0] = ResultOfFnCall(lhs=p[1], func=p[3])
 
+def p_fncall_arg(p):
+    '''
+    fncall_arg : ID
+               | LITERAL_STRING
+               | LITERAL_NUMBER
+    '''
+    p[0] = p[1]
+
+def p_fncall_args(p):
+    '''
+    fncall_args : fncall_arg
+                 | fncall_args COMMA fncall_arg
+    '''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
 def p_pattern_arg_of_fn_call(p):
-    'pattern : ID LPAREN ID RPAREN'
+    'pattern : ID LPAREN fncall_args RPAREN'
     # e.g. "free(ptr)"
-    p[0] = ArgOfFnCall(func=p[1], arg=p[3])
+    p[0] = ArgsOfFnCall(func=p[1], args=p[3])
 
 def p_pattern_comparison(p):
     'pattern : ID COMPARISON LITERAL_NUMBER'
@@ -320,7 +368,7 @@ class ParserError(Exception):
         return result
 
 def p_error(p):
-    raise ParserError.from_token(p)
+    raise ParserError.from_production(p, p.value, 'Parser error')
 
 ############################################################################
 # Interface:

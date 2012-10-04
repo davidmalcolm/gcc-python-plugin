@@ -18,9 +18,9 @@
 
 import unittest
 
-from sm.checker import Checker, Sm, Var, StateClause, PatternRule, \
+from sm.checker import Checker, Sm, AnyPointer, StateClause, PatternRule, \
     LeakedPattern, \
-    ResultOfFnCall, ArgOfFnCall, Comparison, VarDereference, VarUsage, \
+    ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
 from sm.parser import parse_string
 
@@ -63,7 +63,7 @@ sm malloc_checker {
         self.assertEqual(len(ch.sms), 1)
         sm = ch.sms[0]
         self.assertEqual(sm.name, 'malloc_checker')
-        self.assertEqual(sm.varclauses, Var('ptr'))
+        self.assertEqual(sm.decls, [AnyPointer(has_state=True, name='ptr')])
 
         self.assertEqual(len(sm.stateclauses), 7)
 
@@ -133,7 +133,7 @@ sm malloc_checker {
                          ['ptr.all', 'ptr.unknown', 'ptr.null', 'ptr.nonnull'])
         self.assertEqual(len(sc.patternrulelist), 1)
         pr = sc.patternrulelist[0]
-        self.assertEqual(pr.pattern, ArgOfFnCall(func='free', arg='ptr'))
+        self.assertEqual(pr.pattern, ArgsOfFnCall(func='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
                          [TransitionTo(state='ptr.free')])
 
@@ -146,7 +146,7 @@ sm malloc_checker {
                          ['ptr.free'])
         self.assertEqual(len(sc.patternrulelist), 2)
         pr = sc.patternrulelist[0]
-        self.assertEqual(pr.pattern, ArgOfFnCall(func='free', arg='ptr'))
+        self.assertEqual(pr.pattern, ArgsOfFnCall(func='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=" error('double-free of %s' % ptr) ")])
         pr = sc.patternrulelist[1]
