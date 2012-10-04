@@ -23,7 +23,8 @@ from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
     PatternRule, \
     NamedPatternReference, SpecialPattern, OrPattern, \
     AssignmentFromLiteral, \
-    ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, VarUsage, \
+    ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, ArrayLookup, \
+    VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
 
 ############################################################################
@@ -36,7 +37,7 @@ reserved = ['decl', 'sm', 'state', 'true', 'false',
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
     'ACTION',
-    'LBRACE','RBRACE', 'LPAREN', 'RPAREN',
+    'LBRACE','RBRACE', 'LPAREN', 'RPAREN', 'LSQUARE', 'RSQUARE',
     'COMMA', 'DOT',
     'COLON', 'SEMICOLON',
     'ASSIGNMENT', 'STAR', 'PIPE',
@@ -57,6 +58,8 @@ t_LPAREN     = r'\('
 t_RPAREN     = r'\)'
 t_LBRACE     = r'{'
 t_RBRACE     = r'}'
+t_LSQUARE     = r'\['
+t_RSQUARE     = r'\]'
 t_COMMA      = r','
 t_DOT        = r'\.'
 t_COLON      = r':'
@@ -324,10 +327,17 @@ def p_cpattern_dereference(p):
     # e.g. "*ptr"
     p[0] = VarDereference(var=p[2])
 
+def p_cpattern_arraylookup(p):
+    'cpattern : ID LSQUARE ID RSQUARE'
+    # e.g. "arr[x]"
+    p[0] = ArrayLookup(array=p[1], index=p[3])
+
 def p_cpattern_usage(p):
     'cpattern : ID'
     # e.g. "ptr"
     p[0] = VarUsage(var=p[1])
+
+# The various outcomes when a pattern matches
 
 def p_outcomes(p):
     '''outcomes : outcome

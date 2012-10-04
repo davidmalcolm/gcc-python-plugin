@@ -393,6 +393,35 @@ class VarDereference(Pattern):
         return ('dereference of %s'
                 % (match.describe(ctxt, self.var)))
 
+class ArrayLookup(Pattern):
+    def __init__(self, array, index):
+        self.array = array
+        self.index = index
+    def __repr__(self):
+        return 'ArrayLookup(array=%r, index=%r)' % (self.array, self.index)
+    def __str__(self):
+        return '{ %s[%s] }' % (self.array, self.index)
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            if self.array == other.array:
+                if self.index == other.index:
+                    return True
+    def iter_matches(self, stmt, edge, ctxt):
+        def check_for_match(node, loc):
+            if isinstance(node, gcc.ArrayRef):
+                return True
+        t = stmt.walk_tree(check_for_match, stmt.loc)
+        if t:
+            m = Match(self)
+            if m.match_term(ctxt, t.array, self.array):
+                if m.match_term(ctxt, t.index, self.index):
+                    yield m
+
+    def description(self, match, ctxt):
+        return ('%s[%s]'
+                % (match.describe(ctxt, self.array),
+                   match.describe(ctxt, self.index)))
+
 class VarUsage(Pattern):
     def __init__(self, var):
         self.var = var
