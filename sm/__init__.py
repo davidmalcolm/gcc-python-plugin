@@ -83,7 +83,7 @@ class IpaSmPass(gcc.SimpleIpaPass):
 
         for checker in self.checkers:
             for sm in checker.sms:
-                ctxt = Context(sm, self.options)
+                ctxt = Context(checker, sm, self.options)
                 solve(ctxt, sg, 'supergraph')
 
 class Options:

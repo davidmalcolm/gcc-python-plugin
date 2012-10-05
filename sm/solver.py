@@ -100,6 +100,10 @@ class Shape:
 
         return clone, shapevars
 
+    def var_has_state(self, gccvar):
+        '''Does the given gccvar have a non-default state?'''
+        return gccvar in self._dict
+
     def get_state(self, var):
         assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
         if var in self._dict:
@@ -217,7 +221,15 @@ class ExplodedGraph(Graph):
                     srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
                     if srcstate in sc.statelist:
                         mctxt = MatchContext(match, self, srcexpnode, inneredge)
+                        self.ctxt.log('got match in state %r of %r at %s: %s'
+                            % (srcstate,
+                               str(pr.pattern),
+                               inneredge,
+                               match))
                         for outcome in pr.outcomes:
+                            self.ctxt.log('applying outcome to %s => %s'
+                                          % (mctxt.get_stateful_gccvar(),
+                                             outcome))
                             outcome.apply(mctxt)
 
     def get_shortest_path_to(self, dstexpnode):
@@ -398,6 +410,26 @@ def make_exploded_graph(ctxt, innergraph):
                     expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                        edge, None, shapechange)
                     continue
+                elif stmt.exprcode == gcc.ComponentRef:
+                    # Field lookup
+                    compref = stmt.rhs[0]
+                    if 0:
+                        print(compref.target)
+                        print(compref.field)
+                    # The LHS potentially inherits state from the compref
+                    if srcshape.var_has_state(compref.target):
+                        ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
+                            % (stmt.lhs,
+                               srcshape.get_state(compref.target),
+                               compref.target,
+                               compref.field))
+                        shapechange = ShapeChange(srcshape)
+                        # For now we alias the states
+                        shapechange.assign_var(stmt.lhs, compref.target)
+                        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                                           edge, None, shapechange)
+                        continue
 
             matches = []
             for sc in ctxt._stateclauses:
@@ -416,15 +448,16 @@ def make_exploded_graph(ctxt, innergraph):
                         srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
                         if srcstate in sc.statelist:
                             assert len(pr.outcomes) > 0
-                            if 0:
-                                print('%s: got match in state %r of %r at %r: %s'
-                                      % (ctxt.sm.name,
-                                         srcstate,
-                                         str(pr.pattern),
-                                         str(stmt),
-                                         match))
+                            ctxt.log('got match in state %r of %r at %r: %s'
+                                % (srcstate,
+                                   str(pr.pattern),
+                                   str(stmt),
+                                   match))
                             mctxt = MatchContext(match, expgraph, srcexpnode, edge)
                             for outcome in pr.outcomes:
+                                ctxt.log('applying outcome to %s => %s'
+                                         % (mctxt.get_stateful_gccvar(),
+                                            outcome))
                                 outcome.apply(mctxt)
                             matches.append(pr)
             if not matches:
@@ -479,7 +512,10 @@ class Error:
                 if gccloc:
                     if 1:
                         # Describe state change:
-                        desc = expedge.match.description(ctxt)
+                        if expedge.match:
+                            desc = expedge.match.description(ctxt)
+                        else:
+                            continue
                     else:
                         # Debugging information on state change:
                         desc = ('%s: %s -> %s'
@@ -497,9 +533,10 @@ class Context:
 
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
-    def __init__(self, sm, options):
+    def __init__(self, ch, sm, options):
         self.options = options
 
+        self.ch = ch
         self.sm = sm
 
         # The Context caches some information about the sm to help
@@ -520,6 +557,8 @@ class Context:
         #   all StateClause instance, in order:
         self._stateclauses = []
 
+        reachable_states = set([self.statenames[0]])
+
         # Set up the above attributes:
         from sm.checker import Decl, NamedPattern, StateClause
         for clause in sm.clauses:
@@ -531,6 +570,22 @@ class Context:
                 self._namedpatterns[clause.name] = clause
             elif isinstance(clause, StateClause):
                 self._stateclauses.append(clause)
+                for pr in clause.patternrulelist:
+                    for outcome in pr.outcomes:
+                        for state in outcome.iter_reachable_states():
+                            reachable_states.add(state)
+
+        # 2nd pass: validate the sm:
+        for clause in sm.clauses:
+            if isinstance(clause, StateClause):
+                for state in clause.statelist:
+                    if state not in reachable_states:
+                        class UnreachableState(Exception):
+                            def __init__(self, state):
+                                self.state = state
+                            def __str__(self):
+                                return str(self.state)
+                        raise UnreachableState(state)
 
         # Store the errors so that we can play them back in source order
         # (for greater predicability of selftests):
@@ -538,6 +593,11 @@ class Context:
 
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )
+
+    def log(self, msg):
+        # High-level logging
+        if 0:
+            print('%s: %s' % (self.sm.name, msg))
 
     def lookup_decl(self, declname):
         class UnknownDecl(Exception):
@@ -594,22 +654,27 @@ class Context:
             # print '%r' % self.sm.varclauses.name
             #if smexpr == self.sm.varclauses.name:
             decl = self.lookup_decl(smexpr)
-            return decl.matched_by(gccexpr)
+            if decl.matched_by(gccexpr):
+                return gccexpr
 
         if isinstance(gccexpr, gcc.IntegerCst):
             if isinstance(smexpr, (int, long)):
                 if gccexpr.constant == smexpr:
-                    return True
+                    return gccexpr
             if isinstance(smexpr, str):
                 decl = self.lookup_decl(smexpr)
                 if decl.matched_by(gccexpr):
-                    return True
+                    return gccexpr
 
-        return False
-        print('compare:')
-        print('  gccexpr: %r' % gccexpr)
-        print('  smexpr: %r' % smexpr)
-        raise UnhandledComparison()
+        if isinstance(gccexpr, gcc.AddrExpr):
+            # Dereference:
+            return self.compare(gccexpr.operand, smexpr)
+
+        if isinstance(gccexpr, gcc.ComponentRef):
+            # Dereference:
+            return self.compare(gccexpr.target, smexpr)
+
+        return None
 
     def get_default_state(self):
         return self.statenames[0]

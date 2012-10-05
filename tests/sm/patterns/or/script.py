@@ -28,8 +28,5 @@ sm checked_against_null {
 }
 '''
 
-# TODO: this currently emits the warning for both the true and the false path
-# from the conditional, rather than just once.
-
 checker = parse_string(SCRIPT)
 main([checker])

@@ -184,7 +184,8 @@ class Match:
         if 0:
             print('Match.match_term(self=%r, ctxt=%r, gccexpr=%r, smexpr=%r)'
                   % (self, ctxt, gccexpr, smexpr))
-        if ctxt.compare(gccexpr, smexpr):
+        gccexpr = ctxt.compare(gccexpr, smexpr)
+        if gccexpr:
             if isinstance(smexpr, str):
                 decl = ctxt.lookup_decl(smexpr)
                 self._dict[decl] = gccexpr
@@ -312,6 +313,9 @@ class ArgsOfFnCall(FunctionCall):
             def matches_args():
                 for i, arg in enumerate(self.args):
                     if not m.match_term(ctxt, stmt.args[i], arg):
+                        if 0:
+                            print('arg match failed on: %i %s %s'
+                                  % (i, arg, stmt.args[i]))
                         return False
                 return True
             if matches_args():
@@ -536,6 +540,9 @@ class TransitionTo(Outcome):
         expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
                                                  mctxt.inneredge, mctxt.match, None)
 
+    def iter_reachable_states(self):
+        yield self.state
+
 class BooleanOutcome(Outcome):
     def __init__(self, guard, outcome):
         self.guard = guard
@@ -555,6 +562,10 @@ class BooleanOutcome(Outcome):
             self.outcome.apply(mctxt)
         if mctxt.inneredge.false_value and not self.guard:
             self.outcome.apply(mctxt)
+
+    def iter_reachable_states(self):
+        for state in self.outcome.iter_reachable_states():
+            yield state
 
 class PythonOutcome(Outcome):
     def __init__(self, src):
@@ -576,8 +587,14 @@ class PythonOutcome(Outcome):
             print('  expgraph: %r' % expgraph)
             print('  expnode: %r' % expnode)
 
-        # Get at python code.
-        expr = self.src
+        # Get at python code
+        expr = self.src.strip()
+        filename = ctxt.ch.filename
+        if not filename:
+            filename = '<string>'
+        code = compile(expr, filename, 'exec')
+        # FIXME: the filename of the .sm file is correct, but the line
+        # numbers will be wrong
 
         # Create environment for execution of the code:
         def error(msg):
@@ -598,4 +615,7 @@ class PythonOutcome(Outcome):
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)
         # Now run the code:
-        result = eval(expr, globals_, locals_)
+        result = eval(code, globals_, locals_)
+
+    def iter_reachable_states(self):
+        return []

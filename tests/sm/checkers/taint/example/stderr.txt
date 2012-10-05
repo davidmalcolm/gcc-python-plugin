@@ -1,0 +1,12 @@
+tests/sm/checkers/taint/example/input.c: In function 'test':
+tests/sm/checkers/taint/example/input.c:18:nn: error: use of tainted value D.nnnnn in array lookup without bounds checking
+tests/sm/checkers/taint/example/input.c:18:nn: note: use of tainted value D.nnnnn in array lookup without bounds checking
+tests/sm/checkers/taint/example/input.c: In function 'test4':
+tests/sm/checkers/taint/example/input.c:49:nn: error: use of tainted value D.nnnnn in array lookup without upper-bound check
+tests/sm/checkers/taint/example/input.c:49:nn: note: use of tainted value D.nnnnn in array lookup without upper-bound check
+tests/sm/checkers/taint/example/input.c: In function 'test5':
+tests/sm/checkers/taint/example/input.c:62:nn: error: use of tainted value D.nnnnn in array lookup without lower-bound check
+tests/sm/checkers/taint/example/input.c:62:nn: note: use of tainted value D.nnnnn in array lookup without lower-bound check
+tests/sm/checkers/taint/example/input.c: In function 'test6':
+tests/sm/checkers/taint/example/input.c:82:nn: error: use of tainted value D.nnnnn in array lookup without bounds checking
+tests/sm/checkers/taint/example/input.c:82:nn: note: use of tainted value D.nnnnn in array lookup without bounds checking

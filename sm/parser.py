@@ -47,7 +47,7 @@ tokens = [
     ] + [r.upper() for r in reserved]
 
 def t_PYTHON(t):
-    r'\{\{.*\}\}'
+    r'\{\{(.|\n)*?\}\}'
     # matched double-braces, with arbitrary text (and whitespace) inside:
     # Drop the double-braces:
     t.value = t.value[2:-2]
@@ -111,11 +111,7 @@ def t_DOLLARPATTERN(t):
     return t
 
 # Ignored characters
-t_ignore = " \t"
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += t.value.count("\n")
+t_ignore = " \t\n"
 
 def t_error(t):
     raise ParserError.from_token(t, "Illegal character '%s'" % t.value[0])
@@ -423,14 +419,18 @@ def parse_string(s):
     if 0:
         print(s)
     parser = yacc.yacc(debug=0, write_tables=0)
-    return parser.parse(s)#, debug=1)
+    ch = parser.parse(s)#, debug=1)
+    ch.filename = None
+    return ch
 
 def parse_file(filename):
     parser = yacc.yacc(debug=0, write_tables=0)
     with open(filename) as f:
         s = f.read()
     try:
-        return parser.parse(s)#, debug=1)
+        ch = parser.parse(s)#, debug=1)
+        ch.filename = filename
+        return ch
     except ParserError, err:
         err.filename = filename
         raise err

@@ -17,18 +17,13 @@
 #   <http://www.gnu.org/licenses/>.
 
 from sm import main
-from sm.parser import parse_string
+from sm.parser import parse_file
 
-SCRIPT = '''
-sm checked_against_null {
-  state decl any_pointer ptr;
-
-  pat checked_against_null { ptr != 0 };
-
-  ptr.all:
-    checked_against_null => {{ error('%s was checked against NULL' % ptr) }};
-}
-'''
-
-checker = parse_string(SCRIPT)
+checker = parse_file('sm/checkers/taint.sm')
+#print(checker)
+dot = checker.to_dot('test_script')
+#print(dot)
+if 0:
+    from gccutils import invoke_dot
+    invoke_dot(dot)
 main([checker])

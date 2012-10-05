@@ -1,0 +1,68 @@
+sm taint {
+  state decl any_expr x;
+
+  decl any_expr y;
+  decl any_expr arr;
+  decl any_expr size;
+  decl any_expr nmemb;
+  decl any_expr stream;
+
+  /* Patterns that detect upper-bound and lower-bound checks: */
+  pat check_ub { x < y } | { x <= y };
+  pat check_lb { x > y } | { x >= y };
+  pat check_eq { x == y };
+  pat check_ne { x != y };
+
+  /* Sources of tainted data: */
+  x.start:
+    /* reading data from files: */
+      {fread(x, size, nmemb, stream)} => x.tainted
+    | {read(fd, x, count)} => x.tainted
+    ;
+
+  /*
+    When a tainted value is compared, mark it as now having either
+    an upper-bound, or a lower-bound:
+  */
+  x.tainted:
+      check_ub => true=x.has_ub, false=x.has_lb
+    | check_lb => true=x.has_lb, false=x.has_ub
+    ;
+
+  /*
+    If a value has only one bound, check to see if it gains the other bound:
+  */
+   x.has_lb:
+      check_ub => true=x.ok
+    | check_lb => false=x.ok
+    ;
+   x.has_ub:
+      check_ub => false=x.ok
+    | check_lb => true=x.ok
+    ;
+
+  /* If a value is successfully compared against a specific value, it's OK */
+  x.tainted, x.has_lb, x.has_ub:
+      check_eq => true=x.ok
+    | check_ne => false=x.ok
+    ;
+
+  /* Detect when a tainted value is used in a dangerous way: */
+  x.tainted:
+      { arr[x] } => {{
+          error('use of tainted value %s in array lookup without bounds checking' % x)
+        }};
+
+  x.has_lb:
+      { arr[x] } => {{
+          error('use of tainted value %s in array lookup without upper-bound check' % x)
+        }};
+
+  /* Unsigned types have an implicit lower bound: */
+  x.has_ub:
+      { arr[x] } => {{
+          if not x.type.unsigned:
+             error('use of tainted value %s in array lookup without lower-bound check' % x)
+        }};
+
+}

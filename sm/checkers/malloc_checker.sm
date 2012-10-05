@@ -35,7 +35,7 @@ sm malloc_checker {
   ptr.null:
       { memset(ptr) } => {{ error('use of NULL pointer %s' % ptr) }};
 
-  ptr.freed:
+  ptr.free:
       { memset(ptr) } => {{ error('use-after-free of %s' % ptr) }};
 
   ptr.unknown, ptr.nonnull:

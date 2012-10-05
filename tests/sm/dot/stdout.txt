@@ -5,7 +5,6 @@ digraph test_script {
     ptr_null [label=<ptr.null>];
     ptr_nonnull [label=<ptr.nonnull>];
     ptr_free [label=<ptr.free>];
-    ptr_freed [label=<ptr.freed>];
 
     ptr_all -> ptr_unknown [label=<{ ptr = malloc(...) }>];
     ptr_all -> ptr_null [label=<{ ptr = 0 }>];
@@ -32,7 +31,7 @@ digraph test_script {
     ptr_free -> ptr_free [label=<{ ptr }:  error(&apos;use-after-free of %s&apos; % ptr) >];
     ptr_unknown -> ptr_unknown [label=<{ memset(ptr) } :  error(&apos;use of possibly-NULL pointer %s&apos; % ptr) >];
     ptr_null -> ptr_null [label=<{ memset(ptr) } :  error(&apos;use of NULL pointer %s&apos; % ptr) >];
-    ptr_freed -> ptr_freed [label=<{ memset(ptr) } :  error(&apos;use-after-free of %s&apos; % ptr) >];
+    ptr_free -> ptr_free [label=<{ memset(ptr) } :  error(&apos;use-after-free of %s&apos; % ptr) >];
     ptr_unknown -> ptr_unknown [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
     ptr_nonnull -> ptr_nonnull [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
   }
