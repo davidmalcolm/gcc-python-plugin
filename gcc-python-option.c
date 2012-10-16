@@ -78,6 +78,12 @@ gcc_Option_repr(PyGccOption * self)
                                          gcc_python_option_to_cl_option(self)->opt_text);
 }
 
+/*
+  Weakly import warn_format; it's not available in lto1
+  (during link-time optimization)
+*/
+__typeof__ (warn_format) warn_format __attribute__ ((weak));
+
 int gcc_python_option_is_enabled(enum opt_code opt_code)
 {
     /* Returns 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,

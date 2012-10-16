@@ -177,6 +177,12 @@ PyObject *
 gcc_RealCst_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_IntegerType_get_signed_equivalent(struct PyGccTree * self, void *closure);
+
+PyObject *
+gcc_IntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure);
+
+PyObject *
 gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *

@@ -418,6 +418,9 @@ Types
       `sizeof()` this type, as an `int`, or raising `TypeError` for those
       types which don't have a well-defined size
 
+      .. note:: This attribute is not usable from within `lto1`; attempting
+         to use it there will lead to a `RuntimeError` exception.
+
    The standard C types are accessible via class methods of :py:class:`gcc.Type`.
    They are only created by GCC after plugins are loaded, and so they're
    only visible during callbacks, not during the initial run of the code.
@@ -468,9 +471,15 @@ Types
 
       The gcc.IntegerType for the signed version of this type
 
+      .. note:: This attribute is not usable from within `lto1`; attempting
+         to use it there will lead to a `RuntimeError` exception.
+
    .. py:attribute:: unsigned_equivalent
 
       The gcc.IntegerType for the unsigned version of this type
+
+      .. note:: This attribute is not usable from within `lto1`; attempting
+         to use it there will lead to a `RuntimeError` exception.
 
    .. py:attribute:: max_value
 
