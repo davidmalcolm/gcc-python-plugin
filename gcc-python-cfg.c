@@ -34,8 +34,9 @@
       typedef const struct edge_def *const_edge;
  */
 PyObject *
-gcc_python_make_wrapper_edge(edge e)
+real_make_edge(void * ptr)
 {
+    edge e = (edge)ptr;
     struct PyGccEdge *obj;
 
     if (!e) {
@@ -53,6 +54,16 @@ gcc_python_make_wrapper_edge(edge e)
       
 error:
     return NULL;
+}
+
+static PyObject *edge_wrapper_cache = NULL;
+
+PyObject *
+gcc_python_make_wrapper_edge(edge e)
+{
+    return gcc_python_lazily_create_wrapper(&edge_wrapper_cache,
+					    e,
+					    real_make_edge);
 }
 
 void
