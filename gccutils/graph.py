@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import gcc
+
 from gccutils.dot import to_html
 
 ############################################################################
@@ -180,7 +182,20 @@ class Edge:
 # FIXME: this doesn't yet cover PHI nodes...
 ############################################################################
 class StmtGraph(Graph):
-    def __init__(self, fun):
+    def __init__(self, fun, split_phi_nodes):
+        """
+        fun : the underlying gcc.Function
+
+        split_phi_nodes:
+
+           if true, split phi nodes so that there is one copy of each phi
+           node per edge as a SplitPhiNode instance, allowing client code
+           to walk the StmtGraph without having to track which edge we came
+           from
+
+           if false, create a StmtNode per phi node at the top of the BB
+
+        """
         Graph.__init__(self)
         self.fun = fun
         self.entry = None
@@ -193,18 +208,29 @@ class StmtGraph(Graph):
 
         # 1st pass: create nodes and edges within BBs:
         for bb in fun.cfg.basic_blocks:
+            self.__lastnode = None
+
+            def add_stmt(stmt):
+                nextnode = self.add_node(StmtNode(fun, stmt))
+                self.node_for_stmt[stmt] = nextnode
+                if self.__lastnode:
+                    self.add_edge(self.__lastnode, nextnode, None)
+                else:
+                    self.entry_of_bb[bb] = nextnode
+                self.__lastnode = nextnode
+
+            if bb.phi_nodes and not split_phi_nodes:
+                # If we're not splitting the phi nodes, add them to the top
+                # of each BB:
+                for stmt in bb.phi_nodes:
+                    add_stmt(stmt)
+                self.exit_of_bb[bb] = self.__lastnode
             if bb.gimple:
-                lastnode = None
                 for stmt in bb.gimple:
-                    nextnode = self.add_node(StmtNode(fun, stmt))
-                    self.node_for_stmt[stmt] = nextnode
-                    if lastnode:
-                        self.add_edge(lastnode, nextnode, None)
-                    else:
-                        self.entry_of_bb[bb] = nextnode
-                    lastnode = nextnode
-                self.exit_of_bb[bb] = lastnode
-            else:
+                    add_stmt(stmt)
+                self.exit_of_bb[bb] = self.__lastnode
+
+            if self.__lastnode is None:
                 if bb == fun.cfg.entry:
                     cls = EntryNode
                 elif bb == fun.cfg.exit:
@@ -225,7 +251,18 @@ class StmtGraph(Graph):
         # 2nd pass: wire up the cross-BB edges:
         for bb in fun.cfg.basic_blocks:
             for edge in bb.succs:
-                self.add_edge(self.exit_of_bb[bb],
+                last_node = self.exit_of_bb[bb]
+                if split_phi_nodes:
+                    # add SplitPhiNode instances at the end of each edge
+                    # as a copy of each phi node, specialized for this edge
+                    if edge.dest.phi_nodes:
+                        for stmt in edge.dest.phi_nodes:
+                            split_phi = self.add_node(SplitPhiNode(fun, stmt, edge))
+                            self.add_edge(last_node,
+                                          split_phi,
+                                          edge)
+                            last_node = split_phi
+                self.add_edge(last_node,
                               self.entry_of_bb[edge.dest],
                               edge)
 
@@ -318,11 +355,41 @@ class ExitNode(StmtNode):
         """
         Get the gcc.GimpleReturn statement associated with this function exit
         """
-        import gcc
         assert len(self.preds) == 1
         node = self.preds[0].srcnode
         assert isinstance(node.stmt, gcc.GimpleReturn)
         return node
+
+class SplitPhiNode(StmtNode):
+    def __init__(self, fun, stmt, inneredge):
+        StmtNode.__init__(self, fun, stmt)
+        self.inneredge = inneredge
+
+        import sys
+
+        sys.stderr.write('%s\n' % self)
+        sys.stderr.write('%r\n' % self)
+
+        # Lookup the RHS for this edge:
+        assert isinstance(stmt, gcc.GimplePhi)
+        assert isinstance(inneredge, gcc.Edge)
+        self.rhs = None
+        sys.stderr.write('inneredge: %r\n' % inneredge)
+        sys.stderr.write('inneredge: %s\n' % inneredge)
+        for arg, edge in stmt.args:
+            sys.stderr.write('arg, edge: %r, %r\n' % (arg, edge))
+            sys.stderr.write('arg, edge: %s, %s\n' % (arg, edge))
+            if edge == inneredge:
+                self.rhs = arg
+                break
+        if self.rhs is None:
+            raise UnknownEdge()
+
+    def __str__(self):
+        return '%s via %s' % (self.stmt, self.inneredge)
+
+    def __repr__(self):
+        return 'SplitPhiNode(%r, %r)' % (self.stmt, self.inneredge)
 
 class StmtEdge(Edge):
     def __init__(self, srcnode, dstnode, cfgedge):
@@ -352,7 +419,7 @@ class StmtEdge(Edge):
 # A graph in which the nodes wrap StmtNode
 ############################################################################
 class Supergraph(Graph):
-    def __init__(self):
+    def __init__(self, split_phi_nodes):
         Graph.__init__(self)
         # 1st pass: locate interprocedural instances of gcc.GimpleCall
         # i.e. where both caller and callee are within the supergraph
@@ -373,7 +440,7 @@ class Supergraph(Graph):
         for node in get_callgraph_nodes():
             fun = node.decl.function
             if fun:
-                stmtg = StmtGraph(fun)
+                stmtg = StmtGraph(fun, split_phi_nodes)
                 self.stmtg_for_fun[fun] = stmtg
                 # Clone the stmtg nodes and edges into the Supergraph:
                 stmtg.supernode_for_stmtnode = {}
