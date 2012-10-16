@@ -694,7 +694,13 @@ class Context:
 
 def solve(ctxt, graph, name):
     ctxt.log('running %s' % ctxt.sm.name)
+    ctxt.log('len(graph.nodes): %i' % len(graph.nodes))
+    ctxt.log('len(graph.edges): %i' % len(graph.edges))
+    ctxt.log('making exploded graph')
     expgraph = make_exploded_graph(ctxt, graph)
+    ctxt.log('len(expgraph.nodes): %i' % len(expgraph.nodes))
+    ctxt.log('len(expgraph.edges): %i' % len(expgraph.edges))
+
     if 0:
         # Debug: view the exploded graph:
         dot = expgraph.to_dot(name, ctxt)
