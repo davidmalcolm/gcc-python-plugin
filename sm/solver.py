@@ -126,7 +126,7 @@ class Shape:
                 yield gccvar
 
     def _assign_var(self, dstvar, srcvar):
-        # print('Shape.assign_var(%r, %r)' % (dst, src))
+        # ctxt.debug('Shape.assign_var(%r, %r)' % (dst, src))
         if srcvar not in self._dict:
             # Set a state, so that we can track that dst is now aliased to src
             self.set_state(srcvar, self.ctxt.get_default_state())
@@ -350,8 +350,8 @@ def make_exploded_graph(ctxt, innergraph):
         for edge in srcnode.succs:
             dstnode = edge.dstnode
             if 0:
-                print('  edge from: %s' % srcnode)
-                print('         to: %s' % dstnode)
+                ctxt.debug('  edge from: %s' % srcnode)
+                ctxt.debug('         to: %s' % dstnode)
             srcshape = srcexpnode.shape
 
             # Handle interprocedural edges:
@@ -364,15 +364,15 @@ def make_exploded_graph(ctxt, innergraph):
                 # marked as free also:
                 shapechange = ShapeChange(srcshape)
                 assert isinstance(srcnode.stmt, gcc.GimpleCall)
-                # print(srcnode.stmt)
+                # ctxt.debug(srcnode.stmt)
                 for param, arg  in zip(srcnode.stmt.fndecl.arguments, srcnode.stmt.args):
                     # FIXME: change fndecl.arguments to fndecl.parameters
                     if 0:
-                        print('  param: %r' % param)
-                        print('  arg: %r' % arg)
+                        ctxt.debug('  param: %r' % param)
+                        ctxt.debug('  arg: %r' % arg)
                     if ctxt.is_stateful_var(arg):
                         shapechange.assign_var(param, arg)
-                # print('dstshape: %r' % dstshape)
+                # ctxt.debug('dstshape: %r' % dstshape)
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
@@ -380,7 +380,7 @@ def make_exploded_graph(ctxt, innergraph):
             elif isinstance(edge, ExitToReturnSite):
                 shapechange = ShapeChange(srcshape)
                 # Propagate state through the return value:
-                # print('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
+                # ctxt.debug('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
                 if edge.calling_stmtnode.stmt.lhs:
                     exitsupernode = edge.srcnode
                     assert isinstance(exitsupernode.innernode, ExitNode)
@@ -399,10 +399,10 @@ def make_exploded_graph(ctxt, innergraph):
             # Handle simple assignments so that variables inherit state:
             if isinstance(stmt, gcc.GimpleAssign):
                 if 0:
-                    print(stmt)
-                    print('stmt.lhs: %r' % stmt.lhs)
-                    print('stmt.rhs: %r' % stmt.rhs)
-                    print('stmt.exprcode: %r' % stmt.exprcode)
+                    ctxt.debug(stmt)
+                    ctxt.debug('stmt.lhs: %r' % stmt.lhs)
+                    ctxt.debug('stmt.rhs: %r' % stmt.rhs)
+                    ctxt.debug('stmt.exprcode: %r' % stmt.exprcode)
                 if stmt.exprcode == gcc.VarDecl:
                     shapechange = ShapeChange(srcshape)
                     shapechange.assign_var(stmt.lhs, stmt.rhs[0])
@@ -414,8 +414,8 @@ def make_exploded_graph(ctxt, innergraph):
                     # Field lookup
                     compref = stmt.rhs[0]
                     if 0:
-                        print(compref.target)
-                        print(compref.field)
+                        ctxt.debug(compref.target)
+                        ctxt.debug(compref.field)
                     # The LHS potentially inherits state from the compref
                     if srcshape.var_has_state(compref.target):
                         ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
@@ -436,15 +436,15 @@ def make_exploded_graph(ctxt, innergraph):
                 # Locate any rules that could apply, regardless of the current
                 # state:
                 for pr in sc.patternrulelist:
-                    # print('%r: %r' % (srcshape, pr))
+                    # ctxt.debug('%r: %r' % (srcshape, pr))
                     # For now, skip interprocedural calls and the
                     # ENTRY/EXIT nodes:
                     if not stmt:
                         continue
                     # Now see if the rules apply for the current state:
                     for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                        # print('pr.pattern: %r' % pr.pattern)
-                        # print('match: %r' % match)
+                        # ctxt.debug('pr.pattern: %r' % pr.pattern)
+                        # ctxt.debug('match: %r' % match)
                         srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
                         if srcstate in sc.statelist:
                             assert len(pr.outcomes) > 0
@@ -495,9 +495,9 @@ class Error:
         loc = self.gccloc
         gcc.error(loc, self.msg)
         path = expgraph.get_shortest_path_to(self.expnode)
-        # print('path: %r' % path)
+        # ctxt.debug('path: %r' % path)
         for expedge in path:
-            # print(expnode)
+            # ctxt.debug(expnode)
             # FIXME: this needs to respect the StateVar, in case of a returned value...
             # we need to track changes to the value of the specific StateVar (but we can't, because it's a copy each time.... grrr...)
             # we should also report relevant aliasing information
@@ -597,7 +597,11 @@ class Context:
     def log(self, msg):
         # High-level logging
         if 0:
-            print('%s: %s' % (self.sm.name, msg))
+            sys.stderr.write('LOG: %s: %s\n' % (self.sm.name, msg))
+
+    def debug(self, msg):
+        # Lower-level logging
+        sys.stderr.write('DEBUG: %s: %s\n' % (self.sm.name, msg))
 
     def lookup_decl(self, declname):
         class UnknownDecl(Exception):
@@ -646,9 +650,9 @@ class Context:
 
     def compare(self, gccexpr, smexpr):
         if 0:
-            print('  compare(%r, %r)' % (gccexpr, smexpr))
+            self.debug('  compare(%r, %r)' % (gccexpr, smexpr))
 
-        #print('self.var: %r' % self.var)
+        #self.debug('self.var: %r' % self.var)
         if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl)):
             #if gccexpr == self.var:
             # print '%r' % self.sm.varclauses.name
@@ -689,12 +693,12 @@ class Context:
                 return True
 
 def solve(ctxt, graph, name):
-    # print('running %s' % ctxt.sm.name)
+    ctxt.log('running %s' % ctxt.sm.name)
     expgraph = make_exploded_graph(ctxt, graph)
     if 0:
         # Debug: view the exploded graph:
         dot = expgraph.to_dot(name, ctxt)
-        # print(dot)
+        # ctxt.debug(dot)
         invoke_dot(dot, name)
 
     # Now report the errors, grouped by function, and in source order:
