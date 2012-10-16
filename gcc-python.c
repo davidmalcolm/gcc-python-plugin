@@ -354,6 +354,21 @@ gcc_python_get_dump_base_name(PyObject *self, PyObject *noargs)
     return gcc_python_string_or_none(dump_base_name);
 }
 
+static PyObject *
+gcc_python_get_is_lto(PyObject *self, PyObject *noargs)
+{
+    /*
+      The generated gcc/options.h has:
+          #ifdef GENERATOR_FILE
+          extern bool in_lto_p;
+          #else
+            bool x_in_lto_p;
+          #define in_lto_p global_options.x_in_lto_p
+          #endif
+    */
+    return PyBool_FromLong(in_lto_p);
+}
+
 static PyMethodDef GccMethods[] = {
     {"register_attribute",
      (PyCFunction)gcc_python_register_attribute,
@@ -440,6 +455,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_dump_base_name", gcc_python_get_dump_base_name, METH_NOARGS,
      "Get the base name used when writing dump files"},
+
+    {"is_lto", gcc_python_get_is_lto, METH_NOARGS,
+     "Determine whether or not we're being invoked during link-time optimization"},
 
     /* Garbage collection */
     {"_force_garbage_collection", gcc_python__force_garbage_collection, METH_VARARGS,
