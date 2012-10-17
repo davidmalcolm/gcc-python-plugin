@@ -365,20 +365,11 @@ class SplitPhiNode(StmtNode):
         StmtNode.__init__(self, fun, stmt)
         self.inneredge = inneredge
 
-        import sys
-
-        sys.stderr.write('%s\n' % self)
-        sys.stderr.write('%r\n' % self)
-
         # Lookup the RHS for this edge:
         assert isinstance(stmt, gcc.GimplePhi)
         assert isinstance(inneredge, gcc.Edge)
         self.rhs = None
-        sys.stderr.write('inneredge: %r\n' % inneredge)
-        sys.stderr.write('inneredge: %s\n' % inneredge)
         for arg, edge in stmt.args:
-            sys.stderr.write('arg, edge: %r, %r\n' % (arg, edge))
-            sys.stderr.write('arg, edge: %s, %s\n' % (arg, edge))
             if edge == inneredge:
                 self.rhs = arg
                 break
