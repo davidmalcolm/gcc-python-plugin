@@ -182,12 +182,14 @@ class Match:
         if it does, add it to this Match's dictionary
         """
         if 0:
-            print('Match.match_term(self=%r, ctxt=%r, gccexpr=%r, smexpr=%r)'
-                  % (self, ctxt, gccexpr, smexpr))
+            ctxt.debug('Match.match_term(self=%r, ctxt=%r, gccexpr=%r, smexpr=%r)'
+                       % (self, ctxt, gccexpr, smexpr))
         gccexpr = ctxt.compare(gccexpr, smexpr)
         if gccexpr:
             if isinstance(smexpr, str):
                 decl = ctxt.lookup_decl(smexpr)
+                if isinstance(gccexpr, gcc.SsaName):
+                    gccexpr = gccexpr.var
                 self._dict[decl] = gccexpr
             return True
 
@@ -440,7 +442,7 @@ class VarUsage(Pattern):
     def iter_matches(self, stmt, edge, ctxt):
         def check_for_match(node, loc):
             # print('check_for_match(%r, %r)' % (node, loc))
-            if isinstance(node, (gcc.VarDecl, gcc.ParmDecl)):
+            if isinstance(node, (gcc.VarDecl, gcc.ParmDecl, gcc.SsaName)):
                 if ctxt.compare(node, self.var):
                     return True
         # We don't care about the args during return-handling:

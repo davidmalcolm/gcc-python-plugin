@@ -19,54 +19,20 @@ import gcc
 
 from sm.solver import Context, solve
 
-class NonIpaSmPass(gcc.GimplePass):
-    def __init__(self, checkers):
-        gcc.GimplePass.__init__(self, 'sm-pass-gimple')
-        self.checkers = checkers
-
-    def execute(self, fun):
-        if 0:
-            print(fun)
-            print(self.checkers)
-
-        if 0:
-            # Dump location information
-            for loc in get_locations(fun):
-                print(loc)
-                for prevloc in loc.prev_locs():
-                    print('  prev: %s' % prevloc)
-                for nextloc in loc.next_locs():
-                    print('  next: %s' % nextloc)
-
-        #print('locals: %s' % fun.local_decls)
-        #print('args: %s' % fun.decl.arguments)
-        for checker in self.checkers:
-            for sm in checker.sms:
-                vars_ = fun.local_decls + fun.decl.arguments
-                if 0:
-                    print('vars_: %s' % vars_)
-
-                for var in vars_:
-                    if 0:
-                        print(var)
-                        print(var.type)
-                    if isinstance(var.type, gcc.PointerType):
-                        # got pointer type
-                        ctxt = Context(sm, var)
-                        #print('ctxt: %r' % ctxt)
-
-                        # Non-interprocedural implementation, using just the StmtGraph of the fun:
-                        from gccutils.graph import StmtGraph
-                        graph = StmtGraph(fun)
-                        solve(fun, ctxt, graph)
-
-class IpaSmPass(gcc.SimpleIpaPass):
+class IpaSmPass(gcc.IpaPass):
     def __init__(self, checkers, options):
-        gcc.SimpleIpaPass.__init__(self, 'sm-pass-gimple')
+        gcc.IpaPass.__init__(self, 'sm-ipa-pass')
         self.checkers = checkers
         self.options = options
 
     def execute(self):
+        if self.options.during_lto:
+            # LTO pass:
+            # Only run the analysis during the link, within lto1, not for each
+            # cc1 invocation:
+            if not gcc.is_lto():
+                return
+
         if 0:
             from gccutils import callgraph_to_dot, invoke_dot
             dot = callgraph_to_dot()
@@ -87,15 +53,18 @@ class IpaSmPass(gcc.SimpleIpaPass):
                 solve(ctxt, sg, 'supergraph')
 
 class Options:
-    def __init__(self, cache_errors):
+    def __init__(self,
+                 cache_errors=True,
+                 during_lto=False):
         self.cache_errors = cache_errors
+        self.during_lto = during_lto
 
 def main(checkers, options=None):
     if not options:
         options = Options(cache_errors=True)
-    if 0:
-        ps = NonIpaSmPass(checkers)
-        ps.register_before('*warn_function_return')
-    else:
-        ps = IpaSmPass(checkers, options)
-        ps.register_before('early_local_cleanups') # looks like we can only register within the top-level
+
+    # Run as an interprocedural pass (over SSA gimple), potentially
+    # during lto1:
+    ps = IpaSmPass(checkers, options)
+    ps.register_before('whole-program')
+

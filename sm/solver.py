@@ -19,11 +19,13 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
+import sys
+
 import gcc
 
 from gccutils import DotPrettyPrinter, invoke_dot
 from gccutils.graph import Graph, Node, Edge, \
-    ExitNode, \
+    ExitNode, SplitPhiNode, \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite
 from gccutils.dot import to_html
 
@@ -31,6 +33,8 @@ from libcpychecker.absinterp import Location, get_locations
 
 import sm.checker
 import sm.parser
+
+VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
 
 class StateVar:
     def __init__(self, state):
@@ -105,13 +109,13 @@ class Shape:
         return gccvar in self._dict
 
     def get_state(self, var):
-        assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+        assert isinstance(var, VARTYPES)
         if var in self._dict:
             return self._dict[var].state
         return self.ctxt.get_default_state()
 
     def set_state(self, var, state):
-        assert isinstance(var, (gcc.VarDecl, gcc.ParmDecl))
+        assert isinstance(var, VARTYPES)
         if var in self._dict:
             # update existing StateVar (so that the change can be seen by
             # aliases):
@@ -135,8 +139,9 @@ class Shape:
 
     def _purge_locals(self, fun):
         vars_ = fun.local_decls + fun.decl.arguments
-        for gccvar in vars_:
-            if gccvar in self._dict:
+        for gccvar in self._dict.keys():
+            # Purge gcc.VarDecl and gcc.ParmDecl instances:
+            if gccvar in vars_:
                 del self._dict[gccvar]
 
 class ShapeChange:
@@ -149,6 +154,10 @@ class ShapeChange:
         self.dstshape, self._shapevars = srcshape._copy()
 
     def assign_var(self, dstvar, srcvar):
+        if isinstance(dstvar, gcc.SsaName):
+            dstvar = dstvar.var
+        if isinstance(srcvar, gcc.SsaName):
+            srcvar = srcvar.var
         self.dstshape._assign_var(dstvar, srcvar)
 
     def purge_locals(self, fun):
@@ -430,6 +439,21 @@ def make_exploded_graph(ctxt, innergraph):
                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                            edge, None, shapechange)
                         continue
+            elif isinstance(stmt, gcc.GimplePhi):
+                if 0:
+                    ctxt.debug('gimple stmt: %s' % stmt)
+                    ctxt.debug('srcnode: %s' % srcnode)
+                    ctxt.debug('srcnode: %r' % srcnode)
+                    ctxt.debug('srcnode.innernode: %s' % srcnode.innernode)
+                    ctxt.debug('srcnode.innernode: %r' % srcnode.innernode)
+                assert isinstance(srcnode.innernode, SplitPhiNode)
+                shapechange = ShapeChange(srcshape)
+                shapechange.assign_var(stmt.lhs,
+                                       srcnode.innernode.rhs) # FIXME: could be a constant
+                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                                   edge, None, shapechange)
+                continue
 
             matches = []
             for sc in ctxt._stateclauses:
@@ -507,6 +531,8 @@ class Error:
             stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
             srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
             dststate = expedge.dstnode.shape.get_state(stateful_gccvar)
+            # (they will always be equal for ssanames, so we have to work on
+            # the underlying vars)
             if srcstate != dststate:
                 gccloc = expedge.srcnode.innernode.get_gcc_loc()
                 if gccloc:
@@ -601,7 +627,8 @@ class Context:
 
     def debug(self, msg):
         # Lower-level logging
-        sys.stderr.write('DEBUG: %s: %s\n' % (self.sm.name, msg))
+        if 0:
+            sys.stderr.write('DEBUG: %s: %s\n' % (self.sm.name, msg))
 
     def lookup_decl(self, declname):
         class UnknownDecl(Exception):
@@ -652,10 +679,9 @@ class Context:
         if 0:
             self.debug('  compare(%r, %r)' % (gccexpr, smexpr))
 
-        #self.debug('self.var: %r' % self.var)
-        if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl)):
+        if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl, gcc.SsaName)):
             #if gccexpr == self.var:
-            # print '%r' % self.sm.varclauses.name
+            # self.debug '%r' % self.sm.varclauses.name
             #if smexpr == self.sm.varclauses.name:
             decl = self.lookup_decl(smexpr)
             if decl.matched_by(gccexpr):
@@ -687,7 +713,7 @@ class Context:
         '''
         Is this gcc.Tree of a kind that has state according to the current sm?
         '''
-        if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl)):
+        if isinstance(gccexpr, gcc.SsaName):
             if isinstance(gccexpr.type, gcc.PointerType):
                 # TODO: the sm may impose further constraints
                 return True
