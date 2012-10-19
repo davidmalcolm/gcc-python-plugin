@@ -28,6 +28,16 @@ def on_finish_unit():
             assert isinstance(var.decl.initial, gcc.IntegerCst)
             print('%s: %s' % (name, hex(var.decl.initial.constant)))
             assert int(var.decl.initial) == var.decl.initial.constant
+            # Verify that rich comparisons between gcc.IntegerCst and int are sane:
+            assert var.decl.initial == var.decl.initial.constant
+            assert var.decl.initial >= var.decl.initial.constant
+            assert var.decl.initial <= var.decl.initial.constant
+            assert var.decl.initial != var.decl.initial.constant + 1
+            # and the other way around:
+            assert var.decl.initial.constant == var.decl.initial
+            assert var.decl.initial.constant >= var.decl.initial
+            assert var.decl.initial.constant <= var.decl.initial
+            assert var.decl.initial.constant + 1 != var.decl.initial
         elif name.startswith('f') or name.startswith('d'):
             assert isinstance(var.decl.initial, gcc.RealCst)
             print('%s: %r %s' % (name,
