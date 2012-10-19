@@ -1,0 +1,16 @@
+tests/sm/lto/input-h.c: In function 'h':
+tests/sm/lto/input-h.c:9:8: error: use of NULL pointer r
+tests/sm/lto/input-h.c:9:8: note: use of NULL pointer r
+tests/sm/lto/input-h.c:9:8: error: use of possibly-NULL pointer r
+tests/sm/lto/input-h.c:9:8: note: use of possibly-NULL pointer r
+tests/sm/lto/input-h.c:11:7: error: double-free of r
+tests/sm/lto/input-h.c:9:8: note: dereference of r
+tests/sm/lto/input-g.c:11:7: note: q passed to free()
+tests/sm/lto/input-h.c:11:7: note: double-free of r
+tests/sm/lto/input-h.c:11:7: error: use-after-free of r
+tests/sm/lto/input-h.c:9:8: note: dereference of r
+tests/sm/lto/input-g.c:11:7: note: q passed to free()
+tests/sm/lto/input-h.c:11:7: note: use-after-free of r
+lto-wrapper: gcc returned 1 exit status
+/usr/bin/ld: lto-wrapper failed
+collect2: error: ld returned 1 exit status

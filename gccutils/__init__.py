@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import sys
+
 import gcc
 
 from six.moves import xrange
@@ -668,3 +670,16 @@ def topological_sort(nodes, get_srcs, get_dsts):
 
     return result
 
+# Replacement for gcc.error() and gcc.inform() for use with LTO
+# as a workaround for http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54962
+def diagnostic(loc, kind, msg):
+    sys.stderr.write('%s:%i:%i: %s: %s\n'
+                     % (loc.file, loc.line, loc.column,
+                        kind, msg))
+
+def error(loc, msg):
+    diagnostic(loc, 'error', msg)
+    gcc._add_error()
+
+def inform(loc, msg):
+    diagnostic(loc, 'note', msg)

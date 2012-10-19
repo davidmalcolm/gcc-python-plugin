@@ -369,6 +369,17 @@ gcc_python_get_is_lto(PyObject *self, PyObject *noargs)
     return PyBool_FromLong(in_lto_p);
 }
 
+static PyObject *
+gcc_python_add_error(PyObject *self, PyObject *noargs)
+{
+    /* Fake an error, for working around bugs in GCC's error reporting
+       e.g. http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54962
+     */
+    errorcount++;
+    Py_RETURN_NONE;
+}
+
+
 static PyMethodDef GccMethods[] = {
     {"register_attribute",
      (PyCFunction)gcc_python_register_attribute,
@@ -458,6 +469,9 @@ static PyMethodDef GccMethods[] = {
 
     {"is_lto", gcc_python_get_is_lto, METH_NOARGS,
      "Determine whether or not we're being invoked during link-time optimization"},
+
+    {"_add_error", gcc_python_add_error, METH_NOARGS,
+     "Fake an error, for working around bugs in GCC's error reporting"},
 
     /* Garbage collection */
     {"_force_garbage_collection", gcc_python__force_garbage_collection, METH_VARARGS,

@@ -516,8 +516,9 @@ class Error:
         """
         Display the error
         """
+        from gccutils import error, inform
         loc = self.gccloc
-        gcc.error(loc, self.msg)
+        error(loc, self.msg)
         path = expgraph.get_shortest_path_to(self.expnode)
         # ctxt.debug('path: %r' % path)
         for expedge in path:
@@ -546,13 +547,13 @@ class Error:
                         # Debugging information on state change:
                         desc = ('%s: %s -> %s'
                                % (ctxt.sm.name, srcstate, dststate))
-                    gcc.inform(gccloc, desc)
+                    inform(gccloc, desc)
 
         # repeat the message at the end of the path:
         if len(path) > 1:
             gccloc = path[-1].dstnode.innernode.get_gcc_loc()
             if gccloc:
-                gcc.inform(gccloc, self.msg)
+                inform(gccloc, self.msg)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
