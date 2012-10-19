@@ -253,8 +253,9 @@ class AssignmentFromLiteral(Pattern):
                 % (match.describe(ctxt, self.lhs), self.rhs))
 
 class FunctionCall(Pattern):
-    def __init__(self, fnname):
+    def __init__(self, fnname, args):
         self.fnname = fnname
+        self.args = args
 
     def __str__(self):
         return '{ %s(...) }' % self.fnname
@@ -266,22 +267,35 @@ class FunctionCall(Pattern):
                     if stmt.fn.operand.name == self.fnname:
                         # We have a matching function name:
                         m = Match(self)
-                        yield m
+                        def matches_args():
+                            for i, arg in enumerate(self.args):
+                                if not m.match_term(ctxt, stmt.args[i], arg):
+                                    if 0:
+                                        print('arg match failed on: %i %s %s'
+                                              % (i, arg, stmt.args[i]))
+                                    return False
+                            return True
+                        if matches_args():
+                            yield m
 
 class ResultOfFnCall(FunctionCall):
-    def __init__(self, lhs, func):
-        FunctionCall.__init__(self, func)
+    def __init__(self, lhs, fnname, args):
+        FunctionCall.__init__(self, fnname, args)
         self.lhs = lhs
-        self.func = func
+
     def __repr__(self):
-        return 'ResultOfFnCall(lhs=%r, func=%r)' % (self.lhs, self.func)
+        return 'ResultOfFnCall(lhs=%r, fnname=%r, args=%r)' % (self.lhs, self.fnname, self.args)
     def __str__(self):
-        return '{ %s = %s(...) }' % (self.lhs, self.func)
+        return ('{ %s = %s(%s) }'
+                % (self.lhs,
+                   self.fnname,
+                   ', '.join([str(arg) for arg in self.args])))
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.lhs == other.lhs:
-                if self.func == other.func:
-                    return True
+                if self.fnname == other.fnname:
+                    if self.args == other.args:
+                        return True
 
     def iter_matches(self, stmt, edge, ctxt):
         for m in FunctionCall.iter_matches(self, stmt, edge, ctxt):
@@ -289,43 +303,28 @@ class ResultOfFnCall(FunctionCall):
                 yield m
 
     def description(self, match, ctxt):
-        return ('%s assigned to the result of %s()'
-                % (match.describe(ctxt, self.lhs), self.func))
+        return ('%s assigned to the result of %s(%s)'
+                % (match.describe(ctxt, self.lhs), self.fnname,
+                   ', '.join([match.describe(ctxt, arg)
+                              for arg in self.args])))
 
 
 class ArgsOfFnCall(FunctionCall):
-    def __init__(self, func, args):
-        FunctionCall.__init__(self, func)
-        self.func = func
-        self.args = args
     def __repr__(self):
-        return 'ArgsOfFnCall(func=%r, args=%r)' % (self.func, self.args)
+        return 'ArgsOfFnCall(fnname=%r, args=%r)' % (self.fnname, self.args)
     def __str__(self):
         return '{ %s(%s) } ' % (self.fnname,
                                 ', '.join([str(arg)
                                            for arg in self.args]))
     def __eq__(self, other):
         if self.__class__ == other.__class__:
-            if self.func == other.func:
+            if self.fnname == other.fnname:
                 if self.args == other.args:
                     return True
 
-    def iter_matches(self, stmt, edge, ctxt):
-        for m in FunctionCall.iter_matches(self, stmt, edge, ctxt):
-            def matches_args():
-                for i, arg in enumerate(self.args):
-                    if not m.match_term(ctxt, stmt.args[i], arg):
-                        if 0:
-                            print('arg match failed on: %i %s %s'
-                                  % (i, arg, stmt.args[i]))
-                        return False
-                return True
-            if matches_args():
-                yield m
-
     def description(self, match, ctxt):
         return ('%s passed to %s()'
-                % (match.get_stateful_gccvar(ctxt), self.func))
+                % (match.get_stateful_gccvar(ctxt), self.fnname))
 
 class Comparison(Pattern):
     def __init__(self, lhs, op, rhs):

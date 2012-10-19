@@ -283,9 +283,9 @@ def p_cpattern_assignment_from_literal(p):
     p[0] = AssignmentFromLiteral(lhs=p[1], rhs=p[3])
 
 def p_cpattern_result_of_fn_call(p):
-    'cpattern : ID ASSIGNMENT ID LPAREN RPAREN'
+    'cpattern : ID ASSIGNMENT ID LPAREN fncall_args RPAREN'
     # e.g. "ptr = malloc()"
-    p[0] = ResultOfFnCall(lhs=p[1], func=p[3])
+    p[0] = ResultOfFnCall(lhs=p[1], fnname=p[3], args=p[5])
 
 def p_fncall_arg(p):
     '''
@@ -295,20 +295,32 @@ def p_fncall_arg(p):
     '''
     p[0] = p[1]
 
-def p_fncall_args(p):
+def p_nonempty_fncall_args(p):
     '''
-    fncall_args : fncall_arg
-                 | fncall_args COMMA fncall_arg
+    nonempty_fncall_args : fncall_arg
+                         | fncall_args COMMA fncall_arg
     '''
     if len(p) == 2:
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[3]]
 
+def p_fncall_args_from_nonempty(p):
+    '''
+    fncall_args : nonempty_fncall_args
+    '''
+    p[0] = p[1]
+
+def p_fncall_args_from_empty(p):
+    '''
+    fncall_args : empty
+    '''
+    p[0] = []
+
 def p_cpattern_arg_of_fn_call(p):
     'cpattern : ID LPAREN fncall_args RPAREN'
     # e.g. "free(ptr)"
-    p[0] = ArgsOfFnCall(func=p[1], args=p[3])
+    p[0] = ArgsOfFnCall(fnname=p[1], args=p[3])
 
 def p_cpattern_comparison(p):
     '''

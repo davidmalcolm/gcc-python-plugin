@@ -66,7 +66,7 @@ sm malloc_checker {
   state decl any_pointer ptr;
 
   ptr.all:
-    { ptr = malloc(...) } => ptr.unknown;
+    { ptr = malloc() } => ptr.unknown;
 
   ptr.unknown, ptr.null, ptr.nonnull:
     { ptr == 0 } => true=ptr.null, false=ptr.nonnull;
@@ -107,7 +107,8 @@ sm malloc_checker {
         pr = sc.patternrulelist[0]
         self.assertEqual(pr.pattern,
                          ResultOfFnCall(lhs='ptr',
-                                        func='malloc'))
+                                        fnname='malloc',
+                                        args=[]))
         self.assertEqual(pr.outcomes,
                          [TransitionTo(state='ptr.unknown')])
 
@@ -164,7 +165,7 @@ sm malloc_checker {
                          ['ptr.all', 'ptr.unknown', 'ptr.null', 'ptr.nonnull'])
         self.assertEqual(len(sc.patternrulelist), 1)
         pr = sc.patternrulelist[0]
-        self.assertEqual(pr.pattern, ArgsOfFnCall(func='free', args=['ptr']))
+        self.assertEqual(pr.pattern, ArgsOfFnCall(fnname='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
                          [TransitionTo(state='ptr.free')])
 
@@ -177,7 +178,7 @@ sm malloc_checker {
                          ['ptr.free'])
         self.assertEqual(len(sc.patternrulelist), 2)
         pr = sc.patternrulelist[0]
-        self.assertEqual(pr.pattern, ArgsOfFnCall(func='free', args=['ptr']))
+        self.assertEqual(pr.pattern, ArgsOfFnCall(fnname='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=" error('double-free of %s' % ptr) ")])
         pr = sc.patternrulelist[1]

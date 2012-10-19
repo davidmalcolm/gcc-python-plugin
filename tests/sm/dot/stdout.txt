@@ -6,7 +6,7 @@ digraph test_script {
     ptr_nonnull [label=<ptr.nonnull>];
     ptr_free [label=<ptr.free>];
 
-    ptr_all -> ptr_unknown [label=<{ ptr = malloc(...) }>];
+    ptr_all -> ptr_unknown [label=<{ ptr = malloc() }>];
     ptr_all -> ptr_null [label=<{ ptr = 0 }>];
     ptr_unknown -> ptr_null [label=<{ ptr == 0 } is True>];
     ptr_unknown -> ptr_nonnull [label=<{ ptr == 0 } is False>];
