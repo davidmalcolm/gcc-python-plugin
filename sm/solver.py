@@ -620,15 +620,26 @@ class Context:
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )
 
+    def _get_indent(self):
+        # Indent by the stack depth:
+        depth = 0
+        f = sys._getframe()
+        while f:
+            depth += 1
+            f = f.f_back
+        return ' ' * depth
+
     def log(self, msg):
         # High-level logging
         if 0:
-            sys.stderr.write('LOG: %s: %s\n' % (self.sm.name, msg))
+            sys.stderr.write('LOG  : %s: %s%s\n'
+                             % (self.sm.name, self._get_indent(), msg))
 
     def debug(self, msg):
         # Lower-level logging
         if 0:
-            sys.stderr.write('DEBUG: %s: %s\n' % (self.sm.name, msg))
+            sys.stderr.write('DEBUG: %s: %s%s\n'
+                             % (self.sm.name, self._get_indent(), msg))
 
     def lookup_decl(self, declname):
         class UnknownDecl(Exception):
