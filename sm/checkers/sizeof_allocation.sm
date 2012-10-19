@@ -20,18 +20,43 @@
 */
 sm sizeof_allocation {
   state decl any_pointer ptr;
+  decl any_pointer other_ptr;
+  decl any_expr nmemb;
   decl any_expr sz;
 
   ptr.all:
-     { ptr = malloc(sz) } =>
-         {{
+    /* Various allocators: */
+      /* libc: */
+      { ptr = malloc(sz) }
+    | { ptr = realloc(other_ptr, sz) }
+      /* libpython: */
+    | { ptr = PyMem_Malloc(sz) }
+    | { ptr = PyMem_Realloc(other_ptr, sz) }
+      /* etc */
+      => {{
              import gcc
              type_pointed_to = ptr.type.dereference
              if not isinstance(type_pointed_to, gcc.VoidType):
                  required_size = type_pointed_to.sizeof
                  if sz < required_size:
-                     error("malloc too small: pointer to %s (%i bytes)"
-                           " initialized with malloc of %i bytes"
+                     error("allocation too small: pointer to %s (%i bytes)"
+                           " initialized with allocation of %i bytes"
                            % (type_pointed_to, required_size, sz))
          }};
+
+  ptr.all:
+      /* libc: */
+      { ptr = calloc(nmemb, sz) }
+      => {{
+             import gcc
+             type_pointed_to = ptr.type.dereference
+             if not isinstance(type_pointed_to, gcc.VoidType):
+                 required_size = type_pointed_to.sizeof
+                 allocated_size = int(nmemb) * int(sz)
+                 if allocated_size < required_size:
+                     error("allocation too small: pointer to %s (%i bytes)"
+                           " initialized with allocation of %i bytes"
+                           % (type_pointed_to, required_size, allocated_size))
+         }};
+
 }

@@ -1,2 +1,0 @@
-tests/sm/checkers/sizeof_allocation/too_small/input.c: In function 'test':
-tests/sm/checkers/sizeof_allocation/too_small/input.c:13:nn: error: malloc too small: pointer to struct foo (256 bytes) initialized with malloc of 128 bytes
