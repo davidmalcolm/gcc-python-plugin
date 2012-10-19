@@ -408,7 +408,7 @@ def make_exploded_graph(ctxt, innergraph):
             # Handle simple assignments so that variables inherit state:
             if isinstance(stmt, gcc.GimpleAssign):
                 if 0:
-                    ctxt.debug(stmt)
+                    ctxt.debug('gcc.GimpleAssign: %s' % stmt)
                     ctxt.debug('stmt.lhs: %r' % stmt.lhs)
                     ctxt.debug('stmt.rhs: %r' % stmt.rhs)
                     ctxt.debug('stmt.exprcode: %r' % stmt.exprcode)
@@ -441,7 +441,7 @@ def make_exploded_graph(ctxt, innergraph):
                         continue
             elif isinstance(stmt, gcc.GimplePhi):
                 if 0:
-                    ctxt.debug('gimple stmt: %s' % stmt)
+                    ctxt.debug('gcc.GimplePhi: %s' % stmt)
                     ctxt.debug('srcnode: %s' % srcnode)
                     ctxt.debug('srcnode: %r' % srcnode)
                     ctxt.debug('srcnode.innernode: %s' % srcnode.innernode)
@@ -664,6 +664,7 @@ class Context:
         return self._namedpatterns[patname]
 
     def add_error(self, expgraph, expnode, match, msg):
+        self.log('add_error(%r, %r, %r, %r)' % (expgraph, expnode, match, msg))
         err = Error(expnode, match, msg)
         if self.options.cache_errors:
             self._errors.append(err)
