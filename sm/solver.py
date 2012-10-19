@@ -587,7 +587,7 @@ class Context:
         reachable_states = set([self.statenames[0]])
 
         # Set up the above attributes:
-        from sm.checker import Decl, NamedPattern, StateClause
+        from sm.checker import Decl, NamedPattern, StateClause, PythonFragment
         for clause in sm.clauses:
             if isinstance(clause, Decl):
                 self._decls[clause.name] = clause
@@ -617,6 +617,20 @@ class Context:
         # Store the errors so that we can play them back in source order
         # (for greater predicability of selftests):
         self._errors = []
+
+        # Run any initial python code:
+        self.python_locals = {}
+        self.python_globals = {}
+        for clause in sm.clauses:
+            if isinstance(clause, PythonFragment):
+                filename = self.ch.filename
+                if not filename:
+                    filename = '<string>'
+                expr = clause.get_source()
+                code = compile(expr, filename, 'exec')
+                # FIXME: the filename of the .sm file is correct, but the line
+                # numbers will be wrong
+                result = eval(code, self.python_globals, self.python_locals)
 
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )

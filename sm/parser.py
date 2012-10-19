@@ -20,7 +20,7 @@
 # Uses "ply", so we'll need python-ply on Fedora
 
 from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
-    PatternRule, \
+    PatternRule, PythonFragment, \
     NamedPatternReference, SpecialPattern, OrPattern, \
     AssignmentFromLiteral, \
     ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, ArrayLookup, \
@@ -189,6 +189,12 @@ def p_smclause_namedpatterndefinition(p):
     '''
     p[0] = NamedPattern(name=p[2],
                         pattern=p[3])
+
+def p_smclause_python(p):
+    '''
+    smclause : PYTHON
+    '''
+    p[0] = PythonFragment(src=p[1])
 
 def p_smclause_stateclause(p):
     'smclause : statelist COLON patternrulelist SEMICOLON'

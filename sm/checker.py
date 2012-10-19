@@ -123,6 +123,41 @@ class NamedPattern(Clause):
     def __str__(self):
         return 'pat %s %s;' % (self.name, self.pattern)
 
+class PythonFragment(Clause):
+    """
+    A fragment of Python
+    """
+    def __init__(self, src):
+        self.src = src
+    def __str__(self):
+        return '{{%s}}' % self.src
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.src, )
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            if self.src == other.src:
+                return True
+
+    def get_source(self):
+        # Get at python code
+        lines = self.src.splitlines()
+        # Strip leading fully-whitespace lines:
+        while lines and (lines[0] == '' or lines[0].isspace()):
+            lines = lines[1:]
+        def try_to_fix_indent():
+            # Locate any source-wide indentation based on indentation of first non-whitespace line:
+            indent = len(lines[0]) - len(lines[0].lstrip())
+            outdented_lines = []
+            for line in lines:
+                if not line[:indent].isspace():
+                    # indentation error
+                    return lines
+                outdented_lines.append(line[indent:])
+            return outdented_lines
+
+        lines = try_to_fix_indent()
+        return '\n'.join(lines)
+
 class StateClause(Clause):
     def __init__(self, statelist, patternrulelist):
         self.statelist = statelist
@@ -568,38 +603,7 @@ class BooleanOutcome(Outcome):
         for state in self.outcome.iter_reachable_states():
             yield state
 
-class PythonOutcome(Outcome):
-    def __init__(self, src):
-        self.src = src
-    def __str__(self):
-        return '{{%s}}' % self.src
-    def __repr__(self):
-        return 'PythonOutcome(%r)' % (self.src, )
-    def __eq__(self, other):
-        if self.__class__ == other.__class__:
-            if self.src == other.src:
-                return True
-
-    def get_source(self):
-        # Get at python code
-        lines = self.src.splitlines()
-        # Strip leading fully-whitespace lines:
-        while lines and (lines[0] == '' or lines[0].isspace()):
-            lines = lines[1:]
-        def try_to_fix_indent():
-            # Locate any source-wide indentation based on indentation of first non-whitespace line:
-            indent = len(lines[0]) - len(lines[0].lstrip())
-            outdented_lines = []
-            for line in lines:
-                if not line[:indent].isspace():
-                    # indentation error
-                    return lines
-                outdented_lines.append(line[indent:])
-            return outdented_lines
-
-        lines = try_to_fix_indent()
-        return '\n'.join(lines)
-
+class PythonOutcome(Outcome, PythonFragment):
     def apply(self, mctxt):
         ctxt = mctxt.expgraph.ctxt
         if 0:
@@ -619,8 +623,8 @@ class PythonOutcome(Outcome):
         # Create environment for execution of the code:
         def error(msg):
             ctxt.add_error(mctxt.expgraph, mctxt.srcexpnode, mctxt.match, msg)
-        locals_ = {}
         globals_ = {'error' : error}
+        ctxt.python_globals.update(globals_)
 
         # Bind the names for the matched Decls
         # For example, when:
@@ -629,13 +633,20 @@ class PythonOutcome(Outcome):
         #      void *q;
         # then we bind the string "ptr" to the gcc.VarDecl for q
         # (which has str() == 'q')
+        locals_ = {}
         for decl, value in mctxt.match.iter_binding():
             locals_[decl.name] = value
+        ctxt.python_locals.update(locals_)
+
         if 0:
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)
         # Now run the code:
-        result = eval(code, globals_, locals_)
+        result = eval(code, ctxt.python_globals, ctxt.python_locals)
+
+        # Clear the binding:
+        for name in locals_:
+            del ctxt.python_locals[name]
 
     def iter_reachable_states(self):
         return []
