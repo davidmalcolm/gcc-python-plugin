@@ -580,6 +580,26 @@ class PythonOutcome(Outcome):
             if self.src == other.src:
                 return True
 
+    def get_source(self):
+        # Get at python code
+        lines = self.src.splitlines()
+        # Strip leading fully-whitespace lines:
+        while lines and (lines[0] == '' or lines[0].isspace()):
+            lines = lines[1:]
+        def try_to_fix_indent():
+            # Locate any source-wide indentation based on indentation of first non-whitespace line:
+            indent = len(lines[0]) - len(lines[0].lstrip())
+            outdented_lines = []
+            for line in lines:
+                if not line[:indent].isspace():
+                    # indentation error
+                    return lines
+                outdented_lines.append(line[indent:])
+            return outdented_lines
+
+        lines = try_to_fix_indent()
+        return '\n'.join(lines)
+
     def apply(self, mctxt):
         ctxt = mctxt.expgraph.ctxt
         if 0:
@@ -588,11 +608,10 @@ class PythonOutcome(Outcome):
             print('  expgraph: %r' % expgraph)
             print('  expnode: %r' % expnode)
 
-        # Get at python code
-        expr = self.src.strip()
         filename = ctxt.ch.filename
         if not filename:
             filename = '<string>'
+        expr = self.get_source()
         code = compile(expr, filename, 'exec')
         # FIXME: the filename of the .sm file is correct, but the line
         # numbers will be wrong
