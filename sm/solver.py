@@ -19,6 +19,10 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
+ENABLE_LOG=0
+ENABLE_DEBUG=0
+SHOW_EXPLODED_GRAPH=0
+
 import sys
 
 import gcc
@@ -705,13 +709,13 @@ class Context:
 
     def log(self, msg):
         # High-level logging
-        if 0:
+        if ENABLE_LOG:
             sys.stderr.write('LOG  : %s: %s%s\n'
                              % (self.sm.name, self._get_indent(), msg))
 
     def debug(self, msg):
         # Lower-level logging
-        if 0:
+        if ENABLE_DEBUG:
             sys.stderr.write('DEBUG: %s: %s%s\n'
                              % (self.sm.name, self._get_indent(), msg))
 
@@ -813,7 +817,7 @@ def solve(ctxt, graph, name):
     ctxt.log('len(expgraph.nodes): %i' % len(expgraph.nodes))
     ctxt.log('len(expgraph.edges): %i' % len(expgraph.edges))
 
-    if 0:
+    if SHOW_EXPLODED_GRAPH:
         # Debug: view the exploded graph:
         dot = expgraph.to_dot(name, ctxt)
         # ctxt.debug(dot)
