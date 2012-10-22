@@ -586,6 +586,36 @@ gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+gcc_SsaName_repr(struct PyGccTree * self)
+{
+    PyObject *var = NULL;
+    int version;
+    PyObject *repr_var = NULL;
+    PyObject *result = NULL;
+
+    var = gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t));
+    if (!var) {
+        goto error;
+    }
+    version = SSA_NAME_VERSION(self->t);
+    repr_var = PyObject_Repr(var);
+    if (!repr_var) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(var=%s, version=%i)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(repr_var),
+                                           version);
+
+ error:
+    Py_XDECREF(var);
+    Py_XDECREF(repr_var);
+
+    return result;
+}
+
+PyObject *
 gcc_TreeList_repr(struct PyGccTree * self)
 {
     PyObject *purpose = NULL;

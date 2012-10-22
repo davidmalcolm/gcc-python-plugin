@@ -552,6 +552,8 @@ def generate_tree_code_classes():
             add_simple_getter('version',
                               'gcc_python_int_from_long(SSA_NAME_VERSION(self->t))',
                               "The SSA version number of this SSA name'")
+            tp_repr = '(reprfunc)gcc_SsaName_repr'
+
 
         if tree_type.SYM == 'TREE_LIST':
             # c.f. "struct GTY(()) tree_list":
