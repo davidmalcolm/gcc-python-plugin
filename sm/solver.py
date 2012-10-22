@@ -355,8 +355,12 @@ def make_exploded_graph(ctxt, innergraph):
         srcexpnode = expgraph.worklist.pop()
         srcnode = srcexpnode.innernode
         #assert isinstance(srcnode, Node)
-        stmt = srcnode.get_stmt()
         for edge in srcnode.succs:
+            explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge)
+    return expgraph
+
+def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
+            stmt = srcnode.get_stmt()
             dstnode = edge.dstnode
             ctxt.debug('  edge from: %s' % srcnode)
             ctxt.debug('         to: %s' % dstnode)
@@ -365,7 +369,7 @@ def make_exploded_graph(ctxt, innergraph):
             # Handle interprocedural edges:
             if isinstance(edge, CallToReturnSiteEdge):
                 # Ignore the intraprocedural edge for a function call:
-                continue
+                return
             elif isinstance(edge, CallToStart):
                 # Alias the parameters with the arguments as necessary, so
                 # e.g. a function that free()s an arg has the caller's var
@@ -384,7 +388,7 @@ def make_exploded_graph(ctxt, innergraph):
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
-                continue
+                return
             elif isinstance(edge, ExitToReturnSite):
                 shapechange = ShapeChange(srcshape)
                 # Propagate state through the return value:
@@ -402,7 +406,7 @@ def make_exploded_graph(ctxt, innergraph):
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
-                continue
+                return
 
             # Handle simple assignments so that variables inherit state:
             if isinstance(stmt, gcc.GimpleAssign):
@@ -417,7 +421,7 @@ def make_exploded_graph(ctxt, innergraph):
                     dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                     expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                        edge, None, shapechange)
-                    continue
+                    return
                 elif stmt.exprcode == gcc.ComponentRef:
                     # Field lookup
                     compref = stmt.rhs[0]
@@ -437,7 +441,7 @@ def make_exploded_graph(ctxt, innergraph):
                         dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                            edge, None, shapechange)
-                        continue
+                        return
             elif isinstance(stmt, gcc.GimplePhi):
                 if 0:
                     ctxt.debug('gcc.GimplePhi: %s' % stmt)
@@ -452,7 +456,7 @@ def make_exploded_graph(ctxt, innergraph):
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
-                continue
+                return
 
             matches = []
             for sc in ctxt._stateclauses:
@@ -490,7 +494,6 @@ def make_exploded_graph(ctxt, innergraph):
                 dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, None)
-    return expgraph
 
 class Error:
     # A stored error
