@@ -263,12 +263,12 @@ class Pattern:
     def __hash__(self):
         return id(self)
 
-class AssignmentFromLiteral(Pattern):
+class Assignment(Pattern):
     def __init__(self, lhs, rhs):
         self.lhs = lhs
         self.rhs = rhs
     def __repr__(self):
-        return 'AssignmentFromLiteral(lhs=%r, rhs=%r)' % (self.lhs, self.rhs)
+        return 'Assignment(lhs=%r, rhs=%r)' % (self.lhs, self.rhs)
     def __str__(self):
         return '{ %s = %s }' % (self.lhs, self.rhs)
     def __eq__(self, other):
@@ -635,7 +635,12 @@ class PythonOutcome(Outcome, PythonFragment):
         # Create environment for execution of the code:
         def error(msg):
             ctxt.add_error(mctxt.expgraph, mctxt.srcexpnode, mctxt.match, msg)
-        globals_ = {'error' : error}
+        def set_state(name, **kwargs):
+            ctxt.set_state(mctxt, name, **kwargs)
+
+        globals_ = {'error' : error,
+                    'set_state' : set_state,
+                    'state': mctxt.srcstate}
         ctxt.python_globals.update(globals_)
 
         # Bind the names for the matched Decls

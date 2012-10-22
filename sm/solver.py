@@ -458,20 +458,22 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
                                            edge, None, shapechange)
         return
 
+    matches = []
+
     # Handle simple assignments so that variables inherit state:
     if isinstance(stmt, gcc.GimpleAssign):
-        if 0:
+        if 1:
             ctxt.debug('gcc.GimpleAssign: %s' % stmt)
-            ctxt.debug('stmt.lhs: %r' % stmt.lhs)
-            ctxt.debug('stmt.rhs: %r' % stmt.rhs)
-            ctxt.debug('stmt.exprcode: %r' % stmt.exprcode)
+            ctxt.debug('  stmt.lhs: %r' % stmt.lhs)
+            ctxt.debug('  stmt.rhs: %r' % stmt.rhs)
+            ctxt.debug('  stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
             shapechange = ShapeChange(srcshape)
             shapechange.assign_var(stmt.lhs, stmt.rhs[0])
             dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
             expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                edge, None, shapechange)
-            return
+            matches.append(stmt)
         elif stmt.exprcode == gcc.ComponentRef:
             # Field lookup
             compref = stmt.rhs[0]
@@ -491,14 +493,14 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
-                return
+                matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
-        if 0:
+        if 1:
             ctxt.debug('gcc.GimplePhi: %s' % stmt)
-            ctxt.debug('srcnode: %s' % srcnode)
-            ctxt.debug('srcnode: %r' % srcnode)
-            ctxt.debug('srcnode.innernode: %s' % srcnode.innernode)
-            ctxt.debug('srcnode.innernode: %r' % srcnode.innernode)
+            ctxt.debug('  srcnode: %s' % srcnode)
+            ctxt.debug('  srcnode: %r' % srcnode)
+            ctxt.debug('  srcnode.innernode: %s' % srcnode.innernode)
+            ctxt.debug('  srcnode.innernode: %r' % srcnode.innernode)
         assert isinstance(srcnode.innernode, SplitPhiNode)
         shapechange = ShapeChange(srcshape)
         shapechange.assign_var(stmt.lhs,
@@ -506,9 +508,8 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
         dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                            edge, None, shapechange)
-        return
+        matches.append(stmt)
 
-    matches = []
     for sc in ctxt._stateclauses:
         # Locate any rules that could apply, regardless of the current
         # state:
@@ -647,10 +648,15 @@ class Context:
         #   all StateClause instance, in order:
         self._stateclauses = []
 
+        # Does any Python code call set_state()?
+        # (If so, we can't detect unreachable states)
+        self._uses_set_state = False
+
         reachable_statenames = set([self.statenames[0]])
 
         # Set up the above attributes:
-        from sm.checker import Decl, NamedPattern, StateClause, PythonFragment
+        from sm.checker import Decl, NamedPattern, StateClause, \
+            PythonFragment, PythonOutcome
         for clause in sm.clauses:
             if isinstance(clause, Decl):
                 self._decls[clause.name] = clause
@@ -658,18 +664,25 @@ class Context:
                     self._stateful_decl = clause
             elif isinstance(clause, NamedPattern):
                 self._namedpatterns[clause.name] = clause
+            elif isinstance(clause, PythonFragment):
+                if 'set_state' in clause.src:
+                    self._uses_set_state = True
             elif isinstance(clause, StateClause):
                 self._stateclauses.append(clause)
                 for pr in clause.patternrulelist:
                     for outcome in pr.outcomes:
                         for statename in outcome.iter_reachable_statenames():
                             reachable_statenames.add(statename)
+                    if isinstance(outcome, PythonOutcome):
+                        if 'set_state' in outcome.src:
+                            self._uses_set_state = True
 
         # 2nd pass: validate the sm:
         for clause in sm.clauses:
             if isinstance(clause, StateClause):
                 for statename in clause.statelist:
-                    if statename not in reachable_statenames:
+                    if statename not in reachable_statenames \
+                            and not self._uses_set_state:
                         class UnreachableState(Exception):
                             def __init__(self, statename):
                                 self.statename = statename
@@ -773,9 +786,10 @@ class Context:
             #if gccexpr == self.var:
             # self.debug '%r' % self.sm.varclauses.name
             #if smexpr == self.sm.varclauses.name:
-            decl = self.lookup_decl(smexpr)
-            if decl.matched_by(gccexpr):
-                return gccexpr
+            if isinstance(smexpr, str):
+                decl = self.lookup_decl(smexpr)
+                if decl.matched_by(gccexpr):
+                    return gccexpr
 
         if isinstance(gccexpr, gcc.IntegerCst):
             if isinstance(smexpr, (int, long)):
@@ -807,6 +821,14 @@ class Context:
             if isinstance(gccexpr.type, gcc.PointerType):
                 # TODO: the sm may impose further constraints
                 return True
+
+    def set_state(self, mctxt, name, **kwargs):
+        dststate = State(name, **kwargs)
+        dstshape, shapevars = mctxt.srcshape._copy()
+        dstshape.set_state(mctxt.get_stateful_gccvar(), dststate)
+        dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
+        expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
+                                                 mctxt.inneredge, mctxt.match, None)
 
 def solve(ctxt, graph, name):
     ctxt.log('running %s' % ctxt.sm.name)

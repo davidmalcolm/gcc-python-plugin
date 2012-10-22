@@ -22,7 +22,7 @@
 from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
     PatternRule, PythonFragment, \
     NamedPatternReference, SpecialPattern, OrPattern, \
-    AssignmentFromLiteral, \
+    Assignment, \
     ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, ArrayLookup, \
     VarUsage, \
     TransitionTo, BooleanOutcome, PythonOutcome
@@ -280,13 +280,14 @@ def p_patternrule(p):
     p[0] = PatternRule(pattern=p[1], outcomes=p[3])
 
 # Various kinds of "cpattern":
-def p_cpattern_assignment_from_literal(p):
+def p_cpattern_assignment(p):
     '''
     cpattern : ID ASSIGNMENT LITERAL_STRING
              | ID ASSIGNMENT LITERAL_NUMBER
+             | ID ASSIGNMENT ID
     '''
     # e.g. "q = 0"
-    p[0] = AssignmentFromLiteral(lhs=p[1], rhs=p[3])
+    p[0] = Assignment(lhs=p[1], rhs=p[3])
 
 def p_cpattern_result_of_fn_call(p):
     'cpattern : ID ASSIGNMENT ID LPAREN fncall_args RPAREN'
