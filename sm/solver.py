@@ -36,12 +36,56 @@ import sm.parser
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
 
+class State:
+    """
+    States are normally just names (strings), but potentially can have extra
+    named attributes
+    """
+    def __init__(self, name, **kwargs):
+        self.name = name
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        if self.kwargs:
+            kwargs = ', '.join('%r=%r' % (k, v)
+                               for k, v in self.kwargs.iteritems())
+            return 'State(%r, %s)' % (self.name, kwargs)
+        else:
+            return 'State(%r)' % self.name
+
+    def __str__(self):
+        if self.kwargs:
+            return repr(self)
+        else:
+            return self.name
+
+    def __eq__(self, other):
+        if self.name == other.name:
+            if self.kwargs == other.kwargs:
+                return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __hash__(self):
+        result = hash(self.name)
+        for k, v in self.kwargs.iteritems():
+            result ^= hash(k) ^ hash(v)
+        return result
+
+    def __getattr__(self, name):
+        if name in self.kwargs:
+            return self.kwargs[name]
+        if name in self.__dict__:
+            return self.__dict[name]
+        raise AttributeError('%s' % name)
+
 class StateVar:
     def __init__(self, state):
         self.state = state
 
     def __repr__(self):
-        return 'StateVar(%r)' % self.state
+        return 'StateVar(%r)' % (self.state, )
 
     def copy(self):
         return StateVar(self.state)
@@ -116,6 +160,7 @@ class Shape:
 
     def set_state(self, var, state):
         assert isinstance(var, VARTYPES)
+        assert isinstance(state, State)
         if var in self._dict:
             # update existing StateVar (so that the change can be seen by
             # aliases):
@@ -228,8 +273,8 @@ class ExplodedGraph(Graph):
                     # Now see if the rules apply for this state:
                     stateful_gccvar = match.get_stateful_gccvar(self.ctxt)
                     srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
-                    if srcstate in sc.statelist:
-                        mctxt = MatchContext(match, self, srcexpnode, inneredge)
+                    if srcstate.name in sc.statelist:
+                        mctxt = MatchContext(match, self, srcexpnode, inneredge, srcstate)
                         self.ctxt.log('got match in state %r of %r at %s: %s'
                             % (srcstate,
                                str(pr.pattern),
@@ -323,7 +368,7 @@ class MatchContext:
     """
     A match of a specific rule, to be supplied to Outcome.apply()
     """
-    def __init__(self, match, expgraph, srcexpnode, inneredge):
+    def __init__(self, match, expgraph, srcexpnode, inneredge, srcstate):
         from sm.checker import Match
         from gccutils.graph import SupergraphEdge
         assert isinstance(match, Match)
@@ -334,6 +379,7 @@ class MatchContext:
         self.expgraph = expgraph
         self.srcexpnode = srcexpnode
         self.inneredge = inneredge
+        self.srcstate = srcstate
 
     @property
     def srcshape(self):
@@ -475,21 +521,29 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
                 ctxt.debug('pr.pattern: %r' % pr.pattern)
                 ctxt.debug('match: %r' % match)
                 srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                ctxt.debug('srcstate: %r' % srcstate)
-                if srcstate in sc.statelist:
+                ctxt.debug('srcstate: %r' % (srcstate, ))
+                assert isinstance(srcstate, State)
+                if srcstate.name in sc.statelist:
                     assert len(pr.outcomes) > 0
                     ctxt.log('got match in state %r of %r at %r: %s'
                         % (srcstate,
                            str(pr.pattern),
                            str(stmt),
                            match))
-                    mctxt = MatchContext(match, expgraph, srcexpnode, edge)
+                    mctxt = MatchContext(match, expgraph, srcexpnode, edge, srcstate)
                     for outcome in pr.outcomes:
                         ctxt.log('applying outcome to %s => %s'
                                  % (mctxt.get_stateful_gccvar(),
                                     outcome))
                         outcome.apply(mctxt)
                     matches.append(pr)
+                else:
+                    ctxt.log('got match for wrong state %r of %r at %r: %s'
+                        % (srcstate,
+                           str(pr.pattern),
+                           str(stmt),
+                           match))
+
     if not matches:
         dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
@@ -589,7 +643,7 @@ class Context:
         #   all StateClause instance, in order:
         self._stateclauses = []
 
-        reachable_states = set([self.statenames[0]])
+        reachable_statenames = set([self.statenames[0]])
 
         # Set up the above attributes:
         from sm.checker import Decl, NamedPattern, StateClause, PythonFragment
@@ -604,20 +658,20 @@ class Context:
                 self._stateclauses.append(clause)
                 for pr in clause.patternrulelist:
                     for outcome in pr.outcomes:
-                        for state in outcome.iter_reachable_states():
-                            reachable_states.add(state)
+                        for statename in outcome.iter_reachable_statenames():
+                            reachable_statenames.add(statename)
 
         # 2nd pass: validate the sm:
         for clause in sm.clauses:
             if isinstance(clause, StateClause):
-                for state in clause.statelist:
-                    if state not in reachable_states:
+                for statename in clause.statelist:
+                    if statename not in reachable_statenames:
                         class UnreachableState(Exception):
-                            def __init__(self, state):
-                                self.state = state
+                            def __init__(self, statename):
+                                self.statename = statename
                             def __str__(self):
-                                return str(self.state)
-                        raise UnreachableState(state)
+                                return str(self.statename)
+                        raise UnreachableState(statename)
 
         # Store the errors so that we can play them back in source order
         # (for greater predicability of selftests):
@@ -739,7 +793,7 @@ class Context:
         return None
 
     def get_default_state(self):
-        return self.statenames[0]
+        return State(self.statenames[0])
 
     def is_stateful_var(self, gccexpr):
         '''

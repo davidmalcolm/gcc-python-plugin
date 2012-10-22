@@ -27,8 +27,8 @@ def checker_to_dot(checker, name):
     result += '}\n'
     return result
 
-def state_to_dot(state):
-    return state.replace('.', '_')
+def statename_to_dot(statename):
+    return statename.replace('.', '_')
 
 def pattern_to_dot(pattern):
     return str(pattern)
@@ -39,7 +39,7 @@ def python_to_dot(outcome):
 def sm_to_dot(sm):
     result = '  subgraph %s {\n' % sm.name
     for state in sm.iter_states():
-        result += '    %s [label=<%s>];\n' % (state_to_dot(state), state)
+        result += '    %s [label=<%s>];\n' % (statename_to_dot(state), state)
     result += '\n'
     for sc in sm.clauses:
         if not isinstance(sc, StateClause):
@@ -60,8 +60,8 @@ def sm_to_dot(sm):
                             return guardedtext
                     def edge_for_outcome(outcome, guardtext):
                         if isinstance(outcome, TransitionTo):
-                            return make_edge(state_to_dot(state),
-                                             state_to_dot(outcome.state),
+                            return make_edge(statename_to_dot(state),
+                                             statename_to_dot(outcome.statename),
                                              make_label(pattern_to_dot(pr.pattern),
                                                         guardtext,
                                                         ''))
@@ -69,8 +69,8 @@ def sm_to_dot(sm):
                             return edge_for_outcome(outcome.outcome,
                                                     'is %s' % outcome.guard)
                         elif isinstance(outcome, PythonOutcome):
-                            return make_edge(state_to_dot(state),
-                                             state_to_dot(state),
+                            return make_edge(statename_to_dot(state),
+                                             statename_to_dot(state),
                                              make_label(pattern_to_dot(pr.pattern),
                                                         guardtext,
                                                         python_to_dot(outcome)))

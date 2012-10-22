@@ -110,7 +110,7 @@ sm malloc_checker {
                                         fnname='malloc',
                                         args=[]))
         self.assertEqual(pr.outcomes,
-                         [TransitionTo(state='ptr.unknown')])
+                         [TransitionTo(statename='ptr.unknown')])
 
         # Verify parsing of:
         #   ptr.unknown, ptr.null, ptr.nonnull:
@@ -124,13 +124,13 @@ sm malloc_checker {
         pr = sc.patternrulelist[0]
         self.assertEqual(pr.pattern, Comparison(lhs='ptr', op='==', rhs=0))
         self.assertEqual(pr.outcomes,
-                         [BooleanOutcome(guard=True, outcome=TransitionTo(state='ptr.null')),
-                          BooleanOutcome(guard=False, outcome=TransitionTo(state='ptr.nonnull'))])
+                         [BooleanOutcome(guard=True, outcome=TransitionTo(statename='ptr.null')),
+                          BooleanOutcome(guard=False, outcome=TransitionTo(statename='ptr.nonnull'))])
         pr = sc.patternrulelist[1]
         self.assertEqual(pr.pattern, Comparison(lhs='ptr', op='!=', rhs=0))
         self.assertEqual(pr.outcomes,
-                         [BooleanOutcome(guard=True, outcome=TransitionTo(state='ptr.nonnull')),
-                          BooleanOutcome(guard=False, outcome=TransitionTo(state='ptr.null'))])
+                         [BooleanOutcome(guard=True, outcome=TransitionTo(statename='ptr.nonnull')),
+                          BooleanOutcome(guard=False, outcome=TransitionTo(statename='ptr.null'))])
 
 
         # Verify parsing of:
@@ -167,7 +167,7 @@ sm malloc_checker {
         pr = sc.patternrulelist[0]
         self.assertEqual(pr.pattern, ArgsOfFnCall(fnname='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
-                         [TransitionTo(state='ptr.free')])
+                         [TransitionTo(statename='ptr.free')])
 
         # Verify parsing of:
         #   ptr.free:

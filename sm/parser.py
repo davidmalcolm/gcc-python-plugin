@@ -365,7 +365,7 @@ def p_outcomes(p):
 def p_outcome_newstate(p):
     'outcome : statename'
     # e.g. "ptr.unknown"
-    p[0] = TransitionTo(state=p[1])
+    p[0] = TransitionTo(statename=p[1])
 
 def p_outcome_boolean_outcome(p):
     '''outcome : TRUE ASSIGNMENT outcome

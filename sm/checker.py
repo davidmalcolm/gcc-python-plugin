@@ -567,27 +567,28 @@ class Outcome:
     pass
 
 class TransitionTo(Outcome):
-    def __init__(self, state):
-        self.state = state
+    def __init__(self, statename):
+        self.statename = statename
     def __str__(self):
-        return str(self.state)
+        return str(self.statename)
     def __repr__(self):
-        return 'TransitionTo(state=%r)' % self.state
+        return 'TransitionTo(statename=%r)' % self.statename
     def __eq__(self, other):
         if self.__class__ == other.__class__:
-            if self.state == other.state:
+            if self.statename == other.statename:
                 return True
     def apply(self, mctxt):
         # print('transition %s to %s' % (match.var, outcome.state))
-        dststate = self.state
+        from sm.solver import State
+        dststate = State(self.statename)
         dstshape, shapevars = mctxt.srcshape._copy()
         dstshape.set_state(mctxt.get_stateful_gccvar(), dststate)
         dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
         expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
                                                  mctxt.inneredge, mctxt.match, None)
 
-    def iter_reachable_states(self):
-        yield self.state
+    def iter_reachable_statenames(self):
+        yield self.statename
 
 class BooleanOutcome(Outcome):
     def __init__(self, guard, outcome):
@@ -609,9 +610,9 @@ class BooleanOutcome(Outcome):
         if mctxt.inneredge.false_value and not self.guard:
             self.outcome.apply(mctxt)
 
-    def iter_reachable_states(self):
-        for state in self.outcome.iter_reachable_states():
-            yield state
+    def iter_reachable_statenames(self):
+        for statename in self.outcome.iter_reachable_statenames():
+            yield statename
 
 class PythonOutcome(Outcome, PythonFragment):
     def apply(self, mctxt):
@@ -658,5 +659,5 @@ class PythonOutcome(Outcome, PythonFragment):
         for name in locals_:
             del ctxt.python_locals[name]
 
-    def iter_reachable_states(self):
+    def iter_reachable_statenames(self):
         return []
