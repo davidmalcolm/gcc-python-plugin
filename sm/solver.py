@@ -358,9 +358,8 @@ def make_exploded_graph(ctxt, innergraph):
         stmt = srcnode.get_stmt()
         for edge in srcnode.succs:
             dstnode = edge.dstnode
-            if 0:
-                ctxt.debug('  edge from: %s' % srcnode)
-                ctxt.debug('         to: %s' % dstnode)
+            ctxt.debug('  edge from: %s' % srcnode)
+            ctxt.debug('         to: %s' % dstnode)
             srcshape = srcexpnode.shape
 
             # Handle interprocedural edges:
@@ -466,10 +465,13 @@ def make_exploded_graph(ctxt, innergraph):
                     if not stmt:
                         continue
                     # Now see if the rules apply for the current state:
+                    ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
+                    ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
                     for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                        # ctxt.debug('pr.pattern: %r' % pr.pattern)
-                        # ctxt.debug('match: %r' % match)
+                        ctxt.debug('pr.pattern: %r' % pr.pattern)
+                        ctxt.debug('match: %r' % match)
                         srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
+                        ctxt.debug('srcstate: %r' % srcstate)
                         if srcstate in sc.statelist:
                             assert len(pr.outcomes) > 0
                             ctxt.log('got match in state %r of %r at %r: %s'
