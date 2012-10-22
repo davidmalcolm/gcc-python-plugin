@@ -1,0 +1,4 @@
+tests/sm/assignments/dereference-on-lhs/input.c: In function 'test':
+tests/sm/assignments/dereference-on-lhs/input.c:6:nn: error: use of possibly-NULL pointer foo
+tests/sm/assignments/dereference-on-lhs/input.c:5:nn: note: foo assigned to the result of malloc()
+tests/sm/assignments/dereference-on-lhs/input.c:6:nn: note: use of possibly-NULL pointer foo
