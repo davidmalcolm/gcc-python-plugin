@@ -149,7 +149,8 @@ class PythonFragment(Clause):
             indent = len(lines[0]) - len(lines[0].lstrip())
             outdented_lines = []
             for line in lines:
-                if not line[:indent].isspace():
+                prefix = line[:indent]
+                if not (prefix == '' or prefix.isspace()):
                     # indentation error
                     return lines
                 outdented_lines.append(line[indent:])
