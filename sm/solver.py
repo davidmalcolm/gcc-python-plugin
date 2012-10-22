@@ -360,140 +360,140 @@ def make_exploded_graph(ctxt, innergraph):
     return expgraph
 
 def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
-            stmt = srcnode.get_stmt()
-            dstnode = edge.dstnode
-            ctxt.debug('  edge from: %s' % srcnode)
-            ctxt.debug('         to: %s' % dstnode)
-            srcshape = srcexpnode.shape
+    stmt = srcnode.get_stmt()
+    dstnode = edge.dstnode
+    ctxt.debug('  edge from: %s' % srcnode)
+    ctxt.debug('         to: %s' % dstnode)
+    srcshape = srcexpnode.shape
 
-            # Handle interprocedural edges:
-            if isinstance(edge, CallToReturnSiteEdge):
-                # Ignore the intraprocedural edge for a function call:
-                return
-            elif isinstance(edge, CallToStart):
-                # Alias the parameters with the arguments as necessary, so
-                # e.g. a function that free()s an arg has the caller's var
-                # marked as free also:
+    # Handle interprocedural edges:
+    if isinstance(edge, CallToReturnSiteEdge):
+        # Ignore the intraprocedural edge for a function call:
+        return
+    elif isinstance(edge, CallToStart):
+        # Alias the parameters with the arguments as necessary, so
+        # e.g. a function that free()s an arg has the caller's var
+        # marked as free also:
+        shapechange = ShapeChange(srcshape)
+        assert isinstance(srcnode.stmt, gcc.GimpleCall)
+        # ctxt.debug(srcnode.stmt)
+        for param, arg  in zip(srcnode.stmt.fndecl.arguments, srcnode.stmt.args):
+            # FIXME: change fndecl.arguments to fndecl.parameters
+            if 0:
+                ctxt.debug('  param: %r' % param)
+                ctxt.debug('  arg: %r' % arg)
+            if ctxt.is_stateful_var(arg):
+                shapechange.assign_var(param, arg)
+        # ctxt.debug('dstshape: %r' % dstshape)
+        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                           edge, None, shapechange)
+        return
+    elif isinstance(edge, ExitToReturnSite):
+        shapechange = ShapeChange(srcshape)
+        # Propagate state through the return value:
+        # ctxt.debug('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
+        if edge.calling_stmtnode.stmt.lhs:
+            exitsupernode = edge.srcnode
+            assert isinstance(exitsupernode.innernode, ExitNode)
+            returnstmtnode = exitsupernode.innernode.returnnode
+            assert isinstance(returnstmtnode.stmt, gcc.GimpleReturn)
+            retval = returnstmtnode.stmt.retval
+            if ctxt.is_stateful_var(retval):
+                shapechange.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
+        # ...and purge all local state:
+        shapechange.purge_locals(edge.srcnode.function)
+        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                           edge, None, shapechange)
+        return
+
+    # Handle simple assignments so that variables inherit state:
+    if isinstance(stmt, gcc.GimpleAssign):
+        if 0:
+            ctxt.debug('gcc.GimpleAssign: %s' % stmt)
+            ctxt.debug('stmt.lhs: %r' % stmt.lhs)
+            ctxt.debug('stmt.rhs: %r' % stmt.rhs)
+            ctxt.debug('stmt.exprcode: %r' % stmt.exprcode)
+        if stmt.exprcode == gcc.VarDecl:
+            shapechange = ShapeChange(srcshape)
+            shapechange.assign_var(stmt.lhs, stmt.rhs[0])
+            dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+            expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                               edge, None, shapechange)
+            return
+        elif stmt.exprcode == gcc.ComponentRef:
+            # Field lookup
+            compref = stmt.rhs[0]
+            if 0:
+                ctxt.debug(compref.target)
+                ctxt.debug(compref.field)
+            # The LHS potentially inherits state from the compref
+            if srcshape.var_has_state(compref.target):
+                ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
+                    % (stmt.lhs,
+                       srcshape.get_state(compref.target),
+                       compref.target,
+                       compref.field))
                 shapechange = ShapeChange(srcshape)
-                assert isinstance(srcnode.stmt, gcc.GimpleCall)
-                # ctxt.debug(srcnode.stmt)
-                for param, arg  in zip(srcnode.stmt.fndecl.arguments, srcnode.stmt.args):
-                    # FIXME: change fndecl.arguments to fndecl.parameters
-                    if 0:
-                        ctxt.debug('  param: %r' % param)
-                        ctxt.debug('  arg: %r' % arg)
-                    if ctxt.is_stateful_var(arg):
-                        shapechange.assign_var(param, arg)
-                # ctxt.debug('dstshape: %r' % dstshape)
+                # For now we alias the states
+                shapechange.assign_var(stmt.lhs, compref.target)
                 dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
                 expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                                    edge, None, shapechange)
                 return
-            elif isinstance(edge, ExitToReturnSite):
-                shapechange = ShapeChange(srcshape)
-                # Propagate state through the return value:
-                # ctxt.debug('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
-                if edge.calling_stmtnode.stmt.lhs:
-                    exitsupernode = edge.srcnode
-                    assert isinstance(exitsupernode.innernode, ExitNode)
-                    returnstmtnode = exitsupernode.innernode.returnnode
-                    assert isinstance(returnstmtnode.stmt, gcc.GimpleReturn)
-                    retval = returnstmtnode.stmt.retval
-                    if ctxt.is_stateful_var(retval):
-                        shapechange.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
-                # ...and purge all local state:
-                shapechange.purge_locals(edge.srcnode.function)
-                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None, shapechange)
-                return
+    elif isinstance(stmt, gcc.GimplePhi):
+        if 0:
+            ctxt.debug('gcc.GimplePhi: %s' % stmt)
+            ctxt.debug('srcnode: %s' % srcnode)
+            ctxt.debug('srcnode: %r' % srcnode)
+            ctxt.debug('srcnode.innernode: %s' % srcnode.innernode)
+            ctxt.debug('srcnode.innernode: %r' % srcnode.innernode)
+        assert isinstance(srcnode.innernode, SplitPhiNode)
+        shapechange = ShapeChange(srcshape)
+        shapechange.assign_var(stmt.lhs,
+                               srcnode.innernode.rhs) # FIXME: could be a constant
+        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                           edge, None, shapechange)
+        return
 
-            # Handle simple assignments so that variables inherit state:
-            if isinstance(stmt, gcc.GimpleAssign):
-                if 0:
-                    ctxt.debug('gcc.GimpleAssign: %s' % stmt)
-                    ctxt.debug('stmt.lhs: %r' % stmt.lhs)
-                    ctxt.debug('stmt.rhs: %r' % stmt.rhs)
-                    ctxt.debug('stmt.exprcode: %r' % stmt.exprcode)
-                if stmt.exprcode == gcc.VarDecl:
-                    shapechange = ShapeChange(srcshape)
-                    shapechange.assign_var(stmt.lhs, stmt.rhs[0])
-                    dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                    expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                       edge, None, shapechange)
-                    return
-                elif stmt.exprcode == gcc.ComponentRef:
-                    # Field lookup
-                    compref = stmt.rhs[0]
-                    if 0:
-                        ctxt.debug(compref.target)
-                        ctxt.debug(compref.field)
-                    # The LHS potentially inherits state from the compref
-                    if srcshape.var_has_state(compref.target):
-                        ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
-                            % (stmt.lhs,
-                               srcshape.get_state(compref.target),
-                               compref.target,
-                               compref.field))
-                        shapechange = ShapeChange(srcshape)
-                        # For now we alias the states
-                        shapechange.assign_var(stmt.lhs, compref.target)
-                        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                           edge, None, shapechange)
-                        return
-            elif isinstance(stmt, gcc.GimplePhi):
-                if 0:
-                    ctxt.debug('gcc.GimplePhi: %s' % stmt)
-                    ctxt.debug('srcnode: %s' % srcnode)
-                    ctxt.debug('srcnode: %r' % srcnode)
-                    ctxt.debug('srcnode.innernode: %s' % srcnode.innernode)
-                    ctxt.debug('srcnode.innernode: %r' % srcnode.innernode)
-                assert isinstance(srcnode.innernode, SplitPhiNode)
-                shapechange = ShapeChange(srcshape)
-                shapechange.assign_var(stmt.lhs,
-                                       srcnode.innernode.rhs) # FIXME: could be a constant
-                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None, shapechange)
-                return
-
-            matches = []
-            for sc in ctxt._stateclauses:
-                # Locate any rules that could apply, regardless of the current
-                # state:
-                for pr in sc.patternrulelist:
-                    # ctxt.debug('%r: %r' % (srcshape, pr))
-                    # For now, skip interprocedural calls and the
-                    # ENTRY/EXIT nodes:
-                    if not stmt:
-                        continue
-                    # Now see if the rules apply for the current state:
-                    ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
-                    ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
-                    for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                        ctxt.debug('pr.pattern: %r' % pr.pattern)
-                        ctxt.debug('match: %r' % match)
-                        srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                        ctxt.debug('srcstate: %r' % srcstate)
-                        if srcstate in sc.statelist:
-                            assert len(pr.outcomes) > 0
-                            ctxt.log('got match in state %r of %r at %r: %s'
-                                % (srcstate,
-                                   str(pr.pattern),
-                                   str(stmt),
-                                   match))
-                            mctxt = MatchContext(match, expgraph, srcexpnode, edge)
-                            for outcome in pr.outcomes:
-                                ctxt.log('applying outcome to %s => %s'
-                                         % (mctxt.get_stateful_gccvar(),
-                                            outcome))
-                                outcome.apply(mctxt)
-                            matches.append(pr)
-            if not matches:
-                dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None, None)
+    matches = []
+    for sc in ctxt._stateclauses:
+        # Locate any rules that could apply, regardless of the current
+        # state:
+        for pr in sc.patternrulelist:
+            # ctxt.debug('%r: %r' % (srcshape, pr))
+            # For now, skip interprocedural calls and the
+            # ENTRY/EXIT nodes:
+            if not stmt:
+                continue
+            # Now see if the rules apply for the current state:
+            ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
+            ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
+            for match in pr.pattern.iter_matches(stmt, edge, ctxt):
+                ctxt.debug('pr.pattern: %r' % pr.pattern)
+                ctxt.debug('match: %r' % match)
+                srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
+                ctxt.debug('srcstate: %r' % srcstate)
+                if srcstate in sc.statelist:
+                    assert len(pr.outcomes) > 0
+                    ctxt.log('got match in state %r of %r at %r: %s'
+                        % (srcstate,
+                           str(pr.pattern),
+                           str(stmt),
+                           match))
+                    mctxt = MatchContext(match, expgraph, srcexpnode, edge)
+                    for outcome in pr.outcomes:
+                        ctxt.log('applying outcome to %s => %s'
+                                 % (mctxt.get_stateful_gccvar(),
+                                    outcome))
+                        outcome.apply(mctxt)
+                    matches.append(pr)
+    if not matches:
+        dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
+        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                           edge, None, None)
 
 class Error:
     # A stored error
