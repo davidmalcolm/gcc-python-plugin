@@ -278,10 +278,11 @@ class AssignmentFromLiteral(Pattern):
 
     def iter_matches(self, stmt, edge, ctxt):
         if isinstance(stmt, gcc.GimpleAssign):
-            m = Match(self)
-            if m.match_term(ctxt, stmt.lhs, self.lhs):
-                if m.match_term(ctxt, stmt.rhs[0], self.rhs):
-                    yield m
+            if len(stmt.rhs) == 1:
+                m = Match(self)
+                if m.match_term(ctxt, stmt.lhs, self.lhs):
+                    if m.match_term(ctxt, stmt.rhs[0], self.rhs):
+                        yield m
 
     def description(self, match, ctxt):
         return ('%s assigned to %s'
