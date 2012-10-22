@@ -1,2 +1,2 @@
 tests/sm/checkers/sizeof_allocation/calloc_too_small/input.c: In function 'test':
-tests/sm/checkers/sizeof_allocation/calloc_too_small/input.c:13:nn: error: allocation too small: pointer to struct foo (1024 bytes) initialized with allocation of 512 bytes
+tests/sm/checkers/sizeof_allocation/calloc_too_small/input.c:32:nn: error: allocation too small: pointer to struct foo (1024 bytes) initialized with allocation of 512 bytes

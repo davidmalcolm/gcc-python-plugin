@@ -1,4 +1,4 @@
 tests/sm/checkers/malloc-checker/two_ptrs/input.c: In function 'test':
-tests/sm/checkers/malloc-checker/two_ptrs/input.c:11:nn: error: use of possibly-NULL pointer q
-tests/sm/checkers/malloc-checker/two_ptrs/input.c:7:nn: note: q assigned to the result of malloc()
-tests/sm/checkers/malloc-checker/two_ptrs/input.c:11:nn: note: use of possibly-NULL pointer q
+tests/sm/checkers/malloc-checker/two_ptrs/input.c:30:nn: error: use of possibly-NULL pointer q
+tests/sm/checkers/malloc-checker/two_ptrs/input.c:26:nn: note: q assigned to the result of malloc()
+tests/sm/checkers/malloc-checker/two_ptrs/input.c:30:nn: note: use of possibly-NULL pointer q

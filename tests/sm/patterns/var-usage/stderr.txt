@@ -1,2 +1,2 @@
 tests/sm/patterns/var-usage/input.c: In function 'test1':
-tests/sm/patterns/var-usage/input.c:3:nn: error: ptr was used
+tests/sm/patterns/var-usage/input.c:22:nn: error: ptr was used

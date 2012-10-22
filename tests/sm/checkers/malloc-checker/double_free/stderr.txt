@@ -1,7 +1,7 @@
 tests/sm/checkers/malloc-checker/double_free/input.c: In function 'test':
-tests/sm/checkers/malloc-checker/double_free/input.c:9:nn: error: double-free of ptr
-tests/sm/checkers/malloc-checker/double_free/input.c:6:nn: note: ptr passed to free()
-tests/sm/checkers/malloc-checker/double_free/input.c:9:nn: note: double-free of ptr
-tests/sm/checkers/malloc-checker/double_free/input.c:9:nn: error: use-after-free of ptr
-tests/sm/checkers/malloc-checker/double_free/input.c:6:nn: note: ptr passed to free()
-tests/sm/checkers/malloc-checker/double_free/input.c:9:nn: note: use-after-free of ptr
+tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: error: double-free of ptr
+tests/sm/checkers/malloc-checker/double_free/input.c:25:nn: note: ptr passed to free()
+tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: note: double-free of ptr
+tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: error: use-after-free of ptr
+tests/sm/checkers/malloc-checker/double_free/input.c:25:nn: note: ptr passed to free()
+tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: note: use-after-free of ptr

@@ -1,2 +1,2 @@
 tests/sm/patterns/array/input.c: In function 'test1':
-tests/sm/patterns/array/input.c:5:nn: error: lookup within array "buf" at index 0
+tests/sm/patterns/array/input.c:24:nn: error: lookup within array "buf" at index 0

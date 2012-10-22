@@ -1,4 +1,4 @@
 tests/sm/patterns/var-dereference/input.c: In function 'test1':
-tests/sm/patterns/var-dereference/input.c:3:nn: error: p was dereferenced
+tests/sm/patterns/var-dereference/input.c:22:nn: error: p was dereferenced
 tests/sm/patterns/var-dereference/input.c: In function 'test2':
-tests/sm/patterns/var-dereference/input.c:12:nn: error: f was dereferenced
+tests/sm/patterns/var-dereference/input.c:31:nn: error: f was dereferenced

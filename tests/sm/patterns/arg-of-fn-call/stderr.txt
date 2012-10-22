@@ -1,2 +1,2 @@
 tests/sm/patterns/arg-of-fn-call/input.c: In function 'test1':
-tests/sm/patterns/arg-of-fn-call/input.c:5:nn: error: test2() was called with ptr
+tests/sm/patterns/arg-of-fn-call/input.c:24:nn: error: test2() was called with ptr

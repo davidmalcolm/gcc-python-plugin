@@ -1,4 +1,4 @@
 tests/sm/checkers/malloc-checker/fancy_control_flow/input.c: In function 'test':
-tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:21:nn: error: use of possibly-NULL pointer ptr
-tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:11:nn: note: ptr assigned to the result of malloc()
-tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:21:nn: note: use of possibly-NULL pointer ptr
+tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:40:nn: error: use of possibly-NULL pointer ptr
+tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:30:nn: note: ptr assigned to the result of malloc()
+tests/sm/checkers/malloc-checker/fancy_control_flow/input.c:40:nn: note: use of possibly-NULL pointer ptr
