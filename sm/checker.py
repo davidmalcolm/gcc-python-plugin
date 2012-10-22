@@ -544,6 +544,15 @@ class OrPattern(Pattern):
     """
     def __init__(self, *patterns):
         self.patterns = patterns
+        # Fold away:
+        #    OrPattern(pat1, OrPattern(pat2, OrPattern(pat3, ...)))
+        # to:
+        #    OrPattern(pat1, pat2, pat3, ...)
+        if isinstance(self.patterns[-1], OrPattern):
+            self.patterns = self.patterns[:-1] + self.patterns[-1].patterns
+
+    def __repr__(self):
+        return 'OrPattern(patterns=%r)' % (self.patterns,)
 
     def __str__(self):
         return ' | '.join([str(pat)
