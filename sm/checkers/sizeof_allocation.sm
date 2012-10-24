@@ -47,6 +47,13 @@ sm sizeof_allocation {
       /* libpython: */
     | { ptr = PyMem_Malloc(sz) }
     | { ptr = PyMem_Realloc(other_ptr, sz) }
+      /* glib: */
+    | { ptr = g_malloc(sz) }
+    | { ptr = g_malloc0(sz) }
+    | { ptr = g_realloc(other_ptr, sz) }
+    | { ptr = g_try_malloc(sz) }
+    | { ptr = g_try_malloc0(sz) }
+    | { ptr = g_try_realloc(other_ptr, sz) }
       /* etc */
       => {{
               check_size(ptr, sz)
@@ -55,6 +62,13 @@ sm sizeof_allocation {
   ptr.all:
       /* libc: */
       { ptr = calloc(nmemb, sz) }
+      /* glib: */
+    | { ptr = g_malloc_n(nmemb, sz) }
+    | { ptr = g_malloc0_n(nmemb, sz) }
+    | { ptr = g_realloc_n(other_pointer, nmemb, sz) }
+    | { ptr = g_try_malloc_n(nmemb, sz) }
+    | { ptr = g_try_malloc0_n(nmemb, sz) }
+    | { ptr = g_try_realloc_n(other_pointer, nmemb, sz) }
       => {{
               check_size(ptr, int(nmemb) * int(sz))
          }};
