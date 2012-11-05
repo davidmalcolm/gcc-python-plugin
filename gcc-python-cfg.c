@@ -259,13 +259,20 @@ gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
     return 0;
 }
 
+union cfg_block_or_ptr {
+    gcc_cfg_block block;
+    void *ptr;
+};
+
 static PyObject *
 real_make_basic_block_wrapper(void *ptr)
 {
-    gcc_cfg_block bb = gcc_private_make_cfg_block(ptr);
+    union cfg_block_or_ptr u;
     struct PyGccBasicBlock *obj;
 
-    if (!bb.inner) {
+    u.ptr = ptr;
+
+    if (!u.block.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -335,7 +342,7 @@ real_make_basic_block_wrapper(void *ptr)
     }
 #endif
 
-    obj->bb = bb;
+    obj->bb = u.block;
 
     return (PyObject*)obj;
       
