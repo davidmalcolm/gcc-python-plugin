@@ -94,10 +94,10 @@ class PyGetSetDef:
         self.closure = closure
 
     def c_defn(self):
-        result =  '    {"%s",\n' % self.name
+        result =  '    {(char*)"%s",\n' % self.name
         result += '     (getter)%s,\n' % nullable_ptr(self.get)
         result += '     (setter)%s,\n' % nullable_ptr(self.set)
-        result += '     "%s",\n' % nullable_ptr(self.doc)
+        result += '     (char*)"%s",\n' % nullable_ptr(self.doc)
         result += '     %s},\n' % nullable_ptr(self.closure)
         return result
 
@@ -137,8 +137,8 @@ class PyMethodDef:
         self.docstring = docstring
 
     def c_defn(self):
-        return ('    {"%(name)s",  %(fn_name)s, %(args)s,\n'
-                '     "%(docstring)s"},\n' % self.__dict__)
+        return ('    {(char*)"%(name)s",  %(fn_name)s, %(args)s,\n'
+                '     (char*)"%(docstring)s"},\n' % self.__dict__)
 
 class PyMethodTable(NamedEntity):
     def __init__(self, identifier, methods):

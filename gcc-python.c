@@ -628,7 +628,7 @@ setup_sys(struct plugin_name_args *plugin_info)
     if (!full_name) {
         goto error;
     }
-    if (-1 == PySys_SetObject("plugin_full_name", full_name)) {
+    if (-1 == PySys_SetObject((char*)"plugin_full_name", full_name)) {
         goto error;
     }
 
@@ -637,7 +637,7 @@ setup_sys(struct plugin_name_args *plugin_info)
     if (!base_name) {
         goto error;
     }
-    if (-1 == PySys_SetObject("plugin_base_name", base_name)) {
+    if (-1 == PySys_SetObject((char*)"plugin_base_name", base_name)) {
         goto error;
     }
 

@@ -589,12 +589,12 @@ gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwar
     tree t_name;
 
     const char *name;
-    char *keywords[] = {"name",
-                        NULL};
+    const char *keywords[] = {"name",
+                              NULL};
 
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:lookup", keywords,
+                                     "s:lookup", (char**)keywords,
                                      &name)) {
         return NULL;
     }

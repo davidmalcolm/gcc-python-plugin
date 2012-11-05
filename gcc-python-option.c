@@ -43,7 +43,7 @@ int
 gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
 {
     const char *text;
-    static char *kwlist[] = {"text", NULL};
+    static const char *kwlist[] = {"text", NULL};
     int i;
 
     /*
@@ -51,7 +51,7 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     */
     gcc_python_wrapper_track(&self->head);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist,
                                       &text)) {
         return -1;
     }
