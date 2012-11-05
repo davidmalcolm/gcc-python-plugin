@@ -81,11 +81,11 @@ gcc_python_define_macro(PyObject *self,
                         PyObject *args, PyObject *kwargs)
 {
     const char *macro;
-    char *keywords[] = {"macro",
+    const char *keywords[] = {"macro",
                         NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:define_preprocessor_name", keywords,
+                                     "s:define_preprocessor_name", (char**)keywords,
                                      &macro)) {
         return NULL;
     }
@@ -463,7 +463,7 @@ static struct PyModuleDef gcc_module_def = {
 };
 #endif
 
-static PyMODINIT_FUNC PyInit_gcc(void)
+PyMODINIT_FUNC PyInit_gcc(void)
 {
 #if PY_MAJOR_VERSION == 3
     PyObject *m;
