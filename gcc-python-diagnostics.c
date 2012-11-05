@@ -119,7 +119,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
         opt_code = ((PyGccOption*)opt_obj)->opt_code;
 
         /* Ugly workaround; see this function: */
-        if (0 == gcc_python_option_is_enabled(opt_code)) {
+        if (0 == gcc_python_option_is_enabled((enum opt_code)opt_code)) {
             return PyBool_FromLong(0);
         }
 

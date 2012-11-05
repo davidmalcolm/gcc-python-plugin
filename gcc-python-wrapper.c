@@ -119,7 +119,7 @@ gcc_python_wrapper_meta_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwd
 
     /* Verify that the metaclass is sane, and that the created type object
        will thus be large enough for our extra information: */
-    assert(Py_TYPE(new_type)->tp_basicsize >= sizeof(PyGccWrapperTypeObject));
+    assert(Py_TYPE(new_type)->tp_basicsize >= (int)sizeof(PyGccWrapperTypeObject));
 
     base_type = (PyGccWrapperTypeObject*)((PyTypeObject*)new_type)->tp_base;
     assert(base_type);
@@ -316,7 +316,7 @@ my_walker(void *arg ATTRIBUTE_UNUSED)
     }
 }
 
-static struct ggc_root_tab myroot = { "", 1, 1, my_walker, NULL };
+static struct ggc_root_tab myroot = { (char*)"", 1, 1, my_walker, NULL };
 
 void
 gcc_python_wrapper_init(void)

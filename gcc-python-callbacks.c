@@ -99,7 +99,7 @@
     to  "Allow plugins to register their own pragmas."
 */
 
-static enum plugin_event current_event = GCC_PYTHON_PLUGIN_BAD_EVENT;
+static enum plugin_event current_event = (enum plugin_event)GCC_PYTHON_PLUGIN_BAD_EVENT;
 
 int gcc_python_is_within_event(enum plugin_event *out_event)
 {

@@ -130,7 +130,7 @@ static PyObject *
 gcc_python_get_option_list(PyObject *self, PyObject *args)
 {
     PyObject *result;
-    int i;
+    unsigned int i;
 
     result = PyList_New(0);
     if (!result) {
@@ -200,7 +200,7 @@ gcc_python_get_parameters(PyObject *self, PyObject *args)
     }
 
     for (i = 0; i < get_num_compiler_params(); i++) {
-        PyObject *param_obj = gcc_python_make_wrapper_param_num(i);
+        PyObject *param_obj = gcc_python_make_wrapper_param_num((compiler_param)i);
         if (!param_obj) {
 	    goto error;
         }
