@@ -119,7 +119,7 @@ gcc_python_wrapper_meta_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwd
 
     /* Verify that the metaclass is sane, and that the created type object
        will thus be large enough for our extra information: */
-    assert(Py_TYPE(new_type)->tp_basicsize >= sizeof(PyGccWrapperTypeObject));
+    assert(Py_TYPE(new_type)->tp_basicsize >= (int)sizeof(PyGccWrapperTypeObject));
 
     base_type = (PyGccWrapperTypeObject*)((PyTypeObject*)new_type)->tp_base;
     assert(base_type);
@@ -136,10 +136,55 @@ PyTypeObject PyGccWrapperMetaType  = {
     "gcc.WrapperMeta", /*tp_name*/
     sizeof(PyGccWrapperTypeObject), /*tp_basicsize*/
     0, /*tp_itemsize*/
-
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_base = &PyType_Type,
-    .tp_new = gcc_python_wrapper_meta_tp_new,
+    NULL, /* tp_dealloc */
+    NULL, /* tp_print */
+    NULL, /* tp_getattr */
+    NULL, /* tp_setattr */
+#if PY_MAJOR_VERSION < 3
+    0, /*tp_compare*/
+#else
+    0, /*reserved*/
+#endif
+    NULL, /* tp_repr */
+    NULL, /* tp_as_number */
+    NULL, /* tp_as_sequence */
+    NULL, /* tp_as_mapping */
+    NULL, /* tp_hash */
+    NULL, /* tp_call */
+    NULL, /* tp_str */
+    NULL, /* tp_getattro */
+    NULL, /* tp_setattro */
+    NULL, /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT, /* tp_flags */
+    0, /*tp_doc*/
+    NULL, /* tp_traverse */
+    NULL, /* tp_clear */
+    NULL, /* tp_richcompare */
+    0, /* tp_weaklistoffset */
+    NULL, /* tp_iter */
+    NULL, /* tp_iternext */
+    NULL, /* tp_methods */
+    NULL, /* tp_members */
+    NULL, /* tp_getset */
+    &PyType_Type, /* tp_base */
+    NULL, /* tp_dict */
+    NULL, /* tp_descr_get */
+    NULL, /* tp_descr_set */
+    0, /* tp_dictoffset */
+    NULL, /* tp_init */
+    NULL, /* tp_alloc */
+    gcc_python_wrapper_meta_tp_new, /* tp_new */
+    NULL, /* tp_free */
+    NULL, /* tp_is_gc */
+    NULL, /* tp_bases */
+    NULL, /* tp_mro */
+    NULL, /* tp_cache */
+    NULL, /* tp_subclasses */
+    NULL, /* tp_weaklist */
+    NULL, /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0, /*tp_version_tag*/
+#endif
 };
 
 /* Maintain a circular linked list of PyGccWrapper instances: */
@@ -271,7 +316,7 @@ my_walker(void *arg ATTRIBUTE_UNUSED)
     }
 }
 
-static struct ggc_root_tab myroot = { "", 1, 1, my_walker, NULL };
+static struct ggc_root_tab myroot = { (char*)"", 1, 1, my_walker, NULL };
 
 void
 gcc_python_wrapper_init(void)

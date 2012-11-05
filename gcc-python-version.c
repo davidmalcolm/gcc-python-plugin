@@ -28,16 +28,16 @@ static struct plugin_gcc_version *actual_gcc_version;
 
 /* Define a gcc.Version type, as a structseq */
 static struct PyStructSequence_Field gcc_version_fields[] = {
-    {"basever", NULL},
-    {"datestamp", NULL},
-    {"devphase", NULL},
-    {"revision", NULL},
-    {"configuration_arguments", NULL},
+    {(char*)"basever", NULL},
+    {(char*)"datestamp", NULL},
+    {(char*)"devphase", NULL},
+    {(char*)"revision", NULL},
+    {(char*)"configuration_arguments", NULL},
     {0}
 };
 
 static struct PyStructSequence_Desc gcc_version_desc = {
-    "gcc.Version", /* name */
+    (char*)"gcc.Version", /* name */
     NULL, /* doc */
     gcc_version_fields,
     5

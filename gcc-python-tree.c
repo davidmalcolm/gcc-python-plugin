@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
+#include "cp/cp-tree.h"
 #include "gimple.h"
 
 #include "cp/cp-tree.h" /* for TFF_* for use by gcc_FunctionDecl_get_fullname */
@@ -45,6 +46,9 @@ __typeof__ (decl_as_string) decl_as_string __attribute__ ((weak));
 
 /* Similar for namespace_binding: */
 __typeof__ (namespace_binding) namespace_binding __attribute__ ((weak));
+
+/* And for cp_namespace_decls: */
+__typeof__ (cp_namespace_decls) cp_namespace_decls __attribute__ ((weak));
 
 static PyObject *
 raise_cplusplus_only(const char *what)
@@ -653,12 +657,12 @@ gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwar
     tree t_name;
 
     const char *name;
-    char *keywords[] = {"name",
-                        NULL};
+    const char *keywords[] = {"name",
+                              NULL};
 
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:lookup", keywords,
+                                     "s:lookup", (char**)keywords,
                                      &name)) {
         return NULL;
     }
@@ -671,6 +675,61 @@ gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwar
 
     t_result = namespace_binding(t_name, self->t.inner);
     return gcc_python_make_wrapper_tree(gcc_private_make_tree(t_result));
+}
+
+PyObject *
+gcc_NamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+{
+  tree t = self->t.inner;
+
+  if (NULL == DECL_NAMESPACE_ALIAS(t)) {
+    Py_INCREF(self);
+    return (PyObject *)self;
+  }
+
+  while (DECL_NAMESPACE_ALIAS(t)) {
+    t = DECL_NAMESPACE_ALIAS(t);
+  }
+
+  return gcc_python_make_wrapper_tree(gcc_private_make_tree(t));
+}
+
+static PyObject *
+raise_namespace_alias(const char *what)
+{
+    return PyErr_Format(PyExc_RuntimeError,
+                        "%s is not valid for an alias",
+                        what);
+}
+
+PyObject *
+gcc_python_namespace_decl_declarations(tree t)
+{
+  if (NULL == cp_namespace_decls)
+    return raise_cplusplus_only("gcc.NamespaceDecl.declarations");
+
+  /* throw if we are an alias,
+     if we unalias it, it may return a list containing itself.  */
+  if (DECL_NAMESPACE_ALIAS(t))
+    return raise_namespace_alias("gcc.NamespaceDecl.declarations");
+
+  return gcc_tree_list_from_chain(cp_namespace_decls(t));
+}
+
+PyObject *
+gcc_python_namespace_decl_namespaces(tree t)
+{
+  /* We don't actually call cp_namespace_decls, but we only actually call
+     c++ specific macros, not sure what happens.  */
+  if (NULL == cp_namespace_decls)
+    return raise_cplusplus_only("gcc.NamespaceDecl.namespaces");
+
+  /* throw if we are an alias,
+     if we unalias it, it may return a list containing itself.  */
+  if (DECL_NAMESPACE_ALIAS(t))
+    return raise_namespace_alias("gcc.NamespaceDecl.namespaces");
+
+  return gcc_tree_list_from_chain(NAMESPACE_LEVEL(t)->namespaces);
 }
 
 /* 

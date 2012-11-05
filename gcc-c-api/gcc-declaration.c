@@ -37,6 +37,11 @@ GCC_IMPLEMENT_PUBLIC_API (bool) gcc_decl_is_artificial (gcc_decl decl)
   return DECL_ARTIFICIAL (decl.inner);
 }
 
+GCC_IMPLEMENT_PUBLIC_API(bool) gcc_decl_is_builtin(gcc_decl decl)
+{
+  return DECL_IS_BUILTIN (decl.inner);
+}
+
 GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_decl_as_gcc_tree (gcc_decl node);
 
 GCC_IMPLEMENT_PUBLIC_API (gcc_class_method_decl)

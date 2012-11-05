@@ -152,4 +152,15 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
 
      The destination :py:class:`gcc.BasicBlock` of this edge
 
-  .. various EDGE_ booleans also
+  .. py:attribute:: true_value
+
+     Boolean: `True` if this edge is taken when a :py:class:`gcc.GimpleCond`
+     conditional is true, `False` otherwise
+
+  .. py:attribute:: false_value
+
+     Boolean: `True` if this edge is taken when a :py:class:`gcc.GimpleCond`
+     conditional is false, `False` otherwise
+
+  .. various other EDGE_ booleans, though it's not clear that they should be
+     documented

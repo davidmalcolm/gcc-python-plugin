@@ -195,7 +195,7 @@ PyObject *
 gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
-    int i;
+    unsigned int i;
 
     assert(gimple_has_ops(self->stmt.inner));
 

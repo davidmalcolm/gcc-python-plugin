@@ -226,6 +226,10 @@ Declarations
       arguments of C++ methods: the initial `this` argument is a
       compiler-generated :py:class:`gcc.ParmDecl`.
 
+   .. py:attribute:: is_builtin
+
+      (bool) Is this declaration a compiler-builtin?
+
 .. py:class:: gcc.FieldDecl
 
    A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
@@ -332,10 +336,36 @@ Declarations
 
    A subclass of :py:class:`gcc.Declaration` representing a C++ namespace
 
-   .. py:method:: locate(name)
+   .. py:attribute:: alias_of
+
+      The :py:class:`gcc.NamespaceDecl` which this namespace is an alias of
+      or None if this namespace is not an alias.
+
+   .. py:attribute:: declarations
+
+      .. note:: This attribute is only usable with non-alias namespaces.
+                Accessing it on an alias will lead to a RuntimeError exception.
+
+      List of :py:class:`gcc.Declaration` objects in this namespace.
+      This attribute is only valid for non-aliases
+
+   .. py:attribute:: namespaces
+
+      .. note:: This attribute is only usable with non-alias namespaces.
+                Accessing it on an alias will lead to a RuntimeError exception.
+
+      List of :py:class:`gcc.NamespaceDecl` objects nested in this namespace.
+      This attribute is only valid for non-aliases
+
+   .. py:method:: lookup(name)
 
       Locate the given name within the namespace, returning a
       :py:class:`gcc.Tree` or `None`
+
+   .. py:method:: unalias()
+
+      Always returns a :py:class:`gcc.NamespaceDecl` object which is not an alias.
+      Returns self if this namespace is not an alias.
 
 
   ..        Declaration
@@ -1110,6 +1140,28 @@ Statements
    .. py:attribute:: target
 
       The target of the case label, as a :py:class:`gcc.LabelDecl`
+
+SSA Names
+---------
+
+.. py:class:: gcc.SsaName
+
+   A subclass of :py:class:`gcc.Tree` representing a variable references
+   during SSA analysis.  New SSA names are created every time a variable
+   is assigned a new value.
+
+   .. py:attribute:: var
+
+      The variable being referenced, as a :py:class:`gcc.VarDecl` or
+      :py:class:`gcc.ParmDecl`
+
+   .. py:attribute:: def_stmt
+
+      The :py:class:`gcc.Gimple` statement which defines this SSA name
+
+   .. py:attribute:: version
+
+      An `int` value giving the version number of this SSA name
 
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Tree

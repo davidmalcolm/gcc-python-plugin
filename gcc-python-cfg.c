@@ -38,12 +38,20 @@
       typedef struct edge_def *edge;
       typedef const struct edge_def *const_edge;
  */
+
+union cfg_edge_or_ptr {
+    gcc_cfg_edge edge;
+    void *ptr;
+};
+
 PyObject *
-gcc_python_make_wrapper_edge(gcc_cfg_edge e)
+real_make_edge(void * ptr)
 {
+    union cfg_edge_or_ptr u;
+    u.ptr = ptr;
     struct PyGccEdge *obj;
 
-    if (!e.inner) {
+    if (!u.edge.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -52,12 +60,24 @@ gcc_python_make_wrapper_edge(gcc_cfg_edge e)
         goto error;
     }
 
-    obj->e = e;
+    obj->e = u.edge;
 
     return (PyObject*)obj;
       
 error:
     return NULL;
+}
+
+static PyObject *edge_wrapper_cache = NULL;
+
+PyObject *
+gcc_python_make_wrapper_edge(gcc_cfg_edge e)
+{
+    union cfg_edge_or_ptr u;
+    u.edge = e;
+    return gcc_python_lazily_create_wrapper(&edge_wrapper_cache,
+					    u.ptr,
+					    real_make_edge);
 }
 
 void

@@ -1,0 +1,180 @@
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+.. covers up to 9f38feba0c69add5a39b69faba528de955ff71a2
+
+0.10
+~~~~
+
+Thanks to Buck Golemon, Daniele Varrazzo, David Narvaez, Eevee, Jason Mueller,
+Kevin Pyle, Matt Rice and Tom Tromey for their contributions to this release.
+
+Changes to the GCC Python Plugin
+================================
+
+* The plugin can now be used with Python 3.3 (fixing Unicode issues and
+  dict-ordering assumptions).
+
+* The plugin now exposes inline assembler to Python scripts via
+  :py:class:`gcc.GimpleAsm`.
+
+* There is a new `gccutils.sorted_callgraph()` function to get the callgraph in
+  topologically-sorted order.
+
+* The test suite has been reworked to fix issues with checkouts on OS X
+  case-insensitive filesystems.
+
+* C++ support: support for locating the global namespace (aka "::"), for locating
+  declarations and child namespaces within a namespace, and aliases.
+
+* :py:class:`gcc.Declaration` now has an is_builtin attribute
+
+* Numerous improvements to the plugin's Makefile
+
+
+Improvements to :doc:`gcc-with-cpychecker </cpychecker>`
+========================================================
+
+* By default, the refcount checker is now only run on code that includes
+  <Python.h> (implemented by checking if the "PyObject" typedef exists).
+
+  This greatly speeds up compilation of large projects for which the Python
+  extension modules are only a small subset of the source tree.
+
+* Added some custom attributes for marking functions that set an exception,
+  either always, or when returning a negative value::
+
+    __attribute__((cpychecker_negative_result_sets_exception))
+    __attribute__((cpychecker_sets_exception))
+
+* Improve descriptions of ranges: rather than emitting descriptions with the rather
+  vague "value", such as::
+
+    when considering range: 1 <= value <= 0x7fffffff
+
+  instead try to embed a descriptive name for the value, such as::
+
+    when considering range: 1 <= n <= 0x7fffffff
+
+
+Mass recompile of Fedora 17's Python extension code
+---------------------------------------------------
+
+I ran the reference-count checker on all of the C/C++ Python extension modules
+in Fedora 17 and `reported hundreds of genuine problems
+<http://fedoraproject.org/wiki/Features/StaticAnalysisOfPythonRefcounts>`_,
+many of which have been fixed.
+
+In the process of doing this I found and fixed many problems in the checker
+itself.  For example:
+
+  * the checker now understand's GCC's  `__builtin_expect`, fixing various
+    false reports about dereferencing NULL pointers when running the checker
+    on Cython-generated code in python-lxml-2.3
+
+  * added descriptions of part of SWIG and Cython's internal APIs to suppress
+    some false positives seen with SWIG and Cython-generated code.
+
+  * tweak the refcount rules to fix some false positives where the checker
+    erroneously considered the case of a deallocation by:
+
+    .. code-block:: c
+
+       Py_DECREF(obj);
+
+    where "obj" provably had other references not owned by the function being
+    analyzed, and thus for the case where obj->ob_refcnt > 1 the deallocation
+    could not happen.
+
+The plugin also now has a triaging script which can examine all of the errors
+within a build and provide a report, showing all of them in prioritized
+categories.
+
+The source tree now contains helper scripts for conducting such a mass recompile.
+
+Pyscopg support
+---------------
+
+Daniele Varrazzo used the checker extensively on
+`psycopg <http://initd.org/psycopg/>`_, the popular Python interface
+to `PostgreSQL <http://www.postgresql.org/>`_, and was able to find and fix
+numerous subtle errors:
+
+  * https://fedorahosted.org/pipermail/gcc-python-plugin/2012-March/000229.html
+  * http://initd.org/psycopg/articles/2012/03/29/psycopg-245-released/
+
+Experimental new error visualization
+------------------------------------
+
+The checker can now dump its internal representation in JSON form, via a new
+`--dump-json` option, and an experimental new renderer can generate HTML from
+this.  An example can be seen here:
+
+http://fedorapeople.org/~dmalcolm/gcc-python-plugin/2012-03-19/example/example.html
+
+This is still a work-in-progress
+
+C++ support
+-----------
+
+The checker is now able to run on C++ code: support has been added for methods,
+references, "this", destructors, the :py:class:`gcc.GimpleNop` operation.
+
+Coverage of the CPython API
+---------------------------
+
+The format code handling for Py_BuildValue was missing support for the
+following codes:
+
+    * 'u' and 'u#'
+    * 'f' and 'd'
+    * 'D'
+    * 'c'
+
+In addition, the handling for 's#' and 'z#' had a bug in which it erroneously
+expected an int* or Py_ssize_t*, rather than just a int or Py_ssize_t.
+
+This release fixes these issues, and gives full coverage of all valid
+format codes for Py_BuildValue in Python 2.
+
+This release adds heuristics for the behavior of the following CPython API
+entrypoints:
+
+   * PyCode_New
+   * PyCObject_FromVoidPtrAndDesc
+   * PyDict_Size
+   * PyErr_Clear
+   * PyEval_CallMethod
+   * Py_FatalError
+   * PyFile_SoftSpace, PyFile_WriteObject, and PyFile_WriteString
+   * PyFloat_AsDouble and PyFloat_FromDouble
+   * PyFrame_New
+   * Py_GetVersion
+   * PyImport_AddModule
+   * PyIter_Next
+   * PyNumber_Int, PyNumber_Remainder
+   * PyObject_CallObject, PyObject_GetAttr, PyObject_GetAttrString, PyObject_GetItem, PyObject_SetAttr, and PyObject_SetAttrString
+   * PyOS_snprintf
+   * PyString_InternFromString
+   * PySequence_Concat, PySequence_GetSlice, PySequence_SetItem, PySequence_Size
+   * PySys_GetObject
+   * PyTraceBack_Here
+   * PyTuple_GetItem
+   * PyUnicodeUCS4_DecodeUTF8
+   * PyWeakref_GetObject
+
+along with various other bugfixes.

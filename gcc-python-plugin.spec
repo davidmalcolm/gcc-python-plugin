@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.9
+Version:        0.10
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 

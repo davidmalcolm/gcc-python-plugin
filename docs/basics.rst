@@ -59,6 +59,11 @@ as root for the Python 2 build of the plugin, or:
 
 for the Python 3 build of the plugin.
 
+On Gentoo, use `layman` to add the `dMaggot` overlay and `emerge` the
+`gcc-python-plugin` package. This will build the plugin for Python 2 and
+Python 3 should you have both of them installed in your system. A live
+ebuild is also provided to install the plugin from git sources.
+
 Building the plugin from source
 ===============================
 

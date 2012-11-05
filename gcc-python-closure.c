@@ -62,7 +62,7 @@ gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject
 	Py_INCREF(kwargs);
     }
 
-    closure->event = GCC_PYTHON_PLUGIN_BAD_EVENT;
+    closure->event = (enum plugin_event)GCC_PYTHON_PLUGIN_BAD_EVENT;
 
     return closure;
 }

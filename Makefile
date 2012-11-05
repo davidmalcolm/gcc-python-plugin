@@ -191,6 +191,9 @@ show-ssa: plugin
 html: docs/tables-of-passes.rst docs/passes.svg
 	cd docs && $(MAKE) html
 
+man: plugin
+	cd docs && $(MAKE) man
+
 # We commit this generated file to SCM to allow the docs to be built without
 # needing to build the plugin:
 docs/tables-of-passes.rst: plugin generate-tables-of-passes-rst.py

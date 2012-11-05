@@ -1,9 +1,9 @@
 my_callback:
   args: (1, 2, 3)
-  kwargs: {'foo': 'bar', 'baz': 'qux'}
+  kwargs: {'baz': 'qux', 'foo': 'bar'}
 my_callback:
   args: ()
-  kwargs: {'foo': 'bar', 'baz': 'qux'}
+  kwargs: {'baz': 'qux', 'foo': 'bar'}
 my_callback:
   args: (1, 2, 3)
   kwargs: {}

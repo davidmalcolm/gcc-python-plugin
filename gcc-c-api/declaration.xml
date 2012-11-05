@@ -24,6 +24,7 @@
   <type name="decl" base="tree">
     <attribute name="location" kind="location"/>
     <attribute name="is_artificial" kind="bool"/>
+    <attribute name="is_builtin" kind="bool"/>
   </type>
 
   <type name="class_method_decl" base="decl">

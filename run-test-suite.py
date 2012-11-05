@@ -157,6 +157,10 @@ class TestStream:
                           r'input.c:\1:nn:',
                           line)
 
+            # Python 3.3's unicode reimplementation drops the macro redirection
+            # to narrow/wide implementations ("UCS2"/"UCS4")
+            line = re.sub('PyUnicodeUCS4_AsUTF8String', 'PyUnicode_AsUTF8String', line)
+
             result += line + '\n'
 
         return result
@@ -537,6 +541,12 @@ if features['GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL']:
     # test_var isn't visible; see
     #   https://fedorahosted.org/gcc-python-plugin/ticket/21
     exclude_test('tests/plugin/translation-units')
+
+if sys.version_info[:2] == (3, 3):
+    # These tests don't generate the same output under 3.3:
+    exclude_test('tests/cpychecker/refcounts/combinatorial-explosion')
+    exclude_test('tests/cpychecker/refcounts/combinatorial-explosion-with-error')
+
 
 num_passes = 0
 skipped_tests = []

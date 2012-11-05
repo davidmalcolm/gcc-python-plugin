@@ -274,6 +274,16 @@ gcc_TreeList_repr(struct PyGccTree * self);
 PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
 
+PyObject *
+gcc_NamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
+
+PyObject *
+gcc_python_namespace_decl_declarations(tree t);
+
+PyObject *
+gcc_python_namespace_decl_namespaces(tree t);
+
+
 /* gcc-python-gimple.c: */
 extern gcc_gimple_asm
 PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self);
