@@ -416,6 +416,12 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
     ctxt.debug('         to: %s' % dstnode)
     srcshape = srcexpnode.shape
 
+    # Set the location so that if an unhandled exception occurs, it should
+    # at least identify the code that triggered it:
+    if stmt:
+        if stmt.loc:
+            gcc.set_location(stmt.loc)
+
     # Handle interprocedural edges:
     if isinstance(edge, CallToReturnSiteEdge):
         # Ignore the intraprocedural edge for a function call:
