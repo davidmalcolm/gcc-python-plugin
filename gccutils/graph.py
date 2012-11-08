@@ -206,8 +206,10 @@ class StmtGraph(Graph):
         self.exit_of_bb = {}
         self.node_for_stmt = {}
 
+        basic_blocks = fun.cfg.basic_blocks
+
         # 1st pass: create nodes and edges within BBs:
-        for bb in fun.cfg.basic_blocks:
+        for bb in basic_blocks:
             self.__lastnode = None
 
             def add_stmt(stmt):
@@ -231,6 +233,8 @@ class StmtGraph(Graph):
                 self.exit_of_bb[bb] = self.__lastnode
 
             if self.__lastnode is None:
+                # We have a BB with neither statements nor phis
+                # Create a single node for this BB:
                 if bb == fun.cfg.entry:
                     cls = EntryNode
                 elif bb == fun.cfg.exit:
@@ -248,8 +252,11 @@ class StmtGraph(Graph):
                 elif bb == fun.cfg.exit:
                     self.exit = node
 
+            assert self.entry_of_bb[bb] is not None
+            assert self.exit_of_bb[bb] is not None
+
         # 2nd pass: wire up the cross-BB edges:
-        for bb in fun.cfg.basic_blocks:
+        for bb in basic_blocks:
             for edge in bb.succs:
                 last_node = self.exit_of_bb[bb]
                 if split_phi_nodes:
@@ -262,6 +269,13 @@ class StmtGraph(Graph):
                                           split_phi,
                                           edge)
                             last_node = split_phi
+
+                # After optimization, the CFG sometimes contains edges that
+                # point to blocks that are no longer within fun.cfg.basic_blocks
+                # Skip them:
+                if edge.dest not in basic_blocks:
+                    continue
+
                 self.add_edge(last_node,
                               self.entry_of_bb[edge.dest],
                               edge)
