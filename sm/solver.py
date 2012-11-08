@@ -405,15 +405,17 @@ def make_exploded_graph(ctxt, innergraph):
         srcexpnode = expgraph.worklist.pop()
         srcnode = srcexpnode.innernode
         #assert isinstance(srcnode, Node)
-        for edge in srcnode.succs:
-            explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge)
+        with ctxt.indent():
+            ctxt.debug('considering srcnode: %s' % srcnode)
+            for edge in srcnode.succs:
+                explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge)
     return expgraph
 
 def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
     stmt = srcnode.get_stmt()
     dstnode = edge.dstnode
-    ctxt.debug('  edge from: %s' % srcnode)
-    ctxt.debug('         to: %s' % dstnode)
+    ctxt.debug('edge from: %s' % srcnode)
+    ctxt.debug('       to: %s' % dstnode)
     srcshape = srcexpnode.shape
 
     # Set the location so that if an unhandled exception occurs, it should
@@ -658,6 +660,8 @@ class Context:
         # (If so, we can't detect unreachable states)
         self._uses_set_state = False
 
+        self._indent = 0
+
         reachable_statenames = set([self.statenames[0]])
 
         # Set up the above attributes:
@@ -717,14 +721,27 @@ class Context:
     def __repr__(self):
         return 'Context(%r)' % (self.statenames, )
 
+    def indent(self):
+        class IndentCM:
+            # context manager for indenting/outdenting the log
+            def __init__(self, ctxt):
+                self.ctxt = ctxt
+
+            def __enter__(self):
+                self.ctxt._indent += 1
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                self.ctxt._indent -= 1
+        return IndentCM(self)
+
     def _get_indent(self):
-        # Indent by the stack depth:
+        # Indent by the stack depth plus self._indent:
         depth = 0
         f = sys._getframe()
         while f:
             depth += 1
             f = f.f_back
-        return ' ' * depth
+        return ' ' * (depth + self._indent)
 
     def log(self, msg):
         # High-level logging
