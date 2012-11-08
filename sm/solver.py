@@ -33,8 +33,6 @@ from gccutils.graph import Graph, Node, Edge, \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite
 from gccutils.dot import to_html
 
-from libcpychecker.absinterp import Location, get_locations
-
 import sm.checker
 import sm.parser
 
