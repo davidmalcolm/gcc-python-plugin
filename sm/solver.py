@@ -521,40 +521,42 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
         # Locate any rules that could apply, regardless of the current
         # state:
         for pr in sc.patternrulelist:
-            # ctxt.debug('%r: %r' % (srcshape, pr))
-            # For now, skip interprocedural calls and the
-            # ENTRY/EXIT nodes:
-            if not stmt:
-                continue
-            # Now see if the rules apply for the current state:
-            ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
-            ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
-            for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                ctxt.debug('pr.pattern: %r' % pr.pattern)
-                ctxt.debug('match: %r' % match)
-                srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                ctxt.debug('srcstate: %r' % (srcstate, ))
-                assert isinstance(srcstate, State)
-                if srcstate.name in sc.statelist:
-                    assert len(pr.outcomes) > 0
-                    ctxt.log('got match in state %r of %r at %r: %s'
-                        % (srcstate,
-                           str(pr.pattern),
-                           str(stmt),
-                           match))
-                    mctxt = MatchContext(match, expgraph, srcexpnode, edge, srcstate)
-                    for outcome in pr.outcomes:
-                        ctxt.log('applying outcome to %s => %s'
-                                 % (mctxt.get_stateful_gccvar(),
-                                    outcome))
-                        outcome.apply(mctxt)
-                    matches.append(pr)
-                else:
-                    ctxt.log('got match for wrong state %r of %r at %r: %s'
-                        % (srcstate,
-                           str(pr.pattern),
-                           str(stmt),
-                           match))
+            with ctxt.indent():
+                # ctxt.debug('%r: %r' % (srcshape, pr))
+                # For now, skip interprocedural calls and the
+                # ENTRY/EXIT nodes:
+                if not stmt:
+                    continue
+                # Now see if the rules apply for the current state:
+                ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
+                ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
+                for match in pr.pattern.iter_matches(stmt, edge, ctxt):
+                    ctxt.debug('pr.pattern: %r' % pr.pattern)
+                    ctxt.debug('match: %r' % match)
+                    srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
+                    ctxt.debug('srcstate: %r' % (srcstate, ))
+                    assert isinstance(srcstate, State)
+                    if srcstate.name in sc.statelist:
+                        assert len(pr.outcomes) > 0
+                        ctxt.log('got match in state %r of %r at %r: %s'
+                            % (srcstate,
+                               str(pr.pattern),
+                               str(stmt),
+                               match))
+                        with ctxt.indent():
+                            mctxt = MatchContext(match, expgraph, srcexpnode, edge, srcstate)
+                            for outcome in pr.outcomes:
+                                ctxt.log('applying outcome to %s => %s'
+                                         % (mctxt.get_stateful_gccvar(),
+                                            outcome))
+                                outcome.apply(mctxt)
+                            matches.append(pr)
+                    else:
+                        ctxt.log('got match for wrong state %r of %r at %r: %s'
+                            % (srcstate,
+                               str(pr.pattern),
+                               str(stmt),
+                               match))
 
     if not matches:
         dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
