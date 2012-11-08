@@ -508,13 +508,14 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
             ctxt.debug('  srcnode.innernode: %s' % srcnode.innernode)
             ctxt.debug('  srcnode.innernode: %r' % srcnode.innernode)
         assert isinstance(srcnode.innernode, SplitPhiNode)
-        shapechange = ShapeChange(srcshape)
-        shapechange.assign_var(stmt.lhs,
-                               srcnode.innernode.rhs) # FIXME: could be a constant
-        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                           edge, None, shapechange)
-        matches.append(stmt)
+        rhs = srcnode.innernode.rhs
+        if isinstance(rhs, gcc.VarDecl):
+            shapechange = ShapeChange(srcshape)
+            shapechange.assign_var(stmt.lhs, rhs)
+            dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+            expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                               edge, None, shapechange)
+            matches.append(stmt)
 
     for sc in ctxt._stateclauses:
         # Locate any rules that could apply, regardless of the current
