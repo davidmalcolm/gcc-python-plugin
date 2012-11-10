@@ -1,0 +1,7 @@
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c: In function 'test':
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: error: double-free of p
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:25:nn: note: q passed to free()
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: note: double-free of p
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: error: use-after-free of p
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:25:nn: note: q passed to free()
+tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: note: use-after-free of p

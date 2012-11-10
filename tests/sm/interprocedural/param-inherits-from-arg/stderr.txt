@@ -1,0 +1,3 @@
+tests/sm/interprocedural/param-inherits-from-arg/input.c: In function 'uses_ptr':
+tests/sm/interprocedural/param-inherits-from-arg/input.c:26:nn: error: use of possibly-NULL pointer q
+tests/sm/interprocedural/param-inherits-from-arg/input.c:26:nn: note: use of possibly-NULL pointer q
