@@ -34,6 +34,7 @@ from gccutils.graph import Graph, Node, Edge, \
 from gccutils.dot import to_html
 
 import sm.checker
+import sm.error
 import sm.parser
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
@@ -563,71 +564,6 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
         expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
                                            edge, None, None)
 
-class Error:
-    # A stored error
-    def __init__(self, expnode, match, msg):
-        self.expnode = expnode
-        self.match = match
-        self.msg = msg
-
-    @property
-    def gccloc(self):
-        gccloc = self.expnode.innernode.get_gcc_loc()
-        if gccloc is None:
-            gccloc = self.function.end
-        return gccloc
-
-    @property
-    def function(self):
-        return self.expnode.function
-
-    def __lt__(self, other):
-        # Provide a sort order, so that they sort into source order
-        return self.gccloc < other.gccloc
-
-    def emit(self, ctxt, expgraph):
-        """
-        Display the error
-        """
-        from gccutils import error, inform
-        loc = self.gccloc
-        error(loc, self.msg)
-        path = expgraph.get_shortest_path_to(self.expnode)
-        # ctxt.debug('path: %r' % path)
-        for expedge in path:
-            # ctxt.debug(expnode)
-            # FIXME: this needs to respect the StateVar, in case of a returned value...
-            # we need to track changes to the value of the specific StateVar (but we can't, because it's a copy each time.... grrr...)
-            # we should also report relevant aliasing information
-            # ("foo" passed to fn bar as "baz"; "baz" returned from fn bar into "foo")
-            # TODO: backtrace down the path, tracking the StateVar aliases of interest...
-
-            stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
-            srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
-            dststate = expedge.dstnode.shape.get_state(stateful_gccvar)
-            # (they will always be equal for ssanames, so we have to work on
-            # the underlying vars)
-            if srcstate != dststate:
-                gccloc = expedge.srcnode.innernode.get_gcc_loc()
-                if gccloc:
-                    if 1:
-                        # Describe state change:
-                        if expedge.match:
-                            desc = expedge.match.description(ctxt)
-                        else:
-                            continue
-                    else:
-                        # Debugging information on state change:
-                        desc = ('%s: %s -> %s'
-                               % (ctxt.sm.name, srcstate, dststate))
-                    inform(gccloc, desc)
-
-        # repeat the message at the end of the path:
-        if len(path) > 1:
-            gccloc = path[-1].dstnode.innernode.get_gcc_loc()
-            if gccloc:
-                inform(gccloc, self.msg)
-
 class Context:
     # An sm.checker.Sm (do we need any other context?)
 
@@ -779,7 +715,7 @@ class Context:
 
     def add_error(self, expgraph, expnode, match, msg):
         self.log('add_error(%r, %r, %r, %r)' % (expgraph, expnode, match, msg))
-        err = Error(expnode, match, msg)
+        err = sm.error.Error(expnode, match, msg)
         if self.options.cache_errors:
             self._errors.append(err)
         else:
