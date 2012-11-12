@@ -64,7 +64,9 @@ class Element(Node):
 
 class Table(Element):
     def to_html(self):
-        result = '<table cellborder="0" border="0" cellspacing="0">\n'
+        result = ('<table cellborder="%i" border="%i" cellspacing="0">\n'
+                  % (self.attrs.get('cellborder', 0),
+                     self.attrs.get('border', 0)))
         for row in self.children:
             result += row.to_html()
         result += '</table>'
