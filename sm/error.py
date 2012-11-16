@@ -118,8 +118,9 @@ class Error:
                     # Debugging information on state change:
                     if desc:
                         desc += ': '
-                    desc += ('state of %s propagated to %s'
+                    desc += ('state of %s ("%s") propagated to %s'
                              % (gccexpr_to_str(ctxt, srcsupernode, srcvar),
+                                srcstate,
                                 gccexpr_to_str(ctxt, dstsupernode, dstvar)))
                     inform(gccloc, desc)
                 else:

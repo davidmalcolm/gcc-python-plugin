@@ -2,5 +2,5 @@ tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c: In funct
 tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:32:nn: error: use of possibly-NULL pointer p
 tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:30:nn: note: call from test() to calls_malloc()
 tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:25:nn: note: return value assigned to the result of malloc()
-tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:30:nn: note: return from calls_malloc() to test(): state of return value propagated to p
+tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:30:nn: note: return from calls_malloc() to test(): state of return value ("ptr.unknown") propagated to p
 tests/sm/interprocedural/callsite-lhs-inherits-from-return-val/input.c:32:nn: note: use of possibly-NULL pointer p
