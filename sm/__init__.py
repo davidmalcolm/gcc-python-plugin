@@ -17,7 +17,7 @@
 
 import gcc
 
-from sm.solver import Context, solve
+from sm.solver import Context, solve, SHOW_SUPERGRAPH
 
 class IpaSmPass(gcc.IpaPass):
     def __init__(self, checkers, options):
@@ -41,10 +41,10 @@ class IpaSmPass(gcc.IpaPass):
         # Interprocedural implementation, using the supergraph of all calls:
         from gccutils.graph import Supergraph
         sg = Supergraph(split_phi_nodes=True)
-        if 0:
+        if SHOW_SUPERGRAPH:
             dot = sg.to_dot('supergraph')
             from gccutils import invoke_dot
-            print(dot)
+            # print(dot)
             invoke_dot(dot)
 
         for checker in self.checkers:
