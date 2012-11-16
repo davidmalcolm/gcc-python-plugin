@@ -32,7 +32,7 @@ def get_retval_aliases(ctxt, supernode):
 
     if isinstance(retval, gcc.SsaName):
         retval = retval.var
-    ctxt.debug('retval: %s' % retval)
+    ctxt.debug('retval: %s', retval)
     from sm.facts import get_aliases
     exitsupernode = ctxt.graph.supernode_for_stmtnode[exitstmtnode]
     return get_aliases(exitsupernode.facts, retval)
@@ -59,14 +59,14 @@ def find_leaks(ctxt):
             if isinstance(edge.dstnode.innernode, ExitNode):
                 retval_aliases = get_retval_aliases(ctxt, edge.dstnode)
                 for vardecl in edge.dstnode.function.local_decls:
-                    ctxt.debug('considering vardecl: %s' % vardecl)
+                    ctxt.debug('considering vardecl: %s', vardecl)
                     if vardecl in retval_aliases:
                         ctxt.debug('alias of return value: not leaked')
                     else:
-                        ctxt.debug('leaving scope of local: %s' % vardecl)
+                        ctxt.debug('leaving scope of local: %s', vardecl)
                         from sm.facts import is_referenced_externally
                         if is_referenced_externally(ctxt, vardecl, edge.dstnode.facts):
-                            ctxt.debug('%s is referenced externally: not leaked' % vardecl)
+                            ctxt.debug('%s is referenced externally: not leaked', vardecl)
                         else:
                             edge.leaks.add(vardecl)
                         # FIXME: what if the return value isn't used?

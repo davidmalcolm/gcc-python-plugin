@@ -120,8 +120,8 @@ def consider_edge(ctxt, solution, item, edge):
     stmt = srcnode.get_stmt()
     assert edge.srcnode == srcnode
     dstnode = edge.dstnode
-    ctxt.debug('edge from: %s' % srcnode)
-    ctxt.debug('       to: %s' % dstnode)
+    ctxt.debug('edge from: %s', srcnode)
+    ctxt.debug('       to: %s', dstnode)
 
     # Set the location so that if an unhandled exception occurs, it should
     # at least identify the code that triggered it:
@@ -144,8 +144,8 @@ def consider_edge(ctxt, solution, item, edge):
                                    srcnode.stmt.args):
                 # FIXME: change fndecl.arguments to fndecl.parameters
                 if 1:
-                    ctxt.debug('  param: %r' % param)
-                    ctxt.debug('  arg: %r' % arg)
+                    ctxt.debug('  param: %r', param)
+                    ctxt.debug('  arg: %r', arg)
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
                 if var == arg.var:
@@ -158,13 +158,13 @@ def consider_edge(ctxt, solution, item, edge):
         return
     elif isinstance(edge, ExitToReturnSite):
         # Propagate state through the return value:
-        # ctxt.debug('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
+        # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
         if edge.calling_stmtnode.stmt.lhs:
             exitsupernode = edge.srcnode
             assert isinstance(exitsupernode.innernode, ExitNode)
             retval = exitsupernode.innernode.returnval.var
-            ctxt.debug('retval: %s' % retval)
-            ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s' % edge.calling_stmtnode.stmt.lhs)
+            ctxt.debug('retval: %s', retval)
+            ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s', edge.calling_stmtnode.stmt.lhs)
             if var == retval:
                 # Propagate state of the return value to the LHS of the caller:
                 yield WorklistItem(dstnode, edge.calling_stmtnode.stmt.lhs.var, state, None)
@@ -172,12 +172,12 @@ def consider_edge(ctxt, solution, item, edge):
         # FIXME: we also need to backpatch the params, in case they've
         # changed state
         callsite = edge.dstnode.callnode.innernode
-        ctxt.debug('callsite: %s' % callsite)
+        ctxt.debug('callsite: %s', callsite)
         for param, arg  in zip(callsite.stmt.fndecl.arguments,
                                callsite.stmt.args):
             if 1:
-                ctxt.debug('  param: %r' % param)
-                ctxt.debug('  arg: %r' % arg)
+                ctxt.debug('  param: %r', param)
+                ctxt.debug('  arg: %r', arg)
             if var == param:
                 yield WorklistItem(dstnode, arg.var, state, None)
 
@@ -190,10 +190,10 @@ def consider_edge(ctxt, solution, item, edge):
     # Handle simple assignments so that variables inherit state:
     if isinstance(stmt, gcc.GimpleAssign):
         if 1:
-            ctxt.debug('gcc.GimpleAssign: %s' % stmt)
-            ctxt.debug('  stmt.lhs: %r' % stmt.lhs)
-            ctxt.debug('  stmt.rhs: %r' % stmt.rhs)
-            ctxt.debug('  stmt.exprcode: %r' % stmt.exprcode)
+            ctxt.debug('gcc.GimpleAssign: %s', stmt)
+            ctxt.debug('  stmt.lhs: %r', stmt.lhs)
+            ctxt.debug('  stmt.rhs: %r', stmt.rhs)
+            ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
             rhs = stmt.rhs[0]
             if isinstance(rhs, gcc.SsaName):
@@ -218,11 +218,11 @@ def consider_edge(ctxt, solution, item, edge):
                 # matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
         if 1:
-            ctxt.debug('gcc.GimplePhi: %s' % stmt)
-            ctxt.debug('  srcnode: %s' % srcnode)
-            ctxt.debug('  srcnode: %r' % srcnode)
-            ctxt.debug('  srcnode.innernode: %s' % srcnode.innernode)
-            ctxt.debug('  srcnode.innernode: %r' % srcnode.innernode)
+            ctxt.debug('gcc.GimplePhi: %s', stmt)
+            ctxt.debug('  srcnode: %s', srcnode)
+            ctxt.debug('  srcnode: %r', srcnode)
+            ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
+            ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
         assert isinstance(srcnode.innernode, SplitPhiNode)
         rhs = srcnode.innernode.rhs
         if isinstance(rhs, gcc.VarDecl):
@@ -238,45 +238,45 @@ def consider_edge(ctxt, solution, item, edge):
         # state:
         for pr in sc.patternrulelist:
             with ctxt.indent():
-                # ctxt.debug('%r: %r' % (srcshape, pr))
+                # ctxt.debug('%r: %r', (srcshape, pr))
                 # For now, skip interprocedural calls and the
                 # ENTRY/EXIT nodes:
                 if not stmt:
                     continue
                 # Now see if the rules apply for the current state:
-                ctxt.debug('considering pattern %s for stmt: %s' % (pr.pattern, stmt) )
-                ctxt.debug('considering pattern %r for stmt: %r' % (pr.pattern, stmt) )
+                ctxt.debug('considering pattern %s for stmt: %s', pr.pattern, stmt)
+                ctxt.debug('considering pattern %r for stmt: %r', pr.pattern, stmt)
                 for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                    ctxt.debug('pr.pattern: %r' % pr.pattern)
-                    ctxt.debug('match: %r' % match)
-                    ctxt.debug('var: %r' % var)
-                    ctxt.debug('match.get_stateful_gccvar(ctxt): %r' % match.get_stateful_gccvar(ctxt))
+                    ctxt.debug('pr.pattern: %r', pr.pattern)
+                    ctxt.debug('match: %r', match)
+                    ctxt.debug('var: %r', var)
+                    ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
                     #srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                    ctxt.debug('state: %r' % (state, ))
+                    ctxt.debug('state: %r', (state, ))
                     assert isinstance(state, State)
                     if state.name in sc.statelist and (var is None or var == match.get_stateful_gccvar(ctxt)):
                         assert len(pr.outcomes) > 0
-                        ctxt.log('got match in state %r of %r at %r: %s'
-                            % (state,
-                               str(pr.pattern),
-                               str(stmt),
-                               match))
+                        ctxt.log('got match in state %r of %r at %r: %s',
+                                 state,
+                                 str(pr.pattern),
+                                 str(stmt),
+                                 match)
                         with ctxt.indent():
                             mctxt = MatchContext(ctxt, match, srcnode, edge, state)
                             for outcome in pr.outcomes:
-                                ctxt.log('applying outcome to %s => %s'
-                                         % (mctxt.get_stateful_gccvar(),
-                                            outcome))
+                                ctxt.log('applying outcome to %s => %s',
+                                         mctxt.get_stateful_gccvar(),
+                                         outcome)
                                 for item in outcome.apply(mctxt):
-                                    ctxt.log('yielding item: %s' % item)
+                                    ctxt.log('yielding item: %s', item)
                                     yield item
                             matches.append(pr)
                     else:
-                        ctxt.log('got match for wrong state %r of %r at %r: %s'
-                            % (state,
-                               str(pr.pattern),
-                               str(stmt),
-                               match))
+                        ctxt.log('got match for wrong state %r of %r at %r: %s',
+                                 state,
+                                 str(pr.pattern),
+                                 str(stmt),
+                                 match)
     # FIXME: the "var is None" here continues the analysis for the
     # the wildcard case, but isn't working well:
     # (looking at tests/sm/checkers/malloc-checker/two_ptrs )
@@ -425,17 +425,20 @@ class Context:
             f = f.f_back
         return ' ' * (depth + self._indent)
 
-    def log(self, msg):
+    def log(self, msg, *args):
         # High-level logging
         if ENABLE_LOG:
+            formattedmsg = msg % args
             sys.stderr.write('LOG  : %s: %s%s\n'
-                             % (self.sm.name, self._get_indent(), msg))
+                             % (self.sm.name, self._get_indent(), formattedmsg))
 
-    def debug(self, msg):
+    def debug(self, msg, *args):
         # Lower-level logging
         if ENABLE_DEBUG:
+            formattedmsg = msg % args
             sys.stderr.write('DEBUG: %s: %s%s\n'
-                             % (self.sm.name, self._get_indent(), msg))
+
+                             % (self.sm.name, self._get_indent(), formattedmsg))
 
     def lookup_decl(self, declname):
         class UnknownDecl(Exception):
@@ -459,7 +462,7 @@ class Context:
         return self._namedpatterns[patname]
 
     def add_error(self, srcnode, match, msg, state):
-        self.log('add_error(%r, %r, %r, %r)' % (srcnode, match, msg, state))
+        self.log('add_error(%r, %r, %r, %r)', srcnode, match, msg, state)
         err = sm.error.Error(srcnode, match, msg, state)
         if self.options.cache_errors:
             self._errors.append(err)
@@ -485,7 +488,7 @@ class Context:
 
     def compare(self, gccexpr, smexpr):
         if 0:
-            self.debug('  compare(%r, %r)' % (gccexpr, smexpr))
+            self.debug('  compare(%r, %r)', gccexpr, smexpr)
 
         if isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl, gcc.SsaName)):
             #if gccexpr == self.var:
@@ -562,9 +565,9 @@ class Context:
             else:
                 statedict[item.var] = set([item.state])
             with self.indent():
-                self.debug('considering %s' % item)
+                self.debug('considering %s', item)
                 for edge in item.node.succs:
-                    self.debug('considering edge %s' % edge)
+                    self.debug('considering edge %s', edge)
                     assert edge.srcnode == item.node
                     for nextitem in consider_edge(self, solution, item, edge):
                         assert isinstance(nextitem, WorklistItem)
@@ -584,9 +587,9 @@ class Context:
         return solution
 
 def solve(ctxt, name):
-    ctxt.log('running %s' % ctxt.sm.name)
-    ctxt.log('len(ctxt.graph.nodes): %i' % len(ctxt.graph.nodes))
-    ctxt.log('len(ctxt.graph.edges): %i' % len(ctxt.graph.edges))
+    ctxt.log('running %s', ctxt.sm.name)
+    ctxt.log('len(ctxt.graph.nodes): %i', len(ctxt.graph.nodes))
+    ctxt.log('len(ctxt.graph.edges): %i', len(ctxt.graph.edges))
     solution = ctxt.solve(name)
     dot = solution.to_dot(name)
     if SHOW_SOLUTION:

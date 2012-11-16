@@ -208,7 +208,7 @@ class Solution:
             errnode = worklist[0]
             worklist = worklist[1:]
 
-            self.ctxt.debug('considering routes to errnode: %s' % (errnode))
+            self.ctxt.debug('considering routes to errnode: %s', errnode)
 
             dstsupernode = errnode.innernode
 
@@ -216,13 +216,13 @@ class Solution:
             # lazily adding them:
             for edge in dstsupernode.preds:
                 srcsupernode = edge.srcnode
-                self.ctxt.debug('considering srcnode: %s' % (srcsupernode))
+                self.ctxt.debug('considering srcnode: %s', srcsupernode)
                 changesdict = self.changes[srcsupernode]
                 for key in changesdict:
-                    self.ctxt.debug('key: %s' % (key, ))
+                    self.ctxt.debug('key: %s', key)
                     srcvar, srcstate = key
                     for item in changesdict[key]:
-                        self.ctxt.debug('item: %s' % (item, ))
+                        self.ctxt.debug('item: %s', item)
                         if item.node == errnode.innernode:
                             # The items must match, unless the srcnode is
                             # None, in which case it's legitimate to
@@ -250,9 +250,9 @@ class Solution:
         #   the most obvious false positives
 
         self.ctxt.debug('get_shortest_path_to:')
-        self.ctxt.debug('  dstnode: %s' % dstnode)
-        self.ctxt.debug('  var: %s' % var)
-        self.ctxt.debug('  state: %s' % state)
+        self.ctxt.debug('  dstnode: %s', dstnode)
+        self.ctxt.debug('  var: %s', var)
+        self.ctxt.debug('  state: %s', state)
 
         self.ctxt.log('building error graph')
         with self.ctxt.indent():

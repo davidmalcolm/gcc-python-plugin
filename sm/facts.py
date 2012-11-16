@@ -44,7 +44,7 @@ def get_aliases(facts, var):
     return result
 
 def is_referenced_externally(ctxt, var, facts):
-    ctxt.debug('is_referenced_externally(%s, %s)' % (var, facts))
+    ctxt.debug('is_referenced_externally(%s, %s)', var, facts)
     for fact in facts:
         lhs, op, rhs = fact
         if op == '==':
@@ -69,10 +69,10 @@ def get_facts_after(ctxt, srcfacts, edge):
     dstfacts = set(srcfacts)
     if isinstance(stmt, gcc.GimpleAssign):
         if 1:
-            ctxt.debug('gcc.GimpleAssign: %s' % stmt)
-            ctxt.debug('  stmt.lhs: %r' % stmt.lhs)
-            ctxt.debug('  stmt.rhs: %r' % stmt.rhs)
-            ctxt.debug('  stmt.exprcode: %r' % stmt.exprcode)
+            ctxt.debug('gcc.GimpleAssign: %s', stmt)
+            ctxt.debug('  stmt.lhs: %r', stmt.lhs)
+            ctxt.debug('  stmt.rhs: %r', stmt.rhs)
+            ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
         lhs = stmt.lhs
         rhs = stmt.rhs
         if isinstance(rhs[0], gcc.SsaName):
@@ -87,7 +87,7 @@ def get_facts_after(ctxt, srcfacts, edge):
             pass # FIXME
     elif isinstance(stmt, gcc.GimpleCond):
         if 1:
-            ctxt.debug('gcc.GimpleCond: %s' % stmt)
+            ctxt.debug('gcc.GimpleCond: %s', stmt)
         lhs = stmt.lhs
         rhs = stmt.rhs
         if isinstance(rhs, gcc.SsaName):
@@ -121,13 +121,13 @@ def find_facts(ctxt, graph):
             worklist.append(node)
         while worklist:
             srcnode = worklist.pop()
-            ctxt.debug('considering %s' % srcnode)
+            ctxt.debug('considering %s', srcnode)
             done.add(srcnode)
-            ctxt.debug('len(done): %s' % len(done))
-            ctxt.debug('done: %s' % done)
+            ctxt.debug('len(done): %s', len(done))
+            ctxt.debug('done: %s', done)
             with ctxt.indent():
                 srcfacts = srcnode.facts
-                ctxt.debug('srcfacts: %s' % srcfacts)
+                ctxt.debug('srcfacts: %s', srcfacts)
                 for edge in srcnode.succs:
                     stmt = srcnode.stmt
                     dstnode = edge.dstnode
@@ -138,18 +138,18 @@ def find_facts(ctxt, graph):
                         if stmt.loc:
                             gcc.set_location(stmt.loc)
 
-                    ctxt.debug('considering edge to %s' % dstnode)
+                    ctxt.debug('considering edge to %s', dstnode)
                     with ctxt.indent():
                         if len(dstnode.preds) == 1:
                             ctxt.debug('dstnode has single pred; gathering known facts')
                             dstfacts = get_facts_after(ctxt, srcfacts, edge)
-                            ctxt.debug('dstfacts: %s' % dstfacts)
+                            ctxt.debug('dstfacts: %s', dstfacts)
                             dstnode.facts = dstfacts
                         if dstnode not in done:
                             worklist.append(dstnode)
 
 def is_possible(ctxt, facts):
-    ctxt.debug('is_possible: %s' % (facts, ))
+    ctxt.debug('is_possible: %s', facts)
     # Work-in-progress implementation:
     # Gather vars by equivalence classes:
 
@@ -173,7 +173,7 @@ def is_possible(ctxt, facts):
                     merged = set([lhs, rhs])
             partitions[lhs] = partitions[rhs] = merged
 
-    ctxt.debug('partitions: %s' % partitions)
+    ctxt.debug('partitions: %s', partitions)
 
     # There must be at most one specific constant within any equivalence
     # class:
@@ -201,8 +201,8 @@ def is_possible(ctxt, facts):
                     if constants[lhs] == rhs:
                         # a == CONST_1 && a != CONST_1 is impossible:
                         ctxt.debug('impossible: equivalence class for %s'
-                                   ' equals constant %s but has %s %s %s'
-                                   % (equivcls, constants[lhs], lhs, op, rhs))
+                                   ' equals constant %s but has %s %s %s',
+                                   equivcls, constants[lhs], lhs, op, rhs)
                         return False
 
     # All tests passed:

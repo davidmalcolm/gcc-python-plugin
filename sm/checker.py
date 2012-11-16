@@ -221,8 +221,8 @@ class Match:
         if it does, add it to this Match's dictionary
         """
         if 0:
-            ctxt.debug('Match.match_term(self=%r, ctxt=%r, gccexpr=%r, smexpr=%r)'
-                       % (self, ctxt, gccexpr, smexpr))
+            ctxt.debug('Match.match_term(self=%r, ctxt=%r, gccexpr=%r, smexpr=%r)',
+                       self, ctxt, gccexpr, smexpr)
         gccexpr = ctxt.compare(gccexpr, smexpr)
         if gccexpr:
             if isinstance(smexpr, str):
@@ -233,7 +233,7 @@ class Match:
             return True
 
     def describe(self, ctxt, smexpr):
-        ctxt.debug('Match.describe(self=%r, smexpr=%r)' % (self, smexpr))
+        ctxt.debug('Match.describe(self=%r, smexpr=%r)', self, smexpr)
         if isinstance(smexpr, str):
             smdecl = ctxt.lookup_decl(smexpr)
             vardecl = self._dict[smdecl]
@@ -528,7 +528,7 @@ class SpecialPattern(Pattern):
 
 class LeakedPattern(SpecialPattern):
     def iter_matches(self, stmt, edge, ctxt):
-        ctxt.debug('LeakedPattern.iter_matches(%s, %s)' % (stmt, edge))
+        ctxt.debug('LeakedPattern.iter_matches(%s, %s)', stmt, edge)
         for vardecl in edge.leaks:
             m = Match(self, edge.srcnode)
             m._dict[ctxt._stateful_decl] = vardecl
@@ -659,7 +659,7 @@ class PythonOutcome(Outcome, PythonFragment):
             ctxt.add_error(mctxt.srcnode, mctxt.match, msg, globals_['state'])
         def set_state(name, **kwargs):
             from sm.solver import State
-            ctxt.debug('set_state(%r, %r)' % (name, kwargs))
+            ctxt.debug('set_state(%r, %r)', name, kwargs)
             globals_['state'] = State(name, **kwargs)
 
         globals_ = {'error' : error,
@@ -683,10 +683,10 @@ class PythonOutcome(Outcome, PythonFragment):
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)
         # Now run the code:
-        ctxt.debug('state before: %r' % globals_['state'])
+        ctxt.debug('state before: %r', globals_['state'])
         ctxt.log('evaluating python code')
         result = eval(code, ctxt.python_globals, ctxt.python_locals)
-        ctxt.debug('state after: %r' % globals_['state'])
+        ctxt.debug('state after: %r', globals_['state'])
 
         # Clear the binding:
         for name in locals_:

@@ -52,7 +52,7 @@ class Error:
         path = solution.get_shortest_path_to(self.srcnode,
                                              stateful_gccvar,
                                              self.state)
-        ctxt.debug('path: %r' % path)
+        ctxt.debug('path: %r', path)
         if path is None:
             # unreachable:
             ctxt.log('unreachable error')
@@ -79,16 +79,16 @@ class Error:
             with ctxt.indent():
                 ctxt.debug('edge from:')
                 with ctxt.indent():
-                    ctxt.debug('srcnode: %s' % srcsupernode)
-                    ctxt.debug('var: %s' % srcvar)
-                    ctxt.debug('state: %s' % srcstate)
-                    ctxt.debug('srcloc: %s' % srcgccloc)
+                    ctxt.debug('srcnode: %s', srcsupernode)
+                    ctxt.debug('var: %s', srcvar)
+                    ctxt.debug('state: %s', srcstate)
+                    ctxt.debug('srcloc: %s', srcgccloc)
                 ctxt.debug('to:')
                 with ctxt.indent():
-                    ctxt.debug('dstnode: %s' % dstsupernode)
-                    ctxt.debug('var: %s' % dstvar)
-                    ctxt.debug('state: %s' % dststate)
-                    ctxt.debug('dstloc: %s' % dstgccloc)
+                    ctxt.debug('dstnode: %s', dstsupernode)
+                    ctxt.debug('var: %s', dstvar)
+                    ctxt.debug('state: %s', dststate)
+                    ctxt.debug('dstloc: %s', dstgccloc)
 
             gccloc = srcgccloc
             desc = ''
@@ -142,7 +142,7 @@ class Error:
                 inform(gccloc, self.msg)
 
 def gccexpr_to_str(ctxt, supernode, gccexpr):
-    ctxt.debug('gccexpr_to_str: node: %s gccexpr: %s' % (supernode, gccexpr))
+    ctxt.debug('gccexpr_to_str: node: %s gccexpr: %s', supernode, gccexpr)
     if isinstance(gccexpr, gcc.VarDecl):
         if gccexpr.name:
             return str(gccexpr)
@@ -163,7 +163,7 @@ def gccexpr_to_str(ctxt, supernode, gccexpr):
                     return str(alias)
 
             # Is it the return value?
-            ctxt.debug('get_retval_aliases: %s' % get_retval_aliases(ctxt, supernode))
+            ctxt.debug('get_retval_aliases: %s', get_retval_aliases(ctxt, supernode))
             if gccexpr in get_retval_aliases(ctxt, supernode):
                 return 'return value'
 
