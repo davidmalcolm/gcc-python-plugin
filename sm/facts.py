@@ -124,7 +124,7 @@ def find_facts(ctxt, graph):
             ctxt.debug('considering %s', srcnode)
             done.add(srcnode)
             ctxt.debug('len(done): %s', len(done))
-            ctxt.debug('done: %s', done)
+            # ctxt.debug('done: %s', done)
             with ctxt.indent():
                 srcfacts = srcnode.facts
                 ctxt.debug('srcfacts: %s', srcfacts)
