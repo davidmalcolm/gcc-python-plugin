@@ -49,8 +49,8 @@ class IpaSmPass(gcc.IpaPass):
 
         for checker in self.checkers:
             for sm in checker.sms:
-                ctxt = Context(checker, sm, self.options)
-                solve(ctxt, sg, 'supergraph')
+                ctxt = Context(checker, sm, sg, self.options)
+                solve(ctxt, 'solution')
 
 class Options:
     def __init__(self,

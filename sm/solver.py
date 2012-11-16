@@ -21,7 +21,8 @@
 
 ENABLE_LOG=0
 ENABLE_DEBUG=0
-SHOW_EXPLODED_GRAPH=0
+SHOW_SOLUTION=0
+SHOW_ERROR_GRAPH=0
 
 import sys
 
@@ -36,6 +37,7 @@ from gccutils.dot import to_html
 import sm.checker
 import sm.error
 import sm.parser
+import sm.solution
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
 
@@ -83,339 +85,42 @@ class State:
             return self.__dict[name]
         raise AttributeError('%s' % name)
 
-class StateVar:
-    def __init__(self, state):
-        self.state = state
-
-    def __repr__(self):
-        return 'StateVar(%r)' % (self.state, )
-
-    def copy(self):
-        return StateVar(self.state)
-
-    def __eq__(self, other):
-        if isinstance(other, StateVar):
-            # Note that although two StateVars may have equal state, we
-            # also care about identity.
-            return self.state == other.state
-
-    def __hash__(self):
-        return hash(self.state)
-
-class Shape:
-    def __init__(self, ctxt):
-        self.ctxt = ctxt
-
-        # a dict mapping from vars -> StateVar instances
-        self._dict = {}
-        # initial state is empty, an eligible var that isn't listed is assumed
-        # to have its own unique StateVar value in the default state
-
-    def __hash__(self):
-        result = 0
-        for k, v in self._dict.iteritems():
-            result ^= hash(k)
-            result ^= hash(v)
-        return result
-
-    def __eq__(self, other):
-        if isinstance(other, Shape):
-            return self._dict == other._dict
-
-    def __ne__(self, other):
-        if not isinstance(other, Shape):
-            return True
-        return self._dict != other._dict
-
-    def __str__(self):
-        mapping = ', '.join(['%s:%s' % (var, statevar.state)
-                          for var, statevar in self._dict.iteritems()])
-        return '{%s}' % mapping
-
-    def __repr__(self):
-        return repr(self._dict)
-
-    def _copy(self):
-        clone = Shape(self.ctxt)
-        # 1st pass: clone the ShapeVar instances:
-        shapevars = {}
-        for shapevar in self._dict.values():
-            shapevars[id(shapevar)] = shapevar.copy()
-
-        # 2nd pass: update the new dict to point at the new ShapeVar instances,
-        # preserving the aliasing within this dict (but breaking the aliasing
-        # between old and new copies of the dict, so that when we change the
-        # new Shape's values, we aren't changing the old Shape's values:
-        for var, shapevar in self._dict.iteritems():
-            clone._dict[var] = shapevars[id(shapevar)]
-
-        return clone, shapevars
-
-    def var_has_state(self, gccvar):
-        '''Does the given gccvar have a non-default state?'''
-        return gccvar in self._dict
-
-    def get_state(self, var):
-        assert isinstance(var, VARTYPES)
-        if var in self._dict:
-            return self._dict[var].state
-        return self.ctxt.get_default_state()
-
-    def set_state(self, var, state):
-        assert isinstance(var, VARTYPES)
-        assert isinstance(state, State)
-        if var in self._dict:
-            # update existing StateVar (so that the change can be seen by
-            # aliases):
-            self._dict[var].state = state
-        else:
-            sv = StateVar(state)
-            self._dict[var] = sv
-
-    def iter_aliases(self, statevar):
-        for gccvar in sorted(self._dict.keys()):
-            if self._dict[gccvar] is statevar:
-                yield gccvar
-
-    def _assign_var(self, dstvar, srcvar):
-        # ctxt.debug('Shape.assign_var(%r, %r)' % (dst, src))
-        if srcvar not in self._dict:
-            # Set a state, so that we can track that dst is now aliased to src
-            self.set_state(srcvar, self.ctxt.get_default_state())
-        self._dict[dstvar] = self._dict[srcvar]
-        shapevar = self._dict[dstvar]
-
-    def _purge_locals(self, fun):
-        vars_ = fun.local_decls + fun.decl.arguments
-        for gccvar in self._dict.keys():
-            # Purge gcc.VarDecl and gcc.ParmDecl instances:
-            if gccvar in vars_:
-                del self._dict[gccvar]
-
-class ShapeChange:
-    """
-    Captures the aliasing changes that occur to a Shape along an ExplodedEdge
-    Does not capture changes to the states within the StateVar instances
-    """
-    def __init__(self, srcshape):
-        self.srcshape = srcshape
-        self.dstshape, self._shapevars = srcshape._copy()
-
-    def assign_var(self, dstvar, srcvar):
-        if isinstance(dstvar, gcc.SsaName):
-            dstvar = dstvar.var
-        if isinstance(srcvar, gcc.SsaName):
-            srcvar = srcvar.var
-        self.dstshape._assign_var(dstvar, srcvar)
-
-    def purge_locals(self, fun):
-        self.dstshape._purge_locals(fun)
-
-    def iter_leaks(self):
-        dstshapevars = self.dstshape._dict.values()
-        for srcshapevar in self.srcshape._dict.values():
-            dstshapevar = self._shapevars[id(srcshapevar)]
-            if dstshapevar not in dstshapevars:
-                # the ShapeVar has leaked:
-                for gccvar in self.srcshape.iter_aliases(srcshapevar):
-                    yield gccvar
-
-class ExplodedGraph(Graph):
-    """
-    A graph of (innernode, shape) pairs, where "innernode" refers to
-    nodes in an underlying graph (e.g. a StmtGraph or a Supergraph)
-    """
-    def __init__(self, ctxt):
-        Graph.__init__(self)
-
-        self.ctxt = ctxt
-
-        # Mapping from (innernode, shape) to ExplodedNode:
-        self._nodedict = {}
-
-        # Mapping from
-        #   (srcexpnode, dstexpnode, match, shapechange) tuples, where
-        #   pattern can be None
-        # to ExplodedEdge
-        self._edgedict = {}
-
-        self.entrypoints = []
-
-        # List of ExplodedNode still to be processed by solver
-        self.worklist = []
-
-    def _make_edge(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
-        return ExplodedEdge(srcexpnode, dstexpnode, inneredge, match, shapechange)
-
-    def lazily_add_node(self, innernode, shape):
-        from gccutils.graph import SupergraphNode
-        assert isinstance(innernode, SupergraphNode)
-        assert isinstance(shape, Shape)
-        key = (innernode, shape)
-        if key not in self._nodedict:
-            expnode = self.add_node(ExplodedNode(innernode, shape))
-            self._nodedict[key] = expnode
-            self.worklist.append(expnode)
-        return self._nodedict[key]
-
-    def lazily_add_edge(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
-        if match:
-            assert isinstance(match, sm.checker.Match)
-        key = (srcexpnode, dstexpnode, match, shapechange)
-        if key not in self._edgedict:
-            expedge = self.add_edge(srcexpnode, dstexpnode, inneredge, match, shapechange)
-            self._edgedict[key] = expedge
-        expedge = self._edgedict[key]
-
-        # Some patterns match on ExplodedEdges (based on the src state):
-        for sc in self.ctxt._stateclauses:
-            # Locate any rules that could apply, regardless of the current
-            # state:
-            for pr in sc.patternrulelist:
-                for match in pr.pattern.iter_expedge_matches(expedge, self):
-                    # Now see if the rules apply for this state:
-                    stateful_gccvar = match.get_stateful_gccvar(self.ctxt)
-                    srcstate = expedge.srcnode.shape.get_state(stateful_gccvar)
-                    if srcstate.name in sc.statelist:
-                        mctxt = MatchContext(match, self, srcexpnode, inneredge, srcstate)
-                        self.ctxt.log('got match in state %r of %r at %s: %s'
-                            % (srcstate,
-                               str(pr.pattern),
-                               inneredge,
-                               match))
-                        for outcome in pr.outcomes:
-                            self.ctxt.log('applying outcome to %s => %s'
-                                          % (mctxt.get_stateful_gccvar(),
-                                             outcome))
-                            outcome.apply(mctxt)
-
-    def get_shortest_path_to(self, dstexpnode):
-        result = None
-        for srcexpnode in self.entrypoints:
-            path = self.get_shortest_path(srcexpnode, dstexpnode)
-            if path:
-                if result:
-                    if len(path) < len(result):
-                        result = path
-                else:
-                    result = path
-        return result
-
-class ExplodedNode(Node):
-    def __init__(self, innernode, shape):
-        Node.__init__(self)
-        self.innernode = innernode
-        self.shape = shape
-
-    def __repr__(self):
-        return 'ExplodedNode(%r, %r)' % (self.innernode, self.shape)
-
-    def __str__(self):
-        return 'ExplodedNode(%s, %s)' % (self.innernode, self.shape)
-
-    def get_gcc_loc(self):
-        return self.innernode.get_gcc_loc()
-
-    def to_dot_label(self, ctxt):
-        from gccutils.dot import Table, Tr, Td, Text, Br
-
-        table = Table()
-        tr = table.add_child(Tr())
-        tr.add_child(Td([Text('SHAPE: %s' % str(self.shape))]))
-        tr = table.add_child(Tr())
-        innerhtml = self.innernode.to_dot_html(ctxt)
-        if innerhtml:
-            tr.add_child(Td([innerhtml]))
-        else:
-            tr.add_child(Td([Text(str(self.innernode))]))
-        return '<font face="monospace">' + table.to_html() + '</font>\n'
-
-    def get_subgraph(self, ctxt):
-        if 0:
-            # group by function:
-            return self.innernode.get_subgraph(ctxt)
-        else:
-            # ungrouped:
-            return None
-
-    @property
-    def function(self):
-        return self.innernode.function
-
-class ExplodedEdge(Edge):
-    def __init__(self, srcexpnode, dstexpnode, inneredge, match, shapechange):
-        Edge.__init__(self, srcexpnode, dstexpnode)
-        self.inneredge = inneredge
-        if match:
-            assert isinstance(match, sm.checker.Match)
-        self.match = match
-        self.shapechange = shapechange
-
-    def __repr__(self):
-        return ('%s(srcnode=%r, dstnode=%r, inneredge=%r, match=%r, shapechange=%r)'
-                % (self.__class__.__name__, self.srcnode, self.dstnode,
-                   self.inneredge.__class__, self.match))
-
-    def to_dot_label(self, ctxt):
-        result = self.inneredge.to_dot_label(ctxt)
-        if self.match:
-            result += to_html(self.match.description(ctxt))
-        if self.srcnode.shape != self.dstnode.shape:
-            result += to_html(' %s -> %s' % (self.srcnode.shape, self.dstnode.shape))
-        return result.strip()
-
-    def to_dot_attrs(self, ctxt):
-        return self.inneredge.to_dot_attrs(ctxt)
-
 class MatchContext:
     """
     A match of a specific rule, to be supplied to Outcome.apply()
     """
-    def __init__(self, match, expgraph, srcexpnode, inneredge, srcstate):
+    def __init__(self, ctxt, match, srcnode, edge, srcstate):
         from sm.checker import Match
-        from gccutils.graph import SupergraphEdge
+        from gccutils.graph import SupergraphNode, SupergraphEdge
         assert isinstance(match, Match)
-        assert isinstance(expgraph, ExplodedGraph)
-        assert isinstance(srcexpnode, ExplodedNode)
-        assert isinstance(inneredge, SupergraphEdge)
+        assert isinstance(srcnode, SupergraphNode)
+        assert isinstance(edge, SupergraphEdge)
+        self.ctxt = ctxt
         self.match = match
-        self.expgraph = expgraph
-        self.srcexpnode = srcexpnode
-        self.inneredge = inneredge
+        self.srcnode = srcnode
+        self.edge = edge
         self.srcstate = srcstate
 
     @property
-    def srcshape(self):
-        return self.srcexpnode.shape
-
-    @property
     def dstnode(self):
-        return self.inneredge.dstnode
+        return self.edge.dstnode
 
     def get_stateful_gccvar(self):
-        return self.match.get_stateful_gccvar(self.expgraph.ctxt)
+        return self.match.get_stateful_gccvar(self.ctxt)
 
-def make_exploded_graph(ctxt, innergraph):
-    expgraph = ExplodedGraph(ctxt)
-    for entry in innergraph.get_entry_nodes():
-        expnode = expgraph.lazily_add_node(entry, Shape(ctxt)) # initial shape
-        expgraph.entrypoints.append(expnode)
-    while expgraph.worklist:
-        srcexpnode = expgraph.worklist.pop()
-        srcnode = srcexpnode.innernode
-        #assert isinstance(srcnode, Node)
-        with ctxt.indent():
-            ctxt.debug('considering srcnode: %s' % srcnode)
-            for edge in srcnode.succs:
-                explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge)
-    return expgraph
+def consider_edge(ctxt, solution, item, edge):
+    """
+    yield any WorklistItem instances that may need further consideration
+    """
+    srcnode = item.node
+    var = item.var
+    state = item.state
 
-def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
     stmt = srcnode.get_stmt()
+    assert edge.srcnode == srcnode
     dstnode = edge.dstnode
     ctxt.debug('edge from: %s' % srcnode)
     ctxt.debug('       to: %s' % dstnode)
-    srcshape = srcexpnode.shape
 
     # Set the location so that if an unhandled exception occurs, it should
     # at least identify the code that triggered it:
@@ -431,38 +136,52 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
         # Alias the parameters with the arguments as necessary, so
         # e.g. a function that free()s an arg has the caller's var
         # marked as free also:
-        shapechange = ShapeChange(srcshape)
         assert isinstance(srcnode.stmt, gcc.GimpleCall)
         # ctxt.debug(srcnode.stmt)
-        for param, arg  in zip(srcnode.stmt.fndecl.arguments, srcnode.stmt.args):
-            # FIXME: change fndecl.arguments to fndecl.parameters
-            if 0:
-                ctxt.debug('  param: %r' % param)
-                ctxt.debug('  arg: %r' % arg)
-            if ctxt.is_stateful_var(arg):
-                shapechange.assign_var(param, arg)
-        # ctxt.debug('dstshape: %r' % dstshape)
-        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                           edge, None, shapechange)
+        if var:
+            for param, arg  in zip(srcnode.stmt.fndecl.arguments,
+                                   srcnode.stmt.args):
+                # FIXME: change fndecl.arguments to fndecl.parameters
+                if 1:
+                    ctxt.debug('  param: %r' % param)
+                    ctxt.debug('  arg: %r' % arg)
+                #if ctxt.is_stateful_var(arg):
+                #    shapechange.assign_var(param, arg)
+                if var == arg.var:
+                    # Propagate state of the argument to the parameter:
+                    yield WorklistItem(dstnode, param, state, None)
+        else:
+            yield WorklistItem(dstnode, None, state, None) # FIXME
+        # Stop iterating, effectively purging state outside that of the
+        # called function:
         return
     elif isinstance(edge, ExitToReturnSite):
-        shapechange = ShapeChange(srcshape)
         # Propagate state through the return value:
         # ctxt.debug('edge.calling_stmtnode: %s' % edge.calling_stmtnode)
         if edge.calling_stmtnode.stmt.lhs:
             exitsupernode = edge.srcnode
             assert isinstance(exitsupernode.innernode, ExitNode)
-            returnstmtnode = exitsupernode.innernode.returnnode
-            assert isinstance(returnstmtnode.stmt, gcc.GimpleReturn)
-            retval = returnstmtnode.stmt.retval
-            if ctxt.is_stateful_var(retval):
-                shapechange.assign_var(edge.calling_stmtnode.stmt.lhs, retval)
-        # ...and purge all local state:
-        shapechange.purge_locals(edge.srcnode.function)
-        dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                           edge, None, shapechange)
+            retval = exitsupernode.innernode.returnval.var
+            ctxt.debug('retval: %s' % retval)
+            ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s' % edge.calling_stmtnode.stmt.lhs)
+            if var == retval:
+                # Propagate state of the return value to the LHS of the caller:
+                yield WorklistItem(dstnode, edge.calling_stmtnode.stmt.lhs.var, state, None)
+
+        # FIXME: we also need to backpatch the params, in case they've
+        # changed state
+        callsite = edge.dstnode.callnode.innernode
+        ctxt.debug('callsite: %s' % callsite)
+        for param, arg  in zip(callsite.stmt.fndecl.arguments,
+                               callsite.stmt.args):
+            if 1:
+                ctxt.debug('  param: %r' % param)
+                ctxt.debug('  arg: %r' % arg)
+            if var == param:
+                yield WorklistItem(dstnode, arg.var, state, None)
+
+        # Stop iterating, effectively purging state local to the called
+        # function:
         return
 
     matches = []
@@ -475,12 +194,9 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
             ctxt.debug('  stmt.rhs: %r' % stmt.rhs)
             ctxt.debug('  stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
-            shapechange = ShapeChange(srcshape)
-            shapechange.assign_var(stmt.lhs, stmt.rhs[0])
-            dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-            expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                               edge, None, shapechange)
-            matches.append(stmt)
+            if stmt.rhs[0].var == var:
+                if isinstance(stmt.lhs, gcc.SsaName):
+                    yield WorklistItem(dstnode, stmt.lhs.var, state, None)
         elif stmt.exprcode == gcc.ComponentRef:
             # Field lookup
             compref = stmt.rhs[0]
@@ -488,19 +204,14 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
                 ctxt.debug(compref.target)
                 ctxt.debug(compref.field)
             # The LHS potentially inherits state from the compref
-            if srcshape.var_has_state(compref.target):
+            if var == compref.target:
                 ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
                     % (stmt.lhs,
-                       srcshape.get_state(compref.target),
+                       state,
                        compref.target,
                        compref.field))
-                shapechange = ShapeChange(srcshape)
-                # For now we alias the states
-                shapechange.assign_var(stmt.lhs, compref.target)
-                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None, shapechange)
-                matches.append(stmt)
+                yield WorklistItem(dstnode, stmt.lhs.var, state, None)
+                # matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
         if 1:
             ctxt.debug('gcc.GimplePhi: %s' % stmt)
@@ -534,46 +245,76 @@ def explode_edge(ctxt, expgraph, srcexpnode, srcnode, edge):
                 for match in pr.pattern.iter_matches(stmt, edge, ctxt):
                     ctxt.debug('pr.pattern: %r' % pr.pattern)
                     ctxt.debug('match: %r' % match)
-                    srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                    ctxt.debug('srcstate: %r' % (srcstate, ))
-                    assert isinstance(srcstate, State)
-                    if srcstate.name in sc.statelist:
+                    ctxt.debug('var: %r' % var)
+                    ctxt.debug('match.get_stateful_gccvar(ctxt): %r' % match.get_stateful_gccvar(ctxt))
+                    #srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
+                    ctxt.debug('state: %r' % (state, ))
+                    assert isinstance(state, State)
+                    if state.name in sc.statelist and (var is None or var == match.get_stateful_gccvar(ctxt)):
                         assert len(pr.outcomes) > 0
                         ctxt.log('got match in state %r of %r at %r: %s'
-                            % (srcstate,
+                            % (state,
                                str(pr.pattern),
                                str(stmt),
                                match))
                         with ctxt.indent():
-                            mctxt = MatchContext(match, expgraph, srcexpnode, edge, srcstate)
+                            mctxt = MatchContext(ctxt, match, srcnode, edge, state)
                             for outcome in pr.outcomes:
                                 ctxt.log('applying outcome to %s => %s'
                                          % (mctxt.get_stateful_gccvar(),
                                             outcome))
-                                outcome.apply(mctxt)
+                                for item in outcome.apply(mctxt):
+                                    ctxt.log('yielding item: %s' % item)
+                                    yield item
                             matches.append(pr)
                     else:
                         ctxt.log('got match for wrong state %r of %r at %r: %s'
-                            % (srcstate,
+                            % (state,
                                str(pr.pattern),
                                str(stmt),
                                match))
+    # FIXME: the "var is None" here continues the analysis for the
+    # the wildcard case, but isn't working well:
+    # (looking at tests/sm/checkers/malloc-checker/two_ptrs )
+    if not matches or var is None:
+        yield WorklistItem(dstnode, var, state, None)
 
-    if not matches:
-        dstexpnode = expgraph.lazily_add_node(dstnode, srcshape)
-        expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                           edge, None, None)
+class WorklistItem:
+    __slots__ = ('node', 'var', 'state', 'match')
+
+    def __init__(self, node, var, state, match):
+        self.node = node
+        self.var = var
+        self.state = state
+        self.match = match
+
+    def __hash__(self):
+        return hash(self.node) ^ hash(self.var) ^ hash(self.state) ^ hash(self.match)
+
+    def __eq__(self, other):
+        if self.node == other.node:
+            if self.var == other.var:
+                if self.state == other.state:
+                    if self.match == other.match:
+                        return True
+
+    def __str__(self):
+        return 'node: %s   var: %s   state: %s   match: %s' % (self.node, self.var, self.state, self.match)
+
+    def __repr__(self):
+        return '(%r, %r, %r, %r)' % (self.node, self.var, self.state, self.match)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
 
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
-    def __init__(self, ch, sm, options):
+    def __init__(self, ch, sm, graph, options):
         self.options = options
 
         self.ch = ch
         self.sm = sm
+        self.graph = graph
 
         # The Context caches some information about the sm to help
         # process it efficiently:
@@ -713,19 +454,19 @@ class Context:
             raise UnknownNamedPattern(patname)
         return self._namedpatterns[patname]
 
-    def add_error(self, expgraph, expnode, match, msg):
-        self.log('add_error(%r, %r, %r, %r)' % (expgraph, expnode, match, msg))
-        err = sm.error.Error(expnode, match, msg)
+    def add_error(self, srcnode, match, msg, state):
+        self.log('add_error(%r, %r, %r, %r)' % (srcnode, match, msg, state))
+        err = sm.error.Error(srcnode, match, msg, state)
         if self.options.cache_errors:
             self._errors.append(err)
         else:
             # Easier to debug tracebacks this way:
-            err.emit(self, expgraph)
+            err.emit(self, solution)
 
-    def emit_errors(self, expgraph):
+    def emit_errors(self, solution):
         curfun = None
         curfile = None
-        for error in self._errors:
+        for error in sorted(self._errors):
             gccloc = error.gccloc
             if error.function != curfun or gccloc.file != curfile:
                 # Fake the function-based output
@@ -736,7 +477,7 @@ class Context:
                                  % (gccloc.file, error.function.decl.name))
                 curfun = error.function
                 curfile = gccloc.file
-            error.emit(self, expgraph)
+            error.emit(self, solution)
 
     def compare(self, gccexpr, smexpr):
         if 0:
@@ -790,22 +531,67 @@ class Context:
         expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
                                                  mctxt.inneredge, mctxt.match, None)
 
-def solve(ctxt, graph, name):
-    ctxt.log('running %s' % ctxt.sm.name)
-    ctxt.log('len(graph.nodes): %i' % len(graph.nodes))
-    ctxt.log('len(graph.edges): %i' % len(graph.edges))
-    ctxt.log('making exploded graph')
-    expgraph = make_exploded_graph(ctxt, graph)
-    ctxt.log('len(expgraph.nodes): %i' % len(expgraph.nodes))
-    ctxt.log('len(expgraph.edges): %i' % len(expgraph.edges))
+    def solve(self, name):
+        # Preprocessing phase: gather simple per-node "facts", for use in
+        # giving better names for temporaries, and for identifying the return
+        # values of functions
+        from sm.facts import find_facts
+        find_facts(self, self.graph)
 
-    if SHOW_EXPLODED_GRAPH:
-        # Debug: view the exploded graph:
-        dot = expgraph.to_dot(name, ctxt)
-        # ctxt.debug(dot)
+        # Preprocessing phase: locate places where rvalues are leaked, for
+        # later use by $leaked/LeakedPattern
+        from sm.leaks import find_leaks
+        find_leaks(self)
+
+        solution = sm.solution.Solution(self)
+        # Worklist is a list of (node, var, state) triples, where var
+        # and state can also both be None
+        worklist = [WorklistItem(node, None, self.get_default_state(), None)
+                    for node in self.graph.get_entry_nodes()]
+        done = set()
+        while worklist:
+            item = worklist.pop()
+            done.add(item)
+            statedict = solution.states[item.node]
+            if item.var in statedict:
+                statedict[item.var].add(item.state)
+            else:
+                statedict[item.var] = set([item.state])
+            with self.indent():
+                self.debug('considering %s' % item)
+                for edge in item.node.succs:
+                    self.debug('considering edge %s' % edge)
+                    assert edge.srcnode == item.node
+                    for nextitem in consider_edge(self, solution, item, edge):
+                        assert isinstance(nextitem, WorklistItem)
+                        if nextitem not in done:
+                            worklist.append(nextitem)
+                        # FIXME: we can also handle *transitions* here,
+                        # adding them to the per-node dict.
+                        # We can use them when reporting errors in order
+                        # to reconstruct paths
+                        changesdict = solution.changes[item.node]
+                        key = (item.var, item.state)
+                        if key in changesdict:
+                            changesdict[key].add(nextitem)
+                        else:
+                            changesdict[key] = set([nextitem])
+                        # FIXME: what exactly should we be storing?
+        return solution
+
+def solve(ctxt, name):
+    ctxt.log('running %s' % ctxt.sm.name)
+    ctxt.log('len(ctxt.graph.nodes): %i' % len(ctxt.graph.nodes))
+    ctxt.log('len(ctxt.graph.edges): %i' % len(ctxt.graph.edges))
+    solution = ctxt.solve(name)
+    dot = solution.to_dot(name)
+    if SHOW_SOLUTION:
+        # Debug: view the solution:
+        if 0:
+            ctxt.debug(dot)
         invoke_dot(dot, name)
 
     # Now report the errors, grouped by function, and in source order:
     ctxt._errors.sort()
 
-    ctxt.emit_errors(expgraph)
+    ctxt.emit_errors(solution)

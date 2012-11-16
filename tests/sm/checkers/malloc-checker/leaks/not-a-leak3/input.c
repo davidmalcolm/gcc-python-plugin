@@ -18,17 +18,21 @@
 */
 
 #include <stdlib.h>
-#include <string.h>
 
-static void uses_ptr(int *q)
+void *test(int a)
 {
-  /* BUG: ptr came from unchecked malloc in test() */
-  *q = 42;
-}
+  void *p;
+  if (a) {
+    p = malloc(1024);
+  }
 
-int *test(void)
-{
-  int *p = (int*)malloc(sizeof(int));
-  uses_ptr(p);
-  return p;
+  if (!a) {
+    free(p);
+  }
+
+  if (a) {
+    return p;
+  }
+
+  return NULL;
 }

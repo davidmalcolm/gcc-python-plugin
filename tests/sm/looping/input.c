@@ -28,6 +28,7 @@ void test(int c)
     buffer[i] = c; /* BUG: the malloc could have failed
                     TODO: the checker doesn't yet pick up on this due to
                     the pointer arithmetic not picking up on the state */
+                   /* BUG use-after-free the second time through the loop */
 
     free(buffer); /* BUG: doublefree here on second time through the  loop */
   }

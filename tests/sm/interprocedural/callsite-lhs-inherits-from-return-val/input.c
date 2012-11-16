@@ -25,10 +25,11 @@ static int *calls_malloc(void)
   return malloc(sizeof(int));
 }
 
-void test(void)
+int *test(void)
 {
     int *p = calls_malloc();
     /* BUG: malloc could have returned NULL */
     *p = 42;
+    return p;
 }
 

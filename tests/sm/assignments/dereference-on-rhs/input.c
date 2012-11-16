@@ -19,9 +19,10 @@
 
 #include <stdlib.h>
 
-void test(int i)
+int *test(int i)
 {
   int *foo = (int*)malloc(sizeof(int*));
   i = *foo; /* BUG: result of malloc could be NULL
                (fwiw it's also uninitialized) */
+  return foo;
 }

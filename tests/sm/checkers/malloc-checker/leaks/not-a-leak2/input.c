@@ -18,17 +18,19 @@
 */
 
 #include <stdlib.h>
-#include <string.h>
 
-static void uses_ptr(int *q)
+void *test(int a)
 {
-  /* BUG: ptr came from unchecked malloc in test() */
-  *q = 42;
-}
-
-int *test(void)
-{
-  int *p = (int*)malloc(sizeof(int));
-  uses_ptr(p);
-  return p;
+  if (a) {
+    void *p = malloc(4096);
+    return p; /* not a leak: returned to caller */
+    /* FIXME: currently the checked issues a false warning about this */
+    /* FIXME: do we need to propagate extra facts within the ErrorGraph, and
+       suppress it there?  If we do (implemented), then we get an ErrorGraph in
+       which we know p == returnval in the only path through the graph, but
+       it's too late to do leak suppression at that point
+    */
+  } else {
+    return NULL;
+  }
 }

@@ -19,8 +19,9 @@
 
 #include <stdlib.h>
 
-void test(int i)
+int *test(int i)
 {
   int *foo = (int*)malloc(sizeof(int*));
   *foo = i; /* BUG: result of malloc could be NULL */
+  return foo;
 }

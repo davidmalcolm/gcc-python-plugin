@@ -19,6 +19,8 @@ import gcc
 
 from gccutils.graph import ReturnNode
 
+from sm.error import gccexpr_to_str
+
 def indent(text):
     return '\n'.join(['  %s' % line
                       for line in text.splitlines()])
@@ -195,8 +197,9 @@ class Match:
     """
     A match of a pattern
     """
-    def __init__(self, pattern):
+    def __init__(self, pattern, node):
         self.pattern = pattern
+        self.node = node
         self._dict = {}
 
     def __eq__(self, other):
@@ -230,12 +233,13 @@ class Match:
             return True
 
     def describe(self, ctxt, smexpr):
-        #print('Match.describe(self=%r, smexpr=%r)' % (self, smexpr))
+        ctxt.debug('Match.describe(self=%r, smexpr=%r)' % (self, smexpr))
         if isinstance(smexpr, str):
-            decl = ctxt.lookup_decl(smexpr)
-            return str(self._dict[decl])
+            smdecl = ctxt.lookup_decl(smexpr)
+            vardecl = self._dict[smdecl]
+            return gccexpr_to_str(ctxt, self.node, vardecl)
         else:
-            return str(smexpr)
+            return gccexpr_to_str(ctxt, self.node, smexpr)
 
     def describe_stateful_smexpr(self, ctxt):
         gccvar = self.get_stateful_gccvar(ctxt)
@@ -252,9 +256,6 @@ class Pattern:
     def iter_matches(self, stmt, edge, ctxt):
         print('self: %r' % self)
         raise NotImplementedError()
-
-    def iter_expedge_matches(self, expedge, ctxt):
-        return []
 
     def description(self, match, ctxt):
         print('self: %r' % self)
@@ -280,14 +281,15 @@ class Assignment(Pattern):
     def iter_matches(self, stmt, edge, ctxt):
         if isinstance(stmt, gcc.GimpleAssign):
             if len(stmt.rhs) == 1:
-                m = Match(self)
+                m = Match(self, edge.srcnode)
                 if m.match_term(ctxt, stmt.lhs, self.lhs):
                     if m.match_term(ctxt, stmt.rhs[0], self.rhs):
                         yield m
 
     def description(self, match, ctxt):
         return ('%s assigned to %s'
-                % (match.describe(ctxt, self.lhs), self.rhs))
+                % (match.describe(ctxt, self.lhs),
+                   match.describe(ctxt, self.rhs)))
 
 class FunctionCall(Pattern):
     def __init__(self, fnname, args):
@@ -303,7 +305,7 @@ class FunctionCall(Pattern):
                 if isinstance(stmt.fn.operand, gcc.FunctionDecl):
                     if stmt.fn.operand.name == self.fnname:
                         # We have a matching function name:
-                        m = Match(self)
+                        m = Match(self, edge.srcnode)
                         def matches_args():
                             for i, arg in enumerate(self.args):
                                 if not m.match_term(ctxt, stmt.args[i], arg):
@@ -396,7 +398,7 @@ class Comparison(Pattern):
                              '>=' : gcc.GeExpr}
             exprcode = codes_for_ops[self.op]
             if stmt.exprcode == exprcode:
-                m = Match(self)
+                m = Match(self, edge.srcnode)
                 if m.match_term(ctxt, stmt.lhs, self.lhs):
                     if m.match_term(ctxt, stmt.rhs, self.rhs):
                         yield m
@@ -427,7 +429,7 @@ class VarDereference(Pattern):
             return
         t = stmt.walk_tree(check_for_match, stmt.loc)
         if t:
-            m = Match(self)
+            m = Match(self, edge.srcnode)
             m.match_term(ctxt, t.operand, self.var)
             yield m
 
@@ -454,7 +456,7 @@ class ArrayLookup(Pattern):
                 return True
         t = stmt.walk_tree(check_for_match, stmt.loc)
         if t:
-            m = Match(self)
+            m = Match(self, edge.srcnode)
             if m.match_term(ctxt, t.array, self.array):
                 if m.match_term(ctxt, t.index, self.index):
                     yield m
@@ -486,7 +488,7 @@ class VarUsage(Pattern):
             return
         t = stmt.walk_tree(check_for_match, stmt.loc)
         if t:
-            m = Match(self)
+            m = Match(self, edge.srcnode)
             m.match_term(ctxt, t, self.var)
             yield m
 
@@ -499,6 +501,9 @@ class NamedPatternReference(Pattern):
 
     def __str__(self):
         return self.name
+
+    def __repr__(self):
+        return 'NamedPatternReference(%r)' % self.name
 
     def iter_matches(self, stmt, edge, ctxt):
         namedpattern = ctxt.lookup_pattern(self.name)
@@ -523,14 +528,11 @@ class SpecialPattern(Pattern):
 
 class LeakedPattern(SpecialPattern):
     def iter_matches(self, stmt, edge, ctxt):
-        return []
-
-    def iter_expedge_matches(self, expedge, expgraph):
-        if expedge.shapechange:
-            for srcgccvar in expedge.shapechange.iter_leaks():
-                m = Match(self)
-                m._dict[expgraph.ctxt._stateful_decl]=srcgccvar
-                yield m
+        ctxt.debug('LeakedPattern.iter_matches(%s, %s)' % (stmt, edge))
+        for vardecl in edge.leaks:
+            m = Match(self, edge.srcnode)
+            m._dict[ctxt._stateful_decl] = vardecl
+            yield m
 
     def description(self, match, ctxt):
         return 'leak of %s' % match.get_stateful_gccvar(ctxt)
@@ -579,14 +581,14 @@ class TransitionTo(Outcome):
             if self.statename == other.statename:
                 return True
     def apply(self, mctxt):
+        from sm.solver import State, WorklistItem
         # print('transition %s to %s' % (match.var, outcome.state))
-        from sm.solver import State
+
         dststate = State(self.statename)
-        dstshape, shapevars = mctxt.srcshape._copy()
-        dstshape.set_state(mctxt.get_stateful_gccvar(), dststate)
-        dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
-        expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
-                                                 mctxt.inneredge, mctxt.match, None)
+        yield WorklistItem(mctxt.dstnode,
+                           mctxt.get_stateful_gccvar(),
+                           dststate,
+                           mctxt.match)
 
     def iter_reachable_statenames(self):
         yield self.statename
@@ -606,18 +608,38 @@ class BooleanOutcome(Outcome):
                 if self.outcome == other.outcome:
                     return True
     def apply(self, mctxt):
-        if mctxt.inneredge.true_value and self.guard:
-            self.outcome.apply(mctxt)
-        if mctxt.inneredge.false_value and not self.guard:
-            self.outcome.apply(mctxt)
+        from sm.solver import WorklistItem
+        if mctxt.edge.true_value and self.guard:
+            for item in self.outcome.apply(mctxt):
+                yield item
+        if mctxt.edge.false_value and not self.guard:
+            for item in self.outcome.apply(mctxt):
+                yield item
 
     def iter_reachable_statenames(self):
         for statename in self.outcome.iter_reachable_statenames():
             yield statename
 
+class BoundVariable:
+    """
+    A variable exposed to a Python script fragment
+    """
+    def __init__(self, ctxt, supernode, gccexpr):
+        self.ctxt = ctxt
+        self.supernode = supernode
+        self.gccexpr = gccexpr
+
+    def __str__(self):
+        from error import gccexpr_to_str
+        return gccexpr_to_str(self.ctxt, self.supernode, self.gccexpr)
+
+    def __getattr__(self, name):
+        return getattr(self.gccexpr, name)
+
 class PythonOutcome(Outcome, PythonFragment):
     def apply(self, mctxt):
-        ctxt = mctxt.expgraph.ctxt
+        from sm.solver import WorklistItem
+        ctxt = mctxt.ctxt
         if 0:
             print('run(): %r' % self)
             print('  match: %r' % match)
@@ -634,9 +656,11 @@ class PythonOutcome(Outcome, PythonFragment):
 
         # Create environment for execution of the code:
         def error(msg):
-            ctxt.add_error(mctxt.expgraph, mctxt.srcexpnode, mctxt.match, msg)
+            ctxt.add_error(mctxt.srcnode, mctxt.match, msg, globals_['state'])
         def set_state(name, **kwargs):
-            ctxt.set_state(mctxt, name, **kwargs)
+            from sm.solver import State
+            ctxt.debug('set_state(%r, %r)' % (name, kwargs))
+            globals_['state'] = State(name, **kwargs)
 
         globals_ = {'error' : error,
                     'set_state' : set_state,
@@ -652,18 +676,26 @@ class PythonOutcome(Outcome, PythonFragment):
         # (which has str() == 'q')
         locals_ = {}
         for decl, value in mctxt.match.iter_binding():
-            locals_[decl.name] = value
+            locals_[decl.name] = BoundVariable(ctxt, mctxt.srcnode, value)
         ctxt.python_locals.update(locals_)
 
         if 0:
             print('  globals_: %r' % globals_)
             print('  locals_: %r' % locals_)
         # Now run the code:
+        ctxt.debug('state before: %r' % globals_['state'])
+        ctxt.log('evaluating python code')
         result = eval(code, ctxt.python_globals, ctxt.python_locals)
+        ctxt.debug('state after: %r' % globals_['state'])
 
         # Clear the binding:
         for name in locals_:
             del ctxt.python_locals[name]
+
+        yield WorklistItem(mctxt.dstnode,
+                           mctxt.get_stateful_gccvar(),
+                           globals_['state'],
+                           mctxt.match)
 
     def iter_reachable_statenames(self):
         return []

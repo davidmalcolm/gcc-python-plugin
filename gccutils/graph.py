@@ -43,6 +43,21 @@ class Graph:
     def _make_edge(self, srcnode, dstnode):
         return Edge(srcnode, dstnode)
 
+    def remove_node(self, node):
+        self.nodes.remove(node)
+        for edge in self.edges:
+            if edge.srcnode == node or edge.dstnode == node:
+                self.remove_edge(edge)
+
+    def remove_edge(self, edge):
+        self.edges.remove(edge)
+        edge.srcnode.succs.remove(edge)
+        edge.dstnode.preds.remove(edge)
+        if not edge.dstnode.preds:
+            # We removed last inedge: recurse
+            if edge.dstnode in self.nodes:
+                self.remove_node(edge.dstnode)
+
     def to_dot(self, name, ctxt=None):
         result = 'digraph %s {\n' % name
         result += '  node [shape=box];\n'
@@ -143,9 +158,12 @@ class Node:
         return '%s' % id(self)
 
     def to_dot_label(self, ctxt):
-        node = self.to_dot_html(ctxt)
-        if node:
-            return node.to_html()
+        if hasattr(ctxt, 'node_to_dot_html'):
+            htmlnode = ctxt.node_to_dot_html(self)
+        else:
+            htmlnode = self.to_dot_html(ctxt)
+        if htmlnode:
+            return htmlnode.to_html()
         else:
             return to_html(str(self))
 
@@ -374,6 +392,15 @@ class ExitNode(StmtNode):
         assert isinstance(node.stmt, gcc.GimpleReturn)
         return node
 
+    @property
+    def returnval(self):
+        """
+        Get the gcc.Tree for the return value, or None
+        """
+        returnnode = self.returnnode
+        assert isinstance(returnnode.stmt, gcc.GimpleReturn)
+        return returnnode.stmt.retval
+
 class SplitPhiNode(StmtNode):
     def __init__(self, fun, stmt, inneredge):
         StmtNode.__init__(self, fun, stmt)
@@ -426,6 +453,7 @@ class StmtEdge(Edge):
 class Supergraph(Graph):
     def __init__(self, split_phi_nodes):
         Graph.__init__(self)
+        self.supernode_for_stmtnode = {}
         # 1st pass: locate interprocedural instances of gcc.GimpleCall
         # i.e. where both caller and callee are within the supergraph
         # (perhaps the same function)
@@ -455,6 +483,8 @@ class Supergraph(Graph):
                         # and a ReturnNode:
                         callnode = self.add_node(CallNode(node, stmtg))
                         returnnode = self.add_node(ReturnNode(node, stmtg))
+                        callnode.returnnode = returnnode
+                        returnnode.callnode = callnode
                         stmtg.supernode_for_stmtnode[node] = (callnode, returnnode)
                         self.add_edge(
                             callnode, returnnode,
@@ -506,6 +536,12 @@ class Supergraph(Graph):
                             None)
                         superedge_return.calling_stmtnode = calling_stmtnode
 
+    def add_node(self, supernode):
+        Graph.add_node(self, supernode)
+        # Keep track of mapping from stmtnode -> supernode
+        self.supernode_for_stmtnode[supernode.innernode] = supernode
+        return supernode
+
     def _make_edge(self, srcnode, dstnode, cls, edge):
         return cls(srcnode, dstnode, edge)
 
@@ -536,9 +572,6 @@ class SupergraphNode(Node):
         Node.__init__(self)
         self.innernode = innernode
         self.stmtg = stmtg
-
-    def to_dot_label(self, ctxt):
-        return self.innernode.to_dot_label(ctxt)
 
     def to_dot_html(self, ctxt):
         return self.innernode.to_dot_html(ctxt)

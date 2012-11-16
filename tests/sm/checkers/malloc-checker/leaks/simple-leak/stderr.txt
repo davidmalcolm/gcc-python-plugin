@@ -1,3 +1,4 @@
 tests/sm/checkers/malloc-checker/leaks/simple-leak/input.c: In function 'test':
 tests/sm/checkers/malloc-checker/leaks/simple-leak/input.c:30:nn: error: leak of p
 tests/sm/checkers/malloc-checker/leaks/simple-leak/input.c:27:nn: note: p assigned to the result of malloc()
+tests/sm/checkers/malloc-checker/leaks/simple-leak/input.c:30:nn: note: leak of p
