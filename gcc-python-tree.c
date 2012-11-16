@@ -242,6 +242,86 @@ gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+gcc_ArrayRef_repr(struct PyGccTree * self)
+{
+    PyObject *array = NULL;
+    PyObject *index = NULL;
+    PyObject *array_repr = NULL;
+    PyObject *index_repr = NULL;
+    PyObject *result = NULL;
+
+    array = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0));
+    if (!array) {
+        goto error;
+    }
+    index = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1));
+    if (!index) {
+        goto error;
+    }
+    array_repr = PyObject_Repr(array);
+    if (!array_repr) {
+        goto error;
+    }
+    index_repr = PyObject_Repr(index);
+    if (!index_repr) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(array=%s, index=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(array_repr),
+                                           gcc_python_string_as_string(index_repr));
+
+ error:
+    Py_XDECREF(array);
+    Py_XDECREF(index);
+    Py_XDECREF(array_repr);
+    Py_XDECREF(index_repr);
+
+    return result;
+}
+
+PyObject *
+gcc_ComponentRef_repr(struct PyGccTree * self)
+{
+    PyObject *target = NULL;
+    PyObject *field = NULL;
+    PyObject *target_repr = NULL;
+    PyObject *field_repr = NULL;
+    PyObject *result = NULL;
+
+    target = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0));
+    if (!target) {
+        goto error;
+    }
+    field = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1));
+    if (!field) {
+        goto error;
+    }
+    target_repr = PyObject_Repr(target);
+    if (!target_repr) {
+        goto error;
+    }
+    field_repr = PyObject_Repr(field);
+    if (!field_repr) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(target=%s, field=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(target_repr),
+                                           gcc_python_string_as_string(field_repr));
+
+ error:
+    Py_XDECREF(target);
+    Py_XDECREF(field);
+    Py_XDECREF(target_repr);
+    Py_XDECREF(field_repr);
+
+    return result;
+}
+
+PyObject *
 gcc_IdentifierNode_repr(struct PyGccTree * self)
 {
     if (IDENTIFIER_POINTER(self->t)) {

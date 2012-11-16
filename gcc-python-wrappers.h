@@ -141,6 +141,12 @@ PyObject *
 gcc_Function_richcompare(PyObject *o1, PyObject *o2, int op);
 
 PyObject *
+gcc_ArrayRef_repr(struct PyGccTree * self);
+
+PyObject *
+gcc_ComponentRef_repr(struct PyGccTree * self);
+
+PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure);
 
 PyObject *
