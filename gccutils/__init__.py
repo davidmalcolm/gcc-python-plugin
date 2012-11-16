@@ -19,8 +19,6 @@ import sys
 
 import gcc
 
-from six.moves import xrange
-
 def sorted_dict_repr(d):
     return '{' + ', '.join(['%r: %r' % (k, d[k])
                             for k in sorted(d.keys())]) + '}'
@@ -565,7 +563,7 @@ class Table(object):
 
     def _calc_col_widths(self):
         result = []
-        for colIndex in xrange(self.numcolumns):
+        for colIndex in range(self.numcolumns):
             result.append(self._calc_col_width(colIndex))
         return result
 
