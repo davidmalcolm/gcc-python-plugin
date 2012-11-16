@@ -194,7 +194,10 @@ def consider_edge(ctxt, solution, item, edge):
             ctxt.debug('  stmt.rhs: %r' % stmt.rhs)
             ctxt.debug('  stmt.exprcode: %r' % stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
-            if stmt.rhs[0].var == var:
+            rhs = stmt.rhs[0]
+            if isinstance(rhs, gcc.SsaName):
+                rhs = rhs.var
+            if rhs == var:
                 if isinstance(stmt.lhs, gcc.SsaName):
                     yield WorklistItem(dstnode, stmt.lhs.var, state, None)
         elif stmt.exprcode == gcc.ComponentRef:
