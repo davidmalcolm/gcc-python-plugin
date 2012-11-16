@@ -227,8 +227,8 @@ class Match:
         if gccexpr:
             if isinstance(smexpr, str):
                 decl = ctxt.lookup_decl(smexpr)
-                if isinstance(gccexpr, gcc.SsaName):
-                    gccexpr = gccexpr.var
+                from sm.solver import simplify
+                gccexpr = simplify(gccexpr)
                 self._dict[decl] = gccexpr
             return True
 

@@ -20,6 +20,8 @@
 ############################################################################
 import gcc
 
+from sm.solver import simplify
+
 """
 class Fact:
     def __init__(self, lhs, op, rhs):
@@ -73,14 +75,8 @@ def get_facts_after(ctxt, srcfacts, edge):
             ctxt.debug('  stmt.lhs: %r', stmt.lhs)
             ctxt.debug('  stmt.rhs: %r', stmt.rhs)
             ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
-        lhs = stmt.lhs
-        rhs = stmt.rhs
-        if isinstance(rhs[0], gcc.SsaName):
-            rhs = rhs[0].var
-        else:
-            rhs = rhs[0]
-        if isinstance(lhs, gcc.SsaName):
-            lhs = lhs.var
+        lhs = simplify(stmt.lhs)
+        rhs = simplify(stmt.rhs[0])
         dstfacts.add( (lhs, '==', rhs) )
         # Eliminate any now-invalid facts:
         for fact in frozenset(dstfacts):
@@ -88,14 +84,8 @@ def get_facts_after(ctxt, srcfacts, edge):
     elif isinstance(stmt, gcc.GimpleCond):
         if 1:
             ctxt.debug('gcc.GimpleCond: %s', stmt)
-        lhs = stmt.lhs
-        rhs = stmt.rhs
-        if isinstance(rhs, gcc.SsaName):
-            rhs = rhs.var
-        else:
-            rhs = rhs
-        if isinstance(lhs, gcc.SsaName):
-            lhs = lhs.var
+        lhs = simplify(stmt.lhs)
+        rhs = simplify(stmt.rhs)
         op = stmt.exprcode.get_symbol()
         if edge.true_value:
             dstfacts.add( (lhs, op, rhs) )

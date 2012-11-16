@@ -22,6 +22,7 @@
 
 import gcc
 
+from sm.solver import simplify
 
 def get_retval_aliases(ctxt, supernode):
     exitstmtnode = supernode.stmtg.exit
@@ -30,8 +31,7 @@ def get_retval_aliases(ctxt, supernode):
         # No return value
         return frozenset()
 
-    if isinstance(retval, gcc.SsaName):
-        retval = retval.var
+    retval = simplify(retval)
     ctxt.debug('retval: %s', retval)
     from sm.facts import get_aliases
     exitsupernode = ctxt.graph.supernode_for_stmtnode[exitstmtnode]

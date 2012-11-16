@@ -109,6 +109,11 @@ class MatchContext:
     def get_stateful_gccvar(self):
         return self.match.get_stateful_gccvar(self.ctxt)
 
+def simplify(gccexpr):
+    if isinstance(gccexpr, gcc.SsaName):
+        return gccexpr.var
+    return gccexpr
+
 def consider_edge(ctxt, solution, item, edge):
     """
     yield any WorklistItem instances that may need further consideration
@@ -148,7 +153,8 @@ def consider_edge(ctxt, solution, item, edge):
                     ctxt.debug('  arg: %r', arg)
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
-                if var == arg.var:
+                arg = simplify(arg)
+                if var == arg:
                     # Propagate state of the argument to the parameter:
                     yield WorklistItem(dstnode, param, state, None)
         else:
@@ -162,12 +168,12 @@ def consider_edge(ctxt, solution, item, edge):
         if edge.calling_stmtnode.stmt.lhs:
             exitsupernode = edge.srcnode
             assert isinstance(exitsupernode.innernode, ExitNode)
-            retval = exitsupernode.innernode.returnval.var
+            retval = simplify(exitsupernode.innernode.returnval)
             ctxt.debug('retval: %s', retval)
             ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s', edge.calling_stmtnode.stmt.lhs)
             if var == retval:
                 # Propagate state of the return value to the LHS of the caller:
-                yield WorklistItem(dstnode, edge.calling_stmtnode.stmt.lhs.var, state, None)
+                yield WorklistItem(dstnode, simplify(edge.calling_stmtnode.stmt.lhs), state, None)
 
         # FIXME: we also need to backpatch the params, in case they've
         # changed state
@@ -179,7 +185,7 @@ def consider_edge(ctxt, solution, item, edge):
                 ctxt.debug('  param: %r', param)
                 ctxt.debug('  arg: %r', arg)
             if var == param:
-                yield WorklistItem(dstnode, arg.var, state, None)
+                yield WorklistItem(dstnode, simplify(arg), state, None)
 
         # Stop iterating, effectively purging state local to the called
         # function:
@@ -195,12 +201,10 @@ def consider_edge(ctxt, solution, item, edge):
             ctxt.debug('  stmt.rhs: %r', stmt.rhs)
             ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
-            rhs = stmt.rhs[0]
-            if isinstance(rhs, gcc.SsaName):
-                rhs = rhs.var
+            rhs = simplify(stmt.rhs[0])
             if rhs == var:
                 if isinstance(stmt.lhs, gcc.SsaName):
-                    yield WorklistItem(dstnode, stmt.lhs.var, state, None)
+                    yield WorklistItem(dstnode, simplify(stmt.lhs), state, None)
         elif stmt.exprcode == gcc.ComponentRef:
             # Field lookup
             compref = stmt.rhs[0]
@@ -214,7 +218,7 @@ def consider_edge(ctxt, solution, item, edge):
                        state,
                        compref.target,
                        compref.field))
-                yield WorklistItem(dstnode, stmt.lhs.var, state, None)
+                yield WorklistItem(dstnode, simplify(stmt.lhs), state, None)
                 # matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
         if 1:
