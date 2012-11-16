@@ -55,6 +55,8 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     struct PyGccLocation *locobj2;
     int cond;
     PyObject *result_obj;
+    const char *file1;
+    const char *file2;
 
     assert(Py_TYPE(o1) == (PyTypeObject*)&gcc_LocationType);
     
@@ -66,51 +68,87 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     locobj1 = (struct PyGccLocation *)o1;
     locobj2 = (struct PyGccLocation *)o2;
 
-    switch (op) {
-    case Py_LT:
-    case Py_LE:
-    case Py_GT:
-    case Py_GE:
-        {
-            /* Locations are only comparable within the same source file: */
-            int line1 = LOCATION_LINE(locobj1->loc);
-            int line2 = LOCATION_LINE(locobj2->loc);
+    /* First compare by filename, then by line, then by column */
+    file1 = LOCATION_FILE(locobj1->loc);
+    file2 = LOCATION_FILE(locobj2->loc);
 
-            if (LOCATION_FILE(locobj1->loc) != LOCATION_FILE(locobj2->loc)) {
+    if (file1 != file2) {
+        /* Compare by file: */
+        switch (op) {
+        case Py_LT:
+        case Py_LE:
+            /* we merge the LT and LE cases since we've already
+               established that the values are not equal */
+            cond = (strcmp(file1, file2) < 0);
+            break;
+        case Py_GT:
+        case Py_GE:
+            cond = (strcmp(file1, file2) > 0);
+            break;
+        case Py_EQ:
+            cond = 0;
+            break;
+        case Py_NE:
+            cond = 1;
+            break;
+        default:
+            result_obj = Py_NotImplemented;
+            goto out;
+        }
+    } else {
+        /* File equality; compare by line: */
+        int line1 = LOCATION_LINE(locobj1->loc);
+        int line2 = LOCATION_LINE(locobj2->loc);
+
+        if (line1 != line2) {
+            switch (op) {
+            case Py_LT:
+            case Py_LE:
+                cond = (line1 < line2);
+                break;
+            case Py_GT:
+            case Py_GE:
+                cond = (line1 > line2);
+                break;
+            case Py_EQ:
+                cond = 0;
+                break;
+            case Py_NE:
+                cond = 1;
+                break;
+            default:
                 result_obj = Py_NotImplemented;
                 goto out;
             }
+        } else {
+            /* File and line equality; compare by column: */
+            expanded_location exploc1 = expand_location(locobj1->loc);
+            expanded_location exploc2 = expand_location(locobj2->loc);
+            int col1 = exploc1.column;
+            int col2 = exploc2.column;
 
             switch (op) {
-            default: /* not reachable, but silence compiler warnings */
             case Py_LT:
-                cond = (line1 < line2);
-                break;
             case Py_LE:
-                cond = (line1 <= line2);
+                cond = (col1 < col2);
                 break;
             case Py_GT:
-                cond = (line1 > line2);
-                break;
             case Py_GE:
-                cond = (line1 >= line2);
+                cond = (col1 > col2);
                 break;
+            case Py_EQ:
+                cond = (col1 == col2);
+                break;
+            case Py_NE:
+                cond = (col1 != col2);
+                break;
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
             }
         }
-        break;
-
-    case Py_EQ:
-	cond = (locobj1->loc == locobj2->loc);
-	break;
-
-    case Py_NE:
-	cond = (locobj1->loc != locobj2->loc);
-	break;
-
-    default:
-        result_obj = Py_NotImplemented;
-        goto out;
     }
+
     result_obj = cond ? Py_True : Py_False;
 
  out:
