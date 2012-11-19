@@ -37,7 +37,7 @@ class ErrorGraph(Graph):
 
     def add_node(self, node):
         # Lazily add nodes, discarding duplicates:
-        key = (node.innernode, node.var, node.state)
+        key = (node.innernode, node.expr, node.state)
         if key in self.node_for_triple:
             # Already present:
             return self.node_for_triple[key], False
@@ -67,15 +67,15 @@ class ErrorGraph(Graph):
                 yield self.node_for_triple[srctriple]
 
 class ErrorNode(Node):
-    def __init__(self, innernode, var, state, match):
+    def __init__(self, innernode, expr, state, match):
         Node.__init__(self)
         self.innernode = innernode
-        self.var = var
+        self.expr = expr
         self.state = state
         self.match = match
 
     def __repr__(self):
-        return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.var, self.state, self.match)
+        return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.expr, self.state, self.match)
 
     def to_dot_html(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text, Br, Font
@@ -84,7 +84,7 @@ class ErrorNode(Node):
         table = Table(cellborder=1)
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
-        td.add_child(Text('var: %s' % self.var))
+        td.add_child(Text('expr: %s' % self.expr))
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('state: %s' % self.state))
@@ -130,9 +130,9 @@ class Solution:
     def __init__(self, ctx):
         self.ctxt = ctx
 
-        # dict from SupergraphNode to dict from var to (oldstate, newstate)
+        # dict from SupergraphNode to dict from expr to (oldstate, newstate)
         # pair:
-        #   self.changes[node][var] == (oldstate, newstate)
+        #   self.changes[node][expr] == (oldstate, newstate)
         # (where oldstate might equal newstate).
         self.changes = {}
         self.states = {}
@@ -155,12 +155,12 @@ class Solution:
                 table = Table(cellborder=1)
                 states = self.solution.states[node]
                 if states:
-                    for var in states:
+                    for expr in states:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('%s: %s'
-                                          % (var, ',' .join(str(state)
-                                                            for state in states[var]))))
+                                          % (expr, ',' .join(str(state)
+                                                            for state in states[expr]))))
                 else:
                     tr = table.add_child(Tr())
                     td = tr.add_child(Td(align='left'))
@@ -198,9 +198,9 @@ class Solution:
         return self.ctxt.graph.to_dot(name, SolutionRenderer(self))
 
 
-    def build_error_graph(self, dstnode, var, state):
+    def build_error_graph(self, dstnode, expr, state):
         errgraph = ErrorGraph(self.ctxt, self.ctxt.graph)
-        dsterrnode, _ = errgraph.add_node(ErrorNode(dstnode, var, state, None))
+        dsterrnode, _ = errgraph.add_node(ErrorNode(dstnode, expr, state, None))
 
         # srcnodes = list(innergraph.get_entry_nodes())
         worklist = [dsterrnode]
@@ -220,17 +220,17 @@ class Solution:
                 changesdict = self.changes[srcsupernode]
                 for key in changesdict:
                     self.ctxt.debug('key: %s', key)
-                    srcvar, srcstate = key
+                    srcexpr, srcstate = key
                     for item in changesdict[key]:
                         self.ctxt.debug('item: %s', item)
                         if item.node == errnode.innernode:
                             # The items must match, unless the srcnode is
                             # None, in which case it's legitimate to
-                            # transition to a more specific var:
-                            if item.var == errnode.var or item.var is None:
+                            # transition to a more specific expr:
+                            if item.expr == errnode.expr or item.expr is None:
                                 if item.state == errnode.state:
                                     srcerrnode, new = errgraph.add_node(ErrorNode(srcsupernode,
-                                                                                  srcvar,
+                                                                                  srcexpr,
                                                                                   srcstate,
                                                                                   item.match))
                                     errgraph.add_edge(srcerrnode, errnode, edge)
@@ -241,22 +241,22 @@ class Solution:
                                         self.ctxt.debug('already present')
         return errgraph
 
-    def get_shortest_path_to(self, dstnode, var, state):
+    def get_shortest_path_to(self, dstnode, expr, state):
         # backtrack from destination until you reach a srcnode whilst
         # obeying various restrictions:
-        #   * vars/states have to match (or have state transitions)
+        #   * exprs/states have to match (or have state transitions)
         #   * call stack has to be obeyed: return to correct caller
         #   * perhaps some simple rules about known "state", to suppress
         #   the most obvious false positives
 
         self.ctxt.debug('get_shortest_path_to:')
         self.ctxt.debug('  dstnode: %s', dstnode)
-        self.ctxt.debug('  var: %s', var)
+        self.ctxt.debug('  expr: %s', expr)
         self.ctxt.debug('  state: %s', state)
 
         self.ctxt.log('building error graph')
         with self.ctxt.indent():
-            errgraph = self.build_error_graph(dstnode, var, state)
+            errgraph = self.build_error_graph(dstnode, expr, state)
 
             from sm.facts import find_facts, remove_impossible
 
@@ -269,7 +269,7 @@ class Solution:
                 changes = remove_impossible(self.ctxt, errgraph)
 
             dsttriple = (dstnode,
-                         var,
+                         expr,
                          state)
             dsterrnode = errgraph.node_for_triple[dsttriple]
             if dsterrnode not in errgraph.nodes:

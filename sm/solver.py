@@ -150,7 +150,7 @@ def consider_edge(ctxt, solution, item, edge):
     yield any WorklistItem instances that may need further consideration
     """
     srcnode = item.node
-    var = item.var
+    expr = item.expr
     state = item.state
 
     stmt = srcnode.get_stmt()
@@ -171,11 +171,11 @@ def consider_edge(ctxt, solution, item, edge):
         return
     elif isinstance(edge, CallToStart):
         # Alias the parameters with the arguments as necessary, so
-        # e.g. a function that free()s an arg has the caller's var
+        # e.g. a function that free()s an arg has the caller's expr
         # marked as free also:
         assert isinstance(srcnode.stmt, gcc.GimpleCall)
         # ctxt.debug(srcnode.stmt)
-        if var:
+        if expr:
             for param, arg  in zip(srcnode.stmt.fndecl.arguments,
                                    srcnode.stmt.args):
                 # FIXME: change fndecl.arguments to fndecl.parameters
@@ -185,7 +185,7 @@ def consider_edge(ctxt, solution, item, edge):
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
                 arg = simplify(arg)
-                if var == arg:
+                if expr == arg:
                     # Propagate state of the argument to the parameter:
                     yield WorklistItem(dstnode, param, state, None)
         else:
@@ -202,7 +202,7 @@ def consider_edge(ctxt, solution, item, edge):
             retval = simplify(exitsupernode.innernode.returnval)
             ctxt.debug('retval: %s', retval)
             ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s', edge.calling_stmtnode.stmt.lhs)
-            if var == retval:
+            if expr == retval:
                 # Propagate state of the return value to the LHS of the caller:
                 yield WorklistItem(dstnode, simplify(edge.calling_stmtnode.stmt.lhs), state, None)
 
@@ -215,7 +215,7 @@ def consider_edge(ctxt, solution, item, edge):
             if 1:
                 ctxt.debug('  param: %r', param)
                 ctxt.debug('  arg: %r', arg)
-            if var == param:
+            if expr == param:
                 yield WorklistItem(dstnode, simplify(arg), state, None)
 
         # Stop iterating, effectively purging state local to the called
@@ -233,7 +233,7 @@ def consider_edge(ctxt, solution, item, edge):
             ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
             rhs = simplify(stmt.rhs[0])
-            if rhs == var:
+            if rhs == expr:
                 if isinstance(stmt.lhs, gcc.SsaName):
                     yield WorklistItem(dstnode, simplify(stmt.lhs), state, None)
         elif stmt.exprcode == gcc.ComponentRef:
@@ -243,7 +243,7 @@ def consider_edge(ctxt, solution, item, edge):
                 ctxt.debug(compref.target)
                 ctxt.debug(compref.field)
             # The LHS potentially inherits state from the compref
-            if var == compref.target:
+            if expr == compref.target:
                 ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
                     % (stmt.lhs,
                        state,
@@ -284,12 +284,12 @@ def consider_edge(ctxt, solution, item, edge):
                 for match in pr.pattern.iter_matches(stmt, edge, ctxt):
                     ctxt.debug('pr.pattern: %r', pr.pattern)
                     ctxt.debug('match: %r', match)
-                    ctxt.debug('var: %r', var)
+                    ctxt.debug('expr: %r', expr)
                     ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
                     #srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
                     ctxt.debug('state: %r', (state, ))
                     assert isinstance(state, State)
-                    if state.name in sc.statelist and (var is None or var == match.get_stateful_gccvar(ctxt)):
+                    if state.name in sc.statelist and (expr is None or expr == match.get_stateful_gccvar(ctxt)):
                         assert len(pr.outcomes) > 0
                         ctxt.log('got match in state %r of %r at %r: %s',
                                  state,
@@ -307,41 +307,51 @@ def consider_edge(ctxt, solution, item, edge):
                                     yield item
                             matches.append(pr)
                     else:
-                        ctxt.log('got match for wrong state %r of %r at %r: %s',
+                        ctxt.debug('got match for wrong state %r of %r at %r: %s',
                                  state,
                                  str(pr.pattern),
                                  str(stmt),
                                  match)
-    # FIXME: the "var is None" here continues the analysis for the
+    # FIXME: the "expr is None" here continues the analysis for the
     # the wildcard case, but isn't working well:
     # (looking at tests/sm/checkers/malloc-checker/two_ptrs )
-    if not matches or var is None:
-        yield WorklistItem(dstnode, var, state, None)
+    if not matches or expr is None:
+        yield WorklistItem(dstnode, expr, state, None)
 
 class WorklistItem:
-    __slots__ = ('node', 'var', 'state', 'match')
+    """
+    An item within the worklist, indicating a reachable node in which the
+    given expression has a particular state, potentially indicating a Match
+    instance also
 
-    def __init__(self, node, var, state, match):
+    expr and state can also both be None, indicating the default state
+
+    match is typically None (apart from those items in which a pattern
+    matched).
+    """
+    __slots__ = ('node', 'expr', 'state', 'match')
+
+    def __init__(self, node, expr, state, match):
         self.node = node
-        self.var = var
+        self.expr = expr
         self.state = state
         self.match = match
 
     def __hash__(self):
-        return hash(self.node) ^ hash(self.var) ^ hash(self.state) ^ hash(self.match)
+        return hash(self.node) ^ hash(self.expr) ^ hash(self.state) ^ hash(self.match)
 
     def __eq__(self, other):
         if self.node == other.node:
-            if self.var == other.var:
+            if self.expr == other.expr:
                 if self.state == other.state:
                     if self.match == other.match:
                         return True
 
     def __str__(self):
-        return 'node: %s   var: %s   state: %s   match: %s' % (self.node, self.var, self.state, self.match)
+        return 'node: %s   expr: %s   state: %s   match: %s' % (self.node, self.expr, self.state, self.match)
 
     def __repr__(self):
-        return '(%r, %r, %r, %r)' % (self.node, self.var, self.state, self.match)
+        return '(%r, %r, %r, %r)' % (self.node, self.expr, self.state, self.match)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -588,8 +598,6 @@ class Context:
             find_leaks(self)
 
         solution = sm.solution.Solution(self)
-        # Worklist is a list of (node, var, state) triples, where var
-        # and state can also both be None
         worklist = [WorklistItem(node, None, self.get_default_state(), None)
                     for node in self.graph.get_entry_nodes()]
         done = set()
@@ -597,10 +605,10 @@ class Context:
             item = worklist.pop()
             done.add(item)
             statedict = solution.states[item.node]
-            if item.var in statedict:
-                statedict[item.var].add(item.state)
+            if item.expr in statedict:
+                statedict[item.expr].add(item.state)
             else:
-                statedict[item.var] = set([item.state])
+                statedict[item.expr] = set([item.state])
             with self.indent():
                 self.debug('considering %s', item)
                 for edge in item.node.succs:
@@ -615,7 +623,7 @@ class Context:
                         # We can use them when reporting errors in order
                         # to reconstruct paths
                         changesdict = solution.changes[item.node]
-                        key = (item.var, item.state)
+                        key = (item.expr, item.state)
                         if key in changesdict:
                             changesdict[key].add(nextitem)
                         else:

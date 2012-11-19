@@ -68,25 +68,25 @@ class Error:
             # TODO: backtrace down the path, tracking the StateVar aliases of interest...
             srcsupernode = edge.srcnode.innernode
             srcgccloc = srcsupernode.get_gcc_loc()
-            srcvar = edge.srcnode.var
+            srcexpr = edge.srcnode.expr
             srcstate = edge.srcnode.state
 
             dstsupernode = edge.dstnode.innernode
             dstgccloc = dstsupernode.get_gcc_loc()
-            dstvar = edge.dstnode.var
+            dstexpr = edge.dstnode.expr
             dststate = edge.dstnode.state
 
             with ctxt.indent():
                 ctxt.debug('edge from:')
                 with ctxt.indent():
                     ctxt.debug('srcnode: %s', srcsupernode)
-                    ctxt.debug('var: %s', srcvar)
+                    ctxt.debug('expr: %s', srcexpr)
                     ctxt.debug('state: %s', srcstate)
                     ctxt.debug('srcloc: %s', srcgccloc)
                 ctxt.debug('to:')
                 with ctxt.indent():
                     ctxt.debug('dstnode: %s', dstsupernode)
-                    ctxt.debug('var: %s', dstvar)
+                    ctxt.debug('expr: %s', dstexpr)
                     ctxt.debug('state: %s', dststate)
                     ctxt.debug('dstloc: %s', dstgccloc)
 
@@ -113,23 +113,23 @@ class Error:
                             desc += ': '
                         desc += edge.srcnode.match.description(ctxt)
                         inform(gccloc, desc)
-                elif srcvar != dstvar:
-                    ctxt.log('var change!')
+                elif srcexpr != dstexpr:
+                    ctxt.log('expr change!')
                     # Debugging information on state change:
                     if desc:
                         desc += ': '
                     desc += ('state of %s ("%s") propagated to %s'
-                             % (gccexpr_to_str(ctxt, srcsupernode, srcvar),
+                             % (gccexpr_to_str(ctxt, srcsupernode, srcexpr),
                                 srcstate,
-                                gccexpr_to_str(ctxt, dstsupernode, dstvar)))
+                                gccexpr_to_str(ctxt, dstsupernode, dstexpr)))
                     inform(gccloc, desc)
                 else:
                     # Debugging information on state change:
                     if 0:
                         desc += ('%s: %s:%s -> %s:%s'
                                  % (ctxt.sm.name,
-                                    srcvar, srcstate,
-                                    dstvar, dststate))
+                                    srcexpr, srcstate,
+                                    dstexpr, dststate))
                         inform(gccloc, desc)
                     else:
                         if desc:
