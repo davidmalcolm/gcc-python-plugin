@@ -26,6 +26,7 @@ SHOW_SOLUTION=0
 SHOW_ERROR_GRAPH=0
 
 import sys
+import time
 
 import gcc
 
@@ -41,6 +42,36 @@ import sm.parser
 import sm.solution
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
+
+class Timer:
+    """
+    Context manager for logging the start/finish of a particular activity
+    and how long it takes
+    """
+    def __init__(self, ctxt, name):
+        self.ctxt = ctxt
+        self.name = name
+        self.starttime = time.time()
+
+    def get_elapsed_time(self):
+        """Get elapsed time in seconds as a float"""
+        curtime = time.time()
+        return curtime - self.starttime
+
+    def elapsed_time_as_str(self):
+        """Get elapsed time as a string (with units)"""
+        return '%0.3f seconds' % self.get_elapsed_time()
+
+    def __enter__(self):
+        self.ctxt.log('START: %s', self.name)
+        self.ctxt._indent += 1
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.ctxt._indent -= 1
+        self.ctxt.log('%s: %s  TIME TAKEN: %s',
+                      'STOP' if exc_type is None else 'ERROR',
+                      self.name,
+                      self.elapsed_time_as_str())
 
 class State:
     """
@@ -547,12 +578,14 @@ class Context:
         # giving better names for temporaries, and for identifying the return
         # values of functions
         from sm.facts import find_facts
-        find_facts(self, self.graph)
+        with Timer(self, 'find_facts'):
+            find_facts(self, self.graph)
 
         # Preprocessing phase: locate places where rvalues are leaked, for
         # later use by $leaked/LeakedPattern
         from sm.leaks import find_leaks
-        find_leaks(self)
+        with Timer(self, 'find_leaks'):
+            find_leaks(self)
 
         solution = sm.solution.Solution(self)
         # Worklist is a list of (node, var, state) triples, where var
@@ -594,15 +627,19 @@ def solve(ctxt, name):
     ctxt.log('running %s', ctxt.sm.name)
     ctxt.log('len(ctxt.graph.nodes): %i', len(ctxt.graph.nodes))
     ctxt.log('len(ctxt.graph.edges): %i', len(ctxt.graph.edges))
-    solution = ctxt.solve(name)
-    dot = solution.to_dot(name)
+    with Timer(ctxt, 'generating solution'):
+        solution = ctxt.solve(name)
     if SHOW_SOLUTION:
+        dot = solution.to_dot(name)
         # Debug: view the solution:
         if 0:
             ctxt.debug(dot)
         invoke_dot(dot, name)
 
+    ctxt.log('len(ctxt._errors): %i', len(ctxt._errors))
+
     # Now report the errors, grouped by function, and in source order:
     ctxt._errors.sort()
 
-    ctxt.emit_errors(solution)
+    with Timer(ctxt, 'emitting errors'):
+        ctxt.emit_errors(solution)
