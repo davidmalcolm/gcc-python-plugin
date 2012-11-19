@@ -91,8 +91,8 @@ class ErrorNode(Node):
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('match: %s' % self.match))
-        if self.facts:
-            for fact in self.facts:
+        if self.facts._facts:
+            for fact in self.facts._facts:
                 tr = table.add_child(Tr())
                 td = tr.add_child(Td(align='left'))
                 td.add_child(Text('FACT: %s' % (fact, )))
@@ -180,8 +180,8 @@ class Solution:
                     td = tr.add_child(Td(align='left'))
                     td.add_child(Text('NO CHANGES'))
                 """
-                if node.facts:
-                    for fact in node.facts:
+                if node.facts._facts:
+                    for fact in node.facts._facts:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('FACT: %s' % (fact, )))

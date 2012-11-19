@@ -151,11 +151,10 @@ def gccexpr_to_str(ctxt, supernode, gccexpr):
             # We have a temporary variable.
             # Try to use a better name if the node "knows" where the
             # temporary came from:
-            from sm.facts import get_aliases
             from sm.leaks import get_retval_aliases
             from gccutils.graph import ExitNode
 
-            aliases = get_aliases(supernode.facts, gccexpr)
+            aliases = supernode.facts.get_aliases(gccexpr)
             for alias in aliases:
                 if isinstance(alias, gcc.VarDecl):
                     if alias.name:

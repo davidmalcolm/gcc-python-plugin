@@ -33,9 +33,8 @@ def get_retval_aliases(ctxt, supernode):
 
     retval = simplify(retval)
     ctxt.debug('retval: %s', retval)
-    from sm.facts import get_aliases
     exitsupernode = ctxt.graph.supernode_for_stmtnode[exitstmtnode]
-    return get_aliases(exitsupernode.facts, retval)
+    return exitsupernode.facts.get_aliases(retval)
 
 def find_leaks(ctxt):
     # Set up "leaks" attribute of edges within the graph, to the set of vars
@@ -64,8 +63,7 @@ def find_leaks(ctxt):
                         ctxt.debug('alias of return value: not leaked')
                     else:
                         ctxt.debug('leaving scope of local: %s', vardecl)
-                        from sm.facts import is_referenced_externally
-                        if is_referenced_externally(ctxt, vardecl, edge.dstnode.facts):
+                        if edge.dstnode.facts.expr_is_referenced_externally(ctxt, vardecl):
                             ctxt.debug('%s is referenced externally: not leaked', vardecl)
                         else:
                             edge.leaks.add(vardecl)

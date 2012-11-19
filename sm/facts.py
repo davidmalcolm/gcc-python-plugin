@@ -22,42 +22,6 @@ import gcc
 
 from sm.solver import simplify
 
-"""
-class Fact:
-    def __init__(self, lhs, op, rhs):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs
-
-class Facts:
-    def __init__(self, set_):
-        self.facts = set_
-"""
-
-def get_aliases(facts, var):
-    result = set([var])
-    for fact in facts:
-        lhs, op, rhs = fact
-        if op == '==':
-            if lhs in result:
-                result.add(rhs)
-            if rhs in result:
-                result.add(lhs)
-    return result
-
-def is_referenced_externally(ctxt, var, facts):
-    ctxt.debug('is_referenced_externally(%s, %s)', var, facts)
-    for fact in facts:
-        lhs, op, rhs = fact
-        if op == '==':
-            # For now, any equality will do it
-            # FIXME: needs to be something that isn't a local
-            if var == lhs:
-                return True
-            if var == rhs:
-                return True
-    return False
-
 inverseops =  {'==' : '!=',
                '!=' : '==',
                '<'  : '>=',
@@ -66,33 +30,134 @@ inverseops =  {'==' : '!=',
                '>=' : '<',
                }
 
-def get_facts_after(ctxt, srcfacts, edge):
-    stmt = edge.srcnode.stmt
-    dstfacts = set(srcfacts)
-    if isinstance(stmt, gcc.GimpleAssign):
-        if 1:
-            ctxt.debug('gcc.GimpleAssign: %s', stmt)
-            ctxt.debug('  stmt.lhs: %r', stmt.lhs)
-            ctxt.debug('  stmt.rhs: %r', stmt.rhs)
-            ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
-        lhs = simplify(stmt.lhs)
-        rhs = simplify(stmt.rhs[0])
-        dstfacts.add( (lhs, '==', rhs) )
-        # Eliminate any now-invalid facts:
-        for fact in frozenset(dstfacts):
-            pass # FIXME
-    elif isinstance(stmt, gcc.GimpleCond):
-        if 1:
-            ctxt.debug('gcc.GimpleCond: %s', stmt)
-        lhs = simplify(stmt.lhs)
-        rhs = simplify(stmt.rhs)
-        op = stmt.exprcode.get_symbol()
-        if edge.true_value:
-            dstfacts.add( (lhs, op, rhs) )
-        if edge.false_value:
-            op = inverseops[op]
-            dstfacts.add( (lhs, op, rhs) )
-    return frozenset(dstfacts)
+class Fact:
+    def __init__(self, lhs, op, rhs):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
+    def __str__(self):
+        return '%s %s %s' % (self.lhs, self.op, self.rhs)
+
+class Facts:
+    def __init__(self):
+        self._facts = frozenset()
+
+    def __str__(self):
+        return '{%s}' % (' && '.join([str(fact) for fact in self._facts]), )
+
+    def is_possible(self, ctxt):
+        ctxt.debug('is_possible: %s', self)
+        # Work-in-progress implementation:
+        # Gather vars by equivalence classes:
+
+        # dict from expr to (shared) sets of exprs
+        partitions = {}
+
+        for fact in self._facts:
+            lhs, op, rhs = fact.lhs, fact.op, fact.rhs
+            if op == '==':
+                if lhs in partitions:
+                    if rhs in partitions:
+                        merged = partitions[lhs] | partitions[rhs]
+                    else:
+                        partitions[lhs].add(rhs)
+                        merged = partitions[lhs]
+                else:
+                    if rhs in partitions:
+                        partitions[rhs].add(lhs)
+                        merged = partitions[rhs]
+                    else:
+                        merged = set([lhs, rhs])
+                partitions[lhs] = partitions[rhs] = merged
+
+        ctxt.debug('partitions: %s', partitions)
+
+        # There must be at most one specific constant within any equivalence
+        # class:
+        constants = {}
+        for key in partitions:
+            equivcls = partitions[key]
+            for expr in equivcls:
+                if isinstance(expr, gcc.IntegerCst):
+                    if key in constants:
+                        # More than one (non-equal) constant within the class:
+                        ctxt.debug('impossible: equivalence class for %s'
+                                   ' contains non-equal constants %s and %s'
+                                   % (equivcls, constants[key], expr))
+                        return False
+                    constants[key] = expr
+
+        ctxt.debug('constants: %s' % constants)
+
+        # Check any such constants against other inequalities:
+        for fact in self._facts:
+            lhs, op, rhs = fact.lhs, fact.op, fact.rhs
+            if op in ('!=', '<', '>'):
+                if isinstance(rhs, gcc.IntegerCst):
+                    if lhs in constants:
+                        if constants[lhs] == rhs:
+                            # a == CONST_1 && a != CONST_1 is impossible:
+                            ctxt.debug('impossible: equivalence class for %s'
+                                       ' equals constant %s but has %s %s %s',
+                                       equivcls, constants[lhs], lhs, op, rhs)
+                            return False
+
+        # All tests passed:
+        return True
+
+    def get_aliases(self, var):
+        result = set([var])
+        for fact in self._facts:
+            lhs, op, rhs = fact.lhs, fact.op, fact.rhs
+            if lhs in result:
+                result.add(rhs)
+            if rhs in result:
+                result.add(lhs)
+        return result
+
+    def expr_is_referenced_externally(self, ctxt, var):
+        ctxt.debug('expr_is_referenced_externally(%s, %s)', self, var)
+        for fact in self._facts:
+            lhs, op, rhs = fact.lhs, fact.op, fact.rhs
+            if op == '==':
+                # For now, any equality will do it
+                # FIXME: needs to be something that isn't a local
+                if var == lhs:
+                    return True
+                if var == rhs:
+                    return True
+        return False
+
+    def get_facts_after(self, ctxt, edge):
+        stmt = edge.srcnode.stmt
+        dstfacts = set(self._facts)
+        if isinstance(stmt, gcc.GimpleAssign):
+            if 1:
+                ctxt.debug('gcc.GimpleAssign: %s', stmt)
+                ctxt.debug('  stmt.lhs: %r', stmt.lhs)
+                ctxt.debug('  stmt.rhs: %r', stmt.rhs)
+                ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
+            lhs = simplify(stmt.lhs)
+            rhs = simplify(stmt.rhs[0])
+            dstfacts.add( Fact(lhs, '==', rhs) )
+            # Eliminate any now-invalid facts:
+            for fact in frozenset(dstfacts):
+                pass # FIXME
+        elif isinstance(stmt, gcc.GimpleCond):
+            if 1:
+                ctxt.debug('gcc.GimpleCond: %s', stmt)
+            lhs = simplify(stmt.lhs)
+            rhs = simplify(stmt.rhs)
+            op = stmt.exprcode.get_symbol()
+            if edge.true_value:
+                dstfacts.add( Fact(lhs, op, rhs) )
+            if edge.false_value:
+                op = inverseops[op]
+                dstfacts.add( Fact(lhs, op, rhs) )
+        result = Facts()
+        result._facts = frozenset(dstfacts)
+        return result
 
 def find_facts(ctxt, graph):
     """
@@ -106,7 +171,7 @@ def find_facts(ctxt, graph):
         worklist = []
         done = set()
         for node in graph.nodes:
-            node.facts = frozenset()
+            node.facts = Facts()
         for node in graph.get_entry_nodes():
             worklist.append(node)
         while worklist:
@@ -132,71 +197,12 @@ def find_facts(ctxt, graph):
                     with ctxt.indent():
                         if len(dstnode.preds) == 1:
                             ctxt.debug('dstnode has single pred; gathering known facts')
-                            dstfacts = get_facts_after(ctxt, srcfacts, edge)
+                            dstfacts = srcfacts.get_facts_after(ctxt, edge)
                             ctxt.debug('dstfacts: %s', dstfacts)
                             dstnode.facts = dstfacts
                         if dstnode not in done:
                             worklist.append(dstnode)
 
-def is_possible(ctxt, facts):
-    ctxt.debug('is_possible: %s', facts)
-    # Work-in-progress implementation:
-    # Gather vars by equivalence classes:
-
-    # dict from expr to (shared) sets of exprs
-    partitions = {}
-
-    for fact in facts:
-        lhs, op, rhs = fact
-        if op == '==':
-            if lhs in partitions:
-                if rhs in partitions:
-                    merged = partitions[lhs] | partitions[rhs]
-                else:
-                    partitions[lhs].add(rhs)
-                    merged = partitions[lhs]
-            else:
-                if rhs in partitions:
-                    partitions[rhs].add(lhs)
-                    merged = partitions[rhs]
-                else:
-                    merged = set([lhs, rhs])
-            partitions[lhs] = partitions[rhs] = merged
-
-    ctxt.debug('partitions: %s', partitions)
-
-    # There must be at most one specific constant within any equivalence
-    # class:
-    constants = {}
-    for key in partitions:
-        equivcls = partitions[key]
-        for expr in equivcls:
-            if isinstance(expr, gcc.IntegerCst):
-                if key in constants:
-                    # More than one (non-equal) constant within the class:
-                    ctxt.debug('impossible: equivalence class for %s'
-                               ' contains non-equal constants %s and %s'
-                               % (equivcls, constants[key], expr))
-                    return False
-                constants[key] = expr
-
-    ctxt.debug('constants: %s' % constants)
-
-    # Check any such constants against other inequalities:
-    for fact in facts:
-        lhs, op, rhs = fact
-        if op in ('!=', '<', '>'):
-            if isinstance(rhs, gcc.IntegerCst):
-                if lhs in constants:
-                    if constants[lhs] == rhs:
-                        # a == CONST_1 && a != CONST_1 is impossible:
-                        ctxt.debug('impossible: equivalence class for %s'
-                                   ' equals constant %s but has %s %s %s',
-                                   equivcls, constants[lhs], lhs, op, rhs)
-                        return False
-
-    # All tests passed:
-    return True
 
 def remove_impossible(ctxt, graph):
     # Purge graph of any nodes with contradictory facts which are thus
@@ -204,7 +210,7 @@ def remove_impossible(ctxt, graph):
     ctxt.log('remove_impossible')
     changes = 0
     for node in graph.nodes:
-        if not is_possible(ctxt, node.facts):
+        if not node.facts.is_possible(ctxt):
             graph.remove_node(node)
             changes += 1
     ctxt.log('removed %i node(s)' % changes)
