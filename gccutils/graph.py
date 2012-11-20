@@ -102,6 +102,18 @@ class Graph:
                           edge.to_dot_attrs(ctxt)))
         return result
 
+    def topologically_sorted_nodes(self):
+        from gccutils import topological_sort
+        def get_srcs(node):
+            for pred in node.preds:
+                yield pred.srcnode
+        def get_dsts(node):
+            for succ in node.succs:
+                yield succ.dstnode
+        return topological_sort(self.nodes,
+                                get_srcs,
+                                get_dsts)
+
     def get_shortest_path(self, srcnode, dstnode):
         '''
         Locate the shortest path from the srcnode to the dstnode

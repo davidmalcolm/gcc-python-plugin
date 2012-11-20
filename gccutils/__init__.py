@@ -663,7 +663,7 @@ def topological_sort(nodes, get_srcs, get_dsts):
                 print('already visited %s' % n.decl)
 
     for n in nodes:
-        if not get_dsts(n):
+        if not list(get_dsts(n)):
             visit(n)
 
     return result
