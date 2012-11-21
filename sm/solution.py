@@ -130,15 +130,18 @@ class Solution:
     def __init__(self, ctx):
         self.ctxt = ctx
 
-        # dict from SupergraphNode to dict from expr to (oldstate, newstate)
-        # pair:
-        #   self.changes[node][expr] == (oldstate, newstate)
-        # (where oldstate might equal newstate).
-        self.changes = {}
+        # dict from SupergraphNode to dict from expr to set of State:
+        #   self.states[node][expr] : set of State
         self.states = {}
+
+        # dict from SupergraphNode to dict from (srcexpr, srcstate) to set
+        # of WorklistItem:
+        #   self.changes[node][(srcexpr, srcstate)] : set of WorklistItem
+        self.changes = {}
+
         for node in self.ctxt.graph.nodes:
-            self.changes[node] = {}
             self.states[node] = {}
+            self.changes[node] = {}
 
     def dump(self, out):
         from gccutils import get_src_for_loc
