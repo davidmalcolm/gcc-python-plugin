@@ -22,6 +22,7 @@
 ENABLE_LOG=0
 ENABLE_DEBUG=0
 SHOW_SUPERGRAPH=0
+DUMP_SOLUTION=0
 SHOW_SOLUTION=0
 SHOW_ERROR_GRAPH=0
 
@@ -97,9 +98,10 @@ class State:
             return self.name
 
     def __eq__(self, other):
-        if self.name == other.name:
-            if self.kwargs == other.kwargs:
-                return True
+        if isinstance(other, State):
+            if self.name == other.name:
+                if self.kwargs == other.kwargs:
+                    return True
 
     def __ne__(self, other):
         return not (self == other)
@@ -637,6 +639,8 @@ def solve(ctxt, name):
     ctxt.log('len(ctxt.graph.edges): %i', len(ctxt.graph.edges))
     with Timer(ctxt, 'generating solution'):
         solution = ctxt.solve(name)
+    if DUMP_SOLUTION:
+        solution.dump(sys.stderr)
     if SHOW_SOLUTION:
         dot = solution.to_dot(name)
         # Debug: view the solution:

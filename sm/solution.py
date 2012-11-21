@@ -140,6 +140,91 @@ class Solution:
             self.changes[node] = {}
             self.states[node] = {}
 
+    def dump(self, out):
+        from gccutils import get_src_for_loc
+
+        global _indent
+        _indent = 0
+        def writeln(line, indent=0):
+            global _indent
+            _indent += indent
+            out.write(' ' * _indent)
+            out.write(line)
+            out.write('\n')
+            _indent -= indent
+
+        writeln('SOLUTION FOR %s' % self.ctxt.sm.name)
+        _indent += 2
+
+        writeln('; underlying graph has: %i nodes  %i edges'
+                  % (len(self.ctxt.graph.nodes),
+                     len(self.ctxt.graph.edges)))
+
+        # 1st pass: enumerate nodes in topologically-sorted order:
+        nodes = self.ctxt.graph.topologically_sorted_nodes()
+        index_for_node = {}
+        node_for_index = {}
+        for i, node in enumerate(nodes):
+            index_for_node[node] = i
+            node_for_index[i] = node
+
+        # 2nd pass: write out the nodes with their edges:
+        for i, node in enumerate(nodes):
+            # Write the node:
+            writeln('%i: %s' % (i, node))
+            _indent += 4
+            if node.stmt:
+                if node.stmt.loc:
+                    writeln('src: %s: %s' % (node.stmt.loc, get_src_for_loc(node.stmt.loc)))
+            writeln('facts: %s' % node.facts)
+            writeln('partitions: {%s}'
+                    % ', '.join(['{%s}' % ', '.join([str(expr)
+                                                     for expr in equivcls])
+                                 for equivcls in node.facts.get_equiv_classes()]))
+            # Write out state information:
+            states = self.states[node]
+            if states:
+                writeln('reachable states:')
+                for item in states:
+                    for expr in states:
+                        writeln('%s: %s'
+                                % (expr, ',' .join(str(state)
+                                                   for state in states[expr])),
+                                indent=2)
+            else:
+                writeln('NOT REACHED', indent=4)
+            _indent -= 2
+
+            changes = self.changes[node]
+            for edge in node.succs:
+                if edge.true_value:
+                    boolstr = "true: "
+                elif edge.false_value:
+                    boolstr = "false: "
+                else:
+                    boolstr = ""
+                writeln('%sgoto %i;' % (boolstr, index_for_node[edge.dstnode]),
+                        indent=2)
+                for key in changes:
+                    srcexpr, srcstate = key
+                    for dstitem in changes[key]:
+                        if dstitem.node == edge.dstnode:
+                            if dstitem.match:
+                                matchstr = ' (via %s)' % dstitem.match.description(self.ctxt)
+                            else:
+                                matchstr = ''
+                            if srcexpr == dstitem.state and srcstate == dstitem.state:
+                                writeln('propagation of %s: %s'
+                                        % (srcexpr, srcstate),
+                                        indent=4)
+                            else:
+                                writeln('change from %s: %s  to  %s: %s%s'
+                                        % (srcexpr, srcstate,
+                                           dstitem.expr, dstitem.state,
+                                           matchstr),
+                                        indent=4)
+            _indent -= 2
+
     def to_dot(self, name):
         # (a handy debug method is essential)
         # basically we want to reuse the underlying graph's to_dot, but
