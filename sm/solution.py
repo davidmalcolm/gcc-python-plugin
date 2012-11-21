@@ -189,13 +189,12 @@ class Solution:
             states = self.states[node]
             if states:
                 writeln('reachable states:')
-                for item in states:
-                    for equivcls in states:
-                        writeln('%s: %s'
-                                % (equivcls_to_str(equivcls),
-                                   ',' .join(str(state)
-                                             for state in states[equivcls])),
-                                indent=2)
+                for equivcls in states:
+                    writeln('%s: %s'
+                            % (equivcls_to_str(equivcls),
+                               ',' .join(str(state)
+                                         for state in states[equivcls])),
+                            indent=2)
             else:
                 writeln('NOT REACHED', indent=4)
             _indent -= 2
