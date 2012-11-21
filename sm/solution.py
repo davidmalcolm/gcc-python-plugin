@@ -206,7 +206,13 @@ class Solution:
                     boolstr = "false: "
                 else:
                     boolstr = ""
-                writeln('%sgoto %i;' % (boolstr, index_for_node[edge.dstnode]),
+                if edge.leaks:
+                    leakstr = (" leaks: {%s}"
+                               % (', '.join([str(expr)
+                                             for expr in edge.leaks])))
+                else:
+                    leakstr = ""
+                writeln('%sgoto %i;%s' % (boolstr, index_for_node[edge.dstnode], leakstr),
                         indent=2)
                 for key in changes:
                     srcexpr, srcstate = key
