@@ -1,0 +1,12 @@
+test_aliases (__main__.FactsTests) ... ok
+test_equivclasses (__main__.FactsTests) ... ok
+test_str (__main__.FactsTests) ... ok
+test_empty (__main__.IsPossibleTests) ... ok
+test_inconsistent_equalities (__main__.IsPossibleTests) ... ok
+test_inequalities (__main__.IsPossibleTests) ... ok
+test_single_values (__main__.IsPossibleTests) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in #s
+
+OK

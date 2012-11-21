@@ -39,19 +39,25 @@ class Fact:
     def __str__(self):
         return '%s %s %s' % (self.lhs, self.op, self.rhs)
 
+    def __lt__(self, other):
+        # Support sorting of facts to allow for consistent ordering in
+        # test output
+        if isinstance(other, Fact):
+            return (self.lhs, self.op, self.rhs) < (other.lhs, other.op, other.rhs)
+
 class Facts:
     def __init__(self):
         self._facts = frozenset()
 
-    def __str__(self):
-        return '{%s}' % (' && '.join([str(fact) for fact in self._facts]), )
-
-    def is_possible(self, ctxt):
-        ctxt.debug('is_possible: %s', self)
-        # Work-in-progress implementation:
-        # Gather vars by equivalence classes:
-
+        # lazily constructed
         # dict from expr to (shared) sets of exprs
+        self.partitions = None
+
+    def __str__(self):
+        return '(%s)' % (' && '.join([str(fact)
+                                      for fact in sorted(self._facts)]), )
+
+    def _make_equiv_classes(self):
         partitions = {}
 
         for fact in self._facts:
@@ -71,15 +77,32 @@ class Facts:
                         merged = set([lhs, rhs])
                 partitions[lhs] = partitions[rhs] = merged
 
-        ctxt.debug('partitions: %s', partitions)
+        self.partitions = partitions
+
+    def get_equiv_classes(self):
+        # Get equiv classes as a frozenset of frozensets:
+        if self.partitions is None:
+            self._make_equiv_classes()
+        return frozenset([frozenset(equivcls)
+                          for equivcls in self.partitions.values()])
+
+    def is_possible(self, ctxt):
+        ctxt.debug('is_possible: %s', self)
+        # Work-in-progress implementation:
+        # Gather vars by equivalence classes:
+
+        if self.partitions is None:
+            self._make_equiv_classes()
+        ctxt.debug('partitions: %s', self.partitions)
 
         # There must be at most one specific constant within any equivalence
         # class:
         constants = {}
-        for key in partitions:
-            equivcls = partitions[key]
+        for key in self.partitions:
+            equivcls = self.partitions[key]
             for expr in equivcls:
-                if isinstance(expr, gcc.IntegerCst):
+                # (we support "int" here to make it easier to unit-test this code)
+                if isinstance(expr, (gcc.IntegerCst, int)):
                     if key in constants:
                         # More than one (non-equal) constant within the class:
                         ctxt.debug('impossible: equivalence class for %s'
@@ -94,7 +117,7 @@ class Facts:
         for fact in self._facts:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op in ('!=', '<', '>'):
-                if isinstance(rhs, gcc.IntegerCst):
+                if isinstance(rhs, (gcc.IntegerCst, int)):
                     if lhs in constants:
                         if constants[lhs] == rhs:
                             # a == CONST_1 && a != CONST_1 is impossible:
@@ -106,15 +129,13 @@ class Facts:
         # All tests passed:
         return True
 
-    def get_aliases(self, var):
-        result = set([var])
-        for fact in self._facts:
-            lhs, op, rhs = fact.lhs, fact.op, fact.rhs
-            if lhs in result:
-                result.add(rhs)
-            if rhs in result:
-                result.add(lhs)
-        return result
+    def get_aliases(self, expr):
+        if self.partitions is None:
+            self._make_equiv_classes()
+        if expr in self.partitions:
+            return frozenset(self.partitions[expr])
+        else:
+            return frozenset([expr])
 
     def expr_is_referenced_externally(self, ctxt, var):
         ctxt.debug('expr_is_referenced_externally(%s, %s)', self, var)
@@ -215,3 +236,7 @@ def remove_impossible(ctxt, graph):
             changes += 1
     ctxt.log('removed %i node(s)' % changes)
     return changes
+
+def equivcls_to_str(equivcls):
+    return '{%s}' % ', '.join([str(expr)
+                               for expr in equivcls])
