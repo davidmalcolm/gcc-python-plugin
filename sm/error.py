@@ -50,7 +50,7 @@ class Error:
         loc = self.gccloc
         stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
         path = solution.get_shortest_path_to(self.srcnode,
-                                             stateful_gccvar,
+                                             self.srcnode.facts.get_aliases(stateful_gccvar),
                                              self.state)
         ctxt.debug('path: %r', path)
         if path is None:
@@ -68,25 +68,25 @@ class Error:
             # TODO: backtrace down the path, tracking the StateVar aliases of interest...
             srcsupernode = edge.srcnode.innernode
             srcgccloc = srcsupernode.get_gcc_loc()
-            srcexpr = edge.srcnode.expr
+            srcequivcls = edge.srcnode.equivcls
             srcstate = edge.srcnode.state
 
             dstsupernode = edge.dstnode.innernode
             dstgccloc = dstsupernode.get_gcc_loc()
-            dstexpr = edge.dstnode.expr
+            dstequivcls = edge.dstnode.equivcls
             dststate = edge.dstnode.state
 
             with ctxt.indent():
                 ctxt.debug('edge from:')
                 with ctxt.indent():
                     ctxt.debug('srcnode: %s', srcsupernode)
-                    ctxt.debug('expr: %s', srcexpr)
+                    ctxt.debug('equivcls: %s', srcequivcls)
                     ctxt.debug('state: %s', srcstate)
                     ctxt.debug('srcloc: %s', srcgccloc)
                 ctxt.debug('to:')
                 with ctxt.indent():
                     ctxt.debug('dstnode: %s', dstsupernode)
-                    ctxt.debug('expr: %s', dstexpr)
+                    ctxt.debug('equivcls: %s', dstequivcls)
                     ctxt.debug('state: %s', dststate)
                     ctxt.debug('dstloc: %s', dstgccloc)
 
@@ -113,23 +113,24 @@ class Error:
                             desc += ': '
                         desc += edge.srcnode.match.description(ctxt)
                         inform(gccloc, desc)
-                elif srcexpr != dstexpr:
-                    ctxt.log('expr change!')
+                elif get_user_expr(srcequivcls) != get_user_expr(dstequivcls) \
+                        and srcstate != ctxt.get_default_state():
+                    ctxt.log('equivcls change!')
                     # Debugging information on state change:
                     if desc:
                         desc += ': '
                     desc += ('state of %s ("%s") propagated to %s'
-                             % (gccexpr_to_str(ctxt, srcsupernode, srcexpr),
+                             % (equivcls_to_user_str(ctxt, srcsupernode, srcequivcls),
                                 srcstate,
-                                gccexpr_to_str(ctxt, dstsupernode, dstexpr)))
+                                equivcls_to_user_str(ctxt, dstsupernode, dstequivcls)))
                     inform(gccloc, desc)
                 else:
                     # Debugging information on state change:
                     if 0:
                         desc += ('%s: %s:%s -> %s:%s'
                                  % (ctxt.sm.name,
-                                    srcexpr, srcstate,
-                                    dstexpr, dststate))
+                                    srcequivcls, srcstate,
+                                    dstequivcls, dststate))
                         inform(gccloc, desc)
                     else:
                         if desc:
@@ -141,6 +142,31 @@ class Error:
             gccloc = path[-1].dstnode.innernode.get_gcc_loc()
             if gccloc:
                 inform(gccloc, self.msg)
+
+def get_user_expr(equivcls):
+    # What's the best expr within the equivcls for use in a description?
+    # named locals (not temporaries):
+    if equivcls is None:
+        return 'None'
+
+    for expr in equivcls:
+        if isinstance(expr, gcc.VarDecl) and expr.name:
+            return expr
+
+    # composites:
+    for expr in equivcls:
+        if isinstance(expr, gcc.ComponentRef):
+            return expr
+
+    # otherwise, pick the first:
+    for expr in equivcls:
+        return expr
+
+def equivcls_to_user_str(ctxt, supernode, equivcls):
+    ctxt.debug('equivcls_to_user_str: node: %s gccexpr: %s',
+               supernode, equivcls)
+    expr = get_user_expr(equivcls)
+    return gccexpr_to_str(ctxt, supernode, expr)
 
 def gccexpr_to_str(ctxt, supernode, gccexpr):
     ctxt.debug('gccexpr_to_str: node: %s gccexpr: %s', supernode, gccexpr)

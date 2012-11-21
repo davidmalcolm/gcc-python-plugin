@@ -493,7 +493,7 @@ class VarUsage(Pattern):
             yield m
 
     def description(self, match, ctxt):
-        return ('usage of %s' % match.describe(self.rhs))
+        return ('usage of %s' % match.describe(ctxt, self.var))
 
 class NamedPatternReference(Pattern):
     def __init__(self, name):
@@ -585,10 +585,10 @@ class TransitionTo(Outcome):
         # print('transition %s to %s' % (match.var, outcome.state))
 
         dststate = State(self.statename)
-        yield WorklistItem(mctxt.dstnode,
-                           mctxt.get_stateful_gccvar(),
-                           dststate,
-                           mctxt.match)
+        yield WorklistItem.from_expr(mctxt.dstnode,
+                                     mctxt.get_stateful_gccvar(),
+                                     dststate,
+                                     mctxt.match)
 
     def iter_reachable_statenames(self):
         yield self.statename
@@ -608,7 +608,6 @@ class BooleanOutcome(Outcome):
                 if self.outcome == other.outcome:
                     return True
     def apply(self, mctxt):
-        from sm.solver import WorklistItem
         if mctxt.edge.true_value and self.guard:
             for item in self.outcome.apply(mctxt):
                 yield item
@@ -692,10 +691,10 @@ class PythonOutcome(Outcome, PythonFragment):
         for name in locals_:
             del ctxt.python_locals[name]
 
-        yield WorklistItem(mctxt.dstnode,
-                           mctxt.get_stateful_gccvar(),
-                           globals_['state'],
-                           mctxt.match)
+        yield WorklistItem.from_expr(mctxt.dstnode,
+                                     mctxt.get_stateful_gccvar(),
+                                     globals_['state'],
+                                     mctxt.match)
 
     def iter_reachable_statenames(self):
         return []

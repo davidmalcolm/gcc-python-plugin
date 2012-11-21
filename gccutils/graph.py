@@ -644,11 +644,13 @@ class SupergraphEdge(Edge):
 
     @property
     def true_value(self):
-        return self.inneredge.true_value
+        if self.inneredge:
+            return self.inneredge.true_value
 
     @property
     def false_value(self):
-        return self.inneredge.false_value
+        if self.inneredge:
+            return self.inneredge.false_value
 
 class CallToReturnSiteEdge(SupergraphEdge):
     """

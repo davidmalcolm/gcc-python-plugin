@@ -152,7 +152,7 @@ def consider_edge(ctxt, solution, item, edge):
     yield any WorklistItem instances that may need further consideration
     """
     srcnode = item.node
-    expr = item.expr
+    equivcls = item.equivcls
     state = item.state
 
     stmt = srcnode.get_stmt()
@@ -173,11 +173,11 @@ def consider_edge(ctxt, solution, item, edge):
         return
     elif isinstance(edge, CallToStart):
         # Alias the parameters with the arguments as necessary, so
-        # e.g. a function that free()s an arg has the caller's expr
+        # e.g. a function that free()s an arg has the caller's equivcls
         # marked as free also:
         assert isinstance(srcnode.stmt, gcc.GimpleCall)
         # ctxt.debug(srcnode.stmt)
-        if expr:
+        if equivcls:
             for param, arg  in zip(srcnode.stmt.fndecl.arguments,
                                    srcnode.stmt.args):
                 # FIXME: change fndecl.arguments to fndecl.parameters
@@ -187,9 +187,9 @@ def consider_edge(ctxt, solution, item, edge):
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
                 arg = simplify(arg)
-                if expr == arg:
+                if arg in equivcls:
                     # Propagate state of the argument to the parameter:
-                    yield WorklistItem(dstnode, param, state, None)
+                    yield WorklistItem.from_expr(dstnode, param, state, None)
         else:
             yield WorklistItem(dstnode, None, state, None) # FIXME
         # Stop iterating, effectively purging state outside that of the
@@ -204,9 +204,11 @@ def consider_edge(ctxt, solution, item, edge):
             retval = simplify(exitsupernode.innernode.returnval)
             ctxt.debug('retval: %s', retval)
             ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s', edge.calling_stmtnode.stmt.lhs)
-            if expr == retval:
+            if equivcls and retval in equivcls:
                 # Propagate state of the return value to the LHS of the caller:
-                yield WorklistItem(dstnode, simplify(edge.calling_stmtnode.stmt.lhs), state, None)
+                yield WorklistItem.from_expr(dstnode,
+                                             simplify(edge.calling_stmtnode.stmt.lhs),
+                                             state, None)
 
         # FIXME: we also need to backpatch the params, in case they've
         # changed state
@@ -217,8 +219,11 @@ def consider_edge(ctxt, solution, item, edge):
             if 1:
                 ctxt.debug('  param: %r', param)
                 ctxt.debug('  arg: %r', arg)
-            if expr == param:
-                yield WorklistItem(dstnode, simplify(arg), state, None)
+            if equivcls and param in equivcls:
+                yield WorklistItem.from_expr(dstnode, simplify(arg), state, None)
+
+        if equivcls is None:
+            yield WorklistItem(dstnode, None, state, None)
 
         # Stop iterating, effectively purging state local to the called
         # function:
@@ -235,23 +240,27 @@ def consider_edge(ctxt, solution, item, edge):
             ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
         if stmt.exprcode == gcc.VarDecl:
             rhs = simplify(stmt.rhs[0])
-            if rhs == expr:
+            if equivcls and rhs in equivcls:
                 if isinstance(stmt.lhs, gcc.SsaName):
-                    yield WorklistItem(dstnode, simplify(stmt.lhs), state, None)
+                    yield WorklistItem.from_expr(dstnode, simplify(stmt.lhs), state, None)
         elif stmt.exprcode == gcc.ComponentRef:
             # Field lookup
             compref = stmt.rhs[0]
             if 0:
                 ctxt.debug(compref.target)
                 ctxt.debug(compref.field)
+
+            if equivcls and compref in equivcls:
+                yield WorklistItem.from_expr(dstnode, compref, state, None)
+
             # The LHS potentially inherits state from the compref
-            if expr == compref.target:
+            elif equivcls and compref.target in equivcls:
                 ctxt.log('%s inheriting state "%s" from "%s" via field "%s"'
                     % (stmt.lhs,
                        state,
                        compref.target,
                        compref.field))
-                yield WorklistItem(dstnode, simplify(stmt.lhs), state, None)
+                yield WorklistItem.from_expr(dstnode, simplify(stmt.lhs), state, None)
                 # matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
         if 1:
@@ -286,12 +295,12 @@ def consider_edge(ctxt, solution, item, edge):
                 for match in pr.pattern.iter_matches(stmt, edge, ctxt):
                     ctxt.debug('pr.pattern: %r', pr.pattern)
                     ctxt.debug('match: %r', match)
-                    ctxt.debug('expr: %r', expr)
+                    ctxt.debug('equivcls: %r', equivcls)
                     ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
                     #srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
                     ctxt.debug('state: %r', (state, ))
                     assert isinstance(state, State)
-                    if state.name in sc.statelist and (expr is None or expr == match.get_stateful_gccvar(ctxt)):
+                    if state.name in sc.statelist and (equivcls is None or match.get_stateful_gccvar(ctxt) in equivcls):
                         assert len(pr.outcomes) > 0
                         ctxt.log('got match in state %r of %r at %r: %s',
                                  state,
@@ -314,11 +323,14 @@ def consider_edge(ctxt, solution, item, edge):
                                  str(pr.pattern),
                                  str(stmt),
                                  match)
-    # FIXME: the "expr is None" here continues the analysis for the
-    # the wildcard case, but isn't working well:
-    # (looking at tests/sm/checkers/malloc-checker/two_ptrs )
-    if not matches or expr is None:
-        yield WorklistItem(dstnode, expr, state, None)
+    if not matches or equivcls is None:
+        if equivcls:
+            # Split the equivalence class, since the dstnode may have a
+            # different partitioning from the srcnode:
+            for expr in equivcls:
+                yield WorklistItem.from_expr(dstnode, expr, state, None)
+        else:
+            yield WorklistItem(dstnode, equivcls, state, None)
 
 class WorklistItem:
     """
@@ -326,34 +338,42 @@ class WorklistItem:
     given expression has a particular state, potentially indicating a Match
     instance also
 
-    expr and state can also both be None, indicating the default state
+    equivcls and state can also both be None, indicating the default state
 
     match is typically None (apart from those items in which a pattern
     matched).
     """
-    __slots__ = ('node', 'expr', 'state', 'match')
+    __slots__ = ('node', 'equivcls', 'state', 'match')
 
-    def __init__(self, node, expr, state, match):
+    def __init__(self, node, equivcls, state, match):
+        assert isinstance(equivcls, (frozenset, type(None)))
         self.node = node
-        self.expr = expr
+        self.equivcls = equivcls
         self.state = state
         self.match = match
 
+    @classmethod
+    def from_expr(cls, node, expr, state, match):
+        assert isinstance(expr, gcc.Tree)
+        return WorklistItem(node, node.facts.get_aliases(expr),
+                            state, match)
+
     def __hash__(self):
-        return hash(self.node) ^ hash(self.expr) ^ hash(self.state) ^ hash(self.match)
+        return hash(self.node) ^ hash(self.equivcls) ^ hash(self.state) ^ hash(self.match)
 
     def __eq__(self, other):
         if self.node == other.node:
-            if self.expr == other.expr:
+            if self.equivcls == other.equivcls:
                 if self.state == other.state:
                     if self.match == other.match:
                         return True
 
     def __str__(self):
-        return 'node: %s   expr: %s   state: %s   match: %s' % (self.node, self.expr, self.state, self.match)
+        from sm.facts import equivcls_to_str
+        return 'node: %s   equivcls: %s   state: %s   match: %s' % (self.node, equivcls_to_str(self.equivcls), self.state, self.match)
 
     def __repr__(self):
-        return '(%r, %r, %r, %r)' % (self.node, self.expr, self.state, self.match)
+        return '(%r, %r, %r, %r)' % (self.node, self.equivcls, self.state, self.match)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -607,10 +627,10 @@ class Context:
             item = worklist.pop()
             done.add(item)
             statedict = solution.states[item.node]
-            if item.expr in statedict:
-                statedict[item.expr].add(item.state)
+            if item.equivcls in statedict:
+                statedict[item.equivcls].add(item.state)
             else:
-                statedict[item.expr] = set([item.state])
+                statedict[item.equivcls] = set([item.state])
             with self.indent():
                 self.debug('considering %s', item)
                 for edge in item.node.succs:
@@ -625,7 +645,7 @@ class Context:
                         # We can use them when reporting errors in order
                         # to reconstruct paths
                         changesdict = solution.changes[item.node]
-                        key = (item.expr, item.state)
+                        key = (item.equivcls, item.state)
                         if key in changesdict:
                             changesdict[key].add(nextitem)
                         else:

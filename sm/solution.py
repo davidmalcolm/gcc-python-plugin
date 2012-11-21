@@ -37,7 +37,7 @@ class ErrorGraph(Graph):
 
     def add_node(self, node):
         # Lazily add nodes, discarding duplicates:
-        key = (node.innernode, node.expr, node.state)
+        key = (node.innernode, node.equivcls, node.state)
         if key in self.node_for_triple:
             # Already present:
             return self.node_for_triple[key], False
@@ -67,15 +67,15 @@ class ErrorGraph(Graph):
                 yield self.node_for_triple[srctriple]
 
 class ErrorNode(Node):
-    def __init__(self, innernode, expr, state, match):
+    def __init__(self, innernode, equivcls, state, match):
         Node.__init__(self)
         self.innernode = innernode
-        self.expr = expr
+        self.equivcls = equivcls
         self.state = state
         self.match = match
 
     def __repr__(self):
-        return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.expr, self.state, self.match)
+        return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.equivcls, self.state, self.match)
 
     def to_dot_html(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text, Br, Font
@@ -84,7 +84,7 @@ class ErrorNode(Node):
         table = Table(cellborder=1)
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
-        td.add_child(Text('expr: %s' % self.expr))
+        td.add_child(Text('equivcls: %s' % self.equivcls))
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('state: %s' % self.state))
@@ -134,9 +134,9 @@ class Solution:
         #   self.states[node][expr] : set of State
         self.states = {}
 
-        # dict from SupergraphNode to dict from (srcexpr, srcstate) to set
+        # dict from SupergraphNode to dict from (srcequivcls, srcstate) to set
         # of WorklistItem:
-        #   self.changes[node][(srcexpr, srcstate)] : set of WorklistItem
+        #   self.changes[node][(srcequivcls, srcstate)] : set of WorklistItem
         self.changes = {}
 
         for node in self.ctxt.graph.nodes:
@@ -145,6 +145,7 @@ class Solution:
 
     def dump(self, out):
         from gccutils import get_src_for_loc
+        from sm.facts import equivcls_to_str
 
         global _indent
         _indent = 0
@@ -189,10 +190,11 @@ class Solution:
             if states:
                 writeln('reachable states:')
                 for item in states:
-                    for expr in states:
+                    for equivcls in states:
                         writeln('%s: %s'
-                                % (expr, ',' .join(str(state)
-                                                   for state in states[expr])),
+                                % (equivcls_to_str(equivcls),
+                                   ',' .join(str(state)
+                                             for state in states[equivcls])),
                                 indent=2)
             else:
                 writeln('NOT REACHED', indent=4)
@@ -215,21 +217,21 @@ class Solution:
                 writeln('%sgoto %i;%s' % (boolstr, index_for_node[edge.dstnode], leakstr),
                         indent=2)
                 for key in changes:
-                    srcexpr, srcstate = key
+                    srcequivcls, srcstate = key
                     for dstitem in changes[key]:
                         if dstitem.node == edge.dstnode:
                             if dstitem.match:
                                 matchstr = ' (via %s)' % dstitem.match.description(self.ctxt)
                             else:
                                 matchstr = ''
-                            if srcexpr == dstitem.state and srcstate == dstitem.state:
+                            if srcequivcls == dstitem.state and srcstate == dstitem.state:
                                 writeln('propagation of %s: %s'
-                                        % (srcexpr, srcstate),
+                                        % (equivcls_to_str(srcequivcls), srcstate),
                                         indent=4)
                             else:
                                 writeln('change from %s: %s  to  %s: %s%s'
-                                        % (srcexpr, srcstate,
-                                           dstitem.expr, dstitem.state,
+                                        % (equivcls_to_str(srcequivcls), srcstate,
+                                           equivcls_to_str(dstitem.equivcls), dstitem.state,
                                            matchstr),
                                         indent=4)
             _indent -= 2
@@ -314,17 +316,17 @@ class Solution:
                 changesdict = self.changes[srcsupernode]
                 for key in changesdict:
                     self.ctxt.debug('key: %s', key)
-                    srcexpr, srcstate = key
+                    srcequivcls, srcstate = key
                     for item in changesdict[key]:
                         self.ctxt.debug('item: %s', item)
                         if item.node == errnode.innernode:
                             # The items must match, unless the srcnode is
                             # None, in which case it's legitimate to
                             # transition to a more specific expr:
-                            if item.expr == errnode.expr or item.expr is None:
+                            if item.equivcls == errnode.equivcls or item.equivcls is None:
                                 if item.state == errnode.state:
                                     srcerrnode, new = errgraph.add_node(ErrorNode(srcsupernode,
-                                                                                  srcexpr,
+                                                                                  srcequivcls,
                                                                                   srcstate,
                                                                                   item.match))
                                     errgraph.add_edge(srcerrnode, errnode, edge)
@@ -335,22 +337,22 @@ class Solution:
                                         self.ctxt.debug('already present')
         return errgraph
 
-    def get_shortest_path_to(self, dstnode, expr, state):
+    def get_shortest_path_to(self, dstnode, equivcls, state):
         # backtrack from destination until you reach a srcnode whilst
         # obeying various restrictions:
-        #   * exprs/states have to match (or have state transitions)
+        #   * equivclss/states have to match (or have state transitions)
         #   * call stack has to be obeyed: return to correct caller
         #   * perhaps some simple rules about known "state", to suppress
         #   the most obvious false positives
 
         self.ctxt.debug('get_shortest_path_to:')
         self.ctxt.debug('  dstnode: %s', dstnode)
-        self.ctxt.debug('  expr: %s', expr)
+        self.ctxt.debug('  equivcls: %s', equivcls)
         self.ctxt.debug('  state: %s', state)
 
         self.ctxt.log('building error graph')
         with self.ctxt.indent():
-            errgraph = self.build_error_graph(dstnode, expr, state)
+            errgraph = self.build_error_graph(dstnode, equivcls, state)
 
             from sm.facts import find_facts, remove_impossible
 
@@ -363,7 +365,7 @@ class Solution:
                 changes = remove_impossible(self.ctxt, errgraph)
 
             dsttriple = (dstnode,
-                         expr,
+                         equivcls,
                          state)
             dsterrnode = errgraph.node_for_triple[dsttriple]
             if dsterrnode not in errgraph.nodes:

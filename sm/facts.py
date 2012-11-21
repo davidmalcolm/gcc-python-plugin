@@ -238,5 +238,7 @@ def remove_impossible(ctxt, graph):
     return changes
 
 def equivcls_to_str(equivcls):
+    if equivcls is None:
+        return 'None'
     return '{%s}' % ', '.join([str(expr)
                                for expr in equivcls])
