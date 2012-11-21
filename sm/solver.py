@@ -620,37 +620,8 @@ class Context:
             find_leaks(self)
 
         solution = sm.solution.Solution(self)
-        worklist = [WorklistItem(node, None, self.get_default_state(), None)
-                    for node in self.graph.get_entry_nodes()]
-        done = set()
-        while worklist:
-            item = worklist.pop()
-            done.add(item)
-            statedict = solution.states[item.node]
-            if item.equivcls in statedict:
-                statedict[item.equivcls].add(item.state)
-            else:
-                statedict[item.equivcls] = set([item.state])
-            with self.indent():
-                self.debug('considering %s', item)
-                for edge in item.node.succs:
-                    self.debug('considering edge %s', edge)
-                    assert edge.srcnode == item.node
-                    for nextitem in consider_edge(self, solution, item, edge):
-                        assert isinstance(nextitem, WorklistItem)
-                        if nextitem not in done:
-                            worklist.append(nextitem)
-                        # FIXME: we can also handle *transitions* here,
-                        # adding them to the per-node dict.
-                        # We can use them when reporting errors in order
-                        # to reconstruct paths
-                        changesdict = solution.changes[item.node]
-                        key = (item.equivcls, item.state)
-                        if key in changesdict:
-                            changesdict[key].add(nextitem)
-                        else:
-                            changesdict[key] = set([nextitem])
-                        # FIXME: what exactly should we be storing?
+        solution.find_states(self)
+
         return solution
 
 def solve(ctxt, name):

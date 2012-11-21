@@ -293,6 +293,39 @@ class Solution:
 
         return self.ctxt.graph.to_dot(name, SolutionRenderer(self))
 
+    def find_states(self, ctxt):
+        from sm.solver import consider_edge, WorklistItem
+        worklist = [WorklistItem(node, None, ctxt.get_default_state(), None)
+                    for node in ctxt.graph.get_entry_nodes()]
+        done = set()
+        while worklist:
+            item = worklist.pop()
+            done.add(item)
+            statedict = self.states[item.node]
+            if item.equivcls in statedict:
+                statedict[item.equivcls].add(item.state)
+            else:
+                statedict[item.equivcls] = set([item.state])
+            with ctxt.indent():
+                ctxt.debug('considering %s', item)
+                for edge in item.node.succs:
+                    ctxt.debug('considering edge %s', edge)
+                    assert edge.srcnode == item.node
+                    for nextitem in consider_edge(ctxt, self, item, edge):
+                        assert isinstance(nextitem, WorklistItem)
+                        if nextitem not in done:
+                            worklist.append(nextitem)
+                        # FIXME: we can also handle *transitions* here,
+                        # adding them to the per-node dict.
+                        # We can use them when reporting errors in order
+                        # to reconstruct paths
+                        changesdict = self.changes[item.node]
+                        key = (item.equivcls, item.state)
+                        if key in changesdict:
+                            changesdict[key].add(nextitem)
+                        else:
+                            changesdict[key] = set([nextitem])
+                        # FIXME: what exactly should we be storing?
 
     def build_error_graph(self, dstnode, expr, state):
         errgraph = ErrorGraph(self.ctxt, self.ctxt.graph)
