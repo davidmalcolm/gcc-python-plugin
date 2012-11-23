@@ -215,6 +215,13 @@ class Solution:
                     leakstr = ""
                 writeln('%sgoto %i;%s' % (boolstr, index_for_node[edge.dstnode], leakstr),
                         indent=2)
+                possible_matches = edge.possible_matches
+                if possible_matches:
+                    writeln('possible matches:',
+                            indent=4)
+                    for match in possible_matches:
+                        writeln(match.describe(self.ctxt),
+                                indent=6)
                 for key in changes:
                     srcequivcls, srcstate = key
                     for dstitem in changes[key]:

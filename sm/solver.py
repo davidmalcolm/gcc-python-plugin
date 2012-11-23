@@ -279,50 +279,28 @@ def consider_edge(ctxt, solution, item, edge):
                                                edge, None, shapechange)
             matches.append(stmt)
 
-    for sc in ctxt._stateclauses:
-        # Locate any rules that could apply, regardless of the current
-        # state:
-        for pr in sc.patternrulelist:
+    # Check to see if any of the precalculated matches from the sm script
+    # apply:
+    for pm in edge.possible_matches:
+        ctxt.debug('possible match: %s' % pm)
+        if state.name in pm.states and (equivcls is None or pm.expr in equivcls):
+            ctxt.log('got match in state %r of %s at %s',
+                     state, pm.describe(ctxt), stmt)
             with ctxt.indent():
-                # ctxt.debug('%r: %r', (srcshape, pr))
-                # For now, skip interprocedural calls and the
-                # ENTRY/EXIT nodes:
-                if not stmt:
-                    continue
-                # Now see if the rules apply for the current state:
-                ctxt.debug('considering pattern %s for stmt: %s', pr.pattern, stmt)
-                ctxt.debug('considering pattern %r for stmt: %r', pr.pattern, stmt)
-                for match in pr.pattern.iter_matches(stmt, edge, ctxt):
-                    ctxt.debug('pr.pattern: %r', pr.pattern)
-                    ctxt.debug('match: %r', match)
-                    ctxt.debug('equivcls: %r', equivcls)
-                    ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
-                    #srcstate = srcshape.get_state(match.get_stateful_gccvar(ctxt))
-                    ctxt.debug('state: %r', (state, ))
-                    assert isinstance(state, State)
-                    if state.name in sc.statelist and (equivcls is None or match.get_stateful_gccvar(ctxt) in equivcls):
-                        assert len(pr.outcomes) > 0
-                        ctxt.log('got match in state %r of %r at %r: %s',
-                                 state,
-                                 str(pr.pattern),
-                                 str(stmt),
-                                 match)
-                        with ctxt.indent():
-                            mctxt = MatchContext(ctxt, match, srcnode, edge, state)
-                            for outcome in pr.outcomes:
-                                ctxt.log('applying outcome to %s => %s',
-                                         mctxt.get_stateful_gccvar(),
-                                         outcome)
-                                for item in outcome.apply(mctxt):
-                                    ctxt.log('yielding item: %s', item)
-                                    yield item
-                            matches.append(pr)
-                    else:
-                        ctxt.debug('got match for wrong state %r of %r at %r: %s',
-                                 state,
-                                 str(pr.pattern),
-                                 str(stmt),
-                                 match)
+                mctxt = MatchContext(ctxt, pm.match, srcnode, edge, state)
+                ctxt.log('applying outcome to %s => %s',
+                         mctxt.get_stateful_gccvar(),
+                         pm.outcome)
+                for item in pm.outcome.apply(mctxt):
+                    ctxt.log('yielding item: %s', item)
+                    yield item
+                matches.append(pm)
+        else:
+            ctxt.debug('got match for wrong state %r of %s at %s',
+                     state, pm.describe(ctxt), stmt)
+
+    # Did nothing match, or are we expanding the "everything is in the
+    # initial state" case?
     if not matches or equivcls is None:
         if equivcls:
             # Split the equivalence class, since the dstnode may have a
@@ -374,6 +352,60 @@ class WorklistItem:
 
     def __repr__(self):
         return '(%r, %r, %r, %r)' % (self.node, self.equivcls, self.state, self.match)
+
+class PossibleMatch:
+    def __init__(self, expr, sc, pattern, outcome, match):
+        self.expr = expr
+        self.states = frozenset(sc.statelist)
+        self.sc = sc
+        self.pattern = pattern
+        self.outcome = outcome
+        self.match = match
+
+    def describe(self, ctxt):
+        stateliststr = ', '.join([str(state)
+                                  for state in self.sc.statelist])
+        return '%r: %s => %s due to %s' % (str(self.expr), stateliststr,
+                                           self.outcome, self.pattern)
+
+def find_possible_matches(ctxt, edge):
+    result = []
+    srcnode = edge.srcnode
+    stmt = srcnode.stmt
+    for sc in ctxt._stateclauses:
+        # Locate any rules that could apply, regardless of the current
+        # state:
+        for pr in sc.patternrulelist:
+            with ctxt.indent():
+                # ctxt.debug('%r: %r', (srcshape, pr))
+                # For now, skip interprocedural calls and the
+                # ENTRY/EXIT nodes:
+                if not stmt:
+                    continue
+                # Now see if the rules apply for the current state:
+                ctxt.debug('considering pattern %s for stmt: %s', pr.pattern, stmt)
+                ctxt.debug('considering pattern %r for stmt: %r', pr.pattern, stmt)
+                for match in pr.pattern.iter_matches(stmt, edge, ctxt):
+                    ctxt.debug('pr.pattern: %r', pr.pattern)
+                    ctxt.debug('match: %r', match)
+                    ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
+                    for outcome in pr.outcomes:
+                        # Resolve any booleans for the edge, either going
+                        # directly to the guarded outcome, or discarding
+                        # this one:
+                        from sm.checker import BooleanOutcome
+                        if isinstance(outcome, BooleanOutcome):
+                            if edge.true_value and outcome.guard:
+                                outcome = outcome.outcome
+                            elif edge.false_value and not outcome.guard:
+                                outcome = outcome.outcome
+                            else:
+                                continue
+                        yield PossibleMatch(match.get_stateful_gccvar(ctxt),
+                                            sc,
+                                            pr.pattern,
+                                            outcome,
+                                            match)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -618,6 +650,14 @@ class Context:
         from sm.leaks import find_leaks
         with Timer(self, 'find_leaks'):
             find_leaks(self)
+
+        # Preprocessing: set up "matches" attribute for every edge in the
+        # graph.  Although this is per-checker state, it's OK to store on
+        # the graph itself as it will be overwritten for any subsequent
+        # checkers:
+        with Timer(self, 'find_possible_matches'):
+            for edge in self.graph.edges:
+                edge.possible_matches = list(find_possible_matches(self, edge))
 
         solution = sm.solution.Solution(self)
         solution.find_states(self)
