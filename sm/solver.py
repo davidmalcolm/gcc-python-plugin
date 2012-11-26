@@ -19,6 +19,7 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
+ENABLE_TIMING=0
 ENABLE_LOG=0
 ENABLE_DEBUG=0
 SHOW_SUPERGRAPH=0
@@ -64,15 +65,15 @@ class Timer:
         return '%0.3f seconds' % self.get_elapsed_time()
 
     def __enter__(self):
-        self.ctxt.log('START: %s', self.name)
+        self.ctxt.timing('START: %s', self.name)
         self.ctxt._indent += 1
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.ctxt._indent -= 1
-        self.ctxt.log('%s: %s  TIME TAKEN: %s',
-                      'STOP' if exc_type is None else 'ERROR',
-                      self.name,
-                      self.elapsed_time_as_str())
+        self.ctxt.timing('%s: %s  TIME TAKEN: %s',
+                         'STOP' if exc_type is None else 'ERROR',
+                         self.name,
+                         self.elapsed_time_as_str())
 
 class State:
     """
@@ -795,6 +796,13 @@ class Context:
             depth += 1
             f = f.f_back
         return ' ' * (depth + self._indent)
+
+    def timing(self, msg, *args):
+        # Highest-level logging: how long does each stage take to run?
+        if ENABLE_TIMING:
+            formattedmsg = msg % args
+            sys.stderr.write('TIMING: %s: %s%s\n'
+                             % (self.sm.name, self._get_indent(), formattedmsg))
 
     def log(self, msg, *args):
         # High-level logging
