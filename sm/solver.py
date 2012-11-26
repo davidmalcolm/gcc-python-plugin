@@ -283,7 +283,7 @@ def consider_edge(ctxt, solution, item, edge):
     # apply:
     for pm in edge.possible_matches:
         ctxt.debug('possible match: %s' % pm)
-        if state.name in pm.states and (equivcls is None or pm.expr in equivcls):
+        if state.name in pm.statenames and (equivcls is None or pm.expr in equivcls):
             ctxt.log('got match in state %r of %s at %s',
                      state, pm.describe(ctxt), stmt)
             with ctxt.indent():
@@ -356,7 +356,7 @@ class WorklistItem:
 class PossibleMatch:
     def __init__(self, expr, sc, pattern, outcome, match):
         self.expr = expr
-        self.states = frozenset(sc.statelist)
+        self.statenames = frozenset(sc.statelist)
         self.sc = sc
         self.pattern = pattern
         self.outcome = outcome
@@ -364,7 +364,7 @@ class PossibleMatch:
 
     def describe(self, ctxt):
         stateliststr = ', '.join([str(state)
-                                  for state in self.sc.statelist])
+                                  for state in self.statenames])
         return '%r: %s => %s due to %s' % (str(self.expr), stateliststr,
                                            self.outcome, self.pattern)
 
@@ -406,6 +406,278 @@ def find_possible_matches(ctxt, edge):
                                             pr.pattern,
                                             outcome,
                                             match)
+
+class FixedPointMatchContext:
+    """
+    An actual match of a PossibleMatch, to be supplied to Outcome.get_result()
+    """
+    def __init__(self, ctxt, pm, edge, matchingstates):
+        self.ctxt = ctxt
+        self.pm = pm
+        self.edge = edge
+        self.matchingstates = matchingstates
+
+class AbstractValue:
+    def __init__(self, _dict):
+        # dict from expr to set of states
+        self._dict = _dict
+
+    def __str__(self):
+        kvstrs = []
+        for expr, states in self._dict.iteritems():
+            kvstrs.append('%s: %s' % (expr,
+                                      stateset_to_str(states)))
+        return '{%s}' % ', '.join(kvstrs)
+
+    def __eq__(self, other):
+        if isinstance(other, AbstractValue):
+            return self._dict == other._dict
+
+    def __ne__(self, other):
+        return not self == other
+
+    def match_states_by_name(self, expr, statenames):
+        if expr in self._dict:
+            # Do the state sets intersect?
+            # (returning the intersection, which will be true if non-empty)
+            result = [state
+                      for state in self._dict[expr]
+                      if state.name in statenames]
+            return frozenset(result)
+
+    def get_states_for_expr(self, ctxt, expr):
+        if expr in self._dict:
+            return self._dict[expr]
+        return frozenset([ctxt.get_default_state()])
+
+    def assign_to_from(self, ctxt, lhs, rhs):
+        _dict = self._dict.copy()
+        _dict[lhs] = self.get_states_for_expr(ctxt, rhs)
+        return AbstractValue(_dict)
+
+    def set_state_for_expr(self, expr, state):
+        _dict = self._dict.copy()
+        _dict[expr] = frozenset([state])
+        return AbstractValue(_dict)
+
+    @classmethod
+    def make_entry_point(cls, ctxt, node):
+        _dict = {}
+        for expr in ctxt.scopes[node.function]:
+            if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
+                _dict[expr] = frozenset([ctxt.get_default_state()])
+        return AbstractValue(_dict)
+
+    @classmethod
+    def get_edge_value(cls, ctxt, srcvalue, edge):
+        assert isinstance(srcvalue, AbstractValue) # not None
+        srcnode = edge.srcnode
+        dstnode = edge.dstnode
+        stmt = srcnode.get_stmt()
+        ctxt.debug('edge from: %s', srcnode)
+        ctxt.debug('       to: %s', dstnode)
+
+        # Set the location so that if an unhandled exception occurs, it should
+        # at least identify the code that triggered it:
+        if stmt:
+            if stmt.loc:
+                gcc.set_location(stmt.loc)
+
+        # Handle interprocedural edges:
+        if isinstance(edge, CallToReturnSiteEdge):
+            # Ignore the intraprocedural edge for a function call:
+            return None
+        elif isinstance(edge, CallToStart):
+            # Alias the parameters with the arguments as necessary, so
+            # e.g. a function that free()s an arg has the caller's expr
+            # marked as free also:
+            assert isinstance(srcnode.stmt, gcc.GimpleCall)
+            # ctxt.debug(srcnode.stmt)
+            _dict = {}
+            for expr in ctxt.scopes[dstnode.function]:
+                if isinstance(expr, gcc.VarDecl):
+                    _dict[expr] = frozenset([ctxt.get_default_state()])
+            for param, arg  in zip(srcnode.stmt.fndecl.arguments,
+                                   srcnode.stmt.args):
+                # FIXME: change fndecl.arguments to fndecl.parameters
+                if 1:
+                    ctxt.debug('  param: %r', param)
+                    ctxt.debug('  arg: %r', arg)
+                #if ctxt.is_stateful_var(arg):
+                #    shapechange.assign_var(param, arg)
+                arg = simplify(arg)
+                _dict[param] = srcvalue.get_states_for_expr(ctxt, arg)
+            return AbstractValue(_dict)
+        elif isinstance(edge, ExitToReturnSite):
+            # Propagate state through the return value:
+            # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
+            _dict = {}
+            if edge.calling_stmtnode.stmt.lhs:
+                exitsupernode = edge.srcnode
+                assert isinstance(exitsupernode.innernode, ExitNode)
+                retval = simplify(exitsupernode.innernode.returnval)
+                ctxt.debug('retval: %s', retval)
+                ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s',
+                           edge.calling_stmtnode.stmt.lhs)
+                _dict[simplify(edge.calling_stmtnode.stmt.lhs)] = \
+                    srcvalue.get_states_for_expr(ctxt, retval)
+
+            # FIXME: we also need to backpatch the params, in case they've
+            # changed state
+            callsite = edge.dstnode.callnode.innernode
+            ctxt.debug('callsite: %s', callsite)
+            for param, arg  in zip(callsite.stmt.fndecl.arguments,
+                                   callsite.stmt.args):
+                if 1:
+                    ctxt.debug('  param: %r', param)
+                    ctxt.debug('  arg: %r', arg)
+                _dict[simplify(arg)] = srcvalue.get_states_for_expr(ctxt, simplify(param))
+            return AbstractValue(_dict)
+
+        matches = []
+
+        # Handle simple assignments so that variables inherit state:
+        if isinstance(stmt, gcc.GimpleAssign):
+            if 1:
+                ctxt.debug('gcc.GimpleAssign: %s', stmt)
+                ctxt.debug('  stmt.lhs: %r', stmt.lhs)
+                ctxt.debug('  stmt.rhs: %r', stmt.rhs)
+                ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
+            if stmt.exprcode == gcc.VarDecl:
+                lhs = simplify(stmt.lhs)
+                rhs = simplify(stmt.rhs[0])
+                return srcvalue.assign_to_from(ctxt, lhs, rhs)
+            elif stmt.exprcode == gcc.ComponentRef:
+                # Field lookup
+                lhs = simplify(stmt.lhs)
+                compref = stmt.rhs[0]
+                if 1:
+                    ctxt.debug('compref.target: %s', compref.target)
+                    ctxt.debug('compref.field: %s', compref.field)
+
+                # Do we already have a state for the field?
+                if compref in srcvalue._dict:
+                    return srcvalue.assign_to_from(ctxt, lhs, compref)
+                else:
+                    # Inherit the state from the struct:
+                    _dict = srcvalue._dict.copy()
+                    ctxt.log('%s inheriting states %s from "%s" via field "%s"'
+                             % (lhs,
+                                stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
+                                compref.target,
+                                compref.field))
+                    return srcvalue.assign_to_from(ctxt, lhs, compref.target)
+        elif isinstance(stmt, gcc.GimplePhi):
+            if 1:
+                ctxt.debug('gcc.GimplePhi: %s', stmt)
+                ctxt.debug('  srcnode: %s', srcnode)
+                ctxt.debug('  srcnode: %r', srcnode)
+                ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
+                ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
+            assert isinstance(srcnode.innernode, SplitPhiNode)
+            rhs = srcnode.innernode.rhs
+            if isinstance(rhs, gcc.VarDecl):
+                shapechange = ShapeChange(srcshape)
+                shapechange.assign_var(stmt.lhs, rhs)
+                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
+                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
+                                                   edge, None, shapechange)
+                matches.append(stmt)
+
+        # Check to see if any of the precalculated matches from the sm script
+        # apply:
+        for pm in edge.possible_matches:
+            ctxt.log('possible match: %s', pm.describe(ctxt))
+            matchingstates = srcvalue.match_states_by_name(pm.expr, pm.statenames)
+            if matchingstates:
+                ctxt.log('matchingstates: %s' % stateset_to_str(matchingstates))
+                ctxt.log('got match in states %s of %s at %s',
+                         stateset_to_str(matchingstates),
+                         pm.describe(ctxt),
+                         stmt)
+                fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
+                ctxt.log('applying outcome to %s => %s',
+                         fpmctxt.pm.expr,
+                         pm.outcome)
+                result = pm.outcome.get_result(fpmctxt, srcvalue)
+                ctxt.log('got result: %s' % result)
+                return result
+            else:
+                ctxt.log('matchingstates: %s' % matchingstates)
+                ctxt.log('got match for wrong state {%s} for %s at %s',
+                         stateset_to_str(srcvalue.get_states_for_expr(ctxt, pm.expr)),
+                         pm.describe(ctxt), stmt)
+
+        # Nothing matched:
+        return srcvalue
+
+    @classmethod
+    def union(cls, ctxt, lhs, rhs):
+        ctxt.log('union of %s and %s' % (lhs, rhs))
+        if lhs is None:
+            return rhs
+        if rhs is None:
+            return lhs
+        assert isinstance(lhs, AbstractValue)
+        assert isinstance(rhs, AbstractValue)
+        _dict = lhs._dict.copy()
+        for expr, states in rhs._dict.iteritems():
+            if expr in _dict:
+                _dict[expr] |= states
+            else:
+                _dict[expr] = states
+        return AbstractValue(_dict)
+
+def fixed_point_solver(ctxt):
+    # Store "states" attribute on nodes giving a description of the possible
+    # states that can reach this node.
+    # Use "None" as the bottom element: unreachable
+    # otherwise, an AbstractValue instance
+    for node in ctxt.graph.nodes:
+        node.states = None
+
+    # FIXME: make this a priority queue, in the node's topological order?
+
+    # Set up worklist:
+    workset = set()
+    worklist = []
+    for node in ctxt.graph.get_entry_nodes():
+        node.states = AbstractValue.make_entry_point(ctxt, node)
+        for edge in node.succs:
+            worklist.append(edge.dstnode)
+            workset.add(edge.dstnode)
+
+    numiters = 0
+    while worklist:
+        node = worklist.pop()
+        workset.remove(node)
+        numiters += 1
+        ctxt.log('iter %i: analyzing node: %s', numiters, node)
+        with ctxt.indent():
+            oldvalue = node.states
+            ctxt.log('old value: %s' % oldvalue)
+            newvalue = None
+            for edge in node.preds:
+                ctxt.log('analyzing in-edge: %s', edge)
+                with ctxt.indent():
+                    srcvalue = edge.srcnode.states
+                    ctxt.log('srcvalue: %s', srcvalue)
+                    if srcvalue:
+                        edgevalue = AbstractValue.get_edge_value(ctxt, srcvalue, edge)
+                        ctxt.log('  edge value: %s', edgevalue)
+                        newvalue = AbstractValue.union(ctxt, newvalue, edgevalue)
+                        ctxt.log('  new value: %s', newvalue)
+            if newvalue != oldvalue:
+                ctxt.log('  value changed from: %s  to %s',
+                         oldvalue,
+                         newvalue)
+                node.states = newvalue
+                for edge in node.succs:
+                    dstnode = edge.dstnode
+                    if dstnode not in workset:
+                        worklist.append(dstnode)
+                        workset.add(dstnode)
+
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -637,7 +909,30 @@ class Context:
         expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
                                                  mctxt.inneredge, mctxt.match, None)
 
+    def find_scopes(self):
+        self.scopes = {}
+        for function in self.graph.get_functions():
+            scope = set()
+            def add_to_scope(node):
+                if isinstance(node, gcc.FunctionDecl):
+                    return
+                if isinstance(node, gcc.SsaName):
+                    scope.add(node.var)
+                if isinstance(node, (gcc.VarDecl, gcc.ParmDecl, gcc.ComponentRef)):
+                    scope.add(node)
+            for bb in function.cfg.basic_blocks:
+                if bb.gimple:
+                    for stmt in bb.gimple:
+                        stmt.walk_tree(add_to_scope)
+            self.scopes[function] = scope
+        #self.log('scopes: %r' % self.scopes)
+
     def solve(self, name):
+        # Preprocessing phase: identify the scope of expressions within each
+        # function
+        with Timer(self, 'find_scopes'):
+            self.find_scopes()
+
         # Preprocessing phase: gather simple per-node "facts", for use in
         # giving better names for temporaries, and for identifying the return
         # values of functions
@@ -659,6 +954,14 @@ class Context:
             for edge in self.graph.edges:
                 edge.possible_matches = list(find_possible_matches(self, edge))
 
+        # Work-in-progress: find the fixed point of all possible states
+        # reachable for each in-scope expr at each node.  This isn't yet
+        # wired up to anything:
+        with Timer(self, 'fixed_point_solver'):
+            fixed_point_solver(self)
+
+        # The "real" solver: an older implementation, which generates the
+        # errors for later processing:
         solution = sm.solution.Solution(self)
         solution.find_states(self)
 
@@ -686,3 +989,9 @@ def solve(ctxt, name):
 
     with Timer(ctxt, 'emitting errors'):
         ctxt.emit_errors(solution)
+
+def stateset_to_str(states):
+    return '{%s}' % ', '.join([str(state) for state in states])
+
+def equivcls_to_str(equivcls):
+    return '{%s}' % ', '.join([str(expr) for expr in equivcls])

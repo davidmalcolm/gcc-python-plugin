@@ -576,6 +576,10 @@ class Supergraph(Graph):
                 stmtg = self.stmtg_for_fun[fun]
                 yield stmtg.supernode_for_stmtnode[stmtg.entry]
 
+    def get_functions(self):
+        for fun in self.stmtg_for_fun:
+            yield fun
+
 class SupergraphNode(Node):
     """
     A node in the supergraph, wrapping a StmtNode

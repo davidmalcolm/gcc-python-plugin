@@ -590,6 +590,14 @@ class TransitionTo(Outcome):
                                      dststate,
                                      mctxt.match)
 
+    def get_result(self, fpmctxt, srcvalue):
+        from sm.solver import AbstractValue, State
+        assert isinstance(srcvalue, AbstractValue) # not None
+
+        dststate = State(self.statename)
+        return srcvalue.set_state_for_expr(fpmctxt.pm.expr,
+                                           dststate)
+
     def iter_reachable_statenames(self):
         yield self.statename
 
@@ -636,6 +644,16 @@ class BoundVariable:
         return getattr(self.gccexpr, name)
 
 class PythonOutcome(Outcome, PythonFragment):
+    def get_code(self, ctxt):
+        filename = ctxt.ch.filename
+        if not filename:
+            filename = '<string>'
+        expr = self.get_source()
+        code = compile(expr, filename, 'exec')
+        # FIXME: the filename of the .sm file is correct, but the line
+        # numbers will be wrong
+        return code
+
     def apply(self, mctxt):
         from sm.solver import WorklistItem
         ctxt = mctxt.ctxt
@@ -645,13 +663,7 @@ class PythonOutcome(Outcome, PythonFragment):
             print('  expgraph: %r' % expgraph)
             print('  expnode: %r' % expnode)
 
-        filename = ctxt.ch.filename
-        if not filename:
-            filename = '<string>'
-        expr = self.get_source()
-        code = compile(expr, filename, 'exec')
-        # FIXME: the filename of the .sm file is correct, but the line
-        # numbers will be wrong
+        code = self.get_code(ctxt)
 
         # Create environment for execution of the code:
         def error(msg):
@@ -698,3 +710,68 @@ class PythonOutcome(Outcome, PythonFragment):
 
     def iter_reachable_statenames(self):
         return []
+
+    def get_result(self, fpmctxt, srcvalue):
+        from sm.solver import AbstractValue, State
+        assert isinstance(srcvalue, AbstractValue) # not None
+
+        ctxt = fpmctxt.ctxt
+
+        result = None
+        # We run the python fragment repeatedly, once for each possible
+        # input state.
+        for state in fpmctxt.matchingstates:
+            if 0:
+                print('run(): %r' % self)
+                print('  fpmctxt: %r' % fpmctxt)
+                print('  srcvalue: %r' % srcvalue)
+
+            code = self.get_code(ctxt)
+
+            # Create environment for execution of the code:
+            def error(msg):
+                # For now the fixed point solver ignores errors
+                if 0:
+                    ctxt.add_error(fpmctxt.edge.srcnode,
+                                   fpmctxt.pm.match,
+                                   msg, globals_['state'])
+            def set_state(name, **kwargs):
+                from sm.solver import State
+                ctxt.debug('set_state(%r, %r)', name, kwargs)
+                globals_['state'] = State(name, **kwargs)
+
+            globals_ = {'error' : error,
+                        'set_state' : set_state,
+                        'state': state}
+            ctxt.python_globals.update(globals_)
+
+            # Bind the names for the matched Decls
+            # For example, when:
+            #      state decl any_pointer ptr;
+            # has been matched by:
+            #      void *q;
+            # then we bind the string "ptr" to the gcc.VarDecl for q
+            # (which has str() == 'q')
+            locals_ = {}
+            for decl, value in fpmctxt.pm.match.iter_binding():
+                locals_[decl.name] = BoundVariable(ctxt, fpmctxt.edge.srcnode, value)
+            ctxt.python_locals.update(locals_)
+
+            if 0:
+                print('  globals_: %r' % globals_)
+                print('  locals_: %r' % locals_)
+            # Now run the code:
+            ctxt.debug('state before: %r', globals_['state'])
+            ctxt.log('evaluating python code')
+            result = eval(code, ctxt.python_globals, ctxt.python_locals)
+            ctxt.debug('state after: %r', globals_['state'])
+
+            # Clear the binding:
+            for name in locals_:
+                del ctxt.python_locals[name]
+
+            newresult = srcvalue.set_state_for_expr(fpmctxt.pm.expr,
+                                                    state)
+            ctxt.log('newresult: %s' % newresult)
+            result = AbstractValue.union(ctxt, result, newresult)
+        return result

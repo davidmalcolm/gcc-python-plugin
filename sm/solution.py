@@ -185,7 +185,10 @@ class Solution:
                     % ', '.join(['{%s}' % ', '.join([str(expr)
                                                      for expr in equivcls])
                                  for equivcls in node.facts.get_equiv_classes()]))
-            # Write out state information:
+            # Write out state information from fixed point solver:
+            writeln('fixed point states: %s' % node.states)
+
+            # Write out state information from old solver:
             states = self.states[node]
             if states:
                 writeln('reachable states:')
