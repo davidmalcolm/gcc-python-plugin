@@ -146,6 +146,7 @@ class Solution:
     def dump(self, out):
         from gccutils import get_src_for_loc
         from sm.facts import equivcls_to_str
+        from sm.solver import stateset_to_str
 
         global _indent
         _indent = 0
@@ -186,7 +187,12 @@ class Solution:
                                                      for expr in equivcls])
                                  for equivcls in node.facts.get_equiv_classes()]))
             # Write out state information from fixed point solver:
-            writeln('fixed point states: %s' % node.states)
+            writeln('fixed point states:')
+            for equivcls in node.states._dict:
+                writeln('%s: %s'
+                        % (equivcls_to_str(equivcls),
+                           stateset_to_str(node.states._dict[equivcls])),
+                        indent=2)
 
             # Write out state information from old solver:
             states = self.states[node]
@@ -195,8 +201,7 @@ class Solution:
                 for equivcls in states:
                     writeln('%s: %s'
                             % (equivcls_to_str(equivcls),
-                               ',' .join(str(state)
-                                         for state in states[equivcls])),
+                               stateset_to_str(states[equivcls])),
                             indent=2)
             else:
                 writeln('NOT REACHED', indent=4)
