@@ -595,7 +595,8 @@ class TransitionTo(Outcome):
         assert isinstance(srcvalue, AbstractValue) # not None
 
         dststate = State(self.statename)
-        return srcvalue.set_state_for_expr(fpmctxt.pm.expr,
+        return srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
+                                           fpmctxt.pm.expr,
                                            dststate)
 
     def iter_reachable_statenames(self):
@@ -770,7 +771,8 @@ class PythonOutcome(Outcome, PythonFragment):
             for name in locals_:
                 del ctxt.python_locals[name]
 
-            newresult = srcvalue.set_state_for_expr(fpmctxt.pm.expr,
+            newresult = srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
+                                                    fpmctxt.pm.expr,
                                                     state)
             ctxt.log('newresult: %s' % newresult)
             result = AbstractValue.union(ctxt, result, newresult)

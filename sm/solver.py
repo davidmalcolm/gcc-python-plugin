@@ -35,7 +35,8 @@ import gcc
 from gccutils import DotPrettyPrinter, invoke_dot
 from gccutils.graph import Graph, Node, Edge, \
     ExitNode, SplitPhiNode, \
-    CallToReturnSiteEdge, CallToStart, ExitToReturnSite
+    CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
+    SupergraphNode, SupergraphEdge
 from gccutils.dot import to_html
 
 import sm.checker
@@ -126,7 +127,6 @@ class MatchContext:
     """
     def __init__(self, ctxt, match, srcnode, edge, srcstate):
         from sm.checker import Match
-        from gccutils.graph import SupergraphNode, SupergraphEdge
         assert isinstance(match, Match)
         assert isinstance(srcnode, SupergraphNode)
         assert isinstance(edge, SupergraphEdge)
@@ -419,55 +419,76 @@ class FixedPointMatchContext:
         self.matchingstates = matchingstates
 
 class AbstractValue:
-    def __init__(self, _dict):
-        # dict from expr to set of states
+    def __init__(self, node, _dict):
+        assert isinstance(node, SupergraphNode)
+        self.node = node
+
+        # dict from equivcls to set of states
         self._dict = _dict
 
     def __str__(self):
         kvstrs = []
-        for expr, states in self._dict.iteritems():
-            kvstrs.append('%s: %s' % (expr,
+        for equivcls, states in self._dict.iteritems():
+            kvstrs.append('%s: %s' % (equivcls_to_str(equivcls),
                                       stateset_to_str(states)))
         return '{%s}' % ', '.join(kvstrs)
 
     def __eq__(self, other):
         if isinstance(other, AbstractValue):
-            return self._dict == other._dict
+            if self.node == other.node:
+                return self._dict == other._dict
 
     def __ne__(self, other):
         return not self == other
 
+    def get_equivcls_for_expr(self, expr):
+        return self.node.facts.get_aliases(expr)
+
     def match_states_by_name(self, expr, statenames):
-        if expr in self._dict:
+        equivcls = self.get_equivcls_for_expr(expr)
+        if equivcls in self._dict:
             # Do the state sets intersect?
             # (returning the intersection, which will be true if non-empty)
             result = [state
-                      for state in self._dict[expr]
+                      for state in self._dict[equivcls]
                       if state.name in statenames]
             return frozenset(result)
 
     def get_states_for_expr(self, ctxt, expr):
-        if expr in self._dict:
-            return self._dict[expr]
+        equivcls = self.get_equivcls_for_expr(expr)
+        if equivcls in self._dict:
+            return self._dict[equivcls]
         return frozenset([ctxt.get_default_state()])
 
-    def assign_to_from(self, ctxt, lhs, rhs):
-        _dict = self._dict.copy()
-        _dict[lhs] = self.get_states_for_expr(ctxt, rhs)
-        return AbstractValue(_dict)
+    def assign_to_from(self, ctxt, dstnode, lhs, rhs):
+        assert isinstance(dstnode, SupergraphNode)
+        result = self.propagate_to(dstnode)
+        result._dict[dstnode.facts.get_aliases(lhs)] = \
+            self.get_states_for_expr(ctxt, rhs)
+        return result
 
-    def set_state_for_expr(self, expr, state):
-        _dict = self._dict.copy()
-        _dict[expr] = frozenset([state])
-        return AbstractValue(_dict)
+    def set_state_for_expr(self, dstnode, expr, state):
+        assert isinstance(dstnode, SupergraphNode)
+        assert isinstance(state, State)
+        result = self.propagate_to(dstnode)
+        result._dict[dstnode.facts.get_aliases(expr)] = frozenset([state])
+        return result
+
+    def propagate_to(self, dstnode):
+        assert isinstance(dstnode, SupergraphNode)
+        _dict = {}
+        for equivcls, states in self._dict.iteritems():
+            for expr in equivcls:
+                _dict[dstnode.facts.get_aliases(expr)] = states
+        return AbstractValue(dstnode, _dict)
 
     @classmethod
     def make_entry_point(cls, ctxt, node):
         _dict = {}
         for expr in ctxt.scopes[node.function]:
             if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
-                _dict[expr] = frozenset([ctxt.get_default_state()])
-        return AbstractValue(_dict)
+                _dict[node.facts.get_aliases(expr)] = frozenset([ctxt.get_default_state()])
+        return AbstractValue(node, _dict)
 
     @classmethod
     def get_edge_value(cls, ctxt, srcvalue, edge):
@@ -497,7 +518,8 @@ class AbstractValue:
             _dict = {}
             for expr in ctxt.scopes[dstnode.function]:
                 if isinstance(expr, gcc.VarDecl):
-                    _dict[expr] = frozenset([ctxt.get_default_state()])
+                    _dict[dstnode.facts.get_aliases(expr)] = \
+                        frozenset([ctxt.get_default_state()])
             for param, arg  in zip(srcnode.stmt.fndecl.arguments,
                                    srcnode.stmt.args):
                 # FIXME: change fndecl.arguments to fndecl.parameters
@@ -507,8 +529,9 @@ class AbstractValue:
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
                 arg = simplify(arg)
-                _dict[param] = srcvalue.get_states_for_expr(ctxt, arg)
-            return AbstractValue(_dict)
+                _dict[dstnode.facts.get_aliases(param)] = \
+                    srcvalue.get_states_for_expr(ctxt, arg)
+            return AbstractValue(dstnode, _dict)
         elif isinstance(edge, ExitToReturnSite):
             # Propagate state through the return value:
             # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
@@ -520,7 +543,7 @@ class AbstractValue:
                 ctxt.debug('retval: %s', retval)
                 ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s',
                            edge.calling_stmtnode.stmt.lhs)
-                _dict[simplify(edge.calling_stmtnode.stmt.lhs)] = \
+                _dict[dstnode.facts.get_aliases(simplify(edge.calling_stmtnode.stmt.lhs))] = \
                     srcvalue.get_states_for_expr(ctxt, retval)
 
             # FIXME: we also need to backpatch the params, in case they've
@@ -532,8 +555,9 @@ class AbstractValue:
                 if 1:
                     ctxt.debug('  param: %r', param)
                     ctxt.debug('  arg: %r', arg)
-                _dict[simplify(arg)] = srcvalue.get_states_for_expr(ctxt, simplify(param))
-            return AbstractValue(_dict)
+                _dict[dstnode.facts.get_aliases(simplify(arg))] = \
+                    srcvalue.get_states_for_expr(ctxt, simplify(param))
+            return AbstractValue(dstnode, _dict)
 
         matches = []
 
@@ -547,7 +571,7 @@ class AbstractValue:
             if stmt.exprcode == gcc.VarDecl:
                 lhs = simplify(stmt.lhs)
                 rhs = simplify(stmt.rhs[0])
-                return srcvalue.assign_to_from(ctxt, lhs, rhs)
+                return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs)
             elif stmt.exprcode == gcc.ComponentRef:
                 # Field lookup
                 lhs = simplify(stmt.lhs)
@@ -557,17 +581,16 @@ class AbstractValue:
                     ctxt.debug('compref.field: %s', compref.field)
 
                 # Do we already have a state for the field?
-                if compref in srcvalue._dict:
-                    return srcvalue.assign_to_from(ctxt, lhs, compref)
+                if srcnode.facts.get_aliases(compref) in srcvalue._dict:
+                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref)
                 else:
                     # Inherit the state from the struct:
-                    _dict = srcvalue._dict.copy()
                     ctxt.log('%s inheriting states %s from "%s" via field "%s"'
                              % (lhs,
                                 stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
                                 compref.target,
                                 compref.field))
-                    return srcvalue.assign_to_from(ctxt, lhs, compref.target)
+                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref.target)
         elif isinstance(stmt, gcc.GimplePhi):
             if 1:
                 ctxt.debug('gcc.GimplePhi: %s', stmt)
@@ -610,7 +633,7 @@ class AbstractValue:
                          pm.describe(ctxt), stmt)
 
         # Nothing matched:
-        return srcvalue
+        return srcvalue.propagate_to(dstnode)
 
     @classmethod
     def union(cls, ctxt, lhs, rhs):
@@ -621,13 +644,14 @@ class AbstractValue:
             return lhs
         assert isinstance(lhs, AbstractValue)
         assert isinstance(rhs, AbstractValue)
+        assert lhs.node == rhs.node
         _dict = lhs._dict.copy()
         for expr, states in rhs._dict.iteritems():
             if expr in _dict:
                 _dict[expr] |= states
             else:
                 _dict[expr] = states
-        return AbstractValue(_dict)
+        return AbstractValue(lhs.node, _dict)
 
 def fixed_point_solver(ctxt):
     # Store "states" attribute on nodes giving a description of the possible
@@ -666,12 +690,15 @@ def fixed_point_solver(ctxt):
                     if srcvalue:
                         edgevalue = AbstractValue.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
+                        if edgevalue:
+                            assert edgevalue.node == node
                         newvalue = AbstractValue.union(ctxt, newvalue, edgevalue)
                         ctxt.log('  new value: %s', newvalue)
             if newvalue != oldvalue:
                 ctxt.log('  value changed from: %s  to %s',
                          oldvalue,
                          newvalue)
+                assert newvalue.node == node
                 node.states = newvalue
                 for edge in node.succs:
                     dstnode = edge.dstnode
@@ -978,32 +1005,70 @@ class Context:
     #######################################################################
     # Utility methods for writing selftests
     #######################################################################
-    def find_call_of(self, funcname):
+    def find_call_of(self, funcname, within=None):
         for node in self.graph.nodes:
+            if within:
+                if node.function.decl.name != within:
+                    continue
             stmt = node.stmt
             if isinstance(stmt, gcc.GimpleCall):
                 if isinstance(stmt.fn, gcc.AddrExpr):
                     if isinstance(stmt.fn.operand, gcc.FunctionDecl):
                         if stmt.fn.operand.name == funcname:
                             return node
+        raise ValueError('call to %s() not found' % funcname)
+
+    def find_comparison_against(self, exprcode, const, within=None):
+        for node in self.graph.nodes:
+            if within:
+                if node.function.decl.name != within:
+                    continue
+            stmt = node.stmt
+            if isinstance(stmt, gcc.GimpleCond):
+                if stmt.exprcode == exprcode:
+                    if isinstance(stmt.rhs, gcc.Constant):
+                        if stmt.rhs.constant == const:
+                            return node
+        raise ValueError('comparison %s %s not found' % (exprcode, const))
 
     def get_successor(self, node):
         if len(node.succs) > 1:
             raise ValueError('node %s has more than one successor' % node)
         return node.succs[0].dstnode
 
+    def get_true_successor(self, node):
+        assert isinstance(node.stmt, gcc.GimpleCond)
+        for edge in node.succs:
+            if edge.true_value:
+                return edge.dstnode
+        raise ValueError('could not find true successor of node %s' % node)
+
     def find_var(self, node, varname):
         for var in self.scopes[node.function]:
-            if var.name == varname:
-                return var
+            if isinstance(var, (gcc.VarDecl, gcc.ParmDecl)):
+                if var.name == varname:
+                    return var
         raise ValueError('variable %s not found' % varname)
 
-    def assert_states_for_var(self, node, varname, expectedstatenames):
-        var = self.find_var(node, varname)
+    def get_expr_by_str(self, node, exprstr):
+        for expr in self.scopes[node.function]:
+            if str(expr) == exprstr:
+                return expr
+        raise ValueError('expression %s not found' % exprstr)
+
+    def assert_states_for_expr(self, node, expr, expectedstatenames):
+        expr = simplify(expr)
         expectedstates = set([State(name)
                               for name in expectedstatenames])
-        actualstates = node.states.get_states_for_expr(self, var)
-        assert actualstates == expectedstates
+        actualstates = node.states.get_states_for_expr(self, expr)
+        if actualstates != expectedstates:
+            raise ValueError('wrong states; expected %s but got %s'
+                             % (stateset_to_str(expectedstates),
+                                stateset_to_str(actualstates)))
+
+    def assert_states_for_varname(self, node, varname, expectedstatenames):
+        var = self.find_var(node, varname)
+        self.assert_states_for_expr(node, var, expectedstatenames)
 
 def solve(ctxt, name, selftest):
     ctxt.log('running %s', ctxt.sm.name)
