@@ -20,10 +20,11 @@ import gcc
 from sm.solver import Context, solve, SHOW_SUPERGRAPH
 
 class IpaSmPass(gcc.IpaPass):
-    def __init__(self, checkers, options):
+    def __init__(self, checkers, options, selftest):
         gcc.IpaPass.__init__(self, 'sm-ipa-pass')
         self.checkers = checkers
         self.options = options
+        self.selftest = selftest
 
     def execute(self):
         if self.options.during_lto:
@@ -50,7 +51,7 @@ class IpaSmPass(gcc.IpaPass):
         for checker in self.checkers:
             for sm in checker.sms:
                 ctxt = Context(checker, sm, sg, self.options)
-                solve(ctxt, 'solution')
+                solve(ctxt, 'solution', self.selftest)
 
 class Options:
     def __init__(self,
@@ -59,12 +60,12 @@ class Options:
         self.cache_errors = cache_errors
         self.during_lto = during_lto
 
-def main(checkers, options=None):
+def main(checkers, options=None, selftest=None):
     if not options:
         options = Options(cache_errors=True)
 
     # Run as an interprocedural pass (over SSA gimple), potentially
     # during lto1:
-    ps = IpaSmPass(checkers, options)
+    ps = IpaSmPass(checkers, options, selftest)
     ps.register_before('whole-program')
 

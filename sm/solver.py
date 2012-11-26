@@ -967,7 +967,37 @@ class Context:
 
         return solution
 
-def solve(ctxt, name):
+    #######################################################################
+    # Utility methods for writing selftests
+    #######################################################################
+    def find_call_of(self, funcname):
+        for node in self.graph.nodes:
+            stmt = node.stmt
+            if isinstance(stmt, gcc.GimpleCall):
+                if isinstance(stmt.fn, gcc.AddrExpr):
+                    if isinstance(stmt.fn.operand, gcc.FunctionDecl):
+                        if stmt.fn.operand.name == funcname:
+                            return node
+
+    def get_successor(self, node):
+        if len(node.succs) > 1:
+            raise ValueError('node %s has more than one successor' % node)
+        return node.succs[0].dstnode
+
+    def find_var(self, node, varname):
+        for var in self.scopes[node.function]:
+            if var.name == varname:
+                return var
+        raise ValueError('variable %s not found' % varname)
+
+    def assert_states_for_var(self, node, varname, expectedstatenames):
+        var = self.find_var(node, varname)
+        expectedstates = set([State(name)
+                              for name in expectedstatenames])
+        actualstates = node.states.get_states_for_expr(self, var)
+        assert actualstates == expectedstates
+
+def solve(ctxt, name, selftest):
     ctxt.log('running %s', ctxt.sm.name)
     ctxt.log('len(ctxt.graph.nodes): %i', len(ctxt.graph.nodes))
     ctxt.log('len(ctxt.graph.edges): %i', len(ctxt.graph.edges))
@@ -989,6 +1019,9 @@ def solve(ctxt, name):
 
     with Timer(ctxt, 'emitting errors'):
         ctxt.emit_errors(solution)
+
+    if selftest:
+        selftest(ctxt, solution)
 
 def stateset_to_str(states):
     return '{%s}' % ', '.join([str(state) for state in states])
