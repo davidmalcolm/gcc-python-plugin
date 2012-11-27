@@ -181,9 +181,8 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
     result = walk_gimple_op (self->stmt,
                              gimple_walk_tree_callback,
                              &wi);
-    Py_XDECREF(closure->callback);
-    Py_XDECREF(closure->extraargs);
-    Py_XDECREF(closure->kwargs);
+
+    gcc_python_closure_free(closure);
 
     /* Propagate exceptions: */
     if (PyErr_Occurred()) {
