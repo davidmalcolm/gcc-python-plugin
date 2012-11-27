@@ -602,14 +602,11 @@ class AbstractValue:
                 ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
                 ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
             assert isinstance(srcnode.innernode, SplitPhiNode)
-            rhs = srcnode.innernode.rhs
-            if isinstance(rhs, gcc.VarDecl):
-                shapechange = ShapeChange(srcshape)
-                shapechange.assign_var(stmt.lhs, rhs)
-                dstexpnode = expgraph.lazily_add_node(dstnode, shapechange.dstshape)
-                expedge = expgraph.lazily_add_edge(srcexpnode, dstexpnode,
-                                                   edge, None, shapechange)
-                matches.append(stmt)
+            rhs = simplify(srcnode.innernode.rhs)
+            ctxt.debug('  rhs: %r', rhs)
+            lhs = simplify(srcnode.stmt.lhs)
+            ctxt.debug('  lhs: %r', lhs)
+            return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs)
 
         # Check to see if any of the precalculated matches from the sm script
         # apply:
