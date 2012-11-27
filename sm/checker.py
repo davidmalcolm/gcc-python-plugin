@@ -131,6 +131,7 @@ class PythonFragment(Clause):
     """
     def __init__(self, src):
         self.src = src
+        self._code = None
     def __str__(self):
         return '{{%s}}' % self.src
     def __repr__(self):
@@ -160,6 +161,16 @@ class PythonFragment(Clause):
 
         lines = try_to_fix_indent()
         return '\n'.join(lines)
+
+    def lazily_compile(self, filename):
+        if self._code is None:
+            if not filename:
+                filename = '<string>'
+            expr = self.get_source()
+            self._code = compile(expr, filename, 'exec')
+            # FIXME: the filename of the .sm file is correct, but the line
+            # numbers will be wrong
+        return self._code
 
 class StateClause(Clause):
     def __init__(self, statelist, patternrulelist):
@@ -646,14 +657,7 @@ class BoundVariable:
 
 class PythonOutcome(Outcome, PythonFragment):
     def get_code(self, ctxt):
-        filename = ctxt.ch.filename
-        if not filename:
-            filename = '<string>'
-        expr = self.get_source()
-        code = compile(expr, filename, 'exec')
-        # FIXME: the filename of the .sm file is correct, but the line
-        # numbers will be wrong
-        return code
+        return self.lazily_compile(ctxt.ch.filename)
 
     def apply(self, mctxt):
         from sm.solver import WorklistItem
