@@ -963,9 +963,12 @@ class Context:
                 if isinstance(node, gcc.FunctionDecl):
                     return
                 if isinstance(node, gcc.SsaName):
-                    scope.add(node.var)
+                    add_to_scope(node.var)
+
                 if isinstance(node, (gcc.VarDecl, gcc.ParmDecl, gcc.ComponentRef)):
-                    scope.add(node)
+                    if self._stateful_decl.matched_by(node):
+                        scope.add(node)
+
             for bb in function.cfg.basic_blocks:
                 if bb.gimple:
                     for stmt in bb.gimple:
