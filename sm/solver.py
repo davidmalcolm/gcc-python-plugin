@@ -1011,8 +1011,9 @@ class Context:
 
         # The "real" solver: an older implementation, which generates the
         # errors for later processing:
-        solution = sm.solution.Solution(self)
-        solution.find_states(self)
+        with Timer(self, 'solution.find_states'):
+            solution = sm.solution.Solution(self)
+            solution.find_states(self)
 
         return solution
 
