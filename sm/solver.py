@@ -285,8 +285,9 @@ def consider_edge(ctxt, solution, item, edge):
     for pm in edge.possible_matches:
         ctxt.debug('possible match: %s' % pm)
         if state.name in pm.statenames and (equivcls is None or pm.expr in equivcls):
-            ctxt.log('got match in state %r of %s at %s',
-                     state, pm.describe(ctxt), stmt)
+            if ENABLE_LOG:
+                ctxt.log('got match in state %r of %s at %s',
+                         state, pm.describe(ctxt), stmt)
             with ctxt.indent():
                 mctxt = MatchContext(ctxt, pm.match, srcnode, edge, state)
                 ctxt.log('applying outcome to %s => %s',
@@ -297,8 +298,9 @@ def consider_edge(ctxt, solution, item, edge):
                     yield item
                 matches.append(pm)
         else:
-            ctxt.debug('got match for wrong state %r of %s at %s',
-                     state, pm.describe(ctxt), stmt)
+            if ENABLE_DEBUG:
+                ctxt.debug('got match for wrong state %r of %s at %s',
+                           state, pm.describe(ctxt), stmt)
 
     # Did nothing match, or are we expanding the "everything is in the
     # initial state" case?
@@ -585,11 +587,12 @@ class AbstractValue:
                     return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref)
                 else:
                     # Inherit the state from the struct:
-                    ctxt.log('%s inheriting states %s from "%s" via field "%s"'
-                             % (lhs,
-                                stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
-                                compref.target,
-                                compref.field))
+                    if ENABLE_LOG:
+                        ctxt.log('%s inheriting states %s from "%s" via field "%s"',
+                                 lhs,
+                                 stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
+                                 compref.target,
+                                 compref.field)
                     return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref.target)
         elif isinstance(stmt, gcc.GimplePhi):
             if 1:
@@ -611,33 +614,37 @@ class AbstractValue:
         # Check to see if any of the precalculated matches from the sm script
         # apply:
         for pm in edge.possible_matches:
-            ctxt.log('possible match: %s', pm.describe(ctxt))
+            if ENABLE_LOG:
+                ctxt.log('possible match: %s', pm.describe(ctxt))
             matchingstates = srcvalue.match_states_by_name(pm.expr, pm.statenames)
             if matchingstates:
-                ctxt.log('matchingstates: %s' % stateset_to_str(matchingstates))
-                ctxt.log('got match in states %s of %s at %s',
-                         stateset_to_str(matchingstates),
-                         pm.describe(ctxt),
-                         stmt)
+                if ENABLE_LOG:
+                    ctxt.log('matchingstates: %s' % stateset_to_str(matchingstates))
+                    ctxt.log('got match in states %s of %s at %s',
+                             stateset_to_str(matchingstates),
+                             pm.describe(ctxt),
+                             stmt)
                 fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
-                ctxt.log('applying outcome to %s => %s',
-                         fpmctxt.pm.expr,
-                         pm.outcome)
+                if ENABLE_LOG:
+                    ctxt.log('applying outcome to %s => %s',
+                             fpmctxt.pm.expr,
+                             pm.outcome)
                 result = pm.outcome.get_result(fpmctxt, srcvalue)
-                ctxt.log('got result: %s' % result)
+                ctxt.log('got result: %s', result)
                 return result
             else:
-                ctxt.log('matchingstates: %s' % matchingstates)
-                ctxt.log('got match for wrong state {%s} for %s at %s',
-                         stateset_to_str(srcvalue.get_states_for_expr(ctxt, pm.expr)),
-                         pm.describe(ctxt), stmt)
+                if ENABLE_LOG:
+                    ctxt.log('matchingstates: %s', matchingstates)
+                    ctxt.log('got match for wrong state {%s} for %s at %s',
+                             stateset_to_str(srcvalue.get_states_for_expr(ctxt, pm.expr)),
+                             pm.describe(ctxt), stmt)
 
         # Nothing matched:
         return srcvalue.propagate_to(dstnode)
 
     @classmethod
     def union(cls, ctxt, lhs, rhs):
-        ctxt.log('union of %s and %s' % (lhs, rhs))
+        ctxt.log('union of %s and %s', lhs, rhs)
         if lhs is None:
             return rhs
         if rhs is None:
@@ -677,10 +684,16 @@ def fixed_point_solver(ctxt):
         node = worklist.pop()
         workset.remove(node)
         numiters += 1
-        ctxt.log('iter %i: analyzing node: %s', numiters, node)
+        if ENABLE_TIMING:
+            if numiters % 1000 == 0:
+                ctxt.timing('iter %i: len(worklist): %i  analyzing node: %s',
+                            numiters, len(worklist), node)
+        else:
+            ctxt.log('iter %i: len(worklist): %i  analyzing node: %s',
+                     numiters, len(worklist), node)
         with ctxt.indent():
             oldvalue = node.states
-            ctxt.log('old value: %s' % oldvalue)
+            ctxt.log('old value: %s', oldvalue)
             newvalue = None
             for edge in node.preds:
                 ctxt.log('analyzing in-edge: %s', edge)
@@ -706,6 +719,7 @@ def fixed_point_solver(ctxt):
                         worklist.append(dstnode)
                         workset.add(dstnode)
 
+    ctxt.timing('took %i iterations to reach fixed point', numiters)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
