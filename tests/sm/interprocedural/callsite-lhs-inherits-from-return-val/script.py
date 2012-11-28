@@ -19,5 +19,19 @@
 from sm import main
 from sm.parser import parse_file
 
+def selftest(ctxt, solution):
+    if 0:
+        import sys
+        solution.dump(sys.stderr)
+
+    # Verify that the:
+    #   int *p = calls_malloc();
+    # transitions "p" from "ptr.all" to "ptr.unknown"
+    node = ctxt.find_call_of('calls_malloc')
+    ctxt.assert_states_for_varname(node, 'p', {'ptr.all'})
+
+    node = ctxt.get_intraprocedural_successor(node)
+    ctxt.assert_states_for_varname(node, 'p', {'ptr.unknown'})
+
 checker = parse_file('sm/checkers/malloc_checker.sm')
-main([checker])
+main([checker], selftest=selftest)

@@ -36,7 +36,7 @@ from gccutils import DotPrettyPrinter, invoke_dot
 from gccutils.graph import Graph, Node, Edge, \
     ExitNode, SplitPhiNode, \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
-    SupergraphNode, SupergraphEdge
+    SupergraphNode, SupergraphEdge, CallNode, ReturnNode
 from gccutils.dot import to_html
 
 import sm.checker
@@ -1033,6 +1033,12 @@ class Context:
                             return node
         raise ValueError('call to %s() not found' % funcname)
 
+    def find_implementation_of(self, funcname):
+        for fun in self.graph.stmtg_for_fun:
+            if fun.decl.name == funcname:
+                return self.graph.supernode_for_stmtnode[self.graph.stmtg_for_fun[fun].entry]
+        raise ValueError('implementation of %s() not found' % funcname)
+
     def find_comparison_against(self, exprcode, const, within=None):
         for node in self.graph.nodes:
             if within:
@@ -1057,6 +1063,22 @@ class Context:
             if edge.true_value:
                 return edge.dstnode
         raise ValueError('could not find true successor of node %s' % node)
+
+    def get_intraprocedural_successor(self, node):
+        """
+        Given a callsite, get the next node within that function
+        i.e. the second half of the callsite: wrapping the assignment of the
+        return value to the LHS
+        """
+        assert isinstance(node, CallNode)
+        assert isinstance(node.stmt, gcc.GimpleCall)
+        for edge in node.succs:
+            if isinstance(edge, CallToReturnSiteEdge):
+                assert isinstance(edge.dstnode, ReturnNode)
+                assert isinstance(edge.dstnode.stmt, gcc.GimpleCall)
+                return edge.dstnode
+        raise ValueError('could not find intraprocedural successor of node %s'
+                         % node)
 
     def find_var(self, node, varname):
         for var in self.scopes[node.function]:
