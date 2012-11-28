@@ -36,7 +36,7 @@ sm sizeof_allocation {
                       % (type_pointed_to, required_size, allocated_size))
 
         # Handle cases where the cast happens on another line:
-        set_state("ptr.sized", size=allocated_size)
+        set_state("ptr.sized", size=int(allocated_size))
   }}
 
   ptr.all:

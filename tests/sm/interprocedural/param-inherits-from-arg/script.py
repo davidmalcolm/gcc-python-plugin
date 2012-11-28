@@ -27,7 +27,7 @@ def selftest(ctxt, solution):
     # Verify that uses_ptr()'s "q" param  inherits "ptr.unknown"
     # from the argument "p"
     node = ctxt.find_implementation_of('uses_ptr')
-    ctxt.assert_states_for_varname(node, 'q', {'ptr.unknown'})
+    ctxt.assert_statenames_for_varname(node, 'q', {'ptr.unknown'})
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

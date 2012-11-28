@@ -1093,19 +1093,26 @@ class Context:
                 return expr
         raise ValueError('expression %s not found' % exprstr)
 
-    def assert_states_for_expr(self, node, expr, expectedstatenames):
+    def assert_states_for_expr(self, node, expr, expectedstates):
         expr = simplify(expr)
-        expectedstates = set([State(name)
-                              for name in expectedstatenames])
         actualstates = node.states.get_states_for_expr(self, expr)
         if actualstates != expectedstates:
             raise ValueError('wrong states; expected %s but got %s'
                              % (stateset_to_str(expectedstates),
                                 stateset_to_str(actualstates)))
 
-    def assert_states_for_varname(self, node, varname, expectedstatenames):
+    def assert_states_for_varname(self, node, varname, expectedstates):
         var = self.find_var(node, varname)
-        self.assert_states_for_expr(node, var, expectedstatenames)
+        self.assert_states_for_expr(node, var, expectedstates)
+
+    def assert_statenames_for_expr(self, node, expr, expectedstatenames):
+        expectedstates = set([State(name)
+                              for name in expectedstatenames])
+        self.assert_states_for_expr(node, expr, expectedstates)
+
+    def assert_statenames_for_varname(self, node, varname, expectedstatenames):
+        var = self.find_var(node, varname)
+        self.assert_statenames_for_expr(node, var, expectedstatenames)
 
 def solve(ctxt, name, selftest):
     ctxt.log('running %s', ctxt.sm.name)

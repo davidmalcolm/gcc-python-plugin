@@ -32,34 +32,34 @@ def selftest(ctxt, solution):
     #    D.2837_3 = fread (&tmp, 260, 1, f_2(D));
     # transitions "tmp" from "x.start" to "x.tainted"
     node = ctxt.find_call_of('fread', within='test3')
-    ctxt.assert_states_for_varname(node, 'tmp', {'x.start'})
+    ctxt.assert_statenames_for_varname(node, 'tmp', {'x.start'})
 
     node = ctxt.get_successor(node)
-    ctxt.assert_states_for_varname(node, 'tmp', {'x.tainted'})
+    ctxt.assert_statenames_for_varname(node, 'tmp', {'x.tainted'})
 
     # Verify that the:
     #    if (D.n >= 0)
     # transitions "D.n" from "x.tainted" to "x.has_lb"
     node = ctxt.find_comparison_against(gcc.GeExpr, 0, within='test3')
     tempvar = node.stmt.lhs
-    ctxt.assert_states_for_expr(node, tempvar, {'x.tainted'})
+    ctxt.assert_statenames_for_expr(node, tempvar, {'x.tainted'})
 
     node = ctxt.get_true_successor(node)
-    ctxt.assert_states_for_expr(node, tempvar, {'x.has_lb'})
+    ctxt.assert_statenames_for_expr(node, tempvar, {'x.has_lb'})
 
     # Verify that the:
     #    if (D.n <= 255)
     # transitions "D.n" from "x.has_lb" to "x.ok"
     node = ctxt.find_comparison_against(gcc.LeExpr, 255, within='test3')
     tempvar = node.stmt.lhs
-    ctxt.assert_states_for_expr(node, tempvar, {'x.has_lb'})
+    ctxt.assert_statenames_for_expr(node, tempvar, {'x.has_lb'})
 
     node = ctxt.get_true_successor(node)
-    ctxt.assert_states_for_expr(node, tempvar, {'x.ok'})
+    ctxt.assert_statenames_for_expr(node, tempvar, {'x.ok'})
 
     # Verify that it's within the same equivcls as "tmp.i"
     tmp_i = ctxt.get_expr_by_str(node, 'tmp.i')
-    ctxt.assert_states_for_expr(node, tmp_i, {'x.ok'})
+    ctxt.assert_statenames_for_expr(node, tmp_i, {'x.ok'})
 
 checker = parse_file('sm/checkers/taint.sm')
 #print(checker)

@@ -28,10 +28,10 @@ def selftest(ctxt, solution):
     #    foo = malloc()
     # transitions "foo" from "ptr.all" to "ptr.unknown"
     node = ctxt.find_call_of('malloc')
-    ctxt.assert_states_for_varname(node, 'foo', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.all'})
 
     node = ctxt.get_successor(node)
-    ctxt.assert_states_for_varname(node, 'foo', {'ptr.unknown'})
+    ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.unknown'})
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

@@ -18,6 +18,23 @@
 
 from sm import main
 from sm.parser import parse_file
+from sm.solver import State
+
+def selftest(ctxt, solution):
+    if 0:
+        import sys
+        solution.dump(sys.stderr)
+
+    # Verify that the set_state() due to the pattern match for:
+    #     ptr = malloc(sizeof(struct bar));
+    # transitions the state of ptr from "ptr.all" to a "ptr.sized" instance
+    # with the correct size
+    node = ctxt.find_call_of('malloc')
+    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.all'})
+
+    node = ctxt.get_successor(node)
+    ctxt.assert_states_for_varname(node, 'ptr',
+                                   {State('ptr.sized', size=128)})
 
 checker = parse_file('sm/checkers/sizeof_allocation.sm')
-main([checker])
+main([checker], selftest=selftest)

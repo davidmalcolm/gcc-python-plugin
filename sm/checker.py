@@ -777,7 +777,7 @@ class PythonOutcome(Outcome, PythonFragment):
 
             newresult = srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
                                                     fpmctxt.pm.expr,
-                                                    state)
+                                                    globals_['state'])
             ctxt.log('newresult: %s' % newresult)
             result = AbstractValue.union(ctxt, result, newresult)
         return result
