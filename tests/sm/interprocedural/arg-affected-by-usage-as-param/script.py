@@ -19,5 +19,18 @@
 from sm import main
 from sm.parser import parse_file
 
+def selftest(ctxt, solution):
+    if 0:
+        import sys
+        solution.dump(sys.stderr)
+
+    # Verify that calls_free() converts "p" within the caller from "ptr.all"
+    # to "ptr.free":
+    node = ctxt.find_call_of('calls_free')
+    ctxt.assert_states_for_varname(node, 'p', {'ptr.all'})
+
+    node = ctxt.get_intraprocedural_successor(node)
+    ctxt.assert_states_for_varname(node, 'p', {'ptr.free'})
+
 checker = parse_file('sm/checkers/malloc_checker.sm')
-main([checker])
+main([checker], selftest=selftest)
