@@ -1,0 +1,13 @@
+test_cycle (__main__.GraphTests) ... ok
+test_long_path (__main__.GraphTests) ... ok
+test_to_dot (__main__.GraphTests) ... ok
+test_cycles (__main__.PathfindingTests) ... ok
+test_fork (__main__.PathfindingTests) ... ok
+test_long_path (__main__.PathfindingTests) ... ok
+test_no_path (__main__.PathfindingTests) ... ok
+test_trivial_path (__main__.PathfindingTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in #s
+
+OK
