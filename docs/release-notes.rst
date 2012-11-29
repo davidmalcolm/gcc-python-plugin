@@ -20,6 +20,7 @@ Release Notes
 
 .. toctree::
    
+   0.11.rst
    0.10.rst
    0.9.rst
    0.8.rst
