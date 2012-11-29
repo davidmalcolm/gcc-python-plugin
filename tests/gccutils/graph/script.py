@@ -117,7 +117,9 @@ class PathfindingTests(unittest.TestCase):
         self.assertEqual(path, [ab])
 
     def test_long_path(self):
-        LENGTH = 100
+        # Verify that get_shortest_path() can handle reasonably-sized graphs:
+        #LENGTH = 100
+        LENGTH = 10000
         g = Graph()
         first, last = add_long_path(g, LENGTH)
         path = g.get_shortest_path(first, last)

@@ -134,13 +134,31 @@ class Graph:
             inedge[node] = None
         distance[srcnode] = 0
 
-        worklist = list(self.nodes)
+        # We use a heapq to keep the nodes sorted by distance
+        # The items in the heapq are lists of the form:
+        #    [distance_to_node, node, is_live)
+        # The first entry in the list ensures that the heapq is sorted
+        # into the order needed for Dijkstra's algorithm
+        #
+        # Since we can't change the priority of items within a heapq,
+        # whenever we need to update the distance we mark the existing
+        # item as dead (setting the is_live boolean to False), and add a
+        # new entry with the correct value; we ignore dead items during
+        # the iteration
+        #
+        # This gets the time taken for a simple 10000 node graph down to
+        # ~3 seconds, compared to minutes/hours.
+        from heapq import heapify, heappop, heappush
+        item_for_node = {}
+        for node in self.nodes:
+            item_for_node[node] = [distance[node], node, True]
+
+        worklist = list(item_for_node.values())
+        heapify(worklist)
         while worklist:
-            # we don't actually need to do a full sort each time, we could
-            # just update the position of the item that changed
-            worklist.sort(lambda node1, node2:
-                              distance[node1] - distance[node2])
-            node = worklist[0]
+            disttonode, node, islive = heappop(worklist)
+            while not islive:
+                disttonode, node, islive = heappop(worklist)
             if node == dstnode:
                 # We've found the target node; build a path of the edges to
                 # follow to get here:
@@ -149,7 +167,6 @@ class Graph:
                     path = [inedge[node]] + path
                     node = inedge[node].srcnode
                 return path
-            worklist = worklist[1:]
             if distance[node] == INFINITY:
                 # disjoint
                 break
@@ -157,8 +174,16 @@ class Graph:
                 alt = distance[node] + 1
                 if alt < distance[edge.dstnode]:
                     distance[edge.dstnode] = alt
+                    # Changing the distance of edge.dstnode requires us to
+                    # update the heapq:
+                    # Mark the existing item as dead:
+                    item_for_node[edge.dstnode][2] = False
+                    # Create a new itemwith the new distance:
+                    newitem = [alt, edge.dstnode, True]
+                    item_for_node[edge.dstnode] = newitem
+                    heappush(worklist, newitem)
                     inedge[edge.dstnode] = edge
-
+        return None
 
 
 class Node:
