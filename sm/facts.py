@@ -224,58 +224,13 @@ class Facts(AbstractValue):
         result._facts = frozenset(dstfacts)
         return result
 
-def find_facts(ctxt, graph):
-    """
-    Add a "facts" field to the nodes in the graph.
-
-    Used as a preprocessing step on the supergraph, and also
-    on the ErrorGraph for a specific error
-    """
-    ctxt.log('find_facts()')
-    with ctxt.indent():
-        worklist = []
-        done = set()
-        for node in graph.nodes:
-            node.facts = Facts()
-        for node in graph.get_entry_nodes():
-            worklist.append(node)
-        while worklist:
-            srcnode = worklist.pop()
-            ctxt.debug('considering %s', srcnode)
-            done.add(srcnode)
-            ctxt.debug('len(done): %s', len(done))
-            # ctxt.debug('done: %s', done)
-            with ctxt.indent():
-                srcfacts = srcnode.facts
-                ctxt.debug('srcfacts: %s', srcfacts)
-                for edge in srcnode.succs:
-                    stmt = srcnode.stmt
-                    dstnode = edge.dstnode
-
-                    # Set the location so that if an unhandled exception occurs, it should
-                    # at least identify the code that triggered it:
-                    if stmt:
-                        if stmt.loc:
-                            gcc.set_location(stmt.loc)
-
-                    ctxt.debug('considering edge to %s', dstnode)
-                    with ctxt.indent():
-                        if len(dstnode.preds) == 1:
-                            ctxt.debug('dstnode has single pred; gathering known facts')
-                            dstfacts = srcfacts.get_facts_after(ctxt, edge)
-                            ctxt.debug('dstfacts: %s', dstfacts)
-                            dstnode.facts = dstfacts
-                        if dstnode not in done:
-                            worklist.append(dstnode)
-
-
-def remove_impossible(ctxt, graph):
+def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
     # impossible to actually reach
     ctxt.log('remove_impossible')
     changes = 0
     for node in graph.nodes:
-        if not node.facts.is_possible(ctxt):
+        if not facts_for_node[node].is_possible(ctxt):
             ctxt.log('removing impossible node: %s' % node)
             graph.remove_node(node)
             changes += 1

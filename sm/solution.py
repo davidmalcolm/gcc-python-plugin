@@ -403,15 +403,18 @@ class Solution:
         with self.ctxt.indent():
             errgraph = self.build_error_graph(dstnode, equivcls, state)
 
-            from sm.facts import find_facts, remove_impossible
+            from sm.facts import remove_impossible, Facts
+            from sm.solver import fixed_point_solver, Timer
 
-            find_facts(self.ctxt, errgraph)
-            changes = remove_impossible(self.ctxt, errgraph)
+            with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
+                facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
+            changes = remove_impossible(self.ctxt, facts_for_errnode, errgraph)
             # Removing impossible nodes may lead to more facts being known;
             # keep going until you can't remove any more:
             while changes:
-                find_facts(self.ctxt, errgraph)
-                changes = remove_impossible(self.ctxt, errgraph)
+                with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
+                    facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
+                changes = remove_impossible(self.ctxt, facts_for_errnode, errgraph)
 
             dsttriple = (dstnode,
                          equivcls,

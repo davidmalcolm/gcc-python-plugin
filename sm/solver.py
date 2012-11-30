@@ -679,13 +679,13 @@ class StatesForNode(AbstractValue):
                 _dict[expr] = states
         return StatesForNode(lhs.node, _dict)
 
-def fixed_point_solver(ctxt, cls):
+def fixed_point_solver(ctxt, graph, cls):
     # Given an AbstractValue subclass "cls", find the fixed point,
     # generating a dict from Node to cls instance
     # Use "None" as the bottom element: unreachable
     # otherwise, a cls instance
     result = {}
-    for node in ctxt.graph.nodes:
+    for node in graph.nodes:
         result[node] = None
 
     # FIXME: make this a priority queue, in the node's topological order?
@@ -693,7 +693,7 @@ def fixed_point_solver(ctxt, cls):
     # Set up worklist:
     workset = set()
     worklist = []
-    for node in ctxt.graph.get_entry_nodes():
+    for node in graph.get_entry_nodes():
         result[node] = cls.make_entry_point(ctxt, node)
         for edge in node.succs:
             worklist.append(edge.dstnode)
@@ -1027,7 +1027,7 @@ class Context:
         # values of functions
         from sm.facts import Facts
         with Timer(self, 'fixed_point_solver(Facts)'):
-            self.facts_for_node = fixed_point_solver(self, Facts)
+            self.facts_for_node = fixed_point_solver(self, self.graph, Facts)
 
         # Preprocessing phase: locate places where rvalues are leaked, for
         # later use by $leaked/LeakedPattern
@@ -1047,7 +1047,7 @@ class Context:
         # reachable for each in-scope expr at each node.  This isn't yet
         # wired up to anything:
         with Timer(self, 'fixed_point_solver(StatesForNode)'):
-            self.states_for_node = fixed_point_solver(self, StatesForNode)
+            self.states_for_node = fixed_point_solver(self, self.graph, StatesForNode)
 
         # The "real" solver: an older implementation, which generates the
         # errors for later processing:
