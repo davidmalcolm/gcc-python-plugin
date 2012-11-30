@@ -389,7 +389,7 @@ class Solution:
     def get_shortest_path_to(self, dstnode, equivcls, state):
         # backtrack from destination until you reach a srcnode whilst
         # obeying various restrictions:
-        #   * equivclss/states have to match (or have state transitions)
+        #   * equivcls/states have to match (or have state transitions)
         #   * call stack has to be obeyed: return to correct caller
         #   * perhaps some simple rules about known "state", to suppress
         #   the most obvious false positives
