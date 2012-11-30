@@ -91,8 +91,9 @@ class ErrorNode(Node):
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('match: %s' % self.match))
-        if self.facts._facts:
-            for fact in self.facts._facts:
+        facts = ctxt.facts_for_errnode[self]
+        if facts:
+            for fact in facts._facts:
                 tr = table.add_child(Tr())
                 td = tr.add_child(Td(align='left'))
                 td.add_child(Text('FACT: %s' % (fact, )))
@@ -292,7 +293,7 @@ class Solution:
                     td.add_child(Text('NO CHANGES'))
                 """
                 facts = self.solution.ctxt.facts_for_node[node]
-                if facts._facts:
+                if facts:
                     for fact in facts._facts:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
@@ -407,14 +408,14 @@ class Solution:
             from sm.solver import fixed_point_solver, Timer
 
             with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
-            changes = remove_impossible(self.ctxt, facts_for_errnode, errgraph)
+                self.ctxt.facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
+            changes = remove_impossible(self.ctxt, self.ctxt.facts_for_errnode, errgraph)
             # Removing impossible nodes may lead to more facts being known;
             # keep going until you can't remove any more:
             while changes:
                 with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                    facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
-                changes = remove_impossible(self.ctxt, facts_for_errnode, errgraph)
+                    self.ctxt.facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
+                changes = remove_impossible(self.ctxt, self.ctxt.facts_for_errnode, errgraph)
 
             dsttriple = (dstnode,
                          equivcls,
@@ -429,7 +430,7 @@ class Solution:
                 global num_error_graphs
                 num_error_graphs += 1
                 name = 'error_graph_%i' % num_error_graphs
-                dot = errgraph.to_dot(name)
+                dot = errgraph.to_dot(name, self.ctxt)
                 invoke_dot(dot, name)
         self.ctxt.log('calculating shortest path through error graph')
         with self.ctxt.indent():
