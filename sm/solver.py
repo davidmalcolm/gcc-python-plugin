@@ -36,7 +36,7 @@ from gccutils import DotPrettyPrinter, invoke_dot
 from gccutils.graph import Graph, Node, Edge, \
     ExitNode, SplitPhiNode, \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
-    SupergraphNode, SupergraphEdge, CallNode, ReturnNode
+    SupergraphNode, SupergraphEdge, CallNode, ReturnNode, FakeEntryEdge
 from gccutils.dot import to_html
 
 import sm.checker
@@ -197,6 +197,16 @@ def consider_edge(ctxt, solution, item, edge):
         # Stop iterating, effectively purging state outside that of the
         # called function:
         return
+    elif isinstance(edge, FakeEntryEdge):
+        if equivcls:
+            for param in srcnode.stmt.fndecl.arguments:
+                # FIXME: change fndecl.arguments to fndecl.parameters
+                if 1:
+                    ctxt.debug('  param: %r', param)
+                yield WorklistItem.from_expr(ctxt, dstnode, param,
+                                             state, None)
+        else:
+            yield WorklistItem(dstnode, None, state, None) # FIXME
     elif isinstance(edge, ExitToReturnSite):
         # Propagate state through the return value:
         # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
@@ -508,10 +518,12 @@ class StatesForNode(AbstractValue):
     @classmethod
     def make_entry_point(cls, ctxt, node):
         _dict = {}
-        for expr in ctxt.smexprs[node.function]:
-            if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
-                _dict[ctxt.get_aliases(node, expr)] = \
-                    frozenset([ctxt.get_default_state()])
+        function = node.function
+        if function:
+            for expr in ctxt.smexprs[function]:
+                if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
+                    _dict[ctxt.get_aliases(node, expr)] = \
+                        frozenset([ctxt.get_default_state()])
         return StatesForNode(node, _dict)
 
     @classmethod
@@ -555,6 +567,13 @@ class StatesForNode(AbstractValue):
                 arg = simplify(arg)
                 _dict[ctxt.get_aliases(dstnode, param)] = \
                     srcvalue.get_states_for_expr(ctxt, arg)
+            return StatesForNode(dstnode, _dict)
+        elif isinstance(edge, FakeEntryEdge):
+            _dict = {}
+            for expr in ctxt.smexprs[dstnode.function]:
+                if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
+                    _dict[ctxt.get_aliases(dstnode, expr)] = \
+                        frozenset([ctxt.get_default_state()])
             return StatesForNode(dstnode, _dict)
         elif isinstance(edge, ExitToReturnSite):
             # Propagate state through the return value:

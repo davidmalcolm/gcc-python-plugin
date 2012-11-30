@@ -573,16 +573,8 @@ class Supergraph(Graph):
                             None)
                         superedge_return.calling_stmtnode = calling_stmtnode
 
-    def add_node(self, supernode):
-        Graph.add_node(self, supernode)
-        # Keep track of mapping from stmtnode -> supernode
-        self.supernode_for_stmtnode[supernode.innernode] = supernode
-        return supernode
-
-    def _make_edge(self, srcnode, dstnode, cls, edge):
-        return cls(srcnode, dstnode, edge)
-
-    def get_entry_nodes(self):
+        # 4th pass: create fake entry node:
+        self.fake_entry_node = self.add_node(FakeEntryNode(None, None))
         """
 	/* At file scope, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers
@@ -599,7 +591,22 @@ class Supergraph(Graph):
             # Only for non-static functions:
             if fun.decl.is_public:
                 stmtg = self.stmtg_for_fun[fun]
-                yield stmtg.supernode_for_stmtnode[stmtg.entry]
+                self.add_edge(self.fake_entry_node,
+                              stmtg.supernode_for_stmtnode[stmtg.entry],
+                              FakeEntryEdge,
+                              None)
+
+    def add_node(self, supernode):
+        Graph.add_node(self, supernode)
+        # Keep track of mapping from stmtnode -> supernode
+        self.supernode_for_stmtnode[supernode.innernode] = supernode
+        return supernode
+
+    def _make_edge(self, srcnode, dstnode, cls, edge):
+        return cls(srcnode, dstnode, edge)
+
+    def get_entry_nodes(self):
+        yield self.fake_entry_node
 
     def get_functions(self):
         for fun in self.stmtg_for_fun:
@@ -625,23 +632,28 @@ class SupergraphNode(Node):
 
     @property
     def stmt(self):
-        return self.innernode.get_stmt()
+        if self.innernode:
+            return self.innernode.get_stmt()
 
     def get_stmt(self):
-        return self.innernode.get_stmt()
+        if self.innernode:
+            return self.innernode.get_stmt()
 
     def get_gcc_loc(self):
-        return self.innernode.get_gcc_loc()
+        if self.innernode:
+            return self.innernode.get_gcc_loc()
 
     def get_subgraph(self, ctxt):
-        return self.stmtg.fun.decl.name
+        if self.stmtg:
+            return self.stmtg.fun.decl.name
 
     @property
     def function(self):
         """
         Get the gcc.Function for this node
         """
-        return self.stmtg.fun
+        if self.stmtg:
+            return self.stmtg.fun
 
 class CallNode(SupergraphNode):
     """
@@ -659,6 +671,24 @@ class ReturnNode(SupergraphNode):
     """
     pass
 
+class FakeEntryNode(SupergraphNode):
+    """
+    Fake entry node which links to all externally-visible entry nodes, so
+    that a supergraph can have a unique entrypoint.
+
+    It represents "the outside world" when analyzing the supergraph of a
+    shared library.
+    """
+    def __str__(self):
+        return 'ALL ENTRYPOINTS'
+
+    def __repr__(self):
+        return 'FakeEntryNode'
+
+    def to_dot_html(self, ctxt):
+        from gccutils.dot import Text
+        return Text('ALL ENTRYPOINTS')
+
 class SupergraphEdge(Edge):
     """
     An edge in the supergraph, wrapping a StmtEdge,
@@ -669,7 +699,8 @@ class SupergraphEdge(Edge):
         self.inneredge = inneredge
 
     def to_dot_label(self, ctxt):
-        return self.inneredge.to_dot_label(ctxt)
+        if self.inneredge:
+            return self.inneredge.to_dot_label(ctxt)
 
     @property
     def true_value(self):
@@ -716,3 +747,13 @@ class ExitToReturnSite(SupergraphEdge):
     def to_dot_attrs(self, ctxt):
         #return ' constraint=false, style=dotted'
         return ' style=dotted'
+
+class FakeEntryEdge(SupergraphEdge):
+    """
+    Fake edge from the FakeEntryNode to one of the entrypoints.
+
+    This represents a call "from outside" the scope of the supergraph
+    (e.g. for analyzing a library)
+    """
+    def to_dot_label(self, ctxt):
+        return 'external call'

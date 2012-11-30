@@ -395,34 +395,36 @@ class Solution:
         #   * perhaps some simple rules about known "state", to suppress
         #   the most obvious false positives
 
-        self.ctxt.debug('get_shortest_path_to:')
-        self.ctxt.debug('  dstnode: %s', dstnode)
-        self.ctxt.debug('  equivcls: %s', equivcls)
-        self.ctxt.debug('  state: %s', state)
+        ctxt = self.ctxt
 
-        self.ctxt.log('building error graph')
-        with self.ctxt.indent():
+        ctxt.debug('get_shortest_path_to:')
+        ctxt.debug('  dstnode: %s', dstnode)
+        ctxt.debug('  equivcls: %s', equivcls)
+        ctxt.debug('  state: %s', state)
+
+        ctxt.log('building error graph')
+        with ctxt.indent():
             errgraph = self.build_error_graph(dstnode, equivcls, state)
 
             from sm.facts import remove_impossible, Facts
             from sm.solver import fixed_point_solver, Timer
 
-            with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                self.ctxt.facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
-            changes = remove_impossible(self.ctxt, self.ctxt.facts_for_errnode, errgraph)
+            with Timer(ctxt, 'fixed_point_solver(errgraph, Facts)'):
+                ctxt.facts_for_errnode = fixed_point_solver(ctxt, errgraph, Facts)
+            changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
             # Removing impossible nodes may lead to more facts being known;
             # keep going until you can't remove any more:
             while changes:
-                with Timer(self.ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                    self.ctxt.facts_for_errnode = fixed_point_solver(self.ctxt, errgraph, Facts)
-                changes = remove_impossible(self.ctxt, self.ctxt.facts_for_errnode, errgraph)
+                with Timer(ctxt, 'fixed_point_solver(errgraph, Facts)'):
+                    ctxt.facts_for_errnode = fixed_point_solver(ctxt, errgraph, Facts)
+                changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
 
             dsttriple = (dstnode,
                          equivcls,
                          state)
             dsterrnode = errgraph.node_for_triple[dsttriple]
             if dsterrnode not in errgraph.nodes:
-                self.ctxt.log('dsttriple removed from errgraph')
+                ctxt.log('dsttriple removed from errgraph')
                 return None
 
             from sm.solver import SHOW_ERROR_GRAPH
@@ -430,26 +432,16 @@ class Solution:
                 global num_error_graphs
                 num_error_graphs += 1
                 name = 'error_graph_%i' % num_error_graphs
-                dot = errgraph.to_dot(name, self.ctxt)
+                dot = errgraph.to_dot(name, ctxt)
                 invoke_dot(dot, name)
-        self.ctxt.log('calculating shortest path through error graph')
-        with self.ctxt.indent():
-            shortestpath = None
-            for srcnode in self.ctxt.graph.get_entry_nodes():
-                self.ctxt.log('considering paths from %s' % srcnode)
-                with self.ctxt.indent():
-                    srctriple = (srcnode,
-                                 None,
-                                 self.ctxt.get_default_state())
-                    if srctriple in errgraph.node_for_triple:
-                        srcerrnode = errgraph.node_for_triple[srctriple]
-                        path = errgraph.get_shortest_path(srcerrnode, dsterrnode)
-                        if shortestpath is not None:
-                            if len(path) < len(shortestpath):
-                                shortestpath = path
-                        else:
-                            shortestpath = path
-                    else:
-                        self.ctxt.log('srctriple not present in errgraph')
-        return shortestpath
+        ctxt.log('calculating shortest path through error graph')
+        srctriple = (ctxt.graph.fake_entry_node,
+                     None,
+                     ctxt.get_default_state())
+        if srctriple in errgraph.node_for_triple:
+            srcerrnode = errgraph.node_for_triple[srctriple]
+            return errgraph.get_shortest_path(srcerrnode, dsterrnode)
+        else:
+            ctxt.log('srctriple not present in errgraph')
+            return None
 

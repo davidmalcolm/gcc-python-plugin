@@ -59,6 +59,7 @@ class Error:
             return
 
         error(loc, self.msg)
+        msgcount = 1
         for edge in path:
             # ctxt.debug(srcnode)
             # FIXME: this needs to respect the StateVar, in case of a returned value...
@@ -113,6 +114,7 @@ class Error:
                             desc += ': '
                         desc += edge.srcnode.match.description(ctxt)
                         inform(gccloc, desc)
+                        msgcount += 1
                 elif get_user_expr(srcequivcls) != get_user_expr(dstequivcls) \
                         and srcstate != ctxt.get_default_state():
                     ctxt.log('equivcls change!')
@@ -124,6 +126,7 @@ class Error:
                                 srcstate,
                                 equivcls_to_user_str(ctxt, dstsupernode, dstequivcls)))
                     inform(gccloc, desc)
+                    msgcount += 1
                 else:
                     # Debugging information on state change:
                     if 0:
@@ -132,13 +135,16 @@ class Error:
                                     srcequivcls, srcstate,
                                     dstequivcls, dststate))
                         inform(gccloc, desc)
+                        msgcount += 1
                     else:
                         if desc:
                             inform(gccloc, desc)
+                            msgcount += 1
             continue
 
-        # repeat the message at the end of the path:
-        if len(path) > 1:
+        # repeat the message at the end of the path, if anything else has
+        # been said:
+        if msgcount > 1:
             gccloc = path[-1].dstnode.innernode.get_gcc_loc()
             if gccloc:
                 inform(gccloc, self.msg)
