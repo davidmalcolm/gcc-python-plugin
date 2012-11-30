@@ -421,6 +421,9 @@ class FixedPointMatchContext:
         self.matchingstates = matchingstates
 
 class AbstractValue:
+    pass
+
+class StatesForNode(AbstractValue):
     def __init__(self, node, _dict):
         assert isinstance(node, SupergraphNode)
         self.node = node
@@ -436,7 +439,7 @@ class AbstractValue:
         return '{%s}' % ', '.join(kvstrs)
 
     def __eq__(self, other):
-        if isinstance(other, AbstractValue):
+        if isinstance(other, StatesForNode):
             if self.node == other.node:
                 return self._dict == other._dict
 
@@ -482,7 +485,7 @@ class AbstractValue:
         for equivcls, states in self._dict.iteritems():
             for expr in equivcls:
                 _dict[dstnode.facts.get_aliases(expr)] = states
-        return AbstractValue(dstnode, _dict)
+        return StatesForNode(dstnode, _dict)
 
     @classmethod
     def make_entry_point(cls, ctxt, node):
@@ -490,11 +493,11 @@ class AbstractValue:
         for expr in ctxt.smexprs[node.function]:
             if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
                 _dict[node.facts.get_aliases(expr)] = frozenset([ctxt.get_default_state()])
-        return AbstractValue(node, _dict)
+        return StatesForNode(node, _dict)
 
     @classmethod
     def get_edge_value(cls, ctxt, srcvalue, edge):
-        assert isinstance(srcvalue, AbstractValue) # not None
+        assert isinstance(srcvalue, StatesForNode) # not None
         srcnode = edge.srcnode
         dstnode = edge.dstnode
         stmt = srcnode.get_stmt()
@@ -533,7 +536,7 @@ class AbstractValue:
                 arg = simplify(arg)
                 _dict[dstnode.facts.get_aliases(param)] = \
                     srcvalue.get_states_for_expr(ctxt, arg)
-            return AbstractValue(dstnode, _dict)
+            return StatesForNode(dstnode, _dict)
         elif isinstance(edge, ExitToReturnSite):
             # Propagate state through the return value:
             # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
@@ -559,7 +562,7 @@ class AbstractValue:
                     ctxt.debug('  arg: %r', arg)
                 _dict[dstnode.facts.get_aliases(simplify(arg))] = \
                     srcvalue.get_states_for_expr(ctxt, simplify(param))
-            return AbstractValue(dstnode, _dict)
+            return StatesForNode(dstnode, _dict)
 
         matches = []
 
@@ -646,8 +649,8 @@ class AbstractValue:
             return rhs
         if rhs is None:
             return lhs
-        assert isinstance(lhs, AbstractValue)
-        assert isinstance(rhs, AbstractValue)
+        assert isinstance(lhs, StatesForNode)
+        assert isinstance(rhs, StatesForNode)
         assert lhs.node == rhs.node
         _dict = lhs._dict.copy()
         for expr, states in rhs._dict.iteritems():
@@ -655,15 +658,16 @@ class AbstractValue:
                 _dict[expr] |= states
             else:
                 _dict[expr] = states
-        return AbstractValue(lhs.node, _dict)
+        return StatesForNode(lhs.node, _dict)
 
-def fixed_point_solver(ctxt):
-    # Store "states" attribute on nodes giving a description of the possible
-    # states that can reach this node.
+def fixed_point_solver(ctxt, cls):
+    # Given an AbstractValue subclass "cls", find the fixed point,
+    # generating a dict from Node to cls instance
     # Use "None" as the bottom element: unreachable
-    # otherwise, an AbstractValue instance
+    # otherwise, a cls instance
+    result = {}
     for node in ctxt.graph.nodes:
-        node.states = None
+        result[node] = None
 
     # FIXME: make this a priority queue, in the node's topological order?
 
@@ -671,7 +675,7 @@ def fixed_point_solver(ctxt):
     workset = set()
     worklist = []
     for node in ctxt.graph.get_entry_nodes():
-        node.states = AbstractValue.make_entry_point(ctxt, node)
+        result[node] = cls.make_entry_point(ctxt, node)
         for edge in node.succs:
             worklist.append(edge.dstnode)
             workset.add(edge.dstnode)
@@ -689,27 +693,27 @@ def fixed_point_solver(ctxt):
             ctxt.log('iter %i: len(worklist): %i  analyzing node: %s',
                      numiters, len(worklist), node)
         with ctxt.indent():
-            oldvalue = node.states
+            oldvalue = result[node]
             ctxt.log('old value: %s', oldvalue)
             newvalue = None
             for edge in node.preds:
                 ctxt.log('analyzing in-edge: %s', edge)
                 with ctxt.indent():
-                    srcvalue = edge.srcnode.states
+                    srcvalue = result[edge.srcnode]
                     ctxt.log('srcvalue: %s', srcvalue)
                     if srcvalue:
-                        edgevalue = AbstractValue.get_edge_value(ctxt, srcvalue, edge)
+                        edgevalue = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
                         if edgevalue:
                             assert edgevalue.node == node
-                        newvalue = AbstractValue.union(ctxt, newvalue, edgevalue)
+                        newvalue = cls.union(ctxt, newvalue, edgevalue)
                         ctxt.log('  new value: %s', newvalue)
             if newvalue != oldvalue:
                 ctxt.log('  value changed from: %s  to %s',
                          oldvalue,
                          newvalue)
                 assert newvalue.node == node
-                node.states = newvalue
+                result[node] = newvalue
                 for edge in node.succs:
                     dstnode = edge.dstnode
                     if dstnode not in workset:
@@ -717,6 +721,7 @@ def fixed_point_solver(ctxt):
                         workset.add(dstnode)
 
     ctxt.timing('took %i iterations to reach fixed point', numiters)
+    return result
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -1018,8 +1023,8 @@ class Context:
         # Work-in-progress: find the fixed point of all possible states
         # reachable for each in-scope expr at each node.  This isn't yet
         # wired up to anything:
-        with Timer(self, 'fixed_point_solver'):
-            fixed_point_solver(self)
+        with Timer(self, 'fixed_point_solver(StatesForNode)'):
+            self.states_for_node = fixed_point_solver(self, StatesForNode)
 
         # The "real" solver: an older implementation, which generates the
         # errors for later processing:
@@ -1115,7 +1120,7 @@ class Context:
 
     def assert_states_for_expr(self, node, expr, expectedstates):
         expr = simplify(expr)
-        actualstates = node.states.get_states_for_expr(self, expr)
+        actualstates = self.states_for_node[node].get_states_for_expr(self, expr)
         if actualstates != expectedstates:
             raise ValueError('wrong states; expected %s but got %s'
                              % (stateset_to_str(expectedstates),

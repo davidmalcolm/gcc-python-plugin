@@ -602,8 +602,8 @@ class TransitionTo(Outcome):
                                      mctxt.match)
 
     def get_result(self, fpmctxt, srcvalue):
-        from sm.solver import AbstractValue, State
-        assert isinstance(srcvalue, AbstractValue) # not None
+        from sm.solver import StatesForNode, State
+        assert isinstance(srcvalue, StatesForNode) # not None
 
         dststate = State(self.statename)
         return srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
@@ -717,8 +717,8 @@ class PythonOutcome(Outcome, PythonFragment):
         return []
 
     def get_result(self, fpmctxt, srcvalue):
-        from sm.solver import AbstractValue, State
-        assert isinstance(srcvalue, AbstractValue) # not None
+        from sm.solver import StatesForNode, State
+        assert isinstance(srcvalue, StatesForNode) # not None
 
         ctxt = fpmctxt.ctxt
 
@@ -779,5 +779,5 @@ class PythonOutcome(Outcome, PythonFragment):
                                                     fpmctxt.pm.expr,
                                                     globals_['state'])
             ctxt.log('newresult: %s' % newresult)
-            result = AbstractValue.union(ctxt, result, newresult)
+            result = StatesForNode.union(ctxt, result, newresult)
         return result

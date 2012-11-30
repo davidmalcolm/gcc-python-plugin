@@ -188,10 +188,11 @@ class Solution:
                                  for equivcls in node.facts.get_equiv_classes()]))
             # Write out state information from fixed point solver:
             writeln('fixed point states:')
-            for equivcls in node.states._dict:
+            states = self.ctxt.states_for_node[node]
+            for equivcls in states._dict:
                 writeln('%s: %s'
                         % (equivcls_to_str(equivcls),
-                           stateset_to_str(node.states._dict[equivcls])),
+                           stateset_to_str(states._dict[equivcls])),
                         indent=2)
 
             # Write out state information from old solver:
