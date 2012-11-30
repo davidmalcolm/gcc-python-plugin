@@ -39,6 +39,19 @@ class Fact:
     def __str__(self):
         return '%s %s %s' % (self.lhs, self.op, self.rhs)
 
+    def __repr__(self):
+        return 'Fact(%r, %r, %r)' % (self.lhs, self.op, self.rhs)
+
+    def __eq__(self, other):
+        if isinstance(other, Fact):
+            if self.lhs == other.lhs:
+                if self.op == other.op:
+                    if self.rhs == other.rhs:
+                        return True
+
+    def __hash__(self):
+        return hash(self.lhs) ^ hash(self.op) ^ hash(self.rhs)
+
     def __lt__(self, other):
         # Support sorting of facts to allow for consistent ordering in
         # test output

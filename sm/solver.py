@@ -487,7 +487,7 @@ class AbstractValue:
     @classmethod
     def make_entry_point(cls, ctxt, node):
         _dict = {}
-        for expr in ctxt.scopes[node.function]:
+        for expr in ctxt.smexprs[node.function]:
             if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
                 _dict[node.facts.get_aliases(expr)] = frozenset([ctxt.get_default_state()])
         return AbstractValue(node, _dict)
@@ -518,7 +518,7 @@ class AbstractValue:
             assert isinstance(srcnode.stmt, gcc.GimpleCall)
             # ctxt.debug(srcnode.stmt)
             _dict = {}
-            for expr in ctxt.scopes[dstnode.function]:
+            for expr in ctxt.smexprs[dstnode.function]:
                 if isinstance(expr, gcc.VarDecl):
                     _dict[dstnode.facts.get_aliases(expr)] = \
                         frozenset([ctxt.get_default_state()])
@@ -956,9 +956,20 @@ class Context:
                                                  mctxt.inneredge, mctxt.match, None)
 
     def find_scopes(self):
-        self.scopes = {}
+        """
+        Set up per-function dictionaries on the Context:
+
+           * allexprs: the set of all tree expressions visible in that
+                       function
+
+           * smexprs: the subset of the above that match the stateful sm
+                      expression type
+        """
+        self.allexprs = {}
+        self.smexprs = {}
         for function in self.graph.get_functions():
-            scope = set()
+            smexprs = set()
+            allexprs = set()
             def add_to_scope(node):
                 if isinstance(node, gcc.FunctionDecl):
                     return
@@ -966,15 +977,16 @@ class Context:
                     add_to_scope(node.var)
 
                 if isinstance(node, (gcc.VarDecl, gcc.ParmDecl, gcc.ComponentRef)):
+                    allexprs.add(node)
                     if self._stateful_decl.matched_by(node):
-                        scope.add(node)
+                        smexprs.add(node)
 
             for bb in function.cfg.basic_blocks:
                 if bb.gimple:
                     for stmt in bb.gimple:
                         stmt.walk_tree(add_to_scope)
-            self.scopes[function] = scope
-        #self.log('scopes: %r' % self.scopes)
+            self.allexprs[function] = allexprs
+            self.smexprs[function] = smexprs
 
     def solve(self, name):
         # Preprocessing phase: identify the scope of expressions within each
@@ -1081,17 +1093,25 @@ class Context:
                          % node)
 
     def find_var(self, node, varname):
-        for var in self.scopes[node.function]:
+        for var in self.allexprs[node.function]:
             if isinstance(var, (gcc.VarDecl, gcc.ParmDecl)):
                 if var.name == varname:
                     return var
         raise ValueError('variable %s not found' % varname)
 
     def get_expr_by_str(self, node, exprstr):
-        for expr in self.scopes[node.function]:
+        for expr in self.allexprs[node.function]:
             if str(expr) == exprstr:
                 return expr
         raise ValueError('expression %s not found' % exprstr)
+
+    def assert_fact(self, node, lhs, op, rhs):
+        from sm.facts import Fact
+        if isinstance(lhs, str):
+            lhs = self.get_expr_by_str(node, lhs)
+        expectedfact = Fact(lhs, op, rhs)
+        if expectedfact not in node.facts._facts:
+            raise ValueError('%s not in %s' % (expectedfact, node.facts))
 
     def assert_states_for_expr(self, node, expr, expectedstates):
         expr = simplify(expr)
