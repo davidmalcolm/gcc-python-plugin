@@ -28,6 +28,7 @@ def on_finish_unit():
             assert isinstance(var.decl.initial, gcc.IntegerCst)
             print('%s: %s' % (name, hex(var.decl.initial.constant)))
             assert int(var.decl.initial) == var.decl.initial.constant
+            assert hash(var.decl.initial) == hash(var.decl.initial.constant)
             # Verify that rich comparisons between gcc.IntegerCst and int are sane:
             assert var.decl.initial == var.decl.initial.constant
             assert var.decl.initial >= var.decl.initial.constant

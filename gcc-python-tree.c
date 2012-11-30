@@ -118,6 +118,18 @@ gcc_Tree_hash(struct PyGccTree * self)
         return (long)TREE_OPERAND(self->t, 0) ^ (long)TREE_OPERAND(self->t, 1);
     }
 
+    if (Py_TYPE(self) == (PyTypeObject*)&gcc_IntegerCstType) {
+        /* Ensure that hash(cst) == hash(int(cst)) */
+        PyObject *constant = gcc_IntegerConstant_get_constant(self, NULL);
+        long result;
+        if (!constant) {
+            return -1;
+        }
+        result = PyObject_Hash(constant);
+        Py_DECREF(constant);
+        return result;
+    }
+
     /* Use the ptr as the hash value: */
     return (long)self->t;
 }
