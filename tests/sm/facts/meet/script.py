@@ -38,11 +38,9 @@ def selftest(ctxt, solution):
     ctxt.assert_fact(node, 'flag', '!=', 0)
     ctxt.assert_fact(node, 'i', '==', 0)
 
-    # TODO: we should also know (flag != 0) when control flow merges, but
-    # the fact-finder can't yet determine that:
-    if 0:
-        node = ctxt.find_call_of('marker_D')
-        ctxt.assert_fact(node, 'flag', '!=', 0)
+    # We should also know (flag != 0) when control flow merges:
+    node = ctxt.find_call_of('marker_D')
+    ctxt.assert_fact(node, 'flag', '!=', 0)
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

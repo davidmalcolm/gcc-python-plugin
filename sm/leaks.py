@@ -34,7 +34,7 @@ def get_retval_aliases(ctxt, supernode):
     retval = simplify(retval)
     ctxt.debug('retval: %s', retval)
     exitsupernode = ctxt.graph.supernode_for_stmtnode[exitstmtnode]
-    return exitsupernode.facts.get_aliases(retval)
+    return ctxt.get_aliases(exitsupernode, retval)
 
 def find_leaks(ctxt):
     # Set up "leaks" attribute of edges within the graph, to the set of vars
@@ -63,9 +63,11 @@ def find_leaks(ctxt):
                         ctxt.debug('alias of return value: not leaked')
                     else:
                         ctxt.debug('leaving scope of local: %s', vardecl)
-                        if edge.dstnode.facts.expr_is_referenced_externally(ctxt, vardecl):
-                            ctxt.debug('%s is referenced externally: not leaked', vardecl)
-                        else:
-                            edge.leaks.add(vardecl)
+                        facts = ctxt.facts_for_node[edge.dstnode]
+                        if facts:
+                            if ctxt.facts_for_node[edge.dstnode].expr_is_referenced_externally(ctxt, vardecl):
+                                ctxt.debug('%s is referenced externally: not leaked', vardecl)
+                            else:
+                                edge.leaks.add(vardecl)
                         # FIXME: what if the return value isn't used?
                         # FIXME: use SSA, locate anything asssigned to the retval?

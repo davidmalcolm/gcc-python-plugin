@@ -181,11 +181,11 @@ class Solution:
             if node.stmt:
                 if node.stmt.loc:
                     writeln('src: %s: %s' % (node.stmt.loc, get_src_for_loc(node.stmt.loc)))
-            writeln('facts: %s' % node.facts)
+            writeln('facts: %s' % self.ctxt.facts_for_node[node])
             writeln('partitions: {%s}'
                     % ', '.join(['{%s}' % ', '.join([str(expr)
                                                      for expr in equivcls])
-                                 for equivcls in node.facts.get_equiv_classes()]))
+                                 for equivcls in self.ctxt.facts_for_node[node].get_equiv_classes()]))
             # Write out state information from fixed point solver:
             writeln('fixed point states:')
             states = self.ctxt.states_for_node[node]
@@ -291,8 +291,9 @@ class Solution:
                     td = tr.add_child(Td(align='left'))
                     td.add_child(Text('NO CHANGES'))
                 """
-                if node.facts._facts:
-                    for fact in node.facts._facts:
+                facts = self.solution.ctxt.facts_for_node[node]
+                if facts._facts:
+                    for fact in facts._facts:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('FACT: %s' % (fact, )))

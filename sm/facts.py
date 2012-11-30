@@ -20,7 +20,7 @@
 ############################################################################
 import gcc
 
-from sm.solver import simplify
+from sm.solver import simplify, AbstractValue, fixed_point_solver
 
 inverseops =  {'==' : '!=',
                '!=' : '==',
@@ -58,7 +58,7 @@ class Fact:
         if isinstance(other, Fact):
             return (self.lhs, self.op, self.rhs) < (other.lhs, other.op, other.rhs)
 
-class Facts:
+class Facts(AbstractValue):
     def __init__(self):
         self._facts = frozenset()
 
@@ -69,6 +69,36 @@ class Facts:
     def __str__(self):
         return '(%s)' % (' && '.join([str(fact)
                                       for fact in sorted(self._facts)]), )
+
+    def __eq__(self, other):
+        if isinstance(other, Facts):
+            return self._facts == other._facts
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __hash__(self):
+        return hash(self._facts)
+
+    @classmethod
+    def make_entry_point(cls, ctxt, node):
+        return Facts()
+
+    @classmethod
+    def get_edge_value(cls, ctxt, srcvalue, edge):
+        return srcvalue.get_facts_after(ctxt, edge)
+
+    @classmethod
+    def union(cls, ctxt, lhs, rhs):
+        # This is a misnomer: the set of valid known facts from multiple
+        # entrypoints is just the intersection:
+        if lhs is None:
+            return rhs
+        if rhs is None:
+            return lhs
+        result = Facts()
+        result._facts = lhs._facts & rhs._facts
+        return result
 
     def _make_equiv_classes(self):
         partitions = {}
@@ -174,10 +204,11 @@ class Facts:
                 ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
             lhs = simplify(stmt.lhs)
             rhs = simplify(stmt.rhs[0])
-            dstfacts.add( Fact(lhs, '==', rhs) )
             # Eliminate any now-invalid facts:
             for fact in frozenset(dstfacts):
-                pass # FIXME
+                if lhs == fact.lhs or lhs == fact.rhs:
+                    dstfacts.remove(fact)
+            dstfacts.add( Fact(lhs, '==', rhs) )
         elif isinstance(stmt, gcc.GimpleCond):
             if 1:
                 ctxt.debug('gcc.GimpleCond: %s', stmt)
@@ -245,6 +276,7 @@ def remove_impossible(ctxt, graph):
     changes = 0
     for node in graph.nodes:
         if not node.facts.is_possible(ctxt):
+            ctxt.log('removing impossible node: %s' % node)
             graph.remove_node(node)
             changes += 1
     ctxt.log('removed %i node(s)' % changes)

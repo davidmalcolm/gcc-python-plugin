@@ -29,6 +29,7 @@ def selftest(ctxt, solution):
     # Check that we know the constraints on i within the loop:
     node = ctxt.find_call_of('marker_B')
     ctxt.assert_fact(node, 'i', '<=', 255)
+    ctxt.assert_not_fact(node, 'i', '==', 0)
 
     # Check that we know the constraints on i after the loop:
     node = ctxt.find_call_of('marker_C')

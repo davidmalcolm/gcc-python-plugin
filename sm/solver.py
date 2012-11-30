@@ -190,7 +190,8 @@ def consider_edge(ctxt, solution, item, edge):
                 arg = simplify(arg)
                 if arg in equivcls:
                     # Propagate state of the argument to the parameter:
-                    yield WorklistItem.from_expr(dstnode, param, state, None)
+                    yield WorklistItem.from_expr(ctxt, dstnode, param,
+                                                 state, None)
         else:
             yield WorklistItem(dstnode, None, state, None) # FIXME
         # Stop iterating, effectively purging state outside that of the
@@ -207,7 +208,7 @@ def consider_edge(ctxt, solution, item, edge):
             ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s', edge.calling_stmtnode.stmt.lhs)
             if equivcls and retval in equivcls:
                 # Propagate state of the return value to the LHS of the caller:
-                yield WorklistItem.from_expr(dstnode,
+                yield WorklistItem.from_expr(ctxt, dstnode,
                                              simplify(edge.calling_stmtnode.stmt.lhs),
                                              state, None)
 
@@ -221,7 +222,8 @@ def consider_edge(ctxt, solution, item, edge):
                 ctxt.debug('  param: %r', param)
                 ctxt.debug('  arg: %r', arg)
             if equivcls and param in equivcls:
-                yield WorklistItem.from_expr(dstnode, simplify(arg), state, None)
+                yield WorklistItem.from_expr(ctxt, dstnode, simplify(arg),
+                                             state, None)
 
         if equivcls is None:
             yield WorklistItem(dstnode, None, state, None)
@@ -243,7 +245,9 @@ def consider_edge(ctxt, solution, item, edge):
             rhs = simplify(stmt.rhs[0])
             if equivcls and rhs in equivcls:
                 if isinstance(stmt.lhs, gcc.SsaName):
-                    yield WorklistItem.from_expr(dstnode, simplify(stmt.lhs), state, None)
+                    yield WorklistItem.from_expr(ctxt, dstnode,
+                                                 simplify(stmt.lhs),
+                                                 state, None)
         elif stmt.exprcode == gcc.ComponentRef:
             # Field lookup
             compref = stmt.rhs[0]
@@ -252,7 +256,8 @@ def consider_edge(ctxt, solution, item, edge):
                 ctxt.debug(compref.field)
 
             if equivcls and compref in equivcls:
-                yield WorklistItem.from_expr(dstnode, compref, state, None)
+                yield WorklistItem.from_expr(ctxt, dstnode, compref,
+                                             state, None)
 
             # The LHS potentially inherits state from the compref
             elif equivcls and compref.target in equivcls:
@@ -261,7 +266,9 @@ def consider_edge(ctxt, solution, item, edge):
                        state,
                        compref.target,
                        compref.field))
-                yield WorklistItem.from_expr(dstnode, simplify(stmt.lhs), state, None)
+                yield WorklistItem.from_expr(ctxt, dstnode,
+                                             simplify(stmt.lhs),
+                                             state, None)
                 # matches.append(stmt)
     elif isinstance(stmt, gcc.GimplePhi):
         if 1:
@@ -309,7 +316,8 @@ def consider_edge(ctxt, solution, item, edge):
             # Split the equivalence class, since the dstnode may have a
             # different partitioning from the srcnode:
             for expr in equivcls:
-                yield WorklistItem.from_expr(dstnode, expr, state, None)
+                yield WorklistItem.from_expr(ctxt, dstnode, expr,
+                                             state, None)
         else:
             yield WorklistItem(dstnode, equivcls, state, None)
 
@@ -334,9 +342,9 @@ class WorklistItem:
         self.match = match
 
     @classmethod
-    def from_expr(cls, node, expr, state, match):
+    def from_expr(cls, ctxt, node, expr, state, match):
         assert isinstance(expr, gcc.Tree)
-        return WorklistItem(node, node.facts.get_aliases(expr),
+        return WorklistItem(node, ctxt.get_aliases(node, expr),
                             state, match)
 
     def __hash__(self):
@@ -421,7 +429,17 @@ class FixedPointMatchContext:
         self.matchingstates = matchingstates
 
 class AbstractValue:
-    pass
+    @classmethod
+    def make_entry_point(cls, ctxt, node):
+        raise NotImplementedError
+
+    @classmethod
+    def get_edge_value(cls, ctxt, srcvalue, edge):
+        raise NotImplementedError
+
+    @classmethod
+    def union(cls, ctxt, lhs, rhs):
+        raise NotImplementedError
 
 class StatesForNode(AbstractValue):
     def __init__(self, node, _dict):
@@ -446,11 +464,11 @@ class StatesForNode(AbstractValue):
     def __ne__(self, other):
         return not self == other
 
-    def get_equivcls_for_expr(self, expr):
-        return self.node.facts.get_aliases(expr)
+    def get_equivcls_for_expr(self, ctxt, expr):
+        return ctxt.get_aliases(self.node, expr)
 
-    def match_states_by_name(self, expr, statenames):
-        equivcls = self.get_equivcls_for_expr(expr)
+    def match_states_by_name(self, ctxt, expr, statenames):
+        equivcls = self.get_equivcls_for_expr(ctxt, expr)
         if equivcls in self._dict:
             # Do the state sets intersect?
             # (returning the intersection, which will be true if non-empty)
@@ -460,31 +478,31 @@ class StatesForNode(AbstractValue):
             return frozenset(result)
 
     def get_states_for_expr(self, ctxt, expr):
-        equivcls = self.get_equivcls_for_expr(expr)
+        equivcls = self.get_equivcls_for_expr(ctxt, expr)
         if equivcls in self._dict:
             return self._dict[equivcls]
         return frozenset([ctxt.get_default_state()])
 
     def assign_to_from(self, ctxt, dstnode, lhs, rhs):
         assert isinstance(dstnode, SupergraphNode)
-        result = self.propagate_to(dstnode)
-        result._dict[dstnode.facts.get_aliases(lhs)] = \
+        result = self.propagate_to(ctxt, dstnode)
+        result._dict[ctxt.get_aliases(dstnode, lhs)] = \
             self.get_states_for_expr(ctxt, rhs)
         return result
 
-    def set_state_for_expr(self, dstnode, expr, state):
+    def set_state_for_expr(self, ctxt, dstnode, expr, state):
         assert isinstance(dstnode, SupergraphNode)
         assert isinstance(state, State)
-        result = self.propagate_to(dstnode)
-        result._dict[dstnode.facts.get_aliases(expr)] = frozenset([state])
+        result = self.propagate_to(ctxt, dstnode)
+        result._dict[ctxt.get_aliases(dstnode, expr)] = frozenset([state])
         return result
 
-    def propagate_to(self, dstnode):
+    def propagate_to(self, ctxt, dstnode):
         assert isinstance(dstnode, SupergraphNode)
         _dict = {}
         for equivcls, states in self._dict.iteritems():
             for expr in equivcls:
-                _dict[dstnode.facts.get_aliases(expr)] = states
+                _dict[ctxt.get_aliases(dstnode, expr)] = states
         return StatesForNode(dstnode, _dict)
 
     @classmethod
@@ -492,7 +510,8 @@ class StatesForNode(AbstractValue):
         _dict = {}
         for expr in ctxt.smexprs[node.function]:
             if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
-                _dict[node.facts.get_aliases(expr)] = frozenset([ctxt.get_default_state()])
+                _dict[ctxt.get_aliases(node, expr)] = \
+                    frozenset([ctxt.get_default_state()])
         return StatesForNode(node, _dict)
 
     @classmethod
@@ -523,7 +542,7 @@ class StatesForNode(AbstractValue):
             _dict = {}
             for expr in ctxt.smexprs[dstnode.function]:
                 if isinstance(expr, gcc.VarDecl):
-                    _dict[dstnode.facts.get_aliases(expr)] = \
+                    _dict[ctxt.get_aliases(dstnode, expr)] = \
                         frozenset([ctxt.get_default_state()])
             for param, arg  in zip(srcnode.stmt.fndecl.arguments,
                                    srcnode.stmt.args):
@@ -534,7 +553,7 @@ class StatesForNode(AbstractValue):
                 #if ctxt.is_stateful_var(arg):
                 #    shapechange.assign_var(param, arg)
                 arg = simplify(arg)
-                _dict[dstnode.facts.get_aliases(param)] = \
+                _dict[ctxt.get_aliases(dstnode, param)] = \
                     srcvalue.get_states_for_expr(ctxt, arg)
             return StatesForNode(dstnode, _dict)
         elif isinstance(edge, ExitToReturnSite):
@@ -548,7 +567,7 @@ class StatesForNode(AbstractValue):
                 ctxt.debug('retval: %s', retval)
                 ctxt.debug('edge.calling_stmtnode.stmt.lhs: %s',
                            edge.calling_stmtnode.stmt.lhs)
-                _dict[dstnode.facts.get_aliases(simplify(edge.calling_stmtnode.stmt.lhs))] = \
+                _dict[ctxt.get_aliases(dstnode, simplify(edge.calling_stmtnode.stmt.lhs))] = \
                     srcvalue.get_states_for_expr(ctxt, retval)
 
             # FIXME: we also need to backpatch the params, in case they've
@@ -560,7 +579,7 @@ class StatesForNode(AbstractValue):
                 if 1:
                     ctxt.debug('  param: %r', param)
                     ctxt.debug('  arg: %r', arg)
-                _dict[dstnode.facts.get_aliases(simplify(arg))] = \
+                _dict[ctxt.get_aliases(dstnode, simplify(arg))] = \
                     srcvalue.get_states_for_expr(ctxt, simplify(param))
             return StatesForNode(dstnode, _dict)
 
@@ -586,7 +605,7 @@ class StatesForNode(AbstractValue):
                     ctxt.debug('compref.field: %s', compref.field)
 
                 # Do we already have a state for the field?
-                if srcnode.facts.get_aliases(compref) in srcvalue._dict:
+                if ctxt.get_aliases(srcnode, compref) in srcvalue._dict:
                     return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref)
                 else:
                     # Inherit the state from the struct:
@@ -616,7 +635,7 @@ class StatesForNode(AbstractValue):
         for pm in edge.possible_matches:
             if ENABLE_LOG:
                 ctxt.log('possible match: %s', pm.describe(ctxt))
-            matchingstates = srcvalue.match_states_by_name(pm.expr, pm.statenames)
+            matchingstates = srcvalue.match_states_by_name(ctxt, pm.expr, pm.statenames)
             if matchingstates:
                 if ENABLE_LOG:
                     ctxt.log('matchingstates: %s' % stateset_to_str(matchingstates))
@@ -640,7 +659,7 @@ class StatesForNode(AbstractValue):
                              pm.describe(ctxt), stmt)
 
         # Nothing matched:
-        return srcvalue.propagate_to(dstnode)
+        return srcvalue.propagate_to(ctxt, dstnode)
 
     @classmethod
     def union(cls, ctxt, lhs, rhs):
@@ -704,15 +723,12 @@ def fixed_point_solver(ctxt, cls):
                     if srcvalue:
                         edgevalue = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
-                        if edgevalue:
-                            assert edgevalue.node == node
                         newvalue = cls.union(ctxt, newvalue, edgevalue)
                         ctxt.log('  new value: %s', newvalue)
             if newvalue != oldvalue:
                 ctxt.log('  value changed from: %s  to %s',
                          oldvalue,
                          newvalue)
-                assert newvalue.node == node
                 result[node] = newvalue
                 for edge in node.succs:
                     dstnode = edge.dstnode
@@ -993,6 +1009,13 @@ class Context:
             self.allexprs[function] = allexprs
             self.smexprs[function] = smexprs
 
+    def get_aliases(self, node, expr):
+        facts = self.facts_for_node[node]
+        if facts:
+            return facts.get_aliases(expr)
+        else:
+            return frozenset([expr])
+
     def solve(self, name):
         # Preprocessing phase: identify the scope of expressions within each
         # function
@@ -1002,9 +1025,9 @@ class Context:
         # Preprocessing phase: gather simple per-node "facts", for use in
         # giving better names for temporaries, and for identifying the return
         # values of functions
-        from sm.facts import find_facts
-        with Timer(self, 'find_facts'):
-            find_facts(self, self.graph)
+        from sm.facts import Facts
+        with Timer(self, 'fixed_point_solver(Facts)'):
+            self.facts_for_node = fixed_point_solver(self, Facts)
 
         # Preprocessing phase: locate places where rvalues are leaked, for
         # later use by $leaked/LeakedPattern
@@ -1115,8 +1138,18 @@ class Context:
         if isinstance(lhs, str):
             lhs = self.get_expr_by_str(node, lhs)
         expectedfact = Fact(lhs, op, rhs)
-        if expectedfact not in node.facts._facts:
-            raise ValueError('%s not in %s' % (expectedfact, node.facts))
+        actualfacts = self.facts_for_node[node]
+        if expectedfact not in actualfacts._facts:
+            raise ValueError('%s not in %s' % (expectedfact, actualfacts))
+
+    def assert_not_fact(self, node, lhs, op, rhs):
+        from sm.facts import Fact
+        if isinstance(lhs, str):
+            lhs = self.get_expr_by_str(node, lhs)
+        expectedfact = Fact(lhs, op, rhs)
+        actualfacts = self.facts_for_node[node]
+        if expectedfact in actualfacts._facts:
+            raise ValueError('%s unexpectedly within %s' % (expectedfact, actualfacts))
 
     def assert_states_for_expr(self, node, expr, expectedstates):
         expr = simplify(expr)

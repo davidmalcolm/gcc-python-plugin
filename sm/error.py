@@ -50,7 +50,7 @@ class Error:
         loc = self.gccloc
         stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
         path = solution.get_shortest_path_to(self.srcnode,
-                                             self.srcnode.facts.get_aliases(stateful_gccvar),
+                                             ctxt.get_aliases(self.srcnode, stateful_gccvar),
                                              self.state)
         ctxt.debug('path: %r', path)
         if path is None:
@@ -180,7 +180,7 @@ def gccexpr_to_str(ctxt, supernode, gccexpr):
             from sm.leaks import get_retval_aliases
             from gccutils.graph import ExitNode
 
-            aliases = supernode.facts.get_aliases(gccexpr)
+            aliases = ctxt.get_aliases(supernode, gccexpr)
             for alias in aliases:
                 if isinstance(alias, gcc.VarDecl):
                     if alias.name:

@@ -596,7 +596,8 @@ class TransitionTo(Outcome):
         # print('transition %s to %s' % (match.var, outcome.state))
 
         dststate = State(self.statename)
-        yield WorklistItem.from_expr(mctxt.dstnode,
+        yield WorklistItem.from_expr(mctxt.ctxt,
+                                     mctxt.dstnode,
                                      mctxt.get_stateful_gccvar(),
                                      dststate,
                                      mctxt.match)
@@ -606,7 +607,8 @@ class TransitionTo(Outcome):
         assert isinstance(srcvalue, StatesForNode) # not None
 
         dststate = State(self.statename)
-        return srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
+        return srcvalue.set_state_for_expr(fpmctxt.ctxt,
+                                           fpmctxt.edge.dstnode,
                                            fpmctxt.pm.expr,
                                            dststate)
 
@@ -708,7 +710,8 @@ class PythonOutcome(Outcome, PythonFragment):
         for name in locals_:
             del ctxt.python_locals[name]
 
-        yield WorklistItem.from_expr(mctxt.dstnode,
+        yield WorklistItem.from_expr(mctxt.ctxt,
+                                     mctxt.dstnode,
                                      mctxt.get_stateful_gccvar(),
                                      globals_['state'],
                                      mctxt.match)
@@ -775,7 +778,8 @@ class PythonOutcome(Outcome, PythonFragment):
             for name in locals_:
                 del ctxt.python_locals[name]
 
-            newresult = srcvalue.set_state_for_expr(fpmctxt.edge.dstnode,
+            newresult = srcvalue.set_state_for_expr(fpmctxt.ctxt,
+                                                    fpmctxt.edge.dstnode,
                                                     fpmctxt.pm.expr,
                                                     globals_['state'])
             ctxt.log('newresult: %s' % newresult)
