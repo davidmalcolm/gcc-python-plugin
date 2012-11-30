@@ -1155,8 +1155,9 @@ class Context:
         expr = simplify(expr)
         actualstates = self.states_for_node[node].get_states_for_expr(self, expr)
         if actualstates != expectedstates:
-            raise ValueError('wrong states; expected %s but got %s'
-                             % (stateset_to_str(expectedstates),
+            raise ValueError('wrong states for %s: expected %s but got %s'
+                             % (expr,
+                                stateset_to_str(expectedstates),
                                 stateset_to_str(actualstates)))
 
     def assert_states_for_varname(self, node, varname, expectedstates):
