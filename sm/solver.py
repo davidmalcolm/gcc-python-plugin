@@ -474,6 +474,15 @@ class StatesForNode(AbstractValue):
     def __ne__(self, other):
         return not self == other
 
+    def get_combo_count(self):
+        """
+        How many possible subsets does this have?
+        """
+        result = 1
+        for equivcls, states in self._dict.iteritems():
+            result *= len(states)
+        return result
+
     def get_equivcls_for_expr(self, ctxt, expr):
         return ctxt.get_aliases(self.node, expr)
 
@@ -757,6 +766,27 @@ def fixed_point_solver(ctxt, graph, cls):
 
     ctxt.timing('took %i iterations to reach fixed point', numiters)
     return result
+
+def show_state_histogram(ctxt):
+    # Show an ASCII-art histogram to analyze how many state combinations
+    # there are: how many nodes have each number of valid state
+    # combinations (including None)
+    from collections import Counter
+    cnt = Counter()
+    for node in ctxt.graph.nodes:
+        states = ctxt.states_for_node[node]
+        if states:
+            cnt[states.get_combo_count()] += 1
+        else:
+            cnt[None] += 1
+    extent = cnt.most_common(1)[0][1]
+    scale = 40.0 / extent
+    ctxt.timing('%6s : %5s :', 'COMBOS', 'NODES')
+    for key in sorted(cnt.keys()):
+        ctxt.timing('%6s : %5s : %s',
+                    key, cnt[key],
+                    '*' * int(cnt[key] * scale))
+
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -1067,6 +1097,9 @@ class Context:
         # wired up to anything:
         with Timer(self, 'fixed_point_solver(StatesForNode)'):
             self.states_for_node = fixed_point_solver(self, self.graph, StatesForNode)
+
+        if ENABLE_TIMING:
+            show_state_histogram(self)
 
         # The "real" solver: an older implementation, which generates the
         # errors for later processing:
