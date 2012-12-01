@@ -424,10 +424,10 @@ class ExitNode(StmtNode):
         """
         Get the gcc.GimpleReturn statement associated with this function exit
         """
-        assert len(self.preds) == 1
-        node = self.preds[0].srcnode
-        assert isinstance(node.stmt, gcc.GimpleReturn)
-        return node
+        if len(self.preds) == 1:
+            node = self.preds[0].srcnode
+            assert isinstance(node.stmt, gcc.GimpleReturn)
+            return node
 
     @property
     def returnval(self):
@@ -435,8 +435,9 @@ class ExitNode(StmtNode):
         Get the gcc.Tree for the return value, or None
         """
         returnnode = self.returnnode
-        assert isinstance(returnnode.stmt, gcc.GimpleReturn)
-        return returnnode.stmt.retval
+        if returnnode:
+            assert isinstance(returnnode.stmt, gcc.GimpleReturn)
+            return returnnode.stmt.retval
 
 class SplitPhiNode(StmtNode):
     def __init__(self, fun, stmt, inneredge):
