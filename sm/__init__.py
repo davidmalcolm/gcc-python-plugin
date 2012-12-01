@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+ENABLE_PROFILE=0
+
 import gcc
 
 from sm.solver import Context, solve, SHOW_SUPERGRAPH
@@ -51,7 +53,26 @@ class IpaSmPass(gcc.IpaPass):
         for checker in self.checkers:
             for sm in checker.sms:
                 ctxt = Context(checker, sm, sg, self.options)
-                solve(ctxt, 'solution', self.selftest)
+
+                def run():
+                    solve(ctxt, 'solution', self.selftest)
+
+                if ENABLE_PROFILE:
+                    # Profiled version:
+                    import cProfile
+                    prof_filename = '%s.%s.sm-profile' % (gcc.get_dump_base_name(),
+                                                          sm.name)
+                    try:
+                        cProfile.runctx('run()',
+                                        globals(), locals(),
+                                        filename=prof_filename)
+                    finally:
+                        import pstats
+                        prof = pstats.Stats(prof_filename)
+                        prof.sort_stats('cumulative').print_stats(20)
+                else:
+                    # Unprofiled version:
+                    run()
 
 class Options:
     def __init__(self,
