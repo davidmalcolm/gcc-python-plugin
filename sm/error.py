@@ -40,7 +40,15 @@ class Error:
 
     def __lt__(self, other):
         # Provide a sort order, so that they sort into source order
-        return self.gccloc < other.gccloc
+
+        # First sort by location:
+        if self.gccloc < other.gccloc:
+            return True
+        elif self.gccloc > other.gccloc:
+            return False
+
+        # Failing that, sort by message:
+        return self.msg < other.msg
 
     def emit(self, ctxt, solution):
         """
