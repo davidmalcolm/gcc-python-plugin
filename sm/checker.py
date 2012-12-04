@@ -657,6 +657,15 @@ class BoundVariable:
     def __getattr__(self, name):
         return getattr(self.gccexpr, name)
 
+class PythonEffect:
+    """
+    The result of applying a PythonOutcome to a particular state.
+    """
+    def __init__(self, dststate):
+        from sm.solver import State
+        assert isinstance(dststate, State)
+        self.dststate = dststate
+
 class PythonOutcome(Outcome, PythonFragment):
     def get_code(self, ctxt):
         return self.lazily_compile(ctxt.ch.filename)
@@ -728,20 +737,31 @@ class PythonOutcome(Outcome, PythonFragment):
         result = None
         # We run the python fragment repeatedly, once for each possible
         # input state.
+        edge = fpmctxt.edge
+        pm = fpmctxt.pm
         for state in fpmctxt.matchingstates:
-            if 0:
-                print('run(): %r' % self)
-                print('  fpmctxt: %r' % fpmctxt)
-                print('  srcvalue: %r' % srcvalue)
+            effect = self.get_effect_for_state(ctxt, edge, pm.match, state)
+            newresult = srcvalue.set_state_for_expr(ctxt,
+                                                    edge.dstnode,
+                                                    pm.expr,
+                                                    effect.dststate)
+            ctxt.log('newresult: %s' % newresult)
+            result = StatesForNode.union(ctxt, result, newresult)
+        return result
 
+    def get_effect_for_state(self, ctxt, edge, match, state):
+            """
+            Generate a PythonEffect for this fragment on the given
+            edge/match/state input
+            """
             code = self.get_code(ctxt)
 
             # Create environment for execution of the code:
             def error(msg):
                 # For now the fixed point solver ignores errors
                 if 0:
-                    ctxt.add_error(fpmctxt.edge.srcnode,
-                                   fpmctxt.pm.match,
+                    ctxt.add_error(edge.srcnode,
+                                   match,
                                    msg, globals_['state'])
             def set_state(name, **kwargs):
                 from sm.solver import State
@@ -761,8 +781,8 @@ class PythonOutcome(Outcome, PythonFragment):
             # then we bind the string "ptr" to the gcc.VarDecl for q
             # (which has str() == 'q')
             locals_ = {}
-            for decl, value in fpmctxt.pm.match.iter_binding():
-                locals_[decl.name] = BoundVariable(ctxt, fpmctxt.edge.srcnode, value)
+            for decl, value in match.iter_binding():
+                locals_[decl.name] = BoundVariable(ctxt, edge.srcnode, value)
             ctxt.python_locals.update(locals_)
 
             if 0:
@@ -778,10 +798,4 @@ class PythonOutcome(Outcome, PythonFragment):
             for name in locals_:
                 del ctxt.python_locals[name]
 
-            newresult = srcvalue.set_state_for_expr(fpmctxt.ctxt,
-                                                    fpmctxt.edge.dstnode,
-                                                    fpmctxt.pm.expr,
-                                                    globals_['state'])
-            ctxt.log('newresult: %s' % newresult)
-            result = StatesForNode.union(ctxt, result, newresult)
-        return result
+            return PythonEffect(globals_['state'])
