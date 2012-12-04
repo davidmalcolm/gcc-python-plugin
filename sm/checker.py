@@ -716,51 +716,51 @@ class PythonOutcome(Outcome, PythonFragment):
         return result
 
     def get_effect_for_state(self, ctxt, edge, match, state):
-            """
-            Generate a PythonEffect for this fragment on the given
-            edge/match/state input
-            """
-            code = self.get_code(ctxt)
-            errors = []
+        """
+        Generate a PythonEffect for this fragment on the given
+        edge/match/state input
+        """
+        code = self.get_code(ctxt)
+        errors = []
 
-            # Create environment for execution of the code:
-            def error(msg):
-                from sm.error import Error
-                errors.append(Error(edge.srcnode, match, msg, globals_['state']))
+        # Create environment for execution of the code:
+        def error(msg):
+            from sm.error import Error
+            errors.append(Error(edge.srcnode, match, msg, globals_['state']))
 
-            def set_state(name, **kwargs):
-                from sm.solver import State
-                ctxt.debug('set_state(%r, %r)', name, kwargs)
-                globals_['state'] = State(name, **kwargs)
+        def set_state(name, **kwargs):
+            from sm.solver import State
+            ctxt.debug('set_state(%r, %r)', name, kwargs)
+            globals_['state'] = State(name, **kwargs)
 
-            globals_ = {'error' : error,
-                        'set_state' : set_state,
-                        'state': state}
-            ctxt.python_globals.update(globals_)
+        globals_ = {'error' : error,
+                    'set_state' : set_state,
+                    'state': state}
+        ctxt.python_globals.update(globals_)
 
-            # Bind the names for the matched Decls
-            # For example, when:
-            #      state decl any_pointer ptr;
-            # has been matched by:
-            #      void *q;
-            # then we bind the string "ptr" to the gcc.VarDecl for q
-            # (which has str() == 'q')
-            locals_ = {}
-            for decl, value in match.iter_binding():
-                locals_[decl.name] = BoundVariable(ctxt, edge.srcnode, value)
-            ctxt.python_locals.update(locals_)
+        # Bind the names for the matched Decls
+        # For example, when:
+        #      state decl any_pointer ptr;
+        # has been matched by:
+        #      void *q;
+        # then we bind the string "ptr" to the gcc.VarDecl for q
+        # (which has str() == 'q')
+        locals_ = {}
+        for decl, value in match.iter_binding():
+            locals_[decl.name] = BoundVariable(ctxt, edge.srcnode, value)
+        ctxt.python_locals.update(locals_)
 
-            if 0:
-                print('  globals_: %r' % globals_)
-                print('  locals_: %r' % locals_)
-            # Now run the code:
-            ctxt.debug('state before: %r', globals_['state'])
-            ctxt.log('evaluating python code')
-            result = eval(code, ctxt.python_globals, ctxt.python_locals)
-            ctxt.debug('state after: %r', globals_['state'])
+        if 0:
+            print('  globals_: %r' % globals_)
+            print('  locals_: %r' % locals_)
+        # Now run the code:
+        ctxt.debug('state before: %r', globals_['state'])
+        ctxt.log('evaluating python code')
+        result = eval(code, ctxt.python_globals, ctxt.python_locals)
+        ctxt.debug('state after: %r', globals_['state'])
 
-            # Clear the binding:
-            for name in locals_:
-                del ctxt.python_locals[name]
+        # Clear the binding:
+        for name in locals_:
+            del ctxt.python_locals[name]
 
-            return PythonEffect(globals_['state'], errors)
+        return PythonEffect(globals_['state'], errors)
