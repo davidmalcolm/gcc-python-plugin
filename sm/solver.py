@@ -948,9 +948,7 @@ class Context:
             raise UnknownNamedPattern(patname)
         return self._namedpatterns[patname]
 
-    def add_error(self, srcnode, match, msg, state):
-        self.log('add_error(%r, %r, %r, %r)', srcnode, match, msg, state)
-        err = sm.error.Error(srcnode, match, msg, state)
+    def add_error(self, err):
         if self.options.cache_errors:
             self._errors.append(err)
         else:

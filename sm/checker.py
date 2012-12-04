@@ -661,10 +661,11 @@ class PythonEffect:
     """
     The result of applying a PythonOutcome to a particular state.
     """
-    def __init__(self, dststate):
+    def __init__(self, dststate, errors):
         from sm.solver import State
         assert isinstance(dststate, State)
         self.dststate = dststate
+        self.errors = errors
 
 class PythonOutcome(Outcome, PythonFragment):
     def get_code(self, ctxt):
@@ -672,57 +673,19 @@ class PythonOutcome(Outcome, PythonFragment):
 
     def apply(self, mctxt):
         from sm.solver import WorklistItem
+
         ctxt = mctxt.ctxt
-        if 0:
-            print('run(): %r' % self)
-            print('  match: %r' % match)
-            print('  expgraph: %r' % expgraph)
-            print('  expnode: %r' % expnode)
 
-        code = self.get_code(ctxt)
+        effect = self.get_effect_for_state(ctxt, mctxt.edge,
+                                           mctxt.match, mctxt.srcstate)
 
-        # Create environment for execution of the code:
-        def error(msg):
-            ctxt.add_error(mctxt.srcnode, mctxt.match, msg, globals_['state'])
-        def set_state(name, **kwargs):
-            from sm.solver import State
-            ctxt.debug('set_state(%r, %r)', name, kwargs)
-            globals_['state'] = State(name, **kwargs)
+        for error in effect.errors:
+            ctxt.add_error(error)
 
-        globals_ = {'error' : error,
-                    'set_state' : set_state,
-                    'state': mctxt.srcstate}
-        ctxt.python_globals.update(globals_)
-
-        # Bind the names for the matched Decls
-        # For example, when:
-        #      state decl any_pointer ptr;
-        # has been matched by:
-        #      void *q;
-        # then we bind the string "ptr" to the gcc.VarDecl for q
-        # (which has str() == 'q')
-        locals_ = {}
-        for decl, value in mctxt.match.iter_binding():
-            locals_[decl.name] = BoundVariable(ctxt, mctxt.srcnode, value)
-        ctxt.python_locals.update(locals_)
-
-        if 0:
-            print('  globals_: %r' % globals_)
-            print('  locals_: %r' % locals_)
-        # Now run the code:
-        ctxt.debug('state before: %r', globals_['state'])
-        ctxt.log('evaluating python code')
-        result = eval(code, ctxt.python_globals, ctxt.python_locals)
-        ctxt.debug('state after: %r', globals_['state'])
-
-        # Clear the binding:
-        for name in locals_:
-            del ctxt.python_locals[name]
-
-        yield WorklistItem.from_expr(mctxt.ctxt,
+        yield WorklistItem.from_expr(ctxt,
                                      mctxt.dstnode,
                                      mctxt.get_stateful_gccvar(),
-                                     globals_['state'],
+                                     effect.dststate,
                                      mctxt.match)
 
     def iter_reachable_statenames(self):
@@ -741,6 +704,9 @@ class PythonOutcome(Outcome, PythonFragment):
         pm = fpmctxt.pm
         for state in fpmctxt.matchingstates:
             effect = self.get_effect_for_state(ctxt, edge, pm.match, state)
+            # (for now the fixed point solver ignores errors within the
+            # PythonEffect)
+
             newresult = srcvalue.set_state_for_expr(ctxt,
                                                     edge.dstnode,
                                                     pm.expr,
@@ -755,14 +721,13 @@ class PythonOutcome(Outcome, PythonFragment):
             edge/match/state input
             """
             code = self.get_code(ctxt)
+            errors = []
 
             # Create environment for execution of the code:
             def error(msg):
-                # For now the fixed point solver ignores errors
-                if 0:
-                    ctxt.add_error(edge.srcnode,
-                                   match,
-                                   msg, globals_['state'])
+                from sm.error import Error
+                errors.append(Error(edge.srcnode, match, msg, globals_['state']))
+
             def set_state(name, **kwargs):
                 from sm.solver import State
                 ctxt.debug('set_state(%r, %r)', name, kwargs)
@@ -798,4 +763,4 @@ class PythonOutcome(Outcome, PythonFragment):
             for name in locals_:
                 del ctxt.python_locals[name]
 
-            return PythonEffect(globals_['state'])
+            return PythonEffect(globals_['state'], errors)
