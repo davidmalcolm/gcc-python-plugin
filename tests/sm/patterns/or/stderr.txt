@@ -1,6 +1,4 @@
 tests/sm/patterns/or/input.c: In function 'test1':
 tests/sm/patterns/or/input.c:25:nn: error: ptr was checked against NULL
-tests/sm/patterns/or/input.c:25:nn: error: ptr was checked against NULL
 tests/sm/patterns/or/input.c: In function 'test2':
-tests/sm/patterns/or/input.c:34:nn: error: ptr was checked against NULL
 tests/sm/patterns/or/input.c:34:nn: error: ptr was checked against NULL

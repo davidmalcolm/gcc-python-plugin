@@ -437,6 +437,10 @@ class FixedPointMatchContext:
         self.pm = pm
         self.edge = edge
         self.matchingstates = matchingstates
+        self.errors = []
+
+    def add_error(self, err):
+        self.errors.append(err)
 
 class AbstractValue:
     @classmethod
@@ -787,6 +791,45 @@ def show_state_histogram(ctxt):
                     key, cnt[key],
                     '*' * int(cnt[key] * scale))
 
+def generate_errors_from_fixed_point(ctxt):
+    """
+    Rerun all reachable matches on the fixed point states in order to allow
+    any Python fragments to emit any errors on the reachable states.
+
+    The errors are added to ctxt.errors_from_fixed_point
+    """
+    for node in ctxt.graph.nodes:
+        ctxt.debug('analyzing node: %s', node)
+        states = ctxt.states_for_node[node]
+        if states is None:
+            continue
+        with ctxt.indent():
+            stmt = node.stmt
+            for edge in node.succs:
+                ctxt.debug('analyzing out-edge: %s', edge)
+                with ctxt.indent():
+                    for pm in edge.possible_matches:
+                        if ENABLE_LOG:
+                            ctxt.debug('possible match: %s', pm.describe(ctxt))
+                        matchingstates = states.match_states_by_name(ctxt, pm.expr, pm.statenames)
+                        if matchingstates:
+                            if ENABLE_LOG:
+                                ctxt.debug('matchingstates: %s' % stateset_to_str(matchingstates))
+                                ctxt.debug('got match in states %s of %s at %s',
+                                           stateset_to_str(matchingstates),
+                                           pm.describe(ctxt),
+                                           stmt)
+                            fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
+                            if ENABLE_LOG:
+                                ctxt.debug('applying outcome to %s => %s',
+                                           fpmctxt.pm.expr,
+                                           pm.outcome)
+                            result = pm.outcome.get_result(fpmctxt, states)
+                            ctxt.debug('got result: %s', result)
+
+                            # Merge errors from fpmctxt into one set:
+                            for err in fpmctxt.errors:
+                                ctxt.errors_from_fixed_point.add(err)
 
 class Context:
     # An sm.checker.Sm (do we need any other context?)
@@ -863,8 +906,11 @@ class Context:
                         raise UnreachableState(statename)
 
         # Store the errors so that we can play them back in source order
-        # (for greater predicability of selftests):
-        self._errors = []
+        # (for greater predicability of selftests)
+        # We create two different over-approximations of errors, and take
+        # the intersection:
+        self.errors_from_find_states = set()
+        self.errors_from_fixed_point = set()
 
         # Run any initial python code:
         self.python_locals = {}
@@ -950,10 +996,11 @@ class Context:
 
     def add_error(self, err):
         if self.options.cache_errors:
-            self._errors.append(err)
+            self.errors_from_find_states.add(err)
         else:
             # Easier to debug tracebacks this way:
-            err.emit(self, solution)
+            # err.emit(self, solution)
+            pass # FIXME
 
     def emit_errors(self, solution):
         curfun = None
@@ -1099,11 +1146,26 @@ class Context:
         if ENABLE_TIMING:
             show_state_histogram(self)
 
-        # The "real" solver: an older implementation, which generates the
-        # errors for later processing:
+        self.timing('len(graph.nodes): %i', len(self.graph.nodes))
+        self.timing('len(graph.edges): %i', len(self.graph.edges))
+
+        # The first solver: an older implementation, which generates
+        #   self.errors_from_find_states
+        # for later processing:
         with Timer(self, 'solution.find_states'):
             solution = sm.solution.Solution(self)
             solution.find_states(self)
+        self.timing('len(self.errors_from_find_states): %i', len(self.errors_from_find_states))
+
+        # Generate self.errors_from_fixed_point:
+        with Timer(self, 'generate_errors'):
+            generate_errors_from_fixed_point(self)
+        self.timing('len(self.errors_from_fixed_point): %i', len(self.errors_from_fixed_point))
+
+        # We now have two over-approximations of the errors, take the
+        # intersection:
+        self._errors = list(self.errors_from_find_states
+                            & self.errors_from_fixed_point)
 
         return solution
 

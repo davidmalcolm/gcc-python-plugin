@@ -50,6 +50,16 @@ class Error:
         # Failing that, sort by message:
         return self.msg < other.msg
 
+    def __eq__(self, other):
+        if self.srcnode == other.srcnode:
+            if self.match == other.match:
+                if self.msg == other.msg:
+                    if self.state == other.state:
+                        return True
+
+    def __hash__(self):
+        return hash(self.srcnode) ^ hash(self.match) ^ hash(self.msg) ^ hash(self.state)
+
     def emit(self, ctxt, solution):
         """
         Display the error

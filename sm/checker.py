@@ -704,8 +704,12 @@ class PythonOutcome(Outcome, PythonFragment):
         pm = fpmctxt.pm
         for state in fpmctxt.matchingstates:
             effect = self.get_effect_for_state(ctxt, edge, pm.match, state)
-            # (for now the fixed point solver ignores errors within the
-            # PythonEffect)
+
+            # Add the errors to the fpmctxt.  They will be discarded
+            # during fixed-point solving, but will be acted on in
+            # sm.solver.generate_errors_from_fixed_point()
+            for error in effect.errors:
+                fpmctxt.add_error(error)
 
             newresult = srcvalue.set_state_for_expr(ctxt,
                                                     edge.dstnode,
