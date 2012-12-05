@@ -234,9 +234,7 @@ def remove_impossible(ctxt, facts_for_node, graph):
             facts = facts_for_node[node]
             if not facts or not facts.is_possible(ctxt):
                 ctxt.log('removing impossible node: %s' % node)
-                with Timer(ctxt, 'remove_node'):
-                    graph.remove_node(node)
-                changes += 1
+                changes += graph.remove_node(node)
         ctxt.log('removed %i node(s)' % changes)
         return changes
 
