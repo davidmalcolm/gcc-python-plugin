@@ -162,7 +162,7 @@ class Error:
             if gccloc:
                 notes.append(Note(gccloc, self.msg))
 
-        return Report(self, notes)
+        return Report(ctxt.sm, self, notes)
 
 
 def get_user_expr(equivcls):

@@ -33,5 +33,40 @@ def selftest(ctxt, solution):
     node = ctxt.get_successor(node)
     ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.unknown'})
 
+    verify_json(ctxt, solution)
+
+def verify_json(ctxt, solution):
+    # Verify that the JSON version of the report is sane:
+    assert len(ctxt._errors) == 1
+    err = ctxt._errors[0]
+    report = err.make_report(ctxt, solution)
+
+    json = report.as_json()
+
+    if 0:
+        import json as jsonmod
+        print(jsonmod.dumps(report.as_json(),
+                            sort_keys=True,
+                            indent=4, separators=(',', ': ')))
+
+    # Verify json['sm']:
+    assert json['sm']['name'] == 'malloc_checker'
+
+    # Verify json['loc']:
+    assert 'input.c' in json['loc']['actualfilename']
+    assert json['loc']['givenfilename'] == "tests/sm/assignments/dereference-on-lhs/input.c"
+    assert json['loc']['line'] == 25
+    assert json['loc']['column'] == 8
+
+    # Verify json['message']:
+    assert json['message'] == "use of possibly-NULL pointer foo"
+
+    # Verify json['notes']:
+    assert len(json['notes']) == 2
+    note = json['notes'][0]
+    assert json['loc']['givenfilename'] == "tests/sm/assignments/dereference-on-lhs/input.c"
+    assert note['loc']['line'] == 24
+    assert note['message'] == "foo assigned to the result of malloc()"
+
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

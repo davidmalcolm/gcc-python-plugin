@@ -16,15 +16,37 @@
 #   <http://www.gnu.org/licenses/>.
 
 from collections import namedtuple
+import os
+
 import gccutils
 
 class Note(namedtuple('Note', ('gccloc', 'msg'))):
-    pass
+    def as_json(self):
+        return dict(loc=gccloc_as_json(self.gccloc),
+                    message=self.msg)
+
+def gccloc_as_json(gccloc):
+    return dict(givenfilename=gccloc.file,
+                actualfilename=os.path.abspath(gccloc.file),
+                line=gccloc.line,
+                column=gccloc.column)
 
 class Report:
-    def __init__(self, err, notes):
+    def __init__(self, sm, err, notes):
+        self.sm = sm
         self.err = err
         self.notes = notes
+
+    def as_json(self):
+        sm_as_json = dict(name=self.sm.name)
+        jsonic = dict(sm=sm_as_json,
+                      loc=gccloc_as_json(self.err.gccloc),
+                      message=self.err.msg,
+                      notes=[])
+        for note in self.notes:
+            jsonic['notes'].append(note.as_json())
+
+        return jsonic
 
 class Reporter:
     pass
