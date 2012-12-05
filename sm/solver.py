@@ -1003,8 +1003,13 @@ class Context:
             pass # FIXME
 
     def emit_errors(self, solution):
-        from sm.reporter import StderrReporter
-        reporter = StderrReporter()
+        from sm.reporter import StderrReporter, JsonReporter
+
+        if self.options.dump_json:
+            reporter = JsonReporter()
+        else:
+            reporter = StderrReporter()
+
         for err in sorted(self._errors):
             report = err.make_report(self, solution)
             if report:

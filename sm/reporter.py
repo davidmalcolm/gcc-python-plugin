@@ -49,7 +49,8 @@ class Report:
         return jsonic
 
 class Reporter:
-    pass
+    def add(self, report):
+        raise NotImplementedError
 
 class StderrReporter(Reporter):
     def __init__(self):
@@ -75,3 +76,19 @@ class StderrReporter(Reporter):
 
         for note in report.notes:
             gccutils.inform(note.gccloc, note.msg)
+
+class JsonReporter(Reporter):
+    def add(self, report):
+        import json as jsonmod
+        import hashlib
+
+        jsonobj = report.as_json()
+        jsonsrc = jsonmod.dumps(jsonobj,
+                                sort_keys=True,
+                                indent=4, separators=(',', ': '))
+
+        # Use the sha-1 hash of the report to create a unique filename:
+        hexdigest = hashlib.sha1(jsonsrc).hexdigest()
+        filename = report.err.gccloc.file + '.%s.sm.json' % hexdigest
+        with open(filename, 'w') as f:
+            f.write(jsonsrc)
