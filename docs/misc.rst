@@ -25,6 +25,7 @@ scripts.
 .. toctree::
 
    callgraph.rst
+   lto.rst
    options.rst
    parameters.rst
    preprocessor.rst
