@@ -182,19 +182,24 @@ class Solution:
             if node.stmt:
                 if node.stmt.loc:
                     writeln('src: %s: %s' % (node.stmt.loc, get_src_for_loc(node.stmt.loc)))
-            writeln('facts: %s' % self.ctxt.facts_for_node[node])
-            writeln('partitions: {%s}'
-                    % ', '.join(['{%s}' % ', '.join([str(expr)
-                                                     for expr in equivcls])
-                                 for equivcls in self.ctxt.facts_for_node[node].get_equiv_classes()]))
+            facts = self.ctxt.facts_for_node[node]
+            writeln('facts: %s' % facts)
+            if facts:
+                writeln('partitions: {%s}'
+                        % ', '.join(['{%s}' % ', '.join([str(expr)
+                                                         for expr in equivcls])
+                                     for equivcls in facts.get_equiv_classes()]))
             # Write out state information from fixed point solver:
             writeln('fixed point states:')
             states = self.ctxt.states_for_node[node]
-            for equivcls in states._dict:
-                writeln('%s: %s'
-                        % (equivcls_to_str(equivcls),
-                           stateset_to_str(states._dict[equivcls])),
-                        indent=2)
+            if states:
+                for equivcls in states._dict:
+                    writeln('%s: %s'
+                            % (equivcls_to_str(equivcls),
+                               stateset_to_str(states._dict[equivcls])),
+                            indent=2)
+            else:
+                writeln('None', indent=2)
 
             # Write out state information from old solver:
             states = self.states[node]
