@@ -1164,17 +1164,29 @@ class Context:
     #######################################################################
     # Utility methods for writing selftests
     #######################################################################
+    def _is_within(self, node, within):
+        if within:
+            if node.function:
+                if node.function.decl.name == within:
+                    return True
+            return False
+        return True
+
     def find_call_of(self, funcname, within=None):
         for node in self.graph.nodes:
-            if within:
-                if node.function.decl.name != within:
-                    continue
-            stmt = node.stmt
-            if isinstance(stmt, gcc.GimpleCall):
-                if isinstance(stmt.fn, gcc.AddrExpr):
-                    if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-                        if stmt.fn.operand.name == funcname:
-                            return node
+            if not self._is_within(node, within):
+                continue
+            # For an interprocedural call, we want the CallNode, not the
+            # ReturnNode.
+            # For a call to an external function, the GimpleCall will be
+            # within a regular SupergraphNode:
+            if not isinstance(node, ReturnNode):
+                stmt = node.stmt
+                if isinstance(stmt, gcc.GimpleCall):
+                    if isinstance(stmt.fn, gcc.AddrExpr):
+                        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
+                            if stmt.fn.operand.name == funcname:
+                                return node
         raise ValueError('call to %s() not found' % funcname)
 
     def find_implementation_of(self, funcname):
@@ -1185,9 +1197,8 @@ class Context:
 
     def find_comparison_against(self, exprcode, const, within=None):
         for node in self.graph.nodes:
-            if within:
-                if node.function.decl.name != within:
-                    continue
+            if not self._is_within(node, within):
+                continue
             stmt = node.stmt
             if isinstance(stmt, gcc.GimpleCond):
                 if stmt.exprcode == exprcode:
@@ -1199,7 +1210,7 @@ class Context:
     def get_successor(self, node):
         if len(node.succs) > 1:
             raise ValueError('node %s has more than one successor' % node)
-        return node.succs[0].dstnode
+        return list(node.succs)[0].dstnode
 
     def get_true_successor(self, node):
         assert isinstance(node.stmt, gcc.GimpleCond)

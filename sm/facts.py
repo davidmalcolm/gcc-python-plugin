@@ -227,15 +227,18 @@ class Facts(AbstractValue):
 def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
     # impossible to actually reach
-    ctxt.log('remove_impossible')
-    changes = 0
-    for node in graph.nodes:
-        if not facts_for_node[node].is_possible(ctxt):
-            ctxt.log('removing impossible node: %s' % node)
-            graph.remove_node(node)
-            changes += 1
-    ctxt.log('removed %i node(s)' % changes)
-    return changes
+    from sm.solver import Timer
+    with Timer(ctxt, 'remove_impossible'):
+        changes = 0
+        for node in list(graph.nodes):
+            facts = facts_for_node[node]
+            if not facts or not facts.is_possible(ctxt):
+                ctxt.log('removing impossible node: %s' % node)
+                with Timer(ctxt, 'remove_node'):
+                    graph.remove_node(node)
+                changes += 1
+        ctxt.log('removed %i node(s)' % changes)
+        return changes
 
 def equivcls_to_str(equivcls):
     if equivcls is None:

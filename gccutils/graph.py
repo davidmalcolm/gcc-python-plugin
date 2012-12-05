@@ -24,39 +24,47 @@ from gccutils.dot import to_html
 ############################################################################
 class Graph:
     def __init__(self):
-        self.nodes = []
-        self.edges = []
+        self.nodes = set()
+        self.edges = set()
 
     def add_node(self, node):
-        self.nodes.append(node)
+        self.nodes.add(node)
         return node
 
     def add_edge(self, srcnode, dstnode, *args, **kwargs):
         assert isinstance(srcnode, Node)
         assert isinstance(dstnode, Node)
         e = self._make_edge(srcnode, dstnode, *args, **kwargs)
-        self.edges.append(e)
-        srcnode.succs.append(e)
-        dstnode.preds.append(e)
+        self.edges.add(e)
+        srcnode.succs.add(e)
+        dstnode.preds.add(e)
         return e
 
     def _make_edge(self, srcnode, dstnode):
         return Edge(srcnode, dstnode)
 
     def remove_node(self, node):
+        if node not in self.nodes:
+            return 0
         self.nodes.remove(node)
+        victims = 1
         for edge in list(self.edges):
             if edge.srcnode == node or edge.dstnode == node:
-                self.remove_edge(edge)
+                victims += self.remove_edge(edge)
+        return victims
 
     def remove_edge(self, edge):
+        if edge not in self.edges:
+            return 0
         self.edges.remove(edge)
         edge.srcnode.succs.remove(edge)
         edge.dstnode.preds.remove(edge)
+        victims = 0
         if not edge.dstnode.preds:
             # We removed last inedge: recurse
             if edge.dstnode in self.nodes:
-                self.remove_node(edge.dstnode)
+                victims += self.remove_node(edge.dstnode)
+        return victims
 
     def to_dot(self, name, ctxt=None):
         result = 'digraph %s {\n' % name
@@ -188,8 +196,8 @@ class Graph:
 
 class Node:
     def __init__(self):
-        self.preds = []
-        self.succs = []
+        self.preds = set()
+        self.succs = set()
 
     def to_dot_id(self):
         return '%s' % id(self)
@@ -425,7 +433,7 @@ class ExitNode(StmtNode):
         Get the gcc.GimpleReturn statement associated with this function exit
         """
         if len(self.preds) == 1:
-            node = self.preds[0].srcnode
+            node = list(self.preds)[0].srcnode
             assert isinstance(node.stmt, gcc.GimpleReturn)
             return node
 
