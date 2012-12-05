@@ -60,11 +60,12 @@ class Error:
     def __hash__(self):
         return hash(self.srcnode) ^ hash(self.match) ^ hash(self.msg) ^ hash(self.state)
 
-    def emit(self, ctxt, solution):
+    def make_report(self, ctxt, solution):
         """
-        Display the error
+        Generate a Report instance (or None if it's impossible)
         """
-        from gccutils import error, inform
+        from sm.reporter import Report, Note
+        notes = []
         loc = self.gccloc
         stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
         path = solution.get_shortest_path_to(self.srcnode,
@@ -74,10 +75,8 @@ class Error:
         if path is None:
             # unreachable:
             ctxt.log('unreachable error')
-            return
+            return None
 
-        error(loc, self.msg)
-        msgcount = 1
         for edge in path:
             # ctxt.debug(srcnode)
             # FIXME: this needs to respect the StateVar, in case of a returned value...
@@ -131,8 +130,7 @@ class Error:
                         if desc:
                             desc += ': '
                         desc += edge.srcnode.match.description(ctxt)
-                        inform(gccloc, desc)
-                        msgcount += 1
+                        notes.append(Note(gccloc, desc))
                 elif get_user_expr(srcequivcls) != get_user_expr(dstequivcls) \
                         and srcstate != ctxt.get_default_state():
                     ctxt.log('equivcls change!')
@@ -143,8 +141,7 @@ class Error:
                              % (equivcls_to_user_str(ctxt, srcsupernode, srcequivcls),
                                 srcstate,
                                 equivcls_to_user_str(ctxt, dstsupernode, dstequivcls)))
-                    inform(gccloc, desc)
-                    msgcount += 1
+                    notes.append(Note(gccloc, desc))
                 else:
                     # Debugging information on state change:
                     if 0:
@@ -152,20 +149,21 @@ class Error:
                                  % (ctxt.sm.name,
                                     srcequivcls, srcstate,
                                     dstequivcls, dststate))
-                        inform(gccloc, desc)
-                        msgcount += 1
+                        notes.append(Note(gccloc, desc))
                     else:
                         if desc:
-                            inform(gccloc, desc)
-                            msgcount += 1
+                            notes.append(Note(gccloc, desc))
             continue
 
         # repeat the message at the end of the path, if anything else has
         # been said:
-        if msgcount > 1:
+        if notes:
             gccloc = path[-1].dstnode.innernode.get_gcc_loc()
             if gccloc:
-                inform(gccloc, self.msg)
+                notes.append(Note(gccloc, self.msg))
+
+        return Report(self, notes)
+
 
 def get_user_expr(equivcls):
     # What's the best expr within the equivcls for use in a description?

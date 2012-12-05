@@ -1003,20 +1003,12 @@ class Context:
             pass # FIXME
 
     def emit_errors(self, solution):
-        curfun = None
-        curfile = None
-        for error in sorted(self._errors):
-            gccloc = error.gccloc
-            if error.function != curfun or gccloc.file != curfile:
-                # Fake the function-based output
-                # e.g.:
-                #    "tests/sm/examples/malloc-checker/input.c: In function 'use_after_free':"
-                import sys
-                sys.stderr.write("%s: In function '%s':\n"
-                                 % (gccloc.file, error.function.decl.name))
-                curfun = error.function
-                curfile = gccloc.file
-            error.emit(self, solution)
+        from sm.reporter import StderrReporter
+        reporter = StderrReporter()
+        for err in sorted(self._errors):
+            report = err.make_report(self, solution)
+            if report:
+                reporter.add(report)
 
     def compare(self, gccexpr, smexpr):
         if 0:
