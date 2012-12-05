@@ -1267,8 +1267,9 @@ class Context:
         expr = simplify(expr)
         actualstates = self.states_for_node[node].get_states_for_expr(self, expr)
         if actualstates != expectedstates:
-            raise ValueError('wrong states for %s: expected %s but got %s'
+            raise ValueError('wrong states for %s at %r: expected %s but got %s'
                              % (expr,
+                                str(node),
                                 stateset_to_str(expectedstates),
                                 stateset_to_str(actualstates)))
 
@@ -1284,6 +1285,19 @@ class Context:
     def assert_statenames_for_varname(self, node, varname, expectedstatenames):
         var = self.find_var(node, varname)
         self.assert_statenames_for_expr(node, var, expectedstatenames)
+
+    def assert_error_is_impossible(self, err, solution):
+        stateful_gccvar = err.match.get_stateful_gccvar(self)
+        equivcls = self.get_aliases(err.srcnode, stateful_gccvar)
+        path = solution.get_shortest_path_to(err.srcnode,
+                                             equivcls,
+                                             err.state)
+        if path is not None:
+            raise ValueError('expected %r to be impossible due to there'
+                             ' being no possible path to %s:%s at %s\n'
+                             'but found path: %s'
+                             % (err.msg, equivcls, err.state, err.srcnode,
+                                path))
 
 def solve(ctxt, name, selftest):
     ctxt.log('running %s', ctxt.sm.name)

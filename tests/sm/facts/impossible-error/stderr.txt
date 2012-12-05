@@ -1,0 +1,1 @@
+tests/sm/facts/impossible-error/input.c: In function 'test':
