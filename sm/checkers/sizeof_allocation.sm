@@ -25,6 +25,11 @@ sm sizeof_allocation {
   decl any_expr sz;
 
   {{
+    def is_known_int(var):
+        # We can only run the checker on constant integer expressions
+        import gcc
+        return isinstance(var.gccexpr, gcc.IntegerCst)
+
     def check_size(ptr, allocated_size):
         import gcc
         type_pointed_to = ptr.type.dereference
@@ -56,7 +61,8 @@ sm sizeof_allocation {
     | { ptr = g_try_realloc(other_ptr, sz) }
       /* etc */
       => {{
-              check_size(ptr, sz)
+            if is_known_int(sz):
+                check_size(ptr, sz)
          }};
 
   ptr.all:
@@ -70,7 +76,9 @@ sm sizeof_allocation {
     | { ptr = g_try_malloc0_n(nmemb, sz) }
     | { ptr = g_try_realloc_n(other_pointer, nmemb, sz) }
       => {{
-              check_size(ptr, int(nmemb) * int(sz))
+            if is_known_int(nmemb):
+                if is_known_int(sz):
+                    check_size(ptr, int(nmemb) * int(sz))
          }};
 
   ptr.sized:
