@@ -19,7 +19,7 @@ ENABLE_PROFILE=0
 
 import gcc
 
-from sm.solver import Context, solve, SHOW_SUPERGRAPH
+from sm.solver import Context, solve, SHOW_SUPERGRAPH, Timer
 
 class IpaSmPass(gcc.IpaPass):
     def __init__(self, checkers, options, selftest):
@@ -55,7 +55,8 @@ class IpaSmPass(gcc.IpaPass):
                 ctxt = Context(checker, sm, sg, self.options)
 
                 def run():
-                    solve(ctxt, 'solution', self.selftest)
+                    with Timer(ctxt, 'running %s' % sm.name):
+                        solve(ctxt, 'solution', self.selftest)
 
                 if ENABLE_PROFILE:
                     # Profiled version:
