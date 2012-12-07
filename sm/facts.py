@@ -86,7 +86,7 @@ class Facts(AbstractValue):
 
     @classmethod
     def get_edge_value(cls, ctxt, srcvalue, edge):
-        return srcvalue.get_facts_after(ctxt, edge)
+        return srcvalue.get_facts_after(ctxt, edge), None
 
     @classmethod
     def union(cls, ctxt, lhs, rhs):

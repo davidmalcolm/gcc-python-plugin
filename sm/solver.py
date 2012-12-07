@@ -25,6 +25,7 @@ ENABLE_DEBUG=0
 SHOW_SUPERGRAPH=0
 DUMP_SOLUTION=0
 SHOW_SOLUTION=0
+SHOW_EXPLODED_GRAPH=0
 SHOW_ERROR_GRAPH=0
 
 import sys
@@ -449,6 +450,10 @@ class AbstractValue:
 
     @classmethod
     def get_edge_value(cls, ctxt, srcvalue, edge):
+        """
+        Generate a (dstvalue, details) pair, where "details" can be of an
+        arbitrary type (per AbstractValue) and could be None
+        """
         raise NotImplementedError
 
     @classmethod
@@ -466,8 +471,8 @@ class StatesForNode(AbstractValue):
     def __str__(self):
         kvstrs = []
         for equivcls, states in self._dict.iteritems():
-            kvstrs.append('%s: %s' % (equivcls_to_str(equivcls),
-                                      stateset_to_str(states)))
+            kvstrs.append('%s=%s' % (equivcls_to_str(equivcls),
+                                     stateset_to_str(states)))
         return '{%s}' % ', '.join(kvstrs)
 
     def __eq__(self, other):
@@ -505,6 +510,14 @@ class StatesForNode(AbstractValue):
         if equivcls in self._dict:
             return self._dict[equivcls]
         return frozenset([ctxt.get_default_state()])
+
+    def is_subset_of(self, other):
+        assert isinstance(other, StatesForNode)
+        assert self.node == other.node
+        for equivcls, states in self._dict.iteritems():
+            if not states.issubset(other._dict[equivcls]):
+                return False
+        return True
 
     def assign_to_from(self, ctxt, dstnode, lhs, rhs):
         assert isinstance(dstnode, SupergraphNode)
@@ -557,7 +570,7 @@ class StatesForNode(AbstractValue):
         # Handle interprocedural edges:
         if isinstance(edge, CallToReturnSiteEdge):
             # Ignore the intraprocedural edge for a function call:
-            return None
+            return None, None
         elif isinstance(edge, CallToStart):
             # Alias the parameters with the arguments as necessary, so
             # e.g. a function that free()s an arg has the caller's expr
@@ -580,14 +593,14 @@ class StatesForNode(AbstractValue):
                 arg = simplify(arg)
                 _dict[ctxt.get_aliases(dstnode, param)] = \
                     srcvalue.get_states_for_expr(ctxt, arg)
-            return StatesForNode(dstnode, _dict)
+            return StatesForNode(dstnode, _dict), None
         elif isinstance(edge, FakeEntryEdge):
             _dict = {}
             for expr in ctxt.smexprs[dstnode.function]:
                 if isinstance(expr, (gcc.VarDecl, gcc.ParmDecl)):
                     _dict[ctxt.get_aliases(dstnode, expr)] = \
                         frozenset([ctxt.get_default_state()])
-            return StatesForNode(dstnode, _dict)
+            return StatesForNode(dstnode, _dict), None
         elif isinstance(edge, ExitToReturnSite):
             # Propagate state through the return value:
             # ctxt.debug('edge.calling_stmtnode: %s', edge.calling_stmtnode)
@@ -613,7 +626,7 @@ class StatesForNode(AbstractValue):
                     ctxt.debug('  arg: %r', arg)
                 _dict[ctxt.get_aliases(dstnode, simplify(arg))] = \
                     srcvalue.get_states_for_expr(ctxt, simplify(param))
-            return StatesForNode(dstnode, _dict)
+            return StatesForNode(dstnode, _dict), None
 
         matches = []
 
@@ -627,7 +640,7 @@ class StatesForNode(AbstractValue):
             if stmt.exprcode == gcc.VarDecl:
                 lhs = simplify(stmt.lhs)
                 rhs = simplify(stmt.rhs[0])
-                return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs)
+                return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs), None
             elif stmt.exprcode == gcc.ComponentRef:
                 # Field lookup
                 lhs = simplify(stmt.lhs)
@@ -638,7 +651,7 @@ class StatesForNode(AbstractValue):
 
                 # Do we already have a state for the field?
                 if ctxt.get_aliases(srcnode, compref) in srcvalue._dict:
-                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref)
+                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref), None
                 else:
                     # Inherit the state from the struct:
                     if ENABLE_LOG:
@@ -647,7 +660,7 @@ class StatesForNode(AbstractValue):
                                  stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
                                  compref.target,
                                  compref.field)
-                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref.target)
+                    return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref.target), None
         elif isinstance(stmt, gcc.GimplePhi):
             if 1:
                 ctxt.debug('gcc.GimplePhi: %s', stmt)
@@ -660,7 +673,7 @@ class StatesForNode(AbstractValue):
             ctxt.debug('  rhs: %r', rhs)
             lhs = simplify(srcnode.stmt.lhs)
             ctxt.debug('  lhs: %r', lhs)
-            return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs)
+            return srcvalue.assign_to_from(ctxt, dstnode, lhs, rhs), None
 
         # Check to see if any of the precalculated matches from the sm script
         # apply:
@@ -682,7 +695,7 @@ class StatesForNode(AbstractValue):
                              pm.outcome)
                 result = pm.outcome.get_result(fpmctxt, srcvalue)
                 ctxt.log('got result: %s', result)
-                return result
+                return result, pm.match
             else:
                 if ENABLE_LOG:
                     ctxt.log('matchingstates: %s', matchingstates)
@@ -691,7 +704,7 @@ class StatesForNode(AbstractValue):
                              pm.describe(ctxt), stmt)
 
         # Nothing matched:
-        return srcvalue.propagate_to(ctxt, dstnode)
+        return srcvalue.propagate_to(ctxt, dstnode), None
 
     @classmethod
     def union(cls, ctxt, lhs, rhs):
@@ -753,7 +766,7 @@ def fixed_point_solver(ctxt, graph, cls):
                     srcvalue = result[edge.srcnode]
                     ctxt.log('srcvalue: %s', srcvalue)
                     if srcvalue:
-                        edgevalue = cls.get_edge_value(ctxt, srcvalue, edge)
+                        edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
                         newvalue = cls.union(ctxt, newvalue, edgevalue)
                         ctxt.log('  new value: %s', newvalue)
@@ -1158,6 +1171,23 @@ class Context:
         with Timer(self, 'generate_errors'):
             generate_errors_from_fixed_point(self)
         self.timing('len(self.errors_from_fixed_point): %i', len(self.errors_from_fixed_point))
+
+        # Work-in-progress:
+        # Build exploded graph:
+        with Timer(self, 'build_exploded_graph'):
+            from sm.expgraph import build_exploded_graph
+            self.expgraph = build_exploded_graph(self)
+
+            self.timing('len(expgraph.nodes): %i', len(self.expgraph.nodes))
+            self.timing('len(expgraph.edges): %i', len(self.expgraph.edges))
+
+            if SHOW_EXPLODED_GRAPH:
+                from gccutils import invoke_dot
+                dot = self.expgraph.to_dot('exploded_graph', self)
+                # Debug: view the exploded graph:
+                if 0:
+                    ctxt.debug(dot)
+                invoke_dot(dot, 'exploded_graph')
 
         # We now have two over-approximations of the errors, take the
         # intersection:
