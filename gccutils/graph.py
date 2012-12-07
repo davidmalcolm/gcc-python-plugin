@@ -165,9 +165,17 @@ class Graph:
         worklist = list(item_for_node.values())
         heapify(worklist)
         while worklist:
-            disttonode, node, islive = heappop(worklist)
-            while not islive:
-                disttonode, node, islive = heappop(worklist)
+            def get_next():
+                while 1:
+                    if not worklist:
+                        return None
+                    disttonode, node, islive = heappop(worklist)
+                    if islive:
+                        return node
+            node = get_next()
+            if node is None:
+                # disjoint
+                break
             if node == dstnode:
                 # We've found the target node; build a path of the edges to
                 # follow to get here:
