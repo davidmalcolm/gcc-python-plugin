@@ -79,9 +79,9 @@ class Facts(AbstractValue, set):
         return srcvalue.get_facts_after(ctxt, edge), None
 
     @classmethod
-    def union(cls, ctxt, lhs, rhs):
-        # This is a misnomer: the set of valid known facts from multiple
-        # entrypoints is just the intersection:
+    def meet(cls, ctxt, lhs, rhs):
+        # The set of valid known facts from multiple inedges is the
+        # intersection of the facts from each inedge:
         if lhs is None:
             return rhs
         if rhs is None:

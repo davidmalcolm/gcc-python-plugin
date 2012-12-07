@@ -716,7 +716,7 @@ class PythonOutcome(Outcome, PythonFragment):
                                                     pm.expr,
                                                     effect.dststate)
             ctxt.log('newresult: %s' % newresult)
-            result = StatesForNode.union(ctxt, result, newresult)
+            result = StatesForNode.meet(ctxt, result, newresult)
         return result
 
     def get_effect_for_state(self, ctxt, edge, match, state):

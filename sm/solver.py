@@ -461,7 +461,7 @@ class AbstractValue:
         raise NotImplementedError
 
     @classmethod
-    def union(cls, ctxt, lhs, rhs):
+    def meet(cls, ctxt, lhs, rhs):
         raise NotImplementedError
 
 class StatesForNode(AbstractValue):
@@ -711,8 +711,8 @@ class StatesForNode(AbstractValue):
         return srcvalue.propagate_to(ctxt, dstnode), None
 
     @classmethod
-    def union(cls, ctxt, lhs, rhs):
-        ctxt.log('union of %s and %s', lhs, rhs)
+    def meet(cls, ctxt, lhs, rhs):
+        ctxt.log('meet of %s and %s', lhs, rhs)
         if lhs is None:
             return rhs
         if rhs is None:
@@ -772,7 +772,7 @@ def fixed_point_solver(ctxt, graph, cls):
                     if srcvalue is not None:
                         edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
-                        newvalue = cls.union(ctxt, newvalue, edgevalue)
+                        newvalue = cls.meet(ctxt, newvalue, edgevalue)
                         ctxt.log('  new value: %s', newvalue)
             if newvalue != oldvalue:
                 ctxt.log('  value changed from: %s  to %s',
