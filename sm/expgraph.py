@@ -17,7 +17,7 @@
 
 from gccutils.graph import Graph, Node, Edge
 
-from sm.solver import stateset_to_str, equivcls_to_str, StatesForNode
+from sm.solver import stateset_to_str, equivcls_to_str, StatesForNode, ENABLE_LOG
 
 class ExplodedGraph(Graph):
     """
@@ -251,9 +251,10 @@ def build_exploded_graph(ctxt):
                     # (which might be the whole of the state set):
                     dstnode = inneredge.dstnode
                     dstvalue, match = StatesForNode.get_edge_value(ctxt, srcvalue, inneredge)
-                    ctxt.log('dstvalue (subset): %s', dstvalue)
-                    ctxt.log('match: %s', match)
-                    ctxt.log('states for dstnode: %s', ctxt.states_for_node[dstnode])
+                    if ENABLE_LOG:
+                        ctxt.log('dstvalue (subset): %s', dstvalue)
+                        ctxt.log('match: %s', match)
+                        ctxt.log('states for dstnode: %s', ctxt.states_for_node[dstnode])
 
                     if dstvalue is None:
                         continue
@@ -268,10 +269,11 @@ def build_exploded_graph(ctxt):
                             ctxt.log('added edge to solo node')
                     else:
                         for dstexpnode in dstexpnodes:
-                            ctxt.log('dstexpnode: equivcls: %s state: %s states_subset: %s',
-                                     equivcls_to_str(dstexpnode.equivcls),
-                                     dstexpnode.state,
-                                     dstexpnode.states_subset) # stateset_to_str(dstexpnode.states_subset))
+                            if ENABLE_LOG:
+                                ctxt.log('dstexpnode: equivcls: %s state: %s states_subset: %s',
+                                         equivcls_to_str(dstexpnode.equivcls),
+                                         dstexpnode.state,
+                                         dstexpnode.states_subset) # stateset_to_str(dstexpnode.states_subset))
                             if dstvalue.is_subset_of(dstexpnode.states_subset):
                                 expgraph.add_edge(srcexpnode, dstexpnode, inneredge, match)
                                 ctxt.log('(added edge for ^^^)')
