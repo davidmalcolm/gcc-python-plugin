@@ -64,7 +64,11 @@ class Timer:
 
     def elapsed_time_as_str(self):
         """Get elapsed time as a string (with units)"""
-        return '%0.3f seconds' % self.get_elapsed_time()
+        elapsed = self.get_elapsed_time()
+        result = '%0.3f seconds' % elapsed
+        if elapsed > 120:
+            result += ' (%i minutes)' % int(elapsed / 60)
+        return result
 
     def __enter__(self):
         self.ctxt.timing('START: %s', self.name)
