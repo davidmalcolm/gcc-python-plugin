@@ -48,9 +48,10 @@ class Graph:
             return 0
         self.nodes.remove(node)
         victims = 1
-        for edge in list(self.edges):
-            if edge.srcnode == node or edge.dstnode == node:
-                victims += self.remove_edge(edge)
+        for edge in list(node.succs):
+            victims += self.remove_edge(edge)
+        for edge in list(node.preds):
+            victims += self.remove_edge(edge)
         return victims
 
     def remove_edge(self, edge):
