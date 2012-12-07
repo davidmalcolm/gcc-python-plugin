@@ -55,6 +55,13 @@ def selftest(ctxt, solution):
                                     ('ptr.all', 'ptr.nonnull', 'ptr.free'))
     # (where "ptr.nonnull" isn't actually possible: it will have been freed)
 
+    # Verify that checker is looking for a possible leak of ptr:
+    node = ctxt.find_exit_of('test')
+    leakedge = ctxt.get_inedge(node)
+    pm = ctxt.assert_edge_matches_pattern(leakedge, '$leaked$')
+    assert str(pm.expr) == 'ptr'
+    assert pm.statenames == frozenset(['ptr.unknown', 'ptr.nonnull'])
+
     # Verify that the solvers find a possible leak due to the (erroneous)
     # ptr.nonnull falling out of scope at the end of the function:
     assert len(ctxt._errors) == 1

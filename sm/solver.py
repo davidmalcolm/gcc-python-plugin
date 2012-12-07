@@ -1234,6 +1234,12 @@ class Context:
                 return self.graph.supernode_for_stmtnode[self.graph.stmtg_for_fun[fun].entry]
         raise ValueError('implementation of %s() not found' % funcname)
 
+    def find_exit_of(self, funcname):
+        for fun in self.graph.stmtg_for_fun:
+            if fun.decl.name == funcname:
+                return self.graph.supernode_for_stmtnode[self.graph.stmtg_for_fun[fun].exit]
+        raise ValueError('implementation of %s() not found' % funcname)
+
     def find_comparison_against(self, exprcode, const, within=None):
         for node in self.graph.nodes:
             if not self._is_within(node, within):
@@ -1245,6 +1251,11 @@ class Context:
                         if stmt.rhs.constant == const:
                             return node
         raise ValueError('comparison %s %s not found' % (exprcode, const))
+
+    def get_inedge(self, node):
+        if len(node.preds) > 1:
+            raise ValueError('node %s has more than one inedge' % node)
+        return list(node.preds)[0]
 
     def get_successor(self, node):
         if len(node.succs) > 1:
@@ -1340,6 +1351,16 @@ class Context:
                              'but found path: %s'
                              % (err.msg, equivcls, err.state, err.srcnode,
                                 path))
+
+    def assert_edge_matches_pattern(self, edge, patternsrc):
+        for pm in edge.possible_matches:
+            if patternsrc == str(pm.match.pattern):
+                # We have a match
+                return pm
+        srcs = [str(pm.match.pattern)
+                for pm in edge.possible_matches]
+        raise ValueError('pattern %r not found in %s'
+                         % (patternsrc, srcs))
 
 def solve(ctxt, name, selftest):
     ctxt.log('running %s', ctxt.sm.name)
