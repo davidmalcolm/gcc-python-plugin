@@ -92,8 +92,8 @@ class ErrorNode(Node):
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('match: %s' % self.match))
         facts = ctxt.facts_for_errnode[self]
-        if facts:
-            for fact in facts._facts:
+        if facts is not None:
+            for fact in facts:
                 tr = table.add_child(Tr())
                 td = tr.add_child(Td(align='left'))
                 td.add_child(Text('FACT: %s' % (fact, )))
@@ -184,7 +184,7 @@ class Solution:
                     writeln('src: %s: %s' % (node.stmt.loc, get_src_for_loc(node.stmt.loc)))
             facts = self.ctxt.facts_for_node[node]
             writeln('facts: %s' % facts)
-            if facts:
+            if facts is not None:
                 writeln('partitions: {%s}'
                         % ', '.join(['{%s}' % ', '.join([str(expr)
                                                          for expr in equivcls])
@@ -298,8 +298,8 @@ class Solution:
                     td.add_child(Text('NO CHANGES'))
                 """
                 facts = self.solution.ctxt.facts_for_node[node]
-                if facts:
-                    for fact in facts._facts:
+                if facts is not None:
+                    for fact in facts:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('FACT: %s' % (fact, )))

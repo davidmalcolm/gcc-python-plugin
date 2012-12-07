@@ -64,7 +64,7 @@ def find_leaks(ctxt):
                     else:
                         ctxt.debug('leaving scope of local: %s', vardecl)
                         facts = ctxt.facts_for_node[edge.dstnode]
-                        if facts:
+                        if facts is not None:
                             if ctxt.facts_for_node[edge.dstnode].expr_is_referenced_externally(ctxt, vardecl):
                                 ctxt.debug('%s is referenced externally: not leaked', vardecl)
                             else:

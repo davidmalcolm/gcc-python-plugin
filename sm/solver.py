@@ -769,7 +769,7 @@ def fixed_point_solver(ctxt, graph, cls):
                 with ctxt.indent():
                     srcvalue = result[edge.srcnode]
                     ctxt.log('srcvalue: %s', srcvalue)
-                    if srcvalue:
+                    if srcvalue is not None:
                         edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
                         newvalue = cls.union(ctxt, newvalue, edgevalue)
@@ -1119,7 +1119,7 @@ class Context:
 
     def get_aliases(self, node, expr):
         facts = self.facts_for_node[node]
-        if facts:
+        if facts is not None:
             return facts.get_aliases(expr)
         else:
             return frozenset([expr])
@@ -1304,7 +1304,7 @@ class Context:
             lhs = self.get_expr_by_str(node, lhs)
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
-        if expectedfact not in actualfacts._facts:
+        if expectedfact not in actualfacts:
             raise ValueError('%s not in %s' % (expectedfact, actualfacts))
 
     def assert_not_fact(self, node, lhs, op, rhs):
@@ -1313,7 +1313,7 @@ class Context:
             lhs = self.get_expr_by_str(node, lhs)
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
-        if expectedfact in actualfacts._facts:
+        if expectedfact in actualfacts:
             raise ValueError('%s unexpectedly within %s' % (expectedfact, actualfacts))
 
     def assert_states_for_expr(self, node, expr, expectedstates):

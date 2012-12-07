@@ -58,9 +58,9 @@ class Fact:
         if isinstance(other, Fact):
             return (self.lhs, self.op, self.rhs) < (other.lhs, other.op, other.rhs)
 
-class Facts(AbstractValue):
-    def __init__(self):
-        self._facts = frozenset()
+class Facts(AbstractValue, set):
+    def __init__(self, *args):
+        set.__init__(self, *args)
 
         # lazily constructed
         # dict from expr to (shared) sets of exprs
@@ -68,17 +68,7 @@ class Facts(AbstractValue):
 
     def __str__(self):
         return '(%s)' % (' && '.join([str(fact)
-                                      for fact in sorted(self._facts)]), )
-
-    def __eq__(self, other):
-        if isinstance(other, Facts):
-            return self._facts == other._facts
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __hash__(self):
-        return hash(self._facts)
+                                      for fact in sorted(self)]))
 
     @classmethod
     def make_entry_point(cls, ctxt, node):
@@ -96,14 +86,12 @@ class Facts(AbstractValue):
             return rhs
         if rhs is None:
             return lhs
-        result = Facts()
-        result._facts = lhs._facts & rhs._facts
-        return result
+        return Facts(lhs & rhs)
 
     def _make_equiv_classes(self):
         partitions = {}
 
-        for fact in self._facts:
+        for fact in self:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op == '==':
                 if lhs in partitions:
@@ -157,7 +145,7 @@ class Facts(AbstractValue):
         ctxt.debug('constants: %s' % constants)
 
         # Check any such constants against other inequalities:
-        for fact in self._facts:
+        for fact in self:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op in ('!=', '<', '>'):
                 if isinstance(rhs, (gcc.IntegerCst, int)):
@@ -182,7 +170,7 @@ class Facts(AbstractValue):
 
     def expr_is_referenced_externally(self, ctxt, var):
         ctxt.debug('expr_is_referenced_externally(%s, %s)', self, var)
-        for fact in self._facts:
+        for fact in self:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op == '==':
                 # For now, any equality will do it
@@ -195,7 +183,7 @@ class Facts(AbstractValue):
 
     def get_facts_after(self, ctxt, edge):
         stmt = edge.srcnode.stmt
-        dstfacts = set(self._facts)
+        dstfacts = Facts(self)
         if isinstance(stmt, gcc.GimpleAssign):
             if 1:
                 ctxt.debug('gcc.GimpleAssign: %s', stmt)
@@ -220,9 +208,8 @@ class Facts(AbstractValue):
             if edge.false_value:
                 op = inverseops[op]
                 dstfacts.add( Fact(lhs, op, rhs) )
-        result = Facts()
-        result._facts = frozenset(dstfacts)
-        return result
+
+        return dstfacts
 
 def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
@@ -232,7 +219,7 @@ def remove_impossible(ctxt, facts_for_node, graph):
         changes = 0
         for node in list(graph.nodes):
             facts = facts_for_node[node]
-            if not facts or not facts.is_possible(ctxt):
+            if facts is None or not facts.is_possible(ctxt):
                 ctxt.log('removing impossible node: %s' % node)
                 changes += graph.remove_node(node)
         ctxt.log('removed %i node(s)' % changes)
