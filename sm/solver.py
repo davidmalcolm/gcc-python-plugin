@@ -1152,8 +1152,7 @@ class Context:
                 edge.possible_matches = list(find_possible_matches(self, edge))
 
         # Work-in-progress: find the fixed point of all possible states
-        # reachable for each in-scope expr at each node.  This isn't yet
-        # wired up to anything:
+        # reachable for each in-scope expr at each node:
         with Timer(self, 'fixed_point_solver(StatesForNode)'):
             self.states_for_node = fixed_point_solver(self, self.graph, StatesForNode)
 
@@ -1163,7 +1162,8 @@ class Context:
         self.timing('len(graph.nodes): %i', len(self.graph.nodes))
         self.timing('len(graph.edges): %i', len(self.graph.edges))
 
-        # The first solver: an older implementation, which generates
+        # Another unrelated approach: an older implementation, which
+        # generates:
         #   self.errors_from_find_states
         # for later processing:
         with Timer(self, 'solution.find_states'):
