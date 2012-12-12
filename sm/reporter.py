@@ -43,6 +43,8 @@ class Report:
                       loc=gccloc_as_json(self.err.gccloc),
                       message=self.err.msg,
                       notes=[])
+        if self.err.cwe:
+            jsonic['cwe'] = self.err.cwe
         for note in self.notes:
             jsonic['notes'].append(note.as_json())
 

@@ -69,6 +69,9 @@ def verify_json(jsonobj):
                          sort_keys=True,
                          indent=4, separators=(',', ': ')))
 
+    # Verify jsonobj['cwe']:
+    assert jsonobj['cwe'] == 'CWE-690'
+
     # Verify jsonobj['sm']:
     assert jsonobj['sm']['name'] == 'malloc_checker'
 
