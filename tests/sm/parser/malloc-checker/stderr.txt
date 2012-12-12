@@ -1,6 +1,6 @@
 test_complex_example (__main__.ParserTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.014s
+Ran 1 test in #s
 
 OK

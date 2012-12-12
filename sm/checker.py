@@ -728,9 +728,9 @@ class PythonOutcome(Outcome, PythonFragment):
         errors = []
 
         # Create environment for execution of the code:
-        def error(msg):
+        def error(msg, cwe=None):
             from sm.error import Error
-            errors.append(Error(edge.srcnode, match, msg, globals_['state']))
+            errors.append(Error(edge.srcnode, match, msg, globals_['state'], cwe))
 
         def set_state(name, **kwargs):
             from sm.solver import State

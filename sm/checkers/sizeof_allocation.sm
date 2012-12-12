@@ -38,7 +38,8 @@ sm sizeof_allocation {
             if allocated_size < required_size:
                 error("allocation too small: pointer to %s (%i bytes)"
                       " initialized with allocation of %i bytes"
-                      % (type_pointed_to, required_size, allocated_size))
+                      % (type_pointed_to, required_size, allocated_size),
+                      cwe="CWE-131") # "Incorrect Calculation of Buffer Size"
 
         # Handle cases where the cast happens on another line:
         set_state("ptr.sized", size=int(allocated_size))

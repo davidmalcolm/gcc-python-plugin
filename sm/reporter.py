@@ -70,7 +70,11 @@ class StderrReporter(Reporter):
             self.curfun = err.function
             self.curfile = gccloc.file
             import sys
-        gccutils.error(report.err.gccloc, report.err.msg)
+        if report.err.cwe:
+            msg = '%s [%s]' % (report.err.msg, report.err.cwe)
+        else:
+            msg = report.err.msg
+        gccutils.error(report.err.gccloc, msg)
         self.curfun = err.function
         self.curfun = err.function
 

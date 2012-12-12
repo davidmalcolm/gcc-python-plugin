@@ -16,29 +16,71 @@ sm malloc_checker {
     ;
 
   ptr.unchecked:
-    { *ptr } => {{ error('use of possibly-NULL pointer %s' % ptr) }}, ptr.nonnull;
+    { *ptr }
+      => {{
+            error('use of possibly-NULL pointer %s' % ptr,
+                  # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
+                  cwe='CWE-690')
+         }}, ptr.nonnull;
 
   ptr.null:
-    { *ptr } => {{ error('use of NULL pointer %s' % ptr) }};
+    { *ptr }
+      => {{
+            error('use of NULL pointer %s' % ptr,
+                  # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
+                  cwe='CWE-690')
+         }};
 
   ptr.all, ptr.unchecked, ptr.null, ptr.nonnull:
     { free(ptr) } => ptr.free;
 
   ptr.free:
-      { free(ptr) } => {{ error('double-free of %s' % ptr) }}
-    | { ptr } => {{ error('use-after-free of %s' % ptr) }}
+      { free(ptr) }
+          => {{
+                error('double-free of %s' % ptr,
+                      # "CWE-415: Double Free"
+                      cwe='CWE-415')
+             }}
+    | { ptr }
+          => {{
+                error('use-after-free of %s' % ptr,
+                      # "CWE-416: Use After Free"
+                      cwe='CWE-416')
+             }}
     ;
 
   ptr.unchecked:
-      { memset(ptr) } => {{ error('use of possibly-NULL pointer %s' % ptr) }};
+    { memset(ptr) }
+      => {{
+            error('use of possibly-NULL pointer %s' % ptr,
+                  # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
+                  cwe='CWE-690')
+          }};
 
   ptr.null:
-      { memset(ptr) } => {{ error('use of NULL pointer %s' % ptr) }};
+    { memset(ptr) }
+      => {{
+            error('use of NULL pointer %s' % ptr,
+                  # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
+                  cwe='CWE-690')
+         }};
 
   ptr.free:
-      { memset(ptr) } => {{ error('use-after-free of %s' % ptr) }};
+      { memset(ptr) }
+          => {{
+                error('use-after-free of %s' % ptr,
+                      # "CWE-416: Use After Free"
+                      cwe='CWE-416')
+             }};
 
   ptr.unchecked, ptr.nonnull:
-      $leaked$ => {{ error('leak of %s' % ptr) }};
-
+    $leaked$
+      => {{
+            error('leak of %s' % ptr,
+                  # This appears to be:
+                  # "CWE-401: Improper Release of Memory Before Removing
+                  #  Last Reference ('Memory Leak')"
+                  # although the title of CWE-401 appears to be misleading
+                  cwe='CWE-401')
+         }};
 }

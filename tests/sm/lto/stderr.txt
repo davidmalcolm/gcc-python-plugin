@@ -1,26 +1,26 @@
 tests/sm/lto/input-g.c: In function 'g':
-tests/sm/lto/input-g.c:30:7: error: double-free of q
+tests/sm/lto/input-g.c:30:7: error: double-free of q [CWE-415]
 tests/sm/lto/input-g.c:30:7: note: q passed to free()
 tests/sm/lto/input-g.c:28:6: note: return from g() to g()
 tests/sm/lto/input-g.c:30:7: note: double-free of q
-tests/sm/lto/input-g.c:30:7: error: use-after-free of q
+tests/sm/lto/input-g.c:30:7: error: use-after-free of q [CWE-416]
 tests/sm/lto/input-g.c:30:7: note: q passed to free()
 tests/sm/lto/input-g.c:28:6: note: return from g() to g()
 tests/sm/lto/input-g.c:30:7: note: use-after-free of q
 tests/sm/lto/input-h.c: In function 'h':
-tests/sm/lto/input-h.c:28:8: error: use of NULL pointer r
+tests/sm/lto/input-h.c:28:8: error: use of NULL pointer r [CWE-690]
 tests/sm/lto/input-f.c:31:5: note: return value assigned to 0
 tests/sm/lto/input-h.c:27:8: note: return from f() to h(): state of return value ("ptr.null") propagated to r
 tests/sm/lto/input-h.c:28:8: note: use of NULL pointer r
-tests/sm/lto/input-h.c:28:8: error: use of possibly-NULL pointer r
+tests/sm/lto/input-h.c:28:8: error: use of possibly-NULL pointer r [CWE-690]
 tests/sm/lto/input-f.c:28:11: note: p assigned to the result of malloc()
 tests/sm/lto/input-h.c:27:8: note: return from f() to h(): state of return value ("ptr.unchecked") propagated to r
 tests/sm/lto/input-h.c:28:8: note: use of possibly-NULL pointer r
-tests/sm/lto/input-h.c:30:7: error: double-free of r
+tests/sm/lto/input-h.c:30:7: error: double-free of r [CWE-415]
 tests/sm/lto/input-g.c:30:7: note: q passed to free()
 tests/sm/lto/input-h.c:29:4: note: return from g() to h(): state of q ("ptr.free") propagated to r
 tests/sm/lto/input-h.c:30:7: note: double-free of r
-tests/sm/lto/input-h.c:30:7: error: use-after-free of r
+tests/sm/lto/input-h.c:30:7: error: use-after-free of r [CWE-416]
 tests/sm/lto/input-g.c:30:7: note: q passed to free()
 tests/sm/lto/input-h.c:29:4: note: return from g() to h(): state of q ("ptr.free") propagated to r
 tests/sm/lto/input-h.c:30:7: note: use-after-free of r

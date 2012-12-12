@@ -21,11 +21,16 @@ from gccutils.graph import CallNode, ReturnNode
 
 class Error:
     # A stored error
-    def __init__(self, srcnode, match, msg, state):
+    def __init__(self, srcnode, match, msg, state, cwe):
         self.srcnode = srcnode
         self.match = match
         self.msg = msg
         self.state = state
+
+        # cwe can be None, or a str of the form "CWE-[0-9]*"
+        # e.g. "CWE-590"  aka "Free of Memory not on the Heap"
+        # see http://cwe.mitre.org/data/definitions/590.html
+        self.cwe = cwe
 
     @property
     def gccloc(self):

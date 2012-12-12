@@ -1,4 +1,4 @@
 tests/sm/checkers/sizeof_allocation/stateful_malloc_too_small/input.c: In function 'test':
-tests/sm/checkers/sizeof_allocation/stateful_malloc_too_small/input.c:35:nn: error: allocation too small: pointer to struct foo (256 bytes) initialized with allocation of 128 bytes
+tests/sm/checkers/sizeof_allocation/stateful_malloc_too_small/input.c:35:nn: error: allocation too small: pointer to struct foo (256 bytes) initialized with allocation of 128 bytes [CWE-131]
 tests/sm/checkers/sizeof_allocation/stateful_malloc_too_small/input.c:33:nn: note: ptr assigned to the result of malloc(128)
 tests/sm/checkers/sizeof_allocation/stateful_malloc_too_small/input.c:35:nn: note: allocation too small: pointer to struct foo (256 bytes) initialized with allocation of 128 bytes

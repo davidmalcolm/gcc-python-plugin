@@ -50,19 +50,22 @@ sm taint {
   /* Detect when a tainted value is used in a dangerous way: */
   x.tainted:
       { arr[x] } => {{
-          error('use of tainted value %s in array lookup without bounds checking' % x)
+          error('use of tainted value %s in array lookup without bounds checking' % x,
+                cwe='CWE-129') # "Improper Validation of Array Index"
         }};
 
   x.has_lb:
       { arr[x] } => {{
-          error('use of tainted value %s in array lookup without upper-bound check' % x)
+          error('use of tainted value %s in array lookup without upper-bound check' % x,
+                cwe='CWE-129') # "Improper Validation of Array Index"
         }};
 
   /* Unsigned types have an implicit lower bound: */
   x.has_ub:
       { arr[x] } => {{
           if not x.type.unsigned:
-             error('use of tainted value %s in array lookup without lower-bound check' % x)
+             error('use of tainted value %s in array lookup without lower-bound check' % x,
+                   cwe='CWE-129') # "Improper Validation of Array Index"
         }};
 
 }

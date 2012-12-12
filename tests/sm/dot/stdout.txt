@@ -20,20 +20,62 @@ digraph test_script {
     ptr_nonnull -> ptr_nonnull [label=<{ ptr == 0 } is False>];
     ptr_nonnull -> ptr_nonnull [label=<{ ptr != 0 } is True>];
     ptr_nonnull -> ptr_null [label=<{ ptr != 0 } is False>];
-    ptr_unchecked -> ptr_unchecked [label=<{ *ptr }:  error(&apos;use of possibly-NULL pointer %s&apos; % ptr) >];
+    ptr_unchecked -> ptr_unchecked [label=<{ *ptr }: 
+            error(&apos;use of possibly-NULL pointer %s&apos; % ptr,
+                  # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
+                  cwe=&apos;CWE-690&apos;)
+         >];
     ptr_unchecked -> ptr_nonnull [label=<{ *ptr }>];
-    ptr_null -> ptr_null [label=<{ *ptr }:  error(&apos;use of NULL pointer %s&apos; % ptr) >];
+    ptr_null -> ptr_null [label=<{ *ptr }: 
+            error(&apos;use of NULL pointer %s&apos; % ptr,
+                  # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
+                  cwe=&apos;CWE-690&apos;)
+         >];
     ptr_all -> ptr_free [label=<{ free(ptr) } >];
     ptr_unchecked -> ptr_free [label=<{ free(ptr) } >];
     ptr_null -> ptr_free [label=<{ free(ptr) } >];
     ptr_nonnull -> ptr_free [label=<{ free(ptr) } >];
-    ptr_free -> ptr_free [label=<{ free(ptr) } :  error(&apos;double-free of %s&apos; % ptr) >];
-    ptr_free -> ptr_free [label=<{ ptr }:  error(&apos;use-after-free of %s&apos; % ptr) >];
-    ptr_unchecked -> ptr_unchecked [label=<{ memset(ptr) } :  error(&apos;use of possibly-NULL pointer %s&apos; % ptr) >];
-    ptr_null -> ptr_null [label=<{ memset(ptr) } :  error(&apos;use of NULL pointer %s&apos; % ptr) >];
-    ptr_free -> ptr_free [label=<{ memset(ptr) } :  error(&apos;use-after-free of %s&apos; % ptr) >];
-    ptr_unchecked -> ptr_unchecked [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
-    ptr_nonnull -> ptr_nonnull [label=<$leaked$:  error(&apos;leak of %s&apos; % ptr) >];
+    ptr_free -> ptr_free [label=<{ free(ptr) } : 
+                error(&apos;double-free of %s&apos; % ptr,
+                      # &quot;CWE-415: Double Free&quot;
+                      cwe=&apos;CWE-415&apos;)
+             >];
+    ptr_free -> ptr_free [label=<{ ptr }: 
+                error(&apos;use-after-free of %s&apos; % ptr,
+                      # &quot;CWE-416: Use After Free&quot;
+                      cwe=&apos;CWE-416&apos;)
+             >];
+    ptr_unchecked -> ptr_unchecked [label=<{ memset(ptr) } : 
+            error(&apos;use of possibly-NULL pointer %s&apos; % ptr,
+                  # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
+                  cwe=&apos;CWE-690&apos;)
+          >];
+    ptr_null -> ptr_null [label=<{ memset(ptr) } : 
+            error(&apos;use of NULL pointer %s&apos; % ptr,
+                  # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
+                  cwe=&apos;CWE-690&apos;)
+         >];
+    ptr_free -> ptr_free [label=<{ memset(ptr) } : 
+                error(&apos;use-after-free of %s&apos; % ptr,
+                      # &quot;CWE-416: Use After Free&quot;
+                      cwe=&apos;CWE-416&apos;)
+             >];
+    ptr_unchecked -> ptr_unchecked [label=<$leaked$: 
+            error(&apos;leak of %s&apos; % ptr,
+                  # This appears to be:
+                  # &quot;CWE-401: Improper Release of Memory Before Removing
+                  #  Last Reference (&apos;Memory Leak&apos;)&quot;
+                  # although the title of CWE-401 appears to be misleading
+                  cwe=&apos;CWE-401&apos;)
+         >];
+    ptr_nonnull -> ptr_nonnull [label=<$leaked$: 
+            error(&apos;leak of %s&apos; % ptr,
+                  # This appears to be:
+                  # &quot;CWE-401: Improper Release of Memory Before Removing
+                  #  Last Reference (&apos;Memory Leak&apos;)&quot;
+                  # although the title of CWE-401 appears to be misleading
+                  cwe=&apos;CWE-401&apos;)
+         >];
   }
 }
 

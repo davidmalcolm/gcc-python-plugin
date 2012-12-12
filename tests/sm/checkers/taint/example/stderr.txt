@@ -1,22 +1,22 @@
 tests/sm/checkers/taint/example/input.c: In function 'test':
-tests/sm/checkers/taint/example/input.c:37:nn: error: use of tainted value tmp.i in array lookup without bounds checking
+tests/sm/checkers/taint/example/input.c:37:nn: error: use of tainted value tmp.i in array lookup without bounds checking [CWE-129]
 tests/sm/checkers/taint/example/input.c:34:nn: note: tmp passed to fread()
 tests/sm/checkers/taint/example/input.c:37:nn: note: state of tmp ("x.tainted") propagated to tmp.i
 tests/sm/checkers/taint/example/input.c:37:nn: note: use of tainted value tmp.i in array lookup without bounds checking
 tests/sm/checkers/taint/example/input.c: In function 'test4':
-tests/sm/checkers/taint/example/input.c:68:nn: error: use of tainted value tmp.i in array lookup without upper-bound check
+tests/sm/checkers/taint/example/input.c:68:nn: error: use of tainted value tmp.i in array lookup without upper-bound check [CWE-129]
 tests/sm/checkers/taint/example/input.c:65:nn: note: tmp passed to fread()
 tests/sm/checkers/taint/example/input.c:66:nn: note: state of tmp ("x.tainted") propagated to tmp.i
 tests/sm/checkers/taint/example/input.c:66:nn: note: tmp.i compared against 0
 tests/sm/checkers/taint/example/input.c:68:nn: note: use of tainted value tmp.i in array lookup without upper-bound check
 tests/sm/checkers/taint/example/input.c: In function 'test5':
-tests/sm/checkers/taint/example/input.c:81:nn: error: use of tainted value tmp.i in array lookup without lower-bound check
+tests/sm/checkers/taint/example/input.c:81:nn: error: use of tainted value tmp.i in array lookup without lower-bound check [CWE-129]
 tests/sm/checkers/taint/example/input.c:78:nn: note: tmp passed to fread()
 tests/sm/checkers/taint/example/input.c:79:nn: note: state of tmp ("x.tainted") propagated to tmp.i
 tests/sm/checkers/taint/example/input.c:79:nn: note: tmp.i compared against 255
 tests/sm/checkers/taint/example/input.c:81:nn: note: use of tainted value tmp.i in array lookup without lower-bound check
 tests/sm/checkers/taint/example/input.c: In function 'test6':
-tests/sm/checkers/taint/example/input.c:101:nn: error: use of tainted value tmp.i in array lookup without bounds checking
+tests/sm/checkers/taint/example/input.c:101:nn: error: use of tainted value tmp.i in array lookup without bounds checking [CWE-129]
 tests/sm/checkers/taint/example/input.c:98:nn: note: tmp passed to fread()
 tests/sm/checkers/taint/example/input.c:101:nn: note: state of tmp ("x.tainted") propagated to tmp.i
 tests/sm/checkers/taint/example/input.c:101:nn: note: use of tainted value tmp.i in array lookup without bounds checking

@@ -1,13 +1,13 @@
 tests/sm/looping/input.c: In function 'test':
-tests/sm/looping/input.c:28:nn: error: use-after-free of buffer
+tests/sm/looping/input.c:28:nn: error: use-after-free of buffer [CWE-416]
 tests/sm/looping/input.c:25:nn: note: buffer assigned to the result of malloc()
 tests/sm/looping/input.c:33:nn: note: buffer passed to free()
 tests/sm/looping/input.c:28:nn: note: use-after-free of buffer
-tests/sm/looping/input.c:33:nn: error: double-free of buffer
+tests/sm/looping/input.c:33:nn: error: double-free of buffer [CWE-415]
 tests/sm/looping/input.c:25:nn: note: buffer assigned to the result of malloc()
 tests/sm/looping/input.c:33:nn: note: buffer passed to free()
 tests/sm/looping/input.c:33:nn: note: double-free of buffer
-tests/sm/looping/input.c:33:nn: error: use-after-free of buffer
+tests/sm/looping/input.c:33:nn: error: use-after-free of buffer [CWE-416]
 tests/sm/looping/input.c:25:nn: note: buffer assigned to the result of malloc()
 tests/sm/looping/input.c:33:nn: note: buffer passed to free()
 tests/sm/looping/input.c:33:nn: note: use-after-free of buffer
