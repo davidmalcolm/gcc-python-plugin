@@ -27,7 +27,7 @@ class Error:
         self.msg = msg
         self.state = state
 
-        # cwe can be None, or a str of the form "CWE-[0-9]*"
+        # cwe can be None, or a str of the form "CWE-[0-9]+"
         # e.g. "CWE-590"  aka "Free of Memory not on the Heap"
         # see http://cwe.mitre.org/data/definitions/590.html
         self.cwe = cwe
