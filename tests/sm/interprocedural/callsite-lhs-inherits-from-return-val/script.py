@@ -31,7 +31,7 @@ def selftest(ctxt, solution):
     ctxt.assert_statenames_for_varname(node, 'p', {'ptr.all'})
 
     node = ctxt.get_intraprocedural_successor(node)
-    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.unknown'})
+    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.unchecked'})
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

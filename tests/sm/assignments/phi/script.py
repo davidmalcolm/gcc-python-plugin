@@ -28,7 +28,7 @@ def selftest(ctxt, solution):
     #    marker(buffer)
     # that we have the states from both paths:
     node = ctxt.find_call_of('marker')
-    ctxt.assert_statenames_for_varname(node, 'buffer', {'ptr.unknown', 'ptr.null'})
+    ctxt.assert_statenames_for_varname(node, 'buffer', {'ptr.unchecked', 'ptr.null'})
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

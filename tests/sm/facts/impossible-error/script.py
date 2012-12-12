@@ -60,7 +60,7 @@ def selftest(ctxt, solution):
     leakedge = ctxt.get_inedge(node)
     pm = ctxt.assert_edge_matches_pattern(leakedge, '$leaked$')
     assert str(pm.expr) == 'ptr'
-    assert pm.statenames == frozenset(['ptr.unknown', 'ptr.nonnull'])
+    assert pm.statenames == frozenset(['ptr.unchecked', 'ptr.nonnull'])
 
     # Verify that the solvers find a possible leak due to the (erroneous)
     # ptr.nonnull falling out of scope at the end of the function:

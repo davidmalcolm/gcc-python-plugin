@@ -24,10 +24,10 @@ def selftest(ctxt, solution):
         import sys
         solution.dump(sys.stderr)
 
-    # Verify that uses_ptr()'s "q" param  inherits "ptr.unknown"
+    # Verify that uses_ptr()'s "q" param  inherits "ptr.unchecked"
     # from the argument "p"
     node = ctxt.find_implementation_of('uses_ptr')
-    ctxt.assert_statenames_for_varname(node, 'q', {'ptr.unknown'})
+    ctxt.assert_statenames_for_varname(node, 'q', {'ptr.unchecked'})
 
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)

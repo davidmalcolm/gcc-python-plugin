@@ -5,23 +5,23 @@ sm malloc_checker {
   state decl any_pointer ptr;
 
   ptr.all:
-    { ptr = malloc() } =>  ptr.unknown;
+    { ptr = malloc() } =>  ptr.unchecked;
 
   ptr.all:
     { ptr = 0 } =>  ptr.null;
 
-  ptr.unknown, ptr.null, ptr.nonnull:
+  ptr.unchecked, ptr.null, ptr.nonnull:
       { ptr == 0 } => true=ptr.null, false=ptr.nonnull
     | { ptr != 0 } => true=ptr.nonnull, false=ptr.null
     ;
 
-  ptr.unknown:
+  ptr.unchecked:
     { *ptr } => {{ error('use of possibly-NULL pointer %s' % ptr) }}, ptr.nonnull;
 
   ptr.null:
     { *ptr } => {{ error('use of NULL pointer %s' % ptr) }};
 
-  ptr.all, ptr.unknown, ptr.null, ptr.nonnull:
+  ptr.all, ptr.unchecked, ptr.null, ptr.nonnull:
     { free(ptr) } => ptr.free;
 
   ptr.free:
@@ -29,7 +29,7 @@ sm malloc_checker {
     | { ptr } => {{ error('use-after-free of %s' % ptr) }}
     ;
 
-  ptr.unknown:
+  ptr.unchecked:
       { memset(ptr) } => {{ error('use of possibly-NULL pointer %s' % ptr) }};
 
   ptr.null:
@@ -38,7 +38,7 @@ sm malloc_checker {
   ptr.free:
       { memset(ptr) } => {{ error('use-after-free of %s' % ptr) }};
 
-  ptr.unknown, ptr.nonnull:
+  ptr.unchecked, ptr.nonnull:
       $leaked$ => {{ error('leak of %s' % ptr) }};
 
 }

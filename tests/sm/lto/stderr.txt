@@ -14,7 +14,7 @@ tests/sm/lto/input-h.c:27:8: note: return from f() to h(): state of return value
 tests/sm/lto/input-h.c:28:8: note: use of NULL pointer r
 tests/sm/lto/input-h.c:28:8: error: use of possibly-NULL pointer r
 tests/sm/lto/input-f.c:28:11: note: p assigned to the result of malloc()
-tests/sm/lto/input-h.c:27:8: note: return from f() to h(): state of return value ("ptr.unknown") propagated to r
+tests/sm/lto/input-h.c:27:8: note: return from f() to h(): state of return value ("ptr.unchecked") propagated to r
 tests/sm/lto/input-h.c:28:8: note: use of possibly-NULL pointer r
 tests/sm/lto/input-h.c:30:7: error: double-free of r
 tests/sm/lto/input-g.c:30:7: note: q passed to free()

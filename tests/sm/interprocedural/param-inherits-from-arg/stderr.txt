@@ -1,5 +1,5 @@
 tests/sm/interprocedural/param-inherits-from-arg/input.c: In function 'uses_ptr':
 tests/sm/interprocedural/param-inherits-from-arg/input.c:26:nn: error: use of possibly-NULL pointer q
 tests/sm/interprocedural/param-inherits-from-arg/input.c:31:nn: note: p assigned to the result of malloc()
-tests/sm/interprocedural/param-inherits-from-arg/input.c:32:nn: note: call from test() to uses_ptr(): state of p ("ptr.unknown") propagated to q
+tests/sm/interprocedural/param-inherits-from-arg/input.c:32:nn: note: call from test() to uses_ptr(): state of p ("ptr.unchecked") propagated to q
 tests/sm/interprocedural/param-inherits-from-arg/input.c:26:nn: note: use of possibly-NULL pointer q
