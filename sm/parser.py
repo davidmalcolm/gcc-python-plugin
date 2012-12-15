@@ -51,6 +51,7 @@ def t_PYTHON(t):
     # matched double-braces, with arbitrary text (and whitespace) inside:
     # Drop the double-braces:
     t.value = t.value[2:-2]
+    t.lexer.lineno += t.value.count('\n')
     return t
 
 t_ACTION     = r'=>'
@@ -72,7 +73,7 @@ def t_COMMENT(t):
     r'/\*(.|\n)*?\*/'
     # C-style comments
     # print('skipping comment: %r' % t)
-    pass
+    t.lexer.lineno += t.value.count('\n')
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -110,8 +111,12 @@ def t_DOLLARPATTERN(t):
     t.value = t.value[1:-1]
     return t
 
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
 # Ignored characters
-t_ignore = " \t\n"
+t_ignore = " \t"
 
 def t_error(t):
     raise ParserError.from_token(t, "Illegal character '%s'" % t.value[0])
@@ -194,7 +199,8 @@ def p_smclause_python(p):
     '''
     smclause : PYTHON
     '''
-    p[0] = PythonFragment(src=p[1])
+    p[0] = PythonFragment(src=p[1],
+                          linenum=p.lexer.lineno - p[1].count('\n'))
 
 def p_smclause_stateclause(p):
     'smclause : statelist COLON patternrulelist SEMICOLON'
@@ -378,7 +384,8 @@ def p_outcome_boolean_outcome(p):
 def p_outcome_python(p):
     'outcome : PYTHON'
     # e.g. "{ error('use of possibly-NULL pointer %s' % ptr)}"
-    p[0] = PythonOutcome(src=p[1])
+    p[0] = PythonOutcome(src=p[1],
+                         linenum=p.lexer.lineno - p[1].count('\n'))
 
 class ParserError(Exception):
     @classmethod

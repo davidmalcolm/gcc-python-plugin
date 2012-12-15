@@ -127,10 +127,14 @@ class NamedPattern(Clause):
 
 class PythonFragment(Clause):
     """
-    A fragment of Python
+    A fragment of Python, with a line number offset so that tracebacks
+    give the correct location within the original .sm file
     """
-    def __init__(self, src):
+    def __init__(self, src, linenum):
         self.src = src
+        if 0:
+            print('setting self.linenum = %r' % linenum)
+        self.linenum = linenum
         self._code = None
     def __str__(self):
         return '{{%s}}' % self.src
@@ -139,7 +143,8 @@ class PythonFragment(Clause):
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.src == other.src:
-                return True
+                if self.linenum == other.linenum:
+                    return True
 
     def get_source(self):
         # Get at python code
@@ -167,9 +172,12 @@ class PythonFragment(Clause):
             if not filename:
                 filename = '<string>'
             expr = self.get_source()
-            self._code = compile(expr, filename, 'exec')
-            # FIXME: the filename of the .sm file is correct, but the line
-            # numbers will be wrong
+
+            from ast import parse, increment_lineno
+            astroot = parse(expr, filename)
+            increment_lineno(astroot, self.linenum)
+            self._code = compile(astroot, filename, 'exec')
+
         return self._code
 
 class StateClause(Clause):
