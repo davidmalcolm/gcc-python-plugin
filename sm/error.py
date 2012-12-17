@@ -21,7 +21,7 @@ from gccutils.graph import CallNode, ReturnNode
 
 class Error:
     # A stored error
-    def __init__(self, srcnode, match, msg, state, cwe):
+    def __init__(self, srcnode, match, msg, state, cwe, sm_filename, sm_lineno):
         self.srcnode = srcnode
         self.match = match
         self.msg = msg
@@ -31,6 +31,10 @@ class Error:
         # e.g. "CWE-590"  aka "Free of Memory not on the Heap"
         # see http://cwe.mitre.org/data/definitions/590.html
         self.cwe = cwe
+
+        # Metadata about where in the sm script this error was emitted:
+        self.sm_filename = sm_filename # so that you can import helper files
+        self.sm_lineno = sm_lineno
 
     @property
     def gccloc(self):

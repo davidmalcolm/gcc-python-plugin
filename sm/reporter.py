@@ -39,6 +39,11 @@ class Report:
 
     def as_json(self):
         sm_as_json = dict(name=self.sm.name)
+        if self.err.sm_filename:
+            # Metadata about where in the sm script this error was emitted:
+            sm_as_json['filename'] = self.err.sm_filename
+            sm_as_json['line'] = self.err.sm_lineno
+
         jsonic = dict(sm=sm_as_json,
                       loc=gccloc_as_json(self.err.gccloc),
                       message=self.err.msg,

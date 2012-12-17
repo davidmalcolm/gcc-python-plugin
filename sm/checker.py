@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import sys
+
 import gcc
 
 from gccutils.graph import ReturnNode
@@ -738,7 +740,11 @@ class PythonOutcome(Outcome, PythonFragment):
         # Create environment for execution of the code:
         def error(msg, cwe=None):
             from sm.error import Error
-            errors.append(Error(edge.srcnode, match, msg, globals_['state'], cwe))
+            # Locate the caller, so that we add it to the Error object:
+            caller = sys._getframe().f_back
+            errors.append(Error(edge.srcnode, match, msg, globals_['state'], cwe,
+                                sm_filename=caller.f_code.co_filename,
+                                sm_lineno=caller.f_lineno))
 
         def set_state(name, **kwargs):
             from sm.solver import State

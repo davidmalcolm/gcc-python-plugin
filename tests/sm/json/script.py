@@ -74,6 +74,8 @@ def verify_json(jsonobj):
 
     # Verify jsonobj['sm']:
     assert jsonobj['sm']['name'] == 'malloc_checker'
+    assert jsonobj['sm']['filename'] == 'sm/checkers/malloc_checker.sm'
+    assert jsonobj['sm']['line'] == 23
 
     # Verify jsonobj['loc']:
     assert 'input.c' in jsonobj['loc']['actualfilename']
