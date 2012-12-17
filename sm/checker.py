@@ -321,22 +321,30 @@ class FunctionCall(Pattern):
         return '{ %s(...) }' % self.fnname
 
     def iter_matches(self, stmt, edge, ctxt):
-        if isinstance(stmt, gcc.GimpleCall):
-            if isinstance(stmt.fn, gcc.AddrExpr):
-                if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-                    if stmt.fn.operand.name == self.fnname:
-                        # We have a matching function name:
-                        m = Match(self, edge.srcnode)
-                        def matches_args():
-                            for i, arg in enumerate(self.args):
-                                if not m.match_term(ctxt, stmt.args[i], arg):
-                                    if 0:
-                                        print('arg match failed on: %i %s %s'
-                                              % (i, arg, stmt.args[i]))
-                                    return False
-                            return True
-                        if matches_args():
-                            yield m
+        if not isinstance(stmt, gcc.GimpleCall):
+            return
+
+        if not isinstance(stmt.fn, gcc.AddrExpr):
+            return
+
+        if not isinstance(stmt.fn.operand, gcc.FunctionDecl):
+            return
+
+        if stmt.fn.operand.name != self.fnname:
+            return
+
+        # We have a matching function name:
+        m = Match(self, edge.srcnode)
+        def matches_args():
+            for i, arg in enumerate(self.args):
+                if not m.match_term(ctxt, stmt.args[i], arg):
+                    if 0:
+                        print('arg match failed on: %i %s %s'
+                              % (i, arg, stmt.args[i]))
+                    return False
+            return True
+        if matches_args():
+            yield m
 
 class ResultOfFnCall(FunctionCall):
     def __init__(self, lhs, fnname, args):
