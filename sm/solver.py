@@ -1135,10 +1135,10 @@ class Context:
         with Timer(self, 'find_leaks'):
             find_leaks(self)
 
-        # Preprocessing: set up "matches" attribute for every edge in the
-        # graph.  Although this is per-checker state, it's OK to store on
-        # the graph itself as it will be overwritten for any subsequent
-        # checkers:
+        # Preprocessing: set up "possible_matches" attribute for every edge
+        # in the graph.  Although this is per-checker state, it's OK to
+        # store on the graph itself as it will be overwritten for any
+        # subsequent checkers:
         with Timer(self, 'find_possible_matches'):
             for edge in self.graph.edges:
                 edge.possible_matches = list(find_possible_matches(self, edge))
