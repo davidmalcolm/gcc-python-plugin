@@ -126,6 +126,7 @@ lexer = lex.lex()
 
 ############################################################################
 # Grammar:
+#   (try to keep this in sync with the documentation in docs/sm.rst)
 ############################################################################
 import ply.yacc as yacc
 
@@ -136,6 +137,10 @@ precedence = (
     ('left', 'COMPARISON'),
 )
 """
+
+#---------------------------------------------------------------------------
+# High-level rules:
+#---------------------------------------------------------------------------
 
 def p_checker(p):
     '''checker : sm
@@ -158,24 +163,6 @@ def p_smclauses(p):
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
-
-def p_empty(p):
-    'empty :'
-    pass
-
-def p_optional_state(p):
-    '''
-    optional_state : STATE
-                   | empty
-    '''
-    p[0] = p[1]
-
-def p_declkind(p):
-    '''
-    declkind : ANY_POINTER
-             | ANY_EXPR
-    '''
-    p[0] = p[1]
 
 def p_smclause_decl(p):
     '''
@@ -212,6 +199,32 @@ def p_smclause_stateclause(p):
     #
     p[0] = StateClause(statelist=p[1], patternrulelist=p[3])
 
+#---------------------------------------------------------------------------
+# Declarations:
+#---------------------------------------------------------------------------
+
+def p_empty(p):
+    'empty :'
+    pass
+
+def p_optional_state(p):
+    '''
+    optional_state : STATE
+                   | empty
+    '''
+    p[0] = p[1]
+
+def p_declkind(p):
+    '''
+    declkind : ANY_POINTER
+             | ANY_EXPR
+    '''
+    p[0] = p[1]
+
+#---------------------------------------------------------------------------
+# Pattern-matching rules:
+#---------------------------------------------------------------------------
+
 def p_statelist(p):
     '''statelist : statename
                  | statename COMMA statelist
@@ -244,7 +257,10 @@ def p_statename(p):
     else:
         p[0] = p[1]
 
+#---------------------------------------------------------------------------
 # Various kinds of pattern:
+#---------------------------------------------------------------------------
+
 def p_pattern_cpattern(p):
     '''
     pattern : LBRACE cpattern RBRACE
@@ -285,7 +301,10 @@ def p_patternrule(p):
     # e.g. "$leaked$ => ptr.leaked"
     p[0] = PatternRule(pattern=p[1], outcomes=p[3])
 
+#---------------------------------------------------------------------------
 # Various kinds of "cpattern":
+#---------------------------------------------------------------------------
+
 def p_cpattern_assignment(p):
     '''
     cpattern : ID ASSIGNMENT LITERAL_STRING
@@ -358,7 +377,9 @@ def p_cpattern_usage(p):
     # e.g. "ptr"
     p[0] = VarUsage(var=p[1])
 
+#---------------------------------------------------------------------------
 # The various outcomes when a pattern matches
+#---------------------------------------------------------------------------
 
 def p_outcomes(p):
     '''outcomes : outcome
@@ -386,6 +407,10 @@ def p_outcome_python(p):
     # e.g. "{ error('use of possibly-NULL pointer %s' % ptr)}"
     p[0] = PythonOutcome(src=p[1],
                          linenum=p.lexer.lineno - p[1].count('\n'))
+
+############################################################################
+# Error-handling:
+############################################################################
 
 class ParserError(Exception):
     @classmethod

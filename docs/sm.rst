@@ -297,18 +297,7 @@ High-level rules::
    smclauses : smclause
              | smclauses smclause
 
-
-   empty :
-
-Declarations::
-
-   optional_state : STATE
-                  | empty
-
-   declkind : "any_expr"
-            | "any_pointer"
-
-   optional_state DECL declkind ID SEMICOLON
+   smclause : optional_state DECL declkind ID SEMICOLON
    # e.g. "state decl any_pointer ptr;"
    # e.g. "decl any_expr x;"
 
@@ -321,6 +310,18 @@ Declarations::
        #    | { ptr != 0 } => true=ptr.nonnull, false=ptr.null
        #    ;
        #
+
+Declarations::
+
+   empty :
+
+   optional_state : STATE
+                  | empty
+
+   declkind : "any_expr"
+            | "any_pointer"
+
+Pattern-matching rules::
 
    statelist : statename
              | statename COMMA statelist
