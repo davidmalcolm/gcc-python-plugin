@@ -28,7 +28,8 @@ from gccutils import invoke_dot
 class ShowSupergraph(gcc.SimpleIpaPass):
     def execute(self):
         # (the callgraph should be set up by this point)
-        sg = Supergraph()
+        sg = Supergraph(split_phi_nodes=False,
+                        add_fake_entry_node=False)
         dot = sg.to_dot('supergraph')
         invoke_dot(dot, 'supergraph')
 

@@ -29,7 +29,8 @@ class ShowSupergraph(gcc.IpaPass):
     def execute(self):
         # (the callgraph should be set up by this point)
         if gcc.is_lto():
-            sg = Supergraph(split_phi_nodes=True)
+            sg = Supergraph(split_phi_nodes=False,
+                            add_fake_entry_node=False)
             dot = sg.to_dot('supergraph')
             invoke_dot(dot, 'supergraph')
 

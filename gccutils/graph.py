@@ -506,7 +506,7 @@ class StmtEdge(Edge):
 # A graph in which the nodes wrap StmtNode
 ############################################################################
 class Supergraph(Graph):
-    def __init__(self, split_phi_nodes):
+    def __init__(self, split_phi_nodes, add_fake_entry_node):
         Graph.__init__(self)
         self.supernode_for_stmtnode = {}
         # 1st pass: locate interprocedural instances of gcc.GimpleCall
@@ -592,6 +592,10 @@ class Supergraph(Graph):
                         superedge_return.calling_stmtnode = calling_stmtnode
 
         # 4th pass: create fake entry node:
+        if not add_fake_entry_node:
+            self.fake_entry_node = None
+            return
+
         self.fake_entry_node = self.add_node(FakeEntryNode(None, None))
         """
 	/* At file scope, the presence of a `static' or `register' storage
@@ -624,7 +628,8 @@ class Supergraph(Graph):
         return cls(srcnode, dstnode, edge)
 
     def get_entry_nodes(self):
-        yield self.fake_entry_node
+        if self.fake_entry_node:
+            yield self.fake_entry_node
 
     def get_functions(self):
         for fun in self.stmtg_for_fun:
