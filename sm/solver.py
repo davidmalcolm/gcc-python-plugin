@@ -1076,14 +1076,6 @@ class Context:
                 # TODO: the sm may impose further constraints
                 return True
 
-    def set_state(self, mctxt, name, **kwargs):
-        dststate = State(name, **kwargs)
-        dstshape, shapevars = mctxt.srcshape._copy()
-        dstshape.set_state(mctxt.get_stateful_gccvar(), dststate)
-        dstexpnode = mctxt.expgraph.lazily_add_node(mctxt.dstnode, dstshape)
-        expedge = mctxt.expgraph.lazily_add_edge(mctxt.srcexpnode, dstexpnode,
-                                                 mctxt.inneredge, mctxt.match, None)
-
     def find_scopes(self):
         """
         Set up per-function dictionaries on the Context:
