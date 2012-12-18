@@ -1,4 +1,4 @@
 tests/sm/checkers/malloc-checker/unchecked_malloc/input.c: In function 'test':
-tests/sm/checkers/malloc-checker/unchecked_malloc/input.c:26:nn: error: use of possibly-NULL pointer ptr [CWE-690]
+tests/sm/checkers/malloc-checker/unchecked_malloc/input.c:26:nn: error: possibly-NULL pointer ptr passed as argument 1 to memset [CWE-690]
 tests/sm/checkers/malloc-checker/unchecked_malloc/input.c:25:nn: note: ptr assigned to the result of malloc()
-tests/sm/checkers/malloc-checker/unchecked_malloc/input.c:26:nn: note: use of possibly-NULL pointer ptr
+tests/sm/checkers/malloc-checker/unchecked_malloc/input.c:26:nn: note: possibly-NULL pointer ptr passed as argument 1 to memset

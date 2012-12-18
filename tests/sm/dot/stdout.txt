@@ -45,17 +45,19 @@ digraph test_script {
                       # &quot;CWE-416: Use After Free&quot;
                       cwe=&apos;CWE-416&apos;)
              >];
-    ptr_unchecked -> ptr_unchecked [label=<{ memset(ptr) } : 
-            error(&apos;use of possibly-NULL pointer %s&apos; % ptr,
+    ptr_unchecked -> ptr_unchecked [label=<$arg_must_not_be_null$: 
+            error(&apos;possibly-NULL pointer %s passed as argument %i to %s&apos;
+                  % (ptr, argnumber, function),
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
           >];
-    ptr_null -> ptr_null [label=<{ memset(ptr) } : 
-            error(&apos;use of NULL pointer %s&apos; % ptr,
+    ptr_null -> ptr_null [label=<$arg_must_not_be_null$: 
+            error(&apos;NULL pointer %s passed as argument %i to %s&apos;,
+                  % (ptr, argnumber, function),
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
-    ptr_free -> ptr_free [label=<{ memset(ptr) } : 
+    ptr_free -> ptr_free [label=<{ ptr }: 
                 error(&apos;use-after-free of %s&apos; % ptr,
                       # &quot;CWE-416: Use After Free&quot;
                       cwe=&apos;CWE-416&apos;)

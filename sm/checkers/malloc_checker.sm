@@ -50,23 +50,25 @@ sm malloc_checker {
     ;
 
   ptr.unchecked:
-    { memset(ptr) }
+    $arg_must_not_be_null$
       => {{
-            error('use of possibly-NULL pointer %s' % ptr,
+            error('possibly-NULL pointer %s passed as argument %i to %s'
+                  % (ptr, argnumber, function),
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
           }};
 
   ptr.null:
-    { memset(ptr) }
+    $arg_must_not_be_null$
       => {{
-            error('use of NULL pointer %s' % ptr,
+            error('NULL pointer %s passed as argument %i to %s',
+                  % (ptr, argnumber, function),
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
          }};
 
   ptr.free:
-      { memset(ptr) }
+      { ptr }
           => {{
                 error('use-after-free of %s' % ptr,
                       # "CWE-416: Use After Free"
