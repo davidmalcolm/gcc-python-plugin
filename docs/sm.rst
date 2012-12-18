@@ -73,7 +73,9 @@ Syntax
 
 The sm language
 ---------------
-A .sm script consists of one or more sm checkers::
+A .sm script consists of one or more sm checkers:
+
+.. code-block:: c
 
    sm my_first_checker {
    }
@@ -104,7 +106,9 @@ Fragments of Python are enclosed in pairs of braces e.g.::
    {{ error("%s called with NULL as 1st argument" % fn) }}
 
 Such Python fragments can have arbitrary amounts of leading whitespace, so
-long as nothing is indented less that the first non-whitespace line::
+long as nothing is indented less that the first non-whitespace line:
+
+.. code-block:: c
 
    ptr.null
      => {{
@@ -116,7 +120,9 @@ long as nothing is indented less that the first non-whitespace line::
 
 Whitespace is ignored elsewhere in the script.
 
-C-style comments can occur anywhere except within Python fragments, and are ignored::
+C-style comments can occur anywhere except within Python fragments, and are ignored:
+
+.. code-block:: c
 
    ptr.null
      =>
@@ -127,7 +133,9 @@ Python API
 ----------
 
 You can embed Python in two ways within an sm file: within a top-level clause
-in the checker, and as an outcome when a pattern is matched::
+in the checker, and as an outcome when a pattern is matched:
+
+.. code-block:: c
 
    sm example_checker {
        state decl any_pointer ptr;
@@ -151,7 +159,9 @@ in the checker, and as an outcome when a pattern is matched::
 
 When a python fragment is called, the locals() will contain values for the
 relevant named declarations for the given match.  For example, when the
-above fragment is run and matches for `q` on this C code::
+above fragment is run and matches for `q` on this C code:
+
+.. code-block:: c
 
    *q = 0;
 
@@ -213,7 +223,9 @@ The following API is available from within such a fragment:
 
    For example, this fragment from `sizeof_allocation.sm` calls into a
    Python function ("check_size") when a pointer of known size is assigned
-   to another pointer, looking up the saved size via `state.size`::
+   to another pointer, looking up the saved size via `state.size`:
+
+   .. code-block:: c
 
      ptr.sized:
        { other_ptr = ptr } =>
@@ -229,7 +241,9 @@ Special patterns are denoted by pairs of dollar signs:
 $leaked$
 ^^^^^^^^
 This special pattern matches whenever a value is lost e.g. the values of
-locals at the end of function::
+locals at the end of function:
+
+.. code-block:: c
 
   ptr.nonnull:
     $leaked$ => { error("leak of %s" % ptr) }
@@ -244,7 +258,9 @@ $arg_must_not_be_null$
 
 This special pattern matches whenever a function marked with `GCC's nonnull
 attribute <http://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html>`_
-is called, for each parameter so marked::
+is called, for each parameter so marked:
+
+.. code-block:: c
 
   ptr.null:
     $arg_must_not_be_null$
