@@ -39,6 +39,7 @@ Contents:
    callbacks.rst
    attributes.rst
    cpychecker.rst
+   sm.rst
    success.rst
    getting-involved.rst
    misc.rst
