@@ -1,0 +1,21 @@
+tests/sm/patterns/arg_must_not_be_null/input.c: In function 'test':
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: error: foo() was called with NULL p as argument 1/index 0: gcc.ParmDecl('ptrA')
+tests/sm/patterns/arg_must_not_be_null/input.c:38:nn: note: p assigned to 0
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: call from test() to foo(): state of p ("ptr.null") propagated to ptrA
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: return from foo() to test(): state of ptrA ("ptr.null") propagated to p
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: foo() was called with NULL p as argument 1/index 0: gcc.ParmDecl('ptrA')
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: error: foo() was called with NULL r as argument 3/index 2: gcc.ParmDecl('ptrC')
+tests/sm/patterns/arg_must_not_be_null/input.c:40:nn: note: r assigned to 0
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: call from test() to foo(): state of p ("ptr.null") propagated to ptrC
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: return from foo() to test(): state of ptrC ("ptr.null") propagated to r
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: foo() was called with NULL r as argument 3/index 2: gcc.ParmDecl('ptrC')
+tests/sm/patterns/arg_must_not_be_null/input.c:43:nn: error: bar() was called with NULL p as argument 1/index 0: None
+tests/sm/patterns/arg_must_not_be_null/input.c:40:nn: note: r assigned to 0
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: call from test() to foo(): state of p ("ptr.null") propagated to ptrA
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: return from foo() to test(): state of ptrA ("ptr.null") propagated to p
+tests/sm/patterns/arg_must_not_be_null/input.c:43:nn: note: bar() was called with NULL p as argument 1/index 0: None
+tests/sm/patterns/arg_must_not_be_null/input.c:43:nn: error: bar() was called with NULL r as argument 3/index 2: None
+tests/sm/patterns/arg_must_not_be_null/input.c:39:nn: note: q assigned to 0
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: call from test() to foo(): state of p ("ptr.null") propagated to ptrC
+tests/sm/patterns/arg_must_not_be_null/input.c:42:nn: note: return from foo() to test(): state of ptrC ("ptr.null") propagated to r
+tests/sm/patterns/arg_must_not_be_null/input.c:43:nn: note: bar() was called with NULL r as argument 3/index 2: None

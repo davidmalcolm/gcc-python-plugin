@@ -545,10 +545,16 @@ class SpecialPattern(Pattern):
     def __str__(self):
         return '$%s$' % self.name
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return True
+
     @classmethod
     def make(cls, name):
         if name == 'leaked':
             return LeakedPattern(name)
+        if name == 'arg_must_not_be_null':
+            return NonnullArg(name)
 
         class UnknownSpecialPattern(Exception):
             def __init__(self, name):
@@ -566,9 +572,44 @@ class LeakedPattern(SpecialPattern):
     def description(self, match, ctxt):
         return 'leak of %s' % match.get_stateful_gccvar(ctxt)
 
-    def __eq__(self, other):
-        if self.__class__ == other.__class__:
-            return True
+class NonnullArg(SpecialPattern):
+    def iter_matches(self, stmt, edge, ctxt):
+        # (this is similar to FunctionCall.iter_matches)
+
+        ctxt.debug('NonNullArg.iter_matches(%s, %s)', stmt, edge)
+
+        if not isinstance(stmt, gcc.GimpleCall):
+            return
+
+        from gccutils import get_nonnull_arguments
+        from sm.solver import simplify
+
+        for argindex in get_nonnull_arguments(stmt.fn.type.dereference):
+            m = Match(self, edge.srcnode)
+            gccexpr = stmt.args[argindex]
+            gccexpr = simplify(gccexpr)
+            m._dict[ctxt._stateful_decl] = gccexpr
+            class FakeExpr:
+                def __init__(self, name):
+                    self.name = name
+                def __str__(self):
+                    return self.name
+                def __repr__(self):
+                    return 'FakeExpr(%r)' % self.name
+            m._dict[FakeExpr('argindex')] = argindex
+            m._dict[FakeExpr('argnumber')] = argindex + 1
+            m._dict[FakeExpr('function')] = stmt.fn.operand
+            # 'parameter' is only available if we also have the function
+            # definition, not just the declaration:
+            if stmt.fn.operand.arguments:
+                m._dict[FakeExpr('parameter')] = \
+                    stmt.fn.operand.arguments[argindex]
+            else:
+                m._dict[FakeExpr('parameter')] = None
+            yield m
+
+    def description(self, match, ctxt):
+        return '%s used as must-not-be-NULL argument' % match.get_stateful_gccvar(ctxt)
 
 class OrPattern(Pattern):
     """
