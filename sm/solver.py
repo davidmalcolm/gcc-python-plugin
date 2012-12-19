@@ -937,10 +937,7 @@ class Context:
                 filename = self.ch.filename
                 if not filename:
                     filename = '<string>'
-                expr = clause.get_source()
-                code = compile(expr, filename, 'exec')
-                # FIXME: the filename of the .sm file is correct, but the line
-                # numbers will be wrong
+                code = clause.get_code(self)
                 result = eval(code, self.python_globals, self.python_locals)
 
     def __repr__(self):

@@ -30,6 +30,8 @@ from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
 ############################################################################
 # Tokenizer:
 ############################################################################
+DEBUG_LINE_NUMBERING = 0
+
 import ply.lex as lex
 
 reserved = ['decl', 'sm', 'state', 'true', 'false',
@@ -49,9 +51,12 @@ tokens = [
 def t_PYTHON(t):
     r'\{\{(.|\n)*?\}\}'
     # matched double-braces, with arbitrary text (and whitespace) inside:
-    # Drop the double-braces:
-    t.value = t.value[2:-2]
+    # Drop the double-braces, and record the offset for the line number:
+    t.value = (t.value[2:-2], t.lexer.lineno - 1)
     t.lexer.lineno += t.value.count('\n')
+    if DEBUG_LINE_NUMBERING:
+        print('t_PYTHON with %i lines' % t.value.count('\n'))
+        print('  t.lexer.lineno: %i' % t.lexer.lineno)
     return t
 
 t_ACTION     = r'=>'
@@ -74,6 +79,9 @@ def t_COMMENT(t):
     # C-style comments
     # print('skipping comment: %r' % t)
     t.lexer.lineno += t.value.count('\n')
+    if DEBUG_LINE_NUMBERING:
+        print('t_COMMENT with %i lines' % t.value.count('\n'))
+        print('  t.lexer.lineno: %i' % t.lexer.lineno)
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -114,6 +122,10 @@ def t_DOLLARPATTERN(t):
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
+    if DEBUG_LINE_NUMBERING:
+        print('t_newline with %i lines' % len(t.value))
+        print('  t.lexer.lineno: %i' % t.lexer.lineno)
+
 
 # Ignored characters
 t_ignore = " \t"
@@ -186,8 +198,12 @@ def p_smclause_python(p):
     '''
     smclause : PYTHON
     '''
-    p[0] = PythonFragment(src=p[1],
-                          linenum=p.lexer.lineno - p[1].count('\n'))
+    if DEBUG_LINE_NUMBERING:
+        print('p.lexer.lineno: %i' % p.lexer.lineno)
+        print("p[1].count('\\n') %i" % p[1].count('\n'))
+    src, lineoffset = p[1]
+    p[0] = PythonFragment(src=src,
+                          lineoffset=lineoffset)
 
 def p_smclause_stateclause(p):
     'smclause : statelist COLON patternrulelist SEMICOLON'
@@ -405,8 +421,9 @@ def p_outcome_boolean_outcome(p):
 def p_outcome_python(p):
     'outcome : PYTHON'
     # e.g. "{ error('use of possibly-NULL pointer %s' % ptr)}"
-    p[0] = PythonOutcome(src=p[1],
-                         linenum=p.lexer.lineno - p[1].count('\n'))
+    src, lineoffset = p[1]
+    p[0] = PythonOutcome(src=src,
+                         lineoffset=lineoffset)
 
 ############################################################################
 # Error-handling:

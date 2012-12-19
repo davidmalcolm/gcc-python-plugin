@@ -132,11 +132,11 @@ class PythonFragment(Clause):
     A fragment of Python, with a line number offset so that tracebacks
     give the correct location within the original .sm file
     """
-    def __init__(self, src, linenum):
+    def __init__(self, src, lineoffset):
         self.src = src
         if 0:
-            print('setting self.linenum = %r' % linenum)
-        self.linenum = linenum
+            print('setting self.lineoffset = %r' % lineoffset)
+        self.lineoffset = lineoffset
         self._code = None
     def __str__(self):
         return '{{%s}}' % self.src
@@ -145,15 +145,17 @@ class PythonFragment(Clause):
     def __eq__(self, other):
         if self.__class__ == other.__class__:
             if self.src == other.src:
-                if self.linenum == other.linenum:
+                if self.lineoffset == other.lineoffset:
                     return True
 
-    def get_source(self):
+    def _get_source(self):
         # Get at python code
         lines = self.src.splitlines()
         # Strip leading fully-whitespace lines:
+        num_stripped_lines = 0
         while lines and (lines[0] == '' or lines[0].isspace()):
             lines = lines[1:]
+            num_stripped_lines += 1
         def try_to_fix_indent():
             # Locate any source-wide indentation based on indentation of first non-whitespace line:
             indent = len(lines[0]) - len(lines[0].lstrip())
@@ -167,17 +169,22 @@ class PythonFragment(Clause):
             return outdented_lines
 
         lines = try_to_fix_indent()
-        return '\n'.join(lines)
+        return '\n'.join(lines), num_stripped_lines
+
+    def get_code(self, ctxt):
+        return self.lazily_compile(ctxt.ch.filename)
 
     def lazily_compile(self, filename):
         if self._code is None:
             if not filename:
                 filename = '<string>'
-            expr = self.get_source()
-
+            expr, num_stripped_lines = self._get_source()
+            if 0:
+                print('num_stripped_lines: %i' % num_stripped_lines)
+                print('self.lineoffset: %i' % self.lineoffset)
             from ast import parse, increment_lineno
             astroot = parse(expr, filename)
-            increment_lineno(astroot, self.linenum)
+            increment_lineno(astroot, self.lineoffset + num_stripped_lines)
             self._code = compile(astroot, filename, 'exec')
 
         return self._code
@@ -727,9 +734,6 @@ class PythonEffect:
         self.errors = errors
 
 class PythonOutcome(Outcome, PythonFragment):
-    def get_code(self, ctxt):
-        return self.lazily_compile(ctxt.ch.filename)
-
     def apply(self, mctxt):
         from sm.solver import WorklistItem
 

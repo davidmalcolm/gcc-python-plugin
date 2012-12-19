@@ -144,7 +144,7 @@ sm malloc_checker {
         self.assertEqual(pr.pattern, VarDereference(var='ptr'))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=(" error('use of possibly-NULL pointer %s' % ptr) "),
-                                        linenum=14)])
+                                        lineoffset=13)])
 
         # Verify parsing of:
         #   ptr.null:
@@ -157,7 +157,7 @@ sm malloc_checker {
         self.assertEqual(pr.pattern, VarDereference(var='ptr'))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=(" error('use of NULL pointer %s' % ptr) "),
-                                        linenum=17)])
+                                        lineoffset=16)])
 
         # Verify parsing of:
         #   ptr.all, ptr.unknown, ptr.null, ptr.nonnull:
@@ -183,12 +183,12 @@ sm malloc_checker {
         self.assertEqual(pr.pattern, ArgsOfFnCall(fnname='free', args=['ptr']))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=" error('double-free of %s' % ptr) ",
-                                        linenum=24)])
+                                        lineoffset=22)])
         pr = sc.patternrulelist[1]
         self.assertEqual(pr.pattern, VarUsage(var='ptr'))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=" error('use-after-free of %s' % ptr) ",
-                                        linenum=25)])
+                                        lineoffset=23)])
 
         # Verify parsing of:
         #   ptr.unknown, ptr.nonnull:
@@ -201,7 +201,7 @@ sm malloc_checker {
         self.assertEqual(pr.pattern, LeakedPattern('leaked'))
         self.assertEqual(pr.outcomes,
                          [PythonOutcome(src=" error('leak of %s' % ptr) ",
-                                        linenum=28)])
+                                        lineoffset=27)])
 
 import sys
 sys.argv = ['foo', '-v']
