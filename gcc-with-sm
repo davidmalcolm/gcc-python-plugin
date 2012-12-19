@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012 Red Hat, Inc.
+#
+#   This is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see
+#   <http://www.gnu.org/licenses/>.
+
+# Harness for invoking GCC with the sm Python code within the python
+# plugin, whilst dealing with some options
+# (This code runs under the regular Python interpreter, not within gcc)
+
+import argparse
+import os
+import subprocess
+import sys
+import tempfile
+
+abspath = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+# By default, look for the plugin relative to this harness.  This is intended
+# to make it easier during development, so that we can make other projects with
+#     CC=../../../gcc-python-plugin/gcc-with-sm
+# and similar.
+#
+# When installed, this should be fixed up.
+PLUGIN = os.path.join(abspath, 'python.so')
+
+# Create arg parser:
+parser = argparse.ArgumentParser(usage='%(prog)s [sm-files] [options] gcc-options')
+
+# Only consume args we understand, leaving the rest for gcc:
+ns, other_args = parser.parse_known_args()
+if 0:
+    print(ns)
+    print(other_args)
+
+sm_paths = [arg for arg in other_args
+            if arg.endswith('.sm')]
+
+other_args = [arg for arg in other_args
+              if not arg.endswith('.sm')]
+
+with tempfile.NamedTemporaryFile() as tmpfile:
+    tmpfile.write('from sm import main, Options\n')
+    tmpfile.write('from sm.parser import parse_file\n')
+    tmpfile.write('checkers = [\n')
+    for smpath in sm_paths:
+        tmpfile.write('    parse_file(%r),\n' % smpath)
+    tmpfile.write(']\n')
+    tmpfile.write('options = Options(during_lto=%s)\n'
+                  % ('-flto' in other_args))
+    tmpfile.write('main(checkers, options=options)\n')
+    tmpfile.flush()
+
+    if 0:
+        with open(tmpfile.name, 'r') as f:
+            print(f.read())
+
+    args = [os.environ.get('CC', 'gcc'),
+            ('-fplugin=%s' % PLUGIN),
+            ('-fplugin-arg-python-script=%s' % tmpfile.name)]
+    args += other_args # (the args we didn't consume)
+
+    if 0:
+        print(' '.join(args))
+    p = subprocess.Popen(args)
+
+    try:
+        r = p.wait()
+    except KeyboardInterrupt:
+        r = 1
+
+
+sys.exit(r)

@@ -172,6 +172,18 @@ debug: plugin
 demo: plugin
 	$(srcdir)./gcc-with-cpychecker $(PYTHON_INCLUDES) demo.c
 
+# Demos of the sm code:
+demo-sm-taint: plugin
+	$(srcdir)./gcc-with-sm \
+	    sm/checkers/taint.sm \
+	    tests/sm/checkers/taint/example/input.c
+
+demo-sm-lto: plugin
+	$(srcdir)./gcc-with-sm \
+	    sm/checkers/malloc_checker.sm \
+	    -flto -flto-partition=none \
+            tests/sm/lto/*.c
+
 json-examples: plugin
 	$(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 libcpychecker/html/test/example1/bug.c
 

@@ -63,9 +63,36 @@ Example script: checking for tainted data
 Invoking the checker
 --------------------
 
-.. FIXME: gcc-with-sm [*.sm] other args
+``gcc-with-sm`` is a wrapper script which invokes GCC along with any .sm
+files that are passed to it:
 
-   does this do LTO by default?
+.. code-block:: bash
+
+    ./gcc-with-sm \
+        [PATHS-TO-sm-FILES]
+        [NORMAL GCC ARGUMENTS]
+
+For example, ``make demo-sm-taint`` in the plugin's `Makefile` invokes this code:
+
+.. code-block:: bash
+
+    ./gcc-with-sm \
+        sm/checkers/taint.sm \
+        tests/sm/checkers/taint/example/input.c
+
+running the "taint.sm" script on this input file:
+
+.. literalinclude:: ../tests/sm/checkers/taint/example/input.c
+  :lines: 20-
+  :language: c
+
+The following warnings are generated:
+
+.. literalinclude:: ../tests/sm/checkers/taint/example/stderr.txt
+  :language: c
+
+.. FIXME: what about internal API?
+.. FIXME: what about rpm builds?
 
 
 Syntax
