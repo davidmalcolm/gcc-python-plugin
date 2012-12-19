@@ -379,10 +379,24 @@ class WorklistItem:
     def __repr__(self):
         return '(%r, %r, %r, %r)' % (self.node, self.equivcls, self.state, self.match)
 
+class StateNameSet(frozenset):
+    def __init__(self, statenames):
+        frozenset.__init__(self, statenames)
+        self.has_wildcard = False
+        for statename in statenames:
+            if statename.endswith('*'):
+                self.has_wildcard = True
+                break
+
+    def __contains__(self, key):
+        if self.has_wildcard:
+            return True
+        return frozenset.__contains__(self, key)
+
 class PossibleMatch:
     def __init__(self, expr, sc, pattern, outcome, match):
         self.expr = expr
-        self.statenames = frozenset(sc.statelist)
+        self.statenames = StateNameSet(sc.statelist)
         self.sc = sc
         self.pattern = pattern
         self.outcome = outcome
@@ -854,6 +868,9 @@ class Context:
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
     def __init__(self, ch, sm, graph, options):
+        from sm.checker import Decl, NamedPattern, StateClause, \
+            PythonFragment, PythonOutcome
+
         self.options = options
 
         self.ch = ch
@@ -864,7 +881,7 @@ class Context:
         # process it efficiently:
         #
         #   all state names:
-        self.statenames = list(sm.iter_states())
+        self.statenames = list(sm.iter_statenames())
 
         #   a mapping from str (decl names) to Decl instances
         self._decls = {}
@@ -884,11 +901,18 @@ class Context:
 
         self._indent = 0
 
-        reachable_statenames = set([self.statenames[0]])
+        # Set up self._decls and self._stateful_decl:
+        for clause in sm.clauses:
+            if isinstance(clause, Decl):
+                self._decls[clause.name] = clause
+                if clause.has_state:
+                    self._stateful_decl = clause
 
-        # Set up the above attributes:
-        from sm.checker import Decl, NamedPattern, StateClause, \
-            PythonFragment, PythonOutcome
+        self._default_state = State(self.get_default_statename())
+
+        reachable_statenames = set([self.get_default_statename()])
+
+        # Set up the other above attributes:
         for clause in sm.clauses:
             if isinstance(clause, Decl):
                 self._decls[clause.name] = clause
@@ -913,6 +937,8 @@ class Context:
         for clause in sm.clauses:
             if isinstance(clause, StateClause):
                 for statename in clause.statelist:
+                    if statename.endswith('*'):
+                        continue
                     if statename not in reachable_statenames \
                             and not self._uses_set_state:
                         class UnreachableState(Exception):
@@ -1061,8 +1087,11 @@ class Context:
 
         return None
 
+    def get_default_statename(self):
+        return '%s.start' % self._stateful_decl.name
+
     def get_default_state(self):
-        return State(self.statenames[0])
+        return self._default_state
 
     def is_stateful_var(self, gccexpr):
         '''

@@ -1,13 +1,21 @@
 digraph test_script {
   subgraph malloc_checker {
-    ptr_all [label=<ptr.all>];
     ptr_unchecked [label=<ptr.unchecked>];
     ptr_null [label=<ptr.null>];
+    ptr_start [label=<ptr.start>];
     ptr_nonnull [label=<ptr.nonnull>];
     ptr_free [label=<ptr.free>];
 
-    ptr_all -> ptr_unchecked [label=<{ ptr = malloc() }>];
-    ptr_all -> ptr_null [label=<{ ptr = 0 }>];
+    ptr_unchecked -> ptr_unchecked [label=<{ ptr = malloc() }>];
+    ptr_null -> ptr_unchecked [label=<{ ptr = malloc() }>];
+    ptr_start -> ptr_unchecked [label=<{ ptr = malloc() }>];
+    ptr_nonnull -> ptr_unchecked [label=<{ ptr = malloc() }>];
+    ptr_free -> ptr_unchecked [label=<{ ptr = malloc() }>];
+    ptr_unchecked -> ptr_null [label=<{ ptr = 0 }>];
+    ptr_null -> ptr_null [label=<{ ptr = 0 }>];
+    ptr_start -> ptr_null [label=<{ ptr = 0 }>];
+    ptr_nonnull -> ptr_null [label=<{ ptr = 0 }>];
+    ptr_free -> ptr_null [label=<{ ptr = 0 }>];
     ptr_unchecked -> ptr_null [label=<{ ptr == 0 } is True>];
     ptr_unchecked -> ptr_nonnull [label=<{ ptr == 0 } is False>];
     ptr_unchecked -> ptr_nonnull [label=<{ ptr != 0 } is True>];
@@ -16,10 +24,18 @@ digraph test_script {
     ptr_null -> ptr_nonnull [label=<{ ptr == 0 } is False>];
     ptr_null -> ptr_nonnull [label=<{ ptr != 0 } is True>];
     ptr_null -> ptr_null [label=<{ ptr != 0 } is False>];
+    ptr_start -> ptr_null [label=<{ ptr == 0 } is True>];
+    ptr_start -> ptr_nonnull [label=<{ ptr == 0 } is False>];
+    ptr_start -> ptr_nonnull [label=<{ ptr != 0 } is True>];
+    ptr_start -> ptr_null [label=<{ ptr != 0 } is False>];
     ptr_nonnull -> ptr_null [label=<{ ptr == 0 } is True>];
     ptr_nonnull -> ptr_nonnull [label=<{ ptr == 0 } is False>];
     ptr_nonnull -> ptr_nonnull [label=<{ ptr != 0 } is True>];
     ptr_nonnull -> ptr_null [label=<{ ptr != 0 } is False>];
+    ptr_free -> ptr_null [label=<{ ptr == 0 } is True>];
+    ptr_free -> ptr_nonnull [label=<{ ptr == 0 } is False>];
+    ptr_free -> ptr_nonnull [label=<{ ptr != 0 } is True>];
+    ptr_free -> ptr_null [label=<{ ptr != 0 } is False>];
     ptr_unchecked -> ptr_unchecked [label=<{ *ptr }: 
             error(&apos;use of possibly-NULL pointer %s&apos; % ptr,
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
@@ -31,7 +47,7 @@ digraph test_script {
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
-    ptr_all -> ptr_free [label=<{ free(ptr) } >];
+    ptr_start -> ptr_free [label=<{ free(ptr) } >];
     ptr_unchecked -> ptr_free [label=<{ free(ptr) } >];
     ptr_null -> ptr_free [label=<{ free(ptr) } >];
     ptr_nonnull -> ptr_free [label=<{ free(ptr) } >];
@@ -57,11 +73,6 @@ digraph test_script {
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
-    ptr_free -> ptr_free [label=<{ ptr }: 
-                error(&apos;use-after-free of %s&apos; % ptr,
-                      # &quot;CWE-416: Use After Free&quot;
-                      cwe=&apos;CWE-416&apos;)
-             >];
     ptr_unchecked -> ptr_unchecked [label=<$leaked$: 
             error(&apos;leak of %s&apos; % ptr,
                   # This appears to be:

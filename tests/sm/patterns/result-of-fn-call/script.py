@@ -23,7 +23,7 @@ SCRIPT = '''
 sm result_of_fn_call {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { ptr = never_call_this() } => {{ error('never_call_this was called %s' % ptr) }};
 }
 '''

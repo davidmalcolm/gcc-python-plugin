@@ -267,6 +267,8 @@ def p_patternrulelist(p):
 def p_statename(p):
     '''statename : ID DOT ID
                  | ID
+                 | ID DOT STAR
+                 | STAR
     '''
     if len(p) == 4:
         p[0] = '%s.%s' % (p[1], p[3]) # FIXME

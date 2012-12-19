@@ -23,7 +23,7 @@ SCRIPT = '''
 sm result_of_fn_call {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { ptr } => {{ error('%s was used' % ptr) }};
 }
 '''

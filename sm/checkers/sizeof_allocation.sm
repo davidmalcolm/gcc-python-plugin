@@ -45,7 +45,7 @@ sm sizeof_allocation {
         set_state("ptr.sized", size=int(allocated_size))
   }}
 
-  ptr.all:
+  ptr.*:
     /* Various allocators: */
       /* libc: */
       { ptr = malloc(sz) }
@@ -66,7 +66,7 @@ sm sizeof_allocation {
                 check_size(ptr, sz)
          }};
 
-  ptr.all:
+  ptr.*:
       /* libc: */
       { ptr = calloc(nmemb, sz) }
       /* glib: */

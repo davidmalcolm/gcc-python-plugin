@@ -29,10 +29,10 @@ def selftest(ctxt, solution):
     #     ptr = malloc(i);
     # since the checker only tracks constant integer values:
     node = ctxt.find_call_of('malloc')
-    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.start'})
 
     node = ctxt.get_successor(node)
-    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.start'})
 
 checker = parse_file('sm/checkers/sizeof_allocation.sm')
 main([checker], selftest=selftest)

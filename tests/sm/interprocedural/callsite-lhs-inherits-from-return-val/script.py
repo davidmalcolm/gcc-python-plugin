@@ -26,9 +26,9 @@ def selftest(ctxt, solution):
 
     # Verify that the:
     #   int *p = calls_malloc();
-    # transitions "p" from "ptr.all" to "ptr.unknown"
+    # transitions "p" from "ptr.start" to "ptr.unknown"
     node = ctxt.find_call_of('calls_malloc')
-    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.start'})
 
     node = ctxt.get_intraprocedural_successor(node)
     ctxt.assert_statenames_for_varname(node, 'p', {'ptr.unchecked'})

@@ -58,11 +58,13 @@ class Sm:
         return ('Sm(name=%r, clauses=%r)'
                 % (self.name, self.clauses))
 
-    def iter_states(self):
+    def iter_statenames(self):
         statenames = set()
         for sc in self.clauses:
             if isinstance(sc, StateClause):
                 for statename in sc.statelist:
+                    if statename.endswith('*'):
+                        continue
                     if statename not in statenames:
                         statenames.add(statename)
                         yield statename

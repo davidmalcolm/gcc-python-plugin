@@ -24,7 +24,7 @@ sm array_access {
   decl any_expr idx;
   stateful decl any_expr arr;
 
-  arr.all:
+  arr.*:
     { arr[idx] } => {{ error('lookup within array "%s" at index %s' % (arr, idx)) }};
 }
 '''

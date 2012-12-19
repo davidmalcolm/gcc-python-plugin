@@ -23,7 +23,7 @@ SCRIPT = '''
 sm checked_against_null {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { ptr != 0 } => {{ error('%s was checked against NULL' % ptr) }};
 }
 '''

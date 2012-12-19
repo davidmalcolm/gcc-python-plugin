@@ -36,47 +36,57 @@ def pattern_to_dot(pattern):
 def python_to_dot(outcome):
     return to_html(outcome.src)
 
+def make_dot_for_pr(statename, pr):
+    result = ''
+    for outcome in pr.outcomes:
+        def make_edge(src, dst, label):
+            return '    %s -> %s [label=<%s>];\n' % (src, dst, label)
+        def make_label(condition, guardtext, actiontext):
+            if guardtext:
+                guardedtext = '%s %s' % (condition, guardtext)
+            else:
+                guardedtext = str(condition)
+            if actiontext:
+                return '%s: %s' % (guardedtext, actiontext)
+            else:
+                return guardedtext
+        def edge_for_outcome(outcome, guardtext):
+            if isinstance(outcome, TransitionTo):
+                return make_edge(statename_to_dot(statename),
+                                 statename_to_dot(outcome.statename),
+                                 make_label(pattern_to_dot(pr.pattern),
+                                            guardtext,
+                                            ''))
+            elif isinstance(outcome, BooleanOutcome):
+                return edge_for_outcome(outcome.outcome,
+                                        'is %s' % outcome.guard)
+            elif isinstance(outcome, PythonOutcome):
+                return make_edge(statename_to_dot(statename),
+                                 statename_to_dot(statename),
+                                 make_label(pattern_to_dot(pr.pattern),
+                                            guardtext,
+                                            python_to_dot(outcome)))
+            else:
+                print(outcome)
+                raise UnknownOutcome(outcome)
+        result += edge_for_outcome(outcome, '')
+    return result
+
 def sm_to_dot(sm):
     result = '  subgraph %s {\n' % sm.name
-    for state in sm.iter_states():
+    for state in sm.iter_statenames():
         result += '    %s [label=<%s>];\n' % (statename_to_dot(state), state)
     result += '\n'
     for sc in sm.clauses:
         if not isinstance(sc, StateClause):
             continue
-        for state in sc.statelist:
-            for pr in sc.patternrulelist:
-                for outcome in pr.outcomes:
-                    def make_edge(src, dst, label):
-                        return '    %s -> %s [label=<%s>];\n' % (src, dst, label)
-                    def make_label(condition, guardtext, actiontext):
-                        if guardtext:
-                            guardedtext = '%s %s' % (condition, guardtext)
-                        else:
-                            guardedtext = str(condition)
-                        if actiontext:
-                            return '%s: %s' % (guardedtext, actiontext)
-                        else:
-                            return guardedtext
-                    def edge_for_outcome(outcome, guardtext):
-                        if isinstance(outcome, TransitionTo):
-                            return make_edge(statename_to_dot(state),
-                                             statename_to_dot(outcome.statename),
-                                             make_label(pattern_to_dot(pr.pattern),
-                                                        guardtext,
-                                                        ''))
-                        elif isinstance(outcome, BooleanOutcome):
-                            return edge_for_outcome(outcome.outcome,
-                                                    'is %s' % outcome.guard)
-                        elif isinstance(outcome, PythonOutcome):
-                            return make_edge(statename_to_dot(state),
-                                             statename_to_dot(state),
-                                             make_label(pattern_to_dot(pr.pattern),
-                                                        guardtext,
-                                                        python_to_dot(outcome)))
-                        else:
-                            print(outcome)
-                            raise UnknownOutcome(outcome)
-                    result += edge_for_outcome(outcome, '')
+        for statename in sc.statelist:
+            if statename.endswith('*'):
+                for expandedname in sm.iter_statenames():
+                    for pr in sc.patternrulelist:
+                        result += make_dot_for_pr(expandedname, pr)
+            else:
+                for pr in sc.patternrulelist:
+                    result += make_dot_for_pr(statename, pr)
     result += '  }\n'
     return result

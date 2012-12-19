@@ -24,10 +24,10 @@ def selftest(ctxt, solution):
         import sys
         solution.dump(sys.stderr)
 
-    # Verify that calls_free() converts "p" within the caller from "ptr.all"
+    # Verify that calls_free() converts "p" within the caller from "ptr.start"
     # to "ptr.free":
     node = ctxt.find_call_of('calls_free')
-    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'p', {'ptr.start'})
 
     node = ctxt.get_intraprocedural_successor(node)
     ctxt.assert_statenames_for_varname(node, 'p', {'ptr.free'})

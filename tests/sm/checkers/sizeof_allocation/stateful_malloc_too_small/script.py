@@ -27,10 +27,10 @@ def selftest(ctxt, solution):
 
     # Verify that the set_state() due to the pattern match for:
     #     ptr = malloc(sizeof(struct bar));
-    # transitions the state of ptr from "ptr.all" to a "ptr.sized" instance
+    # transitions the state of ptr from "ptr.start" to a "ptr.sized" instance
     # with the correct size
     node = ctxt.find_call_of('malloc')
-    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'ptr', {'ptr.start'})
 
     node = ctxt.get_successor(node)
     ctxt.assert_states_for_varname(node, 'ptr',

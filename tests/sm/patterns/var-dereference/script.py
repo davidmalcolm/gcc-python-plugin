@@ -23,7 +23,7 @@ SCRIPT = '''
 sm var_dereference {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { *ptr } => {{ error('%s was dereferenced' % ptr) }};
 }
 '''

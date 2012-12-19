@@ -38,7 +38,7 @@ def selftest(ctxt, solution):
     # After control flow merges, ptr could be in any state:
     node = ctxt.find_call_of('marker_B')
     ctxt.assert_statenames_for_expr(node, ptr,
-                                    ('ptr.all', 'ptr.nonnull'))
+                                    ('ptr.start', 'ptr.nonnull'))
 
     node = ctxt.find_call_of('marker_C')
     # Although we know flag != 0 at marker_C...
@@ -47,12 +47,12 @@ def selftest(ctxt, solution):
     # ...the solver isn't yet smart enough to know that the ptr must be
     # nonnull:
     ctxt.assert_statenames_for_expr(node, ptr,
-                                    ('ptr.all', 'ptr.nonnull'))
+                                    ('ptr.start', 'ptr.nonnull'))
 
     node = ctxt.find_call_of('marker_D')
     # Hence the solver erroneously has multiple states for ptr at marker_D:
     ctxt.assert_statenames_for_expr(node, ptr,
-                                    ('ptr.all', 'ptr.nonnull', 'ptr.free'))
+                                    ('ptr.start', 'ptr.nonnull', 'ptr.free'))
     # (where "ptr.nonnull" isn't actually possible: it will have been freed)
 
     # Verify that checker is looking for a possible leak of ptr:

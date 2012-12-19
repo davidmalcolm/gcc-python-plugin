@@ -170,10 +170,10 @@ For example:
        }}
 
        /* Here are some pattern-matching rules: */
-       ptr.all:
+       ptr.*:
          { ptr = malloc() } =>  ptr.unchecked;
 
-       ptr.all:
+       ptr.*:
          { ptr = 0 } =>  ptr.null;
 
        ptr.unchecked, ptr.null, ptr.nonnull:
@@ -259,9 +259,25 @@ by a colon, specifying in which states the rule should be run:
 State names are either identifiers or two identifiers with a period between
 them.
 
+You can also use a "*" character as a wildcard to indicate that a match can
+happen in all states:
+
+.. code-block:: c
+
+   ptr.*:
+
+The start state has the name of the stateful decl with ".start" appended.
+For example, given a stateful decl named ptr:
+
+.. code-block:: c
+
+   stateful decl any_pointer ptr;
+
+all pointers implicitly start in the state "ptr.start".
+
 .. note::
 
-  Currently there is no special significance to these two forms of state
+  Currently there is no additional significance to these two forms of state
   name, though I have followed the convention of making the first part of
   the state name match that of the stateful declaration).
 
@@ -398,7 +414,7 @@ declaration will transition to that state:
 .. code-block:: c
 
    /* Example of transitioning to named state "ptr.unchecked" */
-   ptr.all:
+   ptr.*:
        { ptr = malloc() } => ptr.unchecked;
 
 An outcome for a conditional can be guarded with "true" or "false": the

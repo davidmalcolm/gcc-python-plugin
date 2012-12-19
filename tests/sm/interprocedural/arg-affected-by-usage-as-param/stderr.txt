@@ -9,8 +9,3 @@ tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:30:nn: note: cal
 tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:25:nn: note: q passed to free()
 tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:30:nn: note: return from calls_free() to test(): state of q ("ptr.free") propagated to p
 tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: note: use-after-free of p
-tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: error: use-after-free of p [CWE-416]
-tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:30:nn: note: call from test() to calls_free()
-tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:25:nn: note: q passed to free()
-tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:30:nn: note: return from calls_free() to test(): state of q ("ptr.free") propagated to p
-tests/sm/interprocedural/arg-affected-by-usage-as-param/input.c:33:nn: note: use-after-free of p

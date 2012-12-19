@@ -5,6 +5,3 @@ tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: note: double-free of
 tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: error: use-after-free of ptr [CWE-416]
 tests/sm/checkers/malloc-checker/double_free/input.c:25:nn: note: ptr passed to free()
 tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: note: use-after-free of ptr
-tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: error: use-after-free of ptr [CWE-416]
-tests/sm/checkers/malloc-checker/double_free/input.c:25:nn: note: ptr passed to free()
-tests/sm/checkers/malloc-checker/double_free/input.c:28:nn: note: use-after-free of ptr

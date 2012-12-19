@@ -26,9 +26,9 @@ def selftest(ctxt, solution):
 
     # Verify that the:
     #    foo = malloc()
-    # transitions "foo" from "ptr.all" to "ptr.unchecked"
+    # transitions "foo" from "ptr.start" to "ptr.unchecked"
     node = ctxt.find_call_of('malloc')
-    ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.all'})
+    ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.start'})
 
     node = ctxt.get_successor(node)
     ctxt.assert_statenames_for_varname(node, 'foo', {'ptr.unchecked'})

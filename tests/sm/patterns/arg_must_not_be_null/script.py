@@ -23,7 +23,7 @@ SCRIPT = '''
 sm example_usage_of_nonnull_arg {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { ptr = 0 } => ptr.null;
 
   ptr.null:

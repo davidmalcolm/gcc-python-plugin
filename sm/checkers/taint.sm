@@ -14,7 +14,7 @@ sm taint {
   pat check_ne { x != y };
 
   /* Sources of tainted data: */
-  x.start:
+  x.*:
     /* reading data from files: */
       {fread(x, size, nmemb, stream)} => x.tainted
     | {read(fd, x, count)} => x.tainted

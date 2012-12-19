@@ -2,6 +2,3 @@ tests/sm/checkers/malloc-checker/use_after_free/input.c: In function 'test':
 tests/sm/checkers/malloc-checker/use_after_free/input.c:32:nn: error: use-after-free of p [CWE-416]
 tests/sm/checkers/malloc-checker/use_after_free/input.c:31:nn: note: p passed to free()
 tests/sm/checkers/malloc-checker/use_after_free/input.c:32:nn: note: use-after-free of p
-tests/sm/checkers/malloc-checker/use_after_free/input.c:32:nn: error: use-after-free of p [CWE-416]
-tests/sm/checkers/malloc-checker/use_after_free/input.c:31:nn: note: p passed to free()
-tests/sm/checkers/malloc-checker/use_after_free/input.c:32:nn: note: use-after-free of p

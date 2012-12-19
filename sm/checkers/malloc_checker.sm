@@ -4,13 +4,13 @@
 sm malloc_checker {
   stateful decl any_pointer ptr;
 
-  ptr.all:
+  ptr.*:
     { ptr = malloc() } =>  ptr.unchecked;
 
-  ptr.all:
+  ptr.*:
     { ptr = 0 } =>  ptr.null;
 
-  ptr.unchecked, ptr.null, ptr.nonnull:
+  ptr.*:
       { ptr == 0 } => true=ptr.null, false=ptr.nonnull
     | { ptr != 0 } => true=ptr.nonnull, false=ptr.null
     ;
@@ -31,7 +31,7 @@ sm malloc_checker {
                   cwe='CWE-690')
          }};
 
-  ptr.all, ptr.unchecked, ptr.null, ptr.nonnull:
+  ptr.start, ptr.unchecked, ptr.null, ptr.nonnull:
     { free(ptr) } => ptr.free;
 
   ptr.free:
@@ -66,14 +66,6 @@ sm malloc_checker {
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
          }};
-
-  ptr.free:
-      { ptr }
-          => {{
-                error('use-after-free of %s' % ptr,
-                      # "CWE-416: Use After Free"
-                      cwe='CWE-416')
-             }};
 
   ptr.unchecked, ptr.nonnull:
     $leaked$

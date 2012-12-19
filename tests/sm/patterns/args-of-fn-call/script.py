@@ -25,7 +25,7 @@ sm arg_of_fn_call {
   decl any_expr arg1;
   decl any_expr arg2;
 
-  arg0.all:
+  arg0.*:
     { test2(arg0, arg1, arg2) } => {{ error('test2() was called with arg0:%s arg1:%s arg2:%s' % (arg0, arg1, arg2)) }};
 }
 '''

@@ -25,7 +25,7 @@ sm checked_against_null {
 
   pat checked_against_null { ptr != 0 };
 
-  ptr.all:
+  ptr.*:
     checked_against_null => {{ error('%s was checked against NULL' % ptr) }};
 }
 '''
