@@ -1,5 +1,5 @@
 sm taint {
-  state decl any_expr x;
+  stateful decl any_expr x;
 
   decl any_expr y;
   decl any_expr arr;

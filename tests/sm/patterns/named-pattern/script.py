@@ -21,7 +21,7 @@ from sm.parser import parse_string
 
 SCRIPT = '''
 sm checked_against_null {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   pat checked_against_null { ptr != 0 };
 

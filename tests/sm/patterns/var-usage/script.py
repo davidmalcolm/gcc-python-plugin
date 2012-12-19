@@ -21,7 +21,7 @@ from sm.parser import parse_string
 
 SCRIPT = '''
 sm result_of_fn_call {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   ptr.all:
     { ptr } => {{ error('%s was used' % ptr) }};

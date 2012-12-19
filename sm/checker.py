@@ -79,7 +79,7 @@ class Decl(Clause):
 
     def __str__(self):
         return ('%sdecl %s %s;\n'
-                % ('state ' if self.has_state else '',
+                % ('stateful ' if self.has_state else '',
                    self.kind,
                    self.name))
 

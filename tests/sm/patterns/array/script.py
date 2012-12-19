@@ -22,7 +22,7 @@ from sm.parser import parse_string
 SCRIPT = '''
 sm array_access {
   decl any_expr idx;
-  state decl any_expr arr;
+  stateful decl any_expr arr;
 
   arr.all:
     { arr[idx] } => {{ error('lookup within array "%s" at index %s' % (arr, idx)) }};

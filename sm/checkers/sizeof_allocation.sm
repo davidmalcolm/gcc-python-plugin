@@ -19,7 +19,7 @@
    Checker to detect typos of the form:  malloc(sizeof(WRONG_TYPE))
 */
 sm sizeof_allocation {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
   decl any_pointer other_ptr;
   decl any_expr nmemb;
   decl any_expr sz;

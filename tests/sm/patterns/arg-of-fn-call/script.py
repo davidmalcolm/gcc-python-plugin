@@ -21,7 +21,7 @@ from sm.parser import parse_string
 
 SCRIPT = '''
 sm arg_of_fn_call {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   ptr.all:
     { test2(ptr) } => {{ error('test2() was called with %s' % ptr) }};

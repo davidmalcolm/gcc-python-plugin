@@ -2,7 +2,7 @@
     Work-in-progress checker for malloc/free usage
  */
 sm malloc_checker {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   ptr.all:
     { ptr = malloc() } =>  ptr.unchecked;

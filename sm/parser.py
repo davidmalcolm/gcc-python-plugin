@@ -34,7 +34,7 @@ DEBUG_LINE_NUMBERING = 0
 
 import ply.lex as lex
 
-reserved = ['decl', 'sm', 'state', 'true', 'false',
+reserved = ['decl', 'sm', 'stateful', 'true', 'false',
             'any_pointer', 'any_expr', 'pat']
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
@@ -178,11 +178,11 @@ def p_smclauses(p):
 
 def p_smclause_decl(p):
     '''
-    smclause : optional_state DECL declkind ID SEMICOLON
+    smclause : optional_stateful DECL declkind ID SEMICOLON
     '''
-    # e.g. "state decl any_pointer ptr;"
+    # e.g. "stateful decl any_pointer ptr;"
     # e.g. "decl any_expr x;"
-    has_state = (p[1] == 'state')
+    has_state = (p[1] == 'stateful')
     declkind = p[3]
     name = p[4]
     p[0] = Decl.make(has_state, declkind, name)
@@ -223,9 +223,9 @@ def p_empty(p):
     'empty :'
     pass
 
-def p_optional_state(p):
+def p_optional_stateful(p):
     '''
-    optional_state : STATE
+    optional_stateful : STATEFUL
                    | empty
     '''
     p[0] = p[1]

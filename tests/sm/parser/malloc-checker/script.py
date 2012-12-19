@@ -30,7 +30,7 @@ class ParserTests(unittest.TestCase):
     def test_complex_example(self):
         ch = parse_string('''
 sm malloc_checker {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   ptr.all:
     { ptr = malloc() } =>  ptr.unknown;
@@ -63,7 +63,7 @@ sm malloc_checker {
         # Verify that the str() of the parsed Checker looks sane:
         self.assertEqual(str(ch).splitlines(),
 '''sm malloc_checker {
-  state decl any_pointer ptr;
+  stateful decl any_pointer ptr;
 
   ptr.all:
     { ptr = malloc() } => ptr.unknown;

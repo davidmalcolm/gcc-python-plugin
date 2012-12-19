@@ -21,7 +21,7 @@ from sm.parser import parse_string
 
 SCRIPT = '''
 sm arg_of_fn_call {
-  state decl any_pointer arg0;
+  stateful decl any_pointer arg0;
   decl any_expr arg1;
   decl any_expr arg2;
 

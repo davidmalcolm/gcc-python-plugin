@@ -81,7 +81,7 @@ Case is significant.
 Reserved words, which can't be used as identifiers:
   * sm
   * decl
-  * state
+  * stateful
   * true, false:
   * any_pointer, any_expr
   * pat
@@ -154,7 +154,7 @@ For example:
 
    sm example_checker {
        /* Here are some declarations: */
-       state decl any_pointer ptr;
+       stateful decl any_pointer ptr;
        decl any_expr x;
 
        /* Here is a named pattern: */
@@ -202,14 +202,14 @@ fragments of C code.  They are of the form::
 where TYPE can be one of `any_expr` or `any_pointer`, and NAME is an
 identifier.
 
-One of the declarations should be prepended with "state", indicating that
+One of the declarations should be prepended with "stateful", indicating that
 this is the expression whose state is being tracked.
 
 Examples:
 
   .. code-block:: c
 
-    state decl any_pointer ptr;
+    stateful decl any_pointer ptr;
     decl any_expr x;
 
 
@@ -449,7 +449,7 @@ in the checker, and as an outcome when a pattern is matched:
 .. code-block:: c
 
    sm example_checker {
-       state decl any_pointer ptr;
+       stateful decl any_pointer ptr;
 
        {{
            # Example of top-level Python.  This will be run once when the
@@ -576,8 +576,8 @@ High-level rules::
    smclauses : smclause
              | smclauses smclause
 
-   smclause : optional_state DECL declkind ID SEMICOLON
-   # e.g. "state decl any_pointer ptr;"
+   smclause : optional_stateful decl declkind ID SEMICOLON
+   # e.g. "stateful decl any_pointer ptr;"
    # e.g. "decl any_expr x;"
 
    smclause : PAT ID pattern SEMICOLON
@@ -594,8 +594,8 @@ Declarations::
 
    empty :
 
-   optional_state : STATE
-                  | empty
+   optional_stateful : STATEFUL
+                     | empty
 
    declkind : "any_expr"
             | "any_pointer"
