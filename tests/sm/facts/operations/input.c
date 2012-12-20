@@ -22,6 +22,7 @@ extern void marker_B(void);
 extern void marker_C(void);
 extern void marker_D(void);
 extern void marker_E(void);
+extern void marker_F(void);
 
 /*
   Ensure that the fact-finder can sanely propagate information about
@@ -30,7 +31,7 @@ extern void marker_E(void);
 
 void test(int i, int j)
 {
-  int k;
+  int k, m;
 
   if (i > 42) {
     marker_A();
@@ -57,6 +58,11 @@ void test(int i, int j)
 
     /* We don't know anything about j, so we don't know anything about k: */
     k = i + j;
+
+    /* However, we should now know that m > 67: */
+    m = i + 1;
+
+    marker_F();
 
   }
 

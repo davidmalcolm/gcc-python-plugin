@@ -42,5 +42,10 @@ def selftest(ctxt, solution):
     node = ctxt.find_call_of('marker_E')
     ctxt.assert_fact(node, 'i', '>', 66)
 
+    node = ctxt.find_call_of('marker_F')
+    ctxt.assert_fact(node, 'i', '>', 66)
+    ctxt.assert_fact(node, 'm', '>', 67)
+    # though we don't know anything about the relationship of i and m
+
 checker = parse_file('sm/checkers/malloc_checker.sm')
 main([checker], selftest=selftest)
