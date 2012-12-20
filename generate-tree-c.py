@@ -571,6 +571,7 @@ def generate_tree_code_classes():
             add_simple_getter('target',
                               'gcc_python_make_wrapper_tree(CASE_LABEL(self->t))',
                               "The target of the case label, as a gcc.LabelDecl")
+            tp_repr = '(reprfunc)gcc_CaseLabelExpr_repr'
 
         cu.add_defn(getsettable.c_defn())
         cu.add_defn(methods.c_defn())

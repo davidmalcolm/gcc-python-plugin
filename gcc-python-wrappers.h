@@ -207,6 +207,9 @@ PyObject *
 gcc_TreeList_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_CaseLabelExpr_repr(PyObject *self);
+
+PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
 
 PyObject *
