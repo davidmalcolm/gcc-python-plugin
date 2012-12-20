@@ -257,6 +257,35 @@ gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
 }
 
 PyObject *
+gcc_GimpleLabel_repr(struct PyGccGimple * self)
+{
+    PyObject *label_obj = NULL;
+    PyObject *label_repr = NULL;
+    PyObject *result = NULL;
+
+    label_obj = gcc_python_make_wrapper_tree(gimple_label_label (self->stmt));
+    if (!label_obj) {
+        goto cleanup;
+    }
+
+    label_repr = PyObject_Repr(label_obj);
+    if (!label_repr) {
+        goto cleanup;
+    }
+
+    result = gcc_python_string_from_format("%s(label=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(label_repr));
+
+ cleanup:
+    Py_XDECREF(label_obj);
+    Py_XDECREF(label_repr);
+
+    return result;
+}
+
+
+PyObject *
 gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
 {
     /* See e.g. gimple-pretty-print.c:dump_gimple_phi */
