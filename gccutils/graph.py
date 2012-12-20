@@ -694,6 +694,10 @@ class SupergraphNode(Node):
         return 'SupergraphNode(%r)' % self.innernode
 
     @property
+    def supergraphnode(self):
+        return self
+
+    @property
     def stmt(self):
         if self.innernode:
             return self.innernode.get_stmt()

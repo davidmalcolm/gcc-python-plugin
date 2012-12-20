@@ -77,6 +77,10 @@ class ErrorNode(Node):
     def __repr__(self):
         return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.equivcls, self.state, self.match)
 
+    @property
+    def supergraphnode(self):
+        return self.innernode
+
     def to_dot_html(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text, Br, Font
 

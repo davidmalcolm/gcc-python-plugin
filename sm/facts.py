@@ -20,10 +20,11 @@
 ############################################################################
 import gcc
 
-from gccutils.graph import CallToReturnSiteEdge
+from gccutils.graph import CallToReturnSiteEdge, SplitPhiNode
 
 from sm.solver import simplify, AbstractValue, fixed_point_solver
 
+# For applying boolean not:
 inverseops =  {'==' : '!=',
                '!=' : '==',
                '<'  : '>=',
@@ -31,6 +32,26 @@ inverseops =  {'==' : '!=',
                '>'  : '<=',
                '>=' : '<',
                }
+
+# For flipping LHS and RHS:
+flippedops =  {
+    # Equality/inequality is symmetric:
+    '==' : '==',
+    '!=' : '!=',
+
+    # Comparisons change direction:
+    '<'  : '>',
+    '<=' : '>=',
+    '>'  : '<',
+    '>=' : '<=',
+    }
+
+# Mapping from gcc expression codes to Python method names:
+exprcodenames = {
+    gcc.PlusExpr: '__add__',
+    gcc.MultExpr: '__mul__',
+    gcc.TruncDivExpr: '__div__',
+    }
 
 class Fact:
     def __init__(self, lhs, op, rhs):
@@ -59,6 +80,41 @@ class Fact:
         # test output
         if isinstance(other, Fact):
             return (self.lhs, self.op, self.rhs) < (other.lhs, other.op, other.rhs)
+
+class Factoid:
+    """
+    Like a fact, but has an context-dependent LHS
+    """
+    def __init__(self, op, rhs):
+        self.op = op
+        self.rhs = rhs
+
+    def __str__(self):
+        return '%s %s' % (self.op, self.rhs)
+
+    def __repr__(self):
+        return 'Factoid(%r, %r)' % (self.op, self.rhs)
+
+    def __eq__(self, other):
+        if isinstance(other, Factoid):
+            if self.op == other.op:
+                if self.rhs == other.rhs:
+                    return True
+
+    def __hash__(self):
+        return hash(self.op) ^ hash(self.rhs)
+
+    def __lt__(self, other):
+        # Support sorting of facts to allow for consistent ordering in
+        # test output
+        if isinstance(other, Factoid):
+            return (self.op, self.rhs) < (other.op, other.rhs)
+
+    def apply_binary_op_to_constant(self, opname, other):
+        const = self.rhs
+        if isinstance(const, gcc.Constant):
+            const = const.constant
+        return Factoid(self.op, getattr(const, opname)(other))
 
 class Facts(AbstractValue, set):
     def __init__(self, *args):
@@ -203,18 +259,31 @@ class Facts(AbstractValue, set):
         stmt = edge.srcnode.stmt
         dstfacts = Facts(self)
         if isinstance(stmt, gcc.GimpleAssign):
+            exprcode = stmt.exprcode
             if 1:
                 ctxt.debug('gcc.GimpleAssign: %s', stmt)
                 ctxt.debug('  stmt.lhs: %r', stmt.lhs)
                 ctxt.debug('  stmt.rhs: %r', stmt.rhs)
-                ctxt.debug('  stmt.exprcode: %r', stmt.exprcode)
-            lhs = simplify(stmt.lhs)
-            rhs = simplify(stmt.rhs[0])
-            # Eliminate any now-invalid facts:
-            for fact in frozenset(dstfacts):
-                if lhs == fact.lhs or lhs == fact.rhs:
-                    dstfacts.remove(fact)
-            dstfacts.add( Fact(lhs, '==', rhs) )
+                ctxt.debug('  exprcode: %r', exprcode)
+            if exprcode in exprcodenames:
+                lhs = simplify(stmt.lhs)
+                rhs0 = simplify(stmt.rhs[0])
+                rhs1 = simplify(stmt.rhs[1])
+                dstfacts._assignment_from_binary_op(ctxt, lhs, rhs0, rhs1,
+                                                    exprcodenames[exprcode])
+            elif exprcode in (gcc.IntegerCst,
+                              gcc.ParmDecl, gcc.VarDecl,
+                              gcc.MemRef, gcc.ComponentRef):
+                assert len(stmt.rhs) == 1
+                lhs = simplify(stmt.lhs)
+                rhs = simplify(stmt.rhs[0])
+                dstfacts._assignment(lhs, rhs)
+            else:
+                # We don't know how to handle this expression code, so
+                # just forget what we knew about the LHS:
+                lhs = simplify(stmt.lhs)
+                dstfacts._remove_invalidated_facts(lhs)
+
         elif isinstance(stmt, gcc.GimpleCond):
             if 1:
                 ctxt.debug('gcc.GimpleCond: %s', stmt)
@@ -260,8 +329,76 @@ class Facts(AbstractValue, set):
                 else:
                     dstfacts.add(Fact(indexvar, '>=', minvalue))
                     dstfacts.add(Fact(indexvar, '<=', maxvalue))
+        elif isinstance(stmt, gcc.GimplePhi):
+            srcnode = edge.srcnode
+            if 1:
+                ctxt.debug('gcc.GimplePhi: %s', stmt)
+                ctxt.debug('  srcnode: %s', srcnode)
+                ctxt.debug('  srcnode: %r', srcnode)
+                ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
+                ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
+            assert isinstance(srcnode.supergraphnode.innernode, SplitPhiNode)
+            rhs = simplify(srcnode.supergraphnode.innernode.rhs)
+            lhs = simplify(srcnode.stmt.lhs)
+            dstfacts._assignment(lhs, rhs)
 
         return dstfacts
+
+    def _remove_invalidated_facts(self, expr):
+        # remove any facts relating to an expression that might have changed
+        # value:
+        for fact in list(self):
+            if expr == fact.lhs or expr == fact.rhs:
+                self.remove(fact)
+
+    def _assignment(self, lhs, rhs):
+        if lhs == rhs:
+            return
+        self._remove_invalidated_facts(lhs)
+        self.add( Fact(lhs, '==', rhs) )
+
+    def _assignment_from_binary_op(self, ctxt, lhs, rhs0, rhs1, opname):
+        if 1:
+            ctxt.debug('_assignment_from_binary_op(%s, ...,'
+                       ' lhs=%s, rhs0=%s, rhs1=%s, opname=%s)',
+                       self, lhs, rhs0, rhs1, opname)
+
+        rhs0factoids = list(self.iter_factoids_about(rhs0))
+        ctxt.debug('rhs0factoids: %s', rhs0factoids)
+
+        rhs1factoids = list(self.iter_factoids_about(rhs1))
+        ctxt.debug('rhs1factoids: %s', rhs1factoids)
+
+        # If we have, say, (i > 42) and we have i = i + 1
+        # we want to end up with (i > 43):
+        if isinstance(rhs1, gcc.IntegerCst):
+            resultfactoids = Factoids([factoid.apply_binary_op_to_constant(opname, int(rhs1))
+                                       for factoid in self.iter_factoids_about(rhs0)
+                                       if isinstance(factoid.rhs, (gcc.Constant, int, long))])
+            ctxt.debug('resultfactoids: %s', resultfactoids)
+
+            self._remove_invalidated_facts(lhs)
+
+            for fact in resultfactoids.make_facts_for_lhs(lhs):
+                self.add(fact)
+        else:
+            self._remove_invalidated_facts(lhs)
+
+    def iter_factoids_about(self, expr):
+        for fact in self:
+            if expr == fact.lhs:
+                yield Factoid(fact.op, fact.rhs)
+            if expr == fact.rhs:
+                yield Factoid(flippedops[fact.op], fact.rhs)
+
+class Factoids(set):
+    def __str__(self):
+        return '(%s)' % (' && '.join([str(factoid)
+                                      for factoid in sorted(self)]))
+
+    def make_facts_for_lhs(self, lhs):
+        return Facts([Fact(lhs, factoid.op, factoid.rhs)
+                      for factoid in self])
 
 def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
