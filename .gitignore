@@ -18,5 +18,6 @@ docs/_build
 # Logfiles generated during the selftest suite:
 *.c.cpychecker-log.txt
 *.c.*-refcount-errors.html
+*.cc.*-refcount-errors.html
 *.c.*-refcount-traces.html
 tests/plugin/dumpfiles/input.c.*t.test-pass
