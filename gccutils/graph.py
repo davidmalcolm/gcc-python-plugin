@@ -352,11 +352,33 @@ class StmtGraph(Graph):
                               self.entry_of_bb[edge.dest],
                               edge)
 
+        # 3rd pass: set up caselabelexprs for edges within switch statements
+        # There doesn't seem to be any direct association between edges in a
+        # CFG and the switch labels; store this information so that it's
+        # trivial to go from an edge to the set of case labels that might be
+        # being followed:
+        for stmt in self.node_for_stmt:
+            if isinstance(stmt, gcc.GimpleSwitch):
+                labels = stmt.labels
+                node = self.node_for_stmt[stmt]
+                for edge in node.succs:
+                    caselabelexprs = set()
+                    for label in labels:
+                        dststmtnode_of_labeldecl = self.get_node_for_labeldecl(label.target)
+                        if dststmtnode_of_labeldecl == edge.dstnode:
+                            caselabelexprs.add(label)
+                    edge.caselabelexprs = frozenset(caselabelexprs)
+
     def _make_edge(self, srcnode, dstnode, edge):
         return StmtEdge(srcnode, dstnode, edge)
 
     def get_entry_nodes(self):
         return [self.entry]
+
+    def get_node_for_labeldecl(self, labeldecl):
+        assert isinstance(labeldecl, gcc.LabelDecl)
+        bb = self.fun.cfg.get_block_for_label(labeldecl)
+        return self.entry_of_bb[bb]
 
 class StmtNode(Node):
     def __init__(self, fun, stmt):
@@ -483,12 +505,30 @@ class StmtEdge(Edge):
         Edge.__init__(self, srcnode, dstnode)
         self.cfgedge = cfgedge # will be None within a BB
 
+        # For use in handling switch statements:
+        # the set of gcc.CaseLabelExpr for this edge
+        self.caselabelexprs = frozenset()
+
     def to_dot_label(self, ctx):
         if self.cfgedge:
             if self.cfgedge.true_value:
                 return 'true'
             elif self.cfgedge.false_value:
                 return 'false'
+
+        # Edges within a switch statement:
+        if self.caselabelexprs:
+            def cle_to_str(cle):
+                if cle.low is not None:
+                    if cle.high is not None:
+                        return '%s ... %s' % (cle.low, cle.high)
+                    else:
+                        return str(cle.low)
+                else:
+                    return 'default'
+            return '{%s}' % ', '.join([cle_to_str(cle)
+                                       for cle in self.caselabelexprs])
+
         return ''
 
     @property
@@ -734,6 +774,10 @@ class SupergraphEdge(Edge):
     def false_value(self):
         if self.inneredge:
             return self.inneredge.false_value
+
+    @property
+    def stmtedge(self):
+        return self.inneredge
 
 class CallToReturnSiteEdge(SupergraphEdge):
     """

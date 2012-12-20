@@ -226,6 +226,40 @@ class Facts(AbstractValue, set):
             if edge.false_value:
                 op = inverseops[op]
                 dstfacts.add( Fact(lhs, op, rhs) )
+        elif isinstance(stmt, gcc.GimpleSwitch):
+            if 0:
+                ctxt.debug('gcc.GimpleSwitch: %s', stmt)
+                print(stmt)
+            indexvar = simplify(stmt.indexvar)
+
+            # More than one gcc.CaseLabelExpr may point at the same label
+            # These will be the same SupergraphEdge within the Supergraph
+            # Hence a SupergraphEdge may have zero or more gcc.CaseLabelExpr
+
+            minvalue = None
+            maxvalue = None
+            for cle in edge.stmtedge.caselabelexprs:
+                if cle.low is not None:
+                    if minvalue is None or minvalue > cle.low:
+                       minvalue = cle.low
+
+                    if cle.high is not None:
+                        # a range from cle.low ... cle.high
+                        if maxvalue is None or maxvalue < cle.high:
+                            maxvalue = cle.high
+                    else:
+                        # a single value: cle.low
+                        if maxvalue is None or maxvalue < cle.low:
+                            maxvalue = cle.low
+                if 0:
+                    print('minvalue: %r' % minvalue)
+                    print('maxvalue: %r' % maxvalue)
+            if minvalue is not None:
+                if minvalue == maxvalue:
+                    dstfacts.add(Fact(indexvar, '==', minvalue))
+                else:
+                    dstfacts.add(Fact(indexvar, '>=', minvalue))
+                    dstfacts.add(Fact(indexvar, '<=', maxvalue))
 
         return dstfacts
 

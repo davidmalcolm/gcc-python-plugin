@@ -1325,6 +1325,11 @@ class Context:
         if expectedfact not in actualfacts:
             raise ValueError('%s not in %s' % (expectedfact, actualfacts))
 
+    def assert_no_facts(self, node):
+        actualfacts = self.facts_for_node[node]
+        if actualfacts:
+            raise ValueError('unexpectedly found facts: %s' % (actualfacts, ))
+
     def assert_not_fact(self, node, lhs, op, rhs):
         from sm.facts import Fact
         if isinstance(lhs, str):

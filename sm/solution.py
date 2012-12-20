@@ -127,6 +127,10 @@ class ErrorEdge(Edge):
     def false_value(self):
         return self.inneredge.false_value
 
+    @property
+    def stmtedge(self):
+        return self.inneredge.stmtedge
+
 class Solution:
     def __init__(self, ctx):
         self.ctxt = ctx
