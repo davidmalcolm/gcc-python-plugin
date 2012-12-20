@@ -20,6 +20,8 @@
 ############################################################################
 import gcc
 
+from gccutils.graph import CallToReturnSiteEdge
+
 from sm.solver import simplify, AbstractValue, fixed_point_solver
 
 inverseops =  {'==' : '!=',
@@ -182,6 +184,22 @@ class Facts(AbstractValue, set):
         return False
 
     def get_facts_after(self, ctxt, edge):
+
+        # Don't propagate information along the *intra*procedural edge
+        # of an interprocedural callsite (i.e. one where both caller and
+        # callee have their CFG in the supergraph), so that if the called
+        # function never returns, we don't erroneously let that affect
+        # subsequent state within the callee.
+        # This means that e.g. within
+        #     if (i > 10) {
+        #        something_that_calls_abort();
+        #     }
+        #     foo()
+        # that only facts from the false edge reach the call to foo(), and
+        # hence we know there that (i <= 10)
+        if isinstance(edge, CallToReturnSiteEdge):
+            return None
+
         stmt = edge.srcnode.stmt
         dstfacts = Facts(self)
         if isinstance(stmt, gcc.GimpleAssign):
