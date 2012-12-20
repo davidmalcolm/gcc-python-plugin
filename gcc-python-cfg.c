@@ -111,6 +111,14 @@ VEC_edge_as_PyList(VEC(edge,gc) *vec_edges)
     return NULL;
 }
 
+PyObject *
+gcc_BasicBlock_repr(struct PyGccBasicBlock * self)
+{
+    return gcc_python_string_from_format("%s(index=%i)",
+                                         Py_TYPE(self)->tp_name,
+                                         self->bb->index);
+}
+
 
 PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)

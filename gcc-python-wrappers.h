@@ -88,6 +88,9 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op);
 
 /* gcc-python-cfg.c: */
 PyObject *
+gcc_BasicBlock_repr(struct PyGccBasicBlock * self);
+
+PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure);
 
 PyObject *
