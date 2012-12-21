@@ -134,7 +134,110 @@ class Facts(AbstractValue, set):
 
     @classmethod
     def get_edge_value(cls, ctxt, srcvalue, edge):
-        return srcvalue.get_facts_after(ctxt, edge), None
+        # Don't propagate information along the *intra*procedural edge
+        # of an interprocedural callsite (i.e. one where both caller and
+        # callee have their CFG in the supergraph), so that if the called
+        # function never returns, we don't erroneously let that affect
+        # subsequent state within the callee.
+        # This means that e.g. within
+        #     if (i > 10) {
+        #        something_that_calls_abort();
+        #     }
+        #     foo()
+        # that only facts from the false edge reach the call to foo(), and
+        # hence we know there that (i <= 10)
+        if isinstance(edge, CallToReturnSiteEdge):
+            return None, None
+
+        stmt = edge.srcnode.stmt
+        dstfacts = Facts(srcvalue)
+        if isinstance(stmt, gcc.GimpleAssign):
+            exprcode = stmt.exprcode
+            if 1:
+                ctxt.debug('gcc.GimpleAssign: %s', stmt)
+                ctxt.debug('  stmt.lhs: %r', stmt.lhs)
+                ctxt.debug('  stmt.rhs: %r', stmt.rhs)
+                ctxt.debug('  exprcode: %r', exprcode)
+            if exprcode in exprcodenames:
+                lhs = simplify(stmt.lhs)
+                rhs0 = simplify(stmt.rhs[0])
+                rhs1 = simplify(stmt.rhs[1])
+                dstfacts._assignment_from_binary_op(ctxt, lhs, rhs0, rhs1,
+                                                    exprcodenames[exprcode])
+            elif exprcode in (gcc.IntegerCst,
+                              gcc.ParmDecl, gcc.VarDecl,
+                              gcc.MemRef, gcc.ComponentRef):
+                assert len(stmt.rhs) == 1
+                lhs = simplify(stmt.lhs)
+                rhs = simplify(stmt.rhs[0])
+                dstfacts._assignment(lhs, rhs)
+            else:
+                # We don't know how to handle this expression code, so
+                # just forget what we knew about the LHS:
+                lhs = simplify(stmt.lhs)
+                dstfacts._remove_invalidated_facts(lhs)
+
+        elif isinstance(stmt, gcc.GimpleCond):
+            if 1:
+                ctxt.debug('gcc.GimpleCond: %s', stmt)
+            lhs = simplify(stmt.lhs)
+            rhs = simplify(stmt.rhs)
+            op = stmt.exprcode.get_symbol()
+            if edge.true_value:
+                dstfacts.add( Fact(lhs, op, rhs) )
+            if edge.false_value:
+                op = inverseops[op]
+                dstfacts.add( Fact(lhs, op, rhs) )
+        elif isinstance(stmt, gcc.GimpleSwitch):
+            if 0:
+                ctxt.debug('gcc.GimpleSwitch: %s', stmt)
+                print(stmt)
+            indexvar = simplify(stmt.indexvar)
+
+            # More than one gcc.CaseLabelExpr may point at the same label
+            # These will be the same SupergraphEdge within the Supergraph
+            # Hence a SupergraphEdge may have zero or more gcc.CaseLabelExpr
+
+            minvalue = None
+            maxvalue = None
+            for cle in edge.stmtedge.caselabelexprs:
+                if cle.low is not None:
+                    if minvalue is None or minvalue > cle.low:
+                       minvalue = cle.low
+
+                    if cle.high is not None:
+                        # a range from cle.low ... cle.high
+                        if maxvalue is None or maxvalue < cle.high:
+                            maxvalue = cle.high
+                    else:
+                        # a single value: cle.low
+                        if maxvalue is None or maxvalue < cle.low:
+                            maxvalue = cle.low
+                if 0:
+                    print('minvalue: %r' % minvalue)
+                    print('maxvalue: %r' % maxvalue)
+            if minvalue is not None:
+                if minvalue == maxvalue:
+                    dstfacts.add(Fact(indexvar, '==', minvalue))
+                else:
+                    dstfacts.add(Fact(indexvar, '>=', minvalue))
+                    dstfacts.add(Fact(indexvar, '<=', maxvalue))
+        elif isinstance(stmt, gcc.GimplePhi):
+            srcnode = edge.srcnode
+            if 1:
+                ctxt.debug('gcc.GimplePhi: %s', stmt)
+                ctxt.debug('  srcnode: %s', srcnode)
+                ctxt.debug('  srcnode: %r', srcnode)
+                ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
+                ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
+            assert isinstance(srcnode.supergraphnode.innernode, SplitPhiNode)
+            rhs = simplify(srcnode.supergraphnode.innernode.rhs)
+            lhs = simplify(srcnode.stmt.lhs)
+            dstfacts._assignment(lhs, rhs)
+
+        return dstfacts, None
+
+
 
     @classmethod
     def meet(cls, ctxt, lhs, rhs):
@@ -238,111 +341,6 @@ class Facts(AbstractValue, set):
                 if var == rhs:
                     return True
         return False
-
-    def get_facts_after(self, ctxt, edge):
-
-        # Don't propagate information along the *intra*procedural edge
-        # of an interprocedural callsite (i.e. one where both caller and
-        # callee have their CFG in the supergraph), so that if the called
-        # function never returns, we don't erroneously let that affect
-        # subsequent state within the callee.
-        # This means that e.g. within
-        #     if (i > 10) {
-        #        something_that_calls_abort();
-        #     }
-        #     foo()
-        # that only facts from the false edge reach the call to foo(), and
-        # hence we know there that (i <= 10)
-        if isinstance(edge, CallToReturnSiteEdge):
-            return None
-
-        stmt = edge.srcnode.stmt
-        dstfacts = Facts(self)
-        if isinstance(stmt, gcc.GimpleAssign):
-            exprcode = stmt.exprcode
-            if 1:
-                ctxt.debug('gcc.GimpleAssign: %s', stmt)
-                ctxt.debug('  stmt.lhs: %r', stmt.lhs)
-                ctxt.debug('  stmt.rhs: %r', stmt.rhs)
-                ctxt.debug('  exprcode: %r', exprcode)
-            if exprcode in exprcodenames:
-                lhs = simplify(stmt.lhs)
-                rhs0 = simplify(stmt.rhs[0])
-                rhs1 = simplify(stmt.rhs[1])
-                dstfacts._assignment_from_binary_op(ctxt, lhs, rhs0, rhs1,
-                                                    exprcodenames[exprcode])
-            elif exprcode in (gcc.IntegerCst,
-                              gcc.ParmDecl, gcc.VarDecl,
-                              gcc.MemRef, gcc.ComponentRef):
-                assert len(stmt.rhs) == 1
-                lhs = simplify(stmt.lhs)
-                rhs = simplify(stmt.rhs[0])
-                dstfacts._assignment(lhs, rhs)
-            else:
-                # We don't know how to handle this expression code, so
-                # just forget what we knew about the LHS:
-                lhs = simplify(stmt.lhs)
-                dstfacts._remove_invalidated_facts(lhs)
-
-        elif isinstance(stmt, gcc.GimpleCond):
-            if 1:
-                ctxt.debug('gcc.GimpleCond: %s', stmt)
-            lhs = simplify(stmt.lhs)
-            rhs = simplify(stmt.rhs)
-            op = stmt.exprcode.get_symbol()
-            if edge.true_value:
-                dstfacts.add( Fact(lhs, op, rhs) )
-            if edge.false_value:
-                op = inverseops[op]
-                dstfacts.add( Fact(lhs, op, rhs) )
-        elif isinstance(stmt, gcc.GimpleSwitch):
-            if 0:
-                ctxt.debug('gcc.GimpleSwitch: %s', stmt)
-                print(stmt)
-            indexvar = simplify(stmt.indexvar)
-
-            # More than one gcc.CaseLabelExpr may point at the same label
-            # These will be the same SupergraphEdge within the Supergraph
-            # Hence a SupergraphEdge may have zero or more gcc.CaseLabelExpr
-
-            minvalue = None
-            maxvalue = None
-            for cle in edge.stmtedge.caselabelexprs:
-                if cle.low is not None:
-                    if minvalue is None or minvalue > cle.low:
-                       minvalue = cle.low
-
-                    if cle.high is not None:
-                        # a range from cle.low ... cle.high
-                        if maxvalue is None or maxvalue < cle.high:
-                            maxvalue = cle.high
-                    else:
-                        # a single value: cle.low
-                        if maxvalue is None or maxvalue < cle.low:
-                            maxvalue = cle.low
-                if 0:
-                    print('minvalue: %r' % minvalue)
-                    print('maxvalue: %r' % maxvalue)
-            if minvalue is not None:
-                if minvalue == maxvalue:
-                    dstfacts.add(Fact(indexvar, '==', minvalue))
-                else:
-                    dstfacts.add(Fact(indexvar, '>=', minvalue))
-                    dstfacts.add(Fact(indexvar, '<=', maxvalue))
-        elif isinstance(stmt, gcc.GimplePhi):
-            srcnode = edge.srcnode
-            if 1:
-                ctxt.debug('gcc.GimplePhi: %s', stmt)
-                ctxt.debug('  srcnode: %s', srcnode)
-                ctxt.debug('  srcnode: %r', srcnode)
-                ctxt.debug('  srcnode.innernode: %s', srcnode.innernode)
-                ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
-            assert isinstance(srcnode.supergraphnode.innernode, SplitPhiNode)
-            rhs = simplify(srcnode.supergraphnode.innernode.rhs)
-            lhs = simplify(srcnode.stmt.lhs)
-            dstfacts._assignment(lhs, rhs)
-
-        return dstfacts
 
     def _remove_invalidated_facts(self, expr):
         # remove any facts relating to an expression that might have changed
