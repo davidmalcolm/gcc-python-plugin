@@ -579,12 +579,6 @@ class StatesForNode(AbstractValue):
         ctxt.debug('edge from: %s', srcnode)
         ctxt.debug('       to: %s', dstnode)
 
-        # Set the location so that if an unhandled exception occurs, it should
-        # at least identify the code that triggered it:
-        if stmt:
-            if stmt.loc:
-                gcc.set_location(stmt.loc)
-
         # Handle interprocedural edges:
         if isinstance(edge, CallToReturnSiteEdge):
             # Ignore the intraprocedural edge for a function call:
@@ -784,6 +778,15 @@ def fixed_point_solver(ctxt, graph, cls):
                     srcvalue = result[edge.srcnode]
                     ctxt.log('srcvalue: %s', srcvalue)
                     if srcvalue is not None:
+
+                        # Set the location so that if an unhandled
+                        # exception occurs, it should at least identify the
+                        # code that triggered it:
+                        stmt = edge.srcnode.stmt
+                        if stmt:
+                            if stmt.loc:
+                                gcc.set_location(stmt.loc)
+
                         edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
                         ctxt.log('  edge value: %s', edgevalue)
                         newvalue = cls.meet(ctxt, newvalue, edgevalue)
@@ -1229,6 +1232,11 @@ class Context:
             return False
         return True
 
+    def _error_at_node(self, node):
+        if node.stmt:
+            if node.stmt.loc:
+                gcc.set_location(node.stmt.loc)
+
     def find_call_of(self, funcname, within=None):
         for node in self.graph.nodes:
             if not self._is_within(node, within):
@@ -1272,11 +1280,13 @@ class Context:
 
     def get_inedge(self, node):
         if len(node.preds) > 1:
+            self._error_at_node(node)
             raise ValueError('node %s has more than one inedge' % node)
         return list(node.preds)[0]
 
     def get_successor(self, node):
         if len(node.succs) > 1:
+            self._error_at_node(node)
             raise ValueError('node %s has more than one successor' % node)
         return list(node.succs)[0].dstnode
 
@@ -1285,6 +1295,7 @@ class Context:
         for edge in node.succs:
             if edge.true_value:
                 return edge.dstnode
+        self._error_at_node(node)
         raise ValueError('could not find true successor of node %s' % node)
 
     def get_intraprocedural_successor(self, node):
@@ -1300,6 +1311,7 @@ class Context:
                 assert isinstance(edge.dstnode, ReturnNode)
                 assert isinstance(edge.dstnode.stmt, gcc.GimpleCall)
                 return edge.dstnode
+        self._error_at_node(node)
         raise ValueError('could not find intraprocedural successor of node %s'
                          % node)
 
@@ -1308,12 +1320,14 @@ class Context:
             if isinstance(var, (gcc.VarDecl, gcc.ParmDecl)):
                 if var.name == varname:
                     return var
+        self._error_at_node(node)
         raise ValueError('variable %s not found' % varname)
 
     def get_expr_by_str(self, node, exprstr):
         for expr in self.allexprs[node.function]:
             if str(expr) == exprstr:
                 return expr
+        self._error_at_node(node)
         raise ValueError('expression %s not found' % exprstr)
 
     def assert_fact(self, node, lhs, op, rhs):
@@ -1323,6 +1337,7 @@ class Context:
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
         if expectedfact not in actualfacts:
+            self._error_at_node(node)
             raise ValueError('%s not in %s' % (expectedfact, actualfacts))
 
     def assert_no_facts(self, node):
@@ -1337,12 +1352,14 @@ class Context:
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
         if expectedfact in actualfacts:
+            self._error_at_node(node)
             raise ValueError('%s unexpectedly within %s' % (expectedfact, actualfacts))
 
     def assert_states_for_expr(self, node, expr, expectedstates):
         expr = simplify(expr)
         actualstates = self.states_for_node[node].get_states_for_expr(self, expr)
         if actualstates != expectedstates:
+            self._error_at_node(node)
             raise ValueError('wrong states for %s at %r: expected %s but got %s'
                              % (expr,
                                 str(node),
