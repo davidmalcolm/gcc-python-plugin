@@ -19,7 +19,7 @@ import sys
 
 import gcc
 
-from gccutils.graph import ReturnNode
+from gccutils.graph.supergraph import ReturnNode
 
 from sm.error import gccexpr_to_str
 

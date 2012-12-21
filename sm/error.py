@@ -17,7 +17,7 @@
 
 import gcc
 
-from gccutils.graph import CallNode, ReturnNode
+from gccutils.graph.supergraph import CallNode, ReturnNode
 
 class Error:
     # A stored error
@@ -209,7 +209,7 @@ def gccexpr_to_str(ctxt, supernode, gccexpr):
             # Try to use a better name if the node "knows" where the
             # temporary came from:
             from sm.leaks import get_retval_aliases
-            from gccutils.graph import ExitNode
+            from gccutils.graph.stmtgraph import ExitNode
 
             aliases = ctxt.get_aliases(supernode, gccexpr)
             for alias in aliases:

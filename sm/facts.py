@@ -20,7 +20,8 @@
 ############################################################################
 import gcc
 
-from gccutils.graph import CallToReturnSiteEdge, SplitPhiNode
+from gccutils.graph.stmtgraph import SplitPhiNode
+from gccutils.graph.supergraph import CallToReturnSiteEdge
 
 from sm.solver import simplify, AbstractValue, fixed_point_solver
 

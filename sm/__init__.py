@@ -42,7 +42,7 @@ class IpaSmPass(gcc.IpaPass):
             invoke_dot(dot)
 
         # Interprocedural implementation, using the supergraph of all calls:
-        from gccutils.graph import Supergraph
+        from gccutils.graph.supergraph import Supergraph
         sg = Supergraph(split_phi_nodes=True, add_fake_entry_node=True)
         if SHOW_SUPERGRAPH:
             dot = sg.to_dot('supergraph')

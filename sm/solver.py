@@ -34,8 +34,9 @@ import time
 import gcc
 
 from gccutils import DotPrettyPrinter, invoke_dot
-from gccutils.graph import Graph, Node, Edge, \
-    ExitNode, SplitPhiNode, \
+from gccutils.graph import Graph, Node, Edge
+from gccutils.graph.stmtgraph import ExitNode, SplitPhiNode
+from gccutils.graph.supergraph import \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
     SupergraphNode, SupergraphEdge, CallNode, ReturnNode, FakeEntryEdge
 from gccutils.dot import to_html
