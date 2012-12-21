@@ -16,7 +16,10 @@
 #   <http://www.gnu.org/licenses/>.
 
 from collections import namedtuple
+import hashlib
+import json
 import os
+import sys
 
 import gccutils
 
@@ -71,12 +74,10 @@ class StderrReporter(Reporter):
             # Fake the function-based output
             # e.g.:
             #    "tests/sm/examples/malloc-checker/input.c: In function 'use_after_free':"
-            import sys
             sys.stderr.write("%s: In function '%s':\n"
                              % (gccloc.file, err.function.decl.name))
             self.curfun = err.function
             self.curfile = gccloc.file
-            import sys
         if report.err.cwe:
             msg = '%s [%s]' % (report.err.msg, report.err.cwe)
         else:
@@ -90,13 +91,10 @@ class StderrReporter(Reporter):
 
 class JsonReporter(Reporter):
     def add(self, report):
-        import json as jsonmod
-        import hashlib
-
         jsonobj = report.as_json()
-        jsonsrc = jsonmod.dumps(jsonobj,
-                                sort_keys=True,
-                                indent=4, separators=(',', ': '))
+        jsonsrc = json.dumps(jsonobj,
+                             sort_keys=True,
+                             indent=4, separators=(',', ': '))
 
         # Use the sha-1 hash of the report to create a unique filename:
         hexdigest = hashlib.sha1(jsonsrc).hexdigest()

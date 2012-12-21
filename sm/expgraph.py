@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from gccutils.dot import Table, Tr, Td, Text, Br, Font
 from gccutils.graph import Graph, Node, Edge
 
 from sm.solver import stateset_to_str, equivcls_to_str, StatesForNode, ENABLE_LOG
@@ -98,8 +99,6 @@ class ExplodedNode(Node):
         # (the subclasses also set up self.states_subset)
 
     def to_dot_html(self, ctxt):
-        from gccutils.dot import Table, Tr, Td, Text, Br, Font
-
         inner = self.innernode.to_dot_html(self)
         table = Table(cellborder=1)
 
@@ -133,7 +132,6 @@ class SoloExplodedNode(ExplodedNode):
         return 'SoloExplodedNode(%r)' % (self.innernode)
 
     def get_title_dot_html(self, ctxt):
-        from gccutils.dot import Text
         return Text('%s' % self.__class__.__name__)
 
 class StatewiseExplodedNode(ExplodedNode):
@@ -160,7 +158,6 @@ class StatewiseExplodedNode(ExplodedNode):
                 % (self.innernode, self.equivcls, self.state))
 
     def get_title_dot_html(self, ctxt):
-        from gccutils.dot import Text
         return Text('%s: %s=%s '
                     % (self.__class__.__name__,
                        equivcls_to_str(self.equivcls),

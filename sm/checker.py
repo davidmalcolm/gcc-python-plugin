@@ -15,13 +15,15 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from ast import parse, increment_lineno
 import sys
 
 import gcc
 
+from gccutils import get_nonnull_arguments
 from gccutils.graph.supergraph import ReturnNode
 
-from sm.error import gccexpr_to_str
+from sm.error import gccexpr_to_str, Error
 
 def indent(text):
     return '\n'.join(['  %s' % line
@@ -184,7 +186,6 @@ class PythonFragment(Clause):
             if 0:
                 print('num_stripped_lines: %i' % num_stripped_lines)
                 print('self.lineoffset: %i' % self.lineoffset)
-            from ast import parse, increment_lineno
             astroot = parse(expr, filename)
             increment_lineno(astroot, self.lineoffset + num_stripped_lines)
             self._code = compile(astroot, filename, 'exec')
@@ -590,7 +591,6 @@ class NonnullArg(SpecialPattern):
         if not isinstance(stmt, gcc.GimpleCall):
             return
 
-        from gccutils import get_nonnull_arguments
         from sm.solver import simplify
 
         for argindex in get_nonnull_arguments(stmt.fn.type.dereference):
@@ -719,7 +719,6 @@ class BoundVariable:
         self.gccexpr = gccexpr
 
     def __str__(self):
-        from error import gccexpr_to_str
         return gccexpr_to_str(self.ctxt, self.supernode, self.gccexpr)
 
     def __getattr__(self, name):
@@ -794,7 +793,6 @@ class PythonOutcome(Outcome, PythonFragment):
 
         # Create environment for execution of the code:
         def error(msg, cwe=None):
-            from sm.error import Error
             # Locate the caller, so that we add it to the Error object:
             caller = sys._getframe().f_back
             errors.append(Error(edge.srcnode, match, msg, globals_['state'], cwe,

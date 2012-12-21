@@ -28,22 +28,27 @@ SHOW_SOLUTION=0
 SHOW_EXPLODED_GRAPH=0
 SHOW_ERROR_GRAPH=0
 
+from collections import Counter
 import sys
 import time
 
 import gcc
 
 from gccutils import DotPrettyPrinter, invoke_dot
+from gccutils.dot import to_html
 from gccutils.graph import Graph, Node, Edge
 from gccutils.graph.stmtgraph import ExitNode, SplitPhiNode
 from gccutils.graph.supergraph import \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
     SupergraphNode, SupergraphEdge, CallNode, ReturnNode, FakeEntryEdge
-from gccutils.dot import to_html
 
 import sm.checker
+from sm.checker import Match, BooleanOutcome, \
+    Decl, NamedPattern, StateClause, \
+    PythonFragment, PythonOutcome
 import sm.error
 import sm.parser
+from sm.reporter import StderrReporter, JsonReporter
 import sm.solution
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
@@ -132,7 +137,6 @@ class MatchContext:
     A match of a specific rule, to be supplied to Outcome.apply()
     """
     def __init__(self, ctxt, match, srcnode, edge, srcstate):
-        from sm.checker import Match
         assert isinstance(match, Match)
         assert isinstance(srcnode, SupergraphNode)
         assert isinstance(edge, SupergraphEdge)
@@ -434,7 +438,6 @@ def find_possible_matches(ctxt, edge):
                         # Resolve any booleans for the edge, either going
                         # directly to the guarded outcome, or discarding
                         # this one:
-                        from sm.checker import BooleanOutcome
                         if isinstance(outcome, BooleanOutcome):
                             if edge.true_value and outcome.guard:
                                 outcome = outcome.outcome
@@ -810,7 +813,6 @@ def show_state_histogram(ctxt):
     # Show an ASCII-art histogram to analyze how many state combinations
     # there are: how many nodes have each number of valid state
     # combinations (including None)
-    from collections import Counter
     cnt = Counter()
     for node in ctxt.graph.nodes:
         states = ctxt.states_for_node[node]
@@ -872,9 +874,6 @@ class Context:
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
     def __init__(self, ch, sm, graph, options):
-        from sm.checker import Decl, NamedPattern, StateClause, \
-            PythonFragment, PythonOutcome
-
         self.options = options
 
         self.ch = ch
@@ -1047,8 +1046,6 @@ class Context:
             pass # FIXME
 
     def emit_errors(self, solution):
-        from sm.reporter import StderrReporter, JsonReporter
-
         if self.options.dump_json:
             reporter = JsonReporter()
         else:

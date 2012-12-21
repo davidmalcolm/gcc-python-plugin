@@ -22,9 +22,11 @@
 
 import gcc
 
-from sm.solver import simplify
+from gccutils.graph.stmtgraph import ExitNode
 
 def get_retval_aliases(ctxt, supernode):
+    from sm.solver import simplify
+
     exitstmtnode = supernode.stmtg.exit
     retval = exitstmtnode.returnval
     if retval is None:
@@ -54,7 +56,6 @@ def find_leaks(ctxt):
             # Locate ends of functions
             # We have to put it on the dstnode, since ExitNode itself has None for a stmt
             # and checkers are only run IIRC on nodes that have a non-None stmt
-            from gccutils.graph.stmtgraph import ExitNode
             if isinstance(edge.dstnode.innernode, ExitNode):
                 retval_aliases = get_retval_aliases(ctxt, edge.dstnode)
                 for vardecl in edge.dstnode.function.local_decls:

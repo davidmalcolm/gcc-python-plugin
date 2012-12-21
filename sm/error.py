@@ -17,7 +17,11 @@
 
 import gcc
 
+from gccutils.graph.stmtgraph import ExitNode
 from gccutils.graph.supergraph import CallNode, ReturnNode
+
+from sm.leaks import get_retval_aliases
+from sm.reporter import Report, Note
 
 class Error:
     # A stored error
@@ -73,7 +77,6 @@ class Error:
         """
         Generate a Report instance (or None if it's impossible)
         """
-        from sm.reporter import Report, Note
         notes = []
         loc = self.gccloc
         stateful_gccvar = self.match.get_stateful_gccvar(ctxt)
@@ -208,9 +211,6 @@ def gccexpr_to_str(ctxt, supernode, gccexpr):
             # We have a temporary variable.
             # Try to use a better name if the node "knows" where the
             # temporary came from:
-            from sm.leaks import get_retval_aliases
-            from gccutils.graph.stmtgraph import ExitNode
-
             aliases = ctxt.get_aliases(supernode, gccexpr)
             for alias in aliases:
                 if isinstance(alias, gcc.VarDecl):

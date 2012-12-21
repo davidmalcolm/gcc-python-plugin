@@ -23,7 +23,7 @@ import gcc
 from gccutils.graph.stmtgraph import SplitPhiNode
 from gccutils.graph.supergraph import CallToReturnSiteEdge
 
-from sm.solver import simplify, AbstractValue, fixed_point_solver
+from sm.solver import simplify, AbstractValue, fixed_point_solver, Timer
 
 # For applying boolean not:
 inverseops =  {'==' : '!=',
@@ -402,7 +402,6 @@ class Factoids(set):
 def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
     # impossible to actually reach
-    from sm.solver import Timer
     with Timer(ctxt, 'remove_impossible'):
         changes = 0
         for node in list(graph.nodes):

@@ -20,8 +20,9 @@
 # to simply add the state information directly to the node
 # It's the dot visualization we want, though, that makes it easy to debug
 
+from gccutils import invoke_dot, get_src_for_loc
+from gccutils.dot import Table, Tr, Td, Text, Br, Font
 from gccutils.graph import Graph, Node, Edge
-from gccutils import invoke_dot
 
 num_error_graphs = 0
 
@@ -82,8 +83,6 @@ class ErrorNode(Node):
         return self.innernode
 
     def to_dot_html(self, ctxt):
-        from gccutils.dot import Table, Tr, Td, Text, Br, Font
-
         inner = self.innernode.to_dot_html(self)
         table = Table(cellborder=1)
         tr = table.add_child(Tr())
@@ -153,7 +152,6 @@ class Solution:
             self.changes[node] = {}
 
     def dump(self, out):
-        from gccutils import get_src_for_loc
         from sm.facts import equivcls_to_str
         from sm.solver import stateset_to_str
 
@@ -274,7 +272,6 @@ class Solution:
                 self.solution = solution
             def node_to_dot_html(self, node):
                 # raise foo # FIXME: we'll annotate this:
-                from gccutils.dot import Table, Tr, Td, Text, Br, Font
 
                 inner = node.to_dot_html(self)
                 table = Table(cellborder=1)

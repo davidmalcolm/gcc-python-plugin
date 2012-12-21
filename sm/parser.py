@@ -18,6 +18,8 @@
 # parser for ".sm" files
 
 # Uses "ply", so we'll need python-ply on Fedora
+import ply.lex as lex
+import ply.yacc as yacc
 
 from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
     PatternRule, PythonFragment, \
@@ -31,8 +33,6 @@ from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
 # Tokenizer:
 ############################################################################
 DEBUG_LINE_NUMBERING = 0
-
-import ply.lex as lex
 
 reserved = ['decl', 'sm', 'stateful', 'true', 'false',
             'any_pointer', 'any_expr', 'pat']
@@ -140,8 +140,6 @@ lexer = lex.lex()
 # Grammar:
 #   (try to keep this in sync with the documentation in docs/sm.rst)
 ############################################################################
-import ply.yacc as yacc
-
 """
 precedence = (
     ('left', 'AND', 'OR'),
