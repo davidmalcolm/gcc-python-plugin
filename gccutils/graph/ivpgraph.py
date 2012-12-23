@@ -252,10 +252,6 @@ class IvpNode(Node):
                              '%s : %s()' % (self.callstring,
                                             self.function.decl.name)))
         return ()
-"""
-return '%s_%s' % (self.callstring.to_dot_id(),
-self.innernode.get_subgraph(ctxt))
-"""
 
 class IvpEdge(Edge):
     """
