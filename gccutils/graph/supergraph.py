@@ -15,7 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-from gccutils.graph import Graph, Node, Edge
+from gccutils.graph import Graph, Node, Edge, Subgraph
 from gccutils.graph.stmtgraph import StmtGraph
 
 ############################################################################
@@ -187,9 +187,14 @@ class SupergraphNode(Node):
         if self.innernode:
             return self.innernode.get_gcc_loc()
 
-    def get_subgraph(self, ctxt):
+    def get_subgraph_path(self, ctxt):
         if self.stmtg:
-            return self.stmtg.fun.decl.name
+            func = self.stmtg.fun
+            filename = func.start.file
+            funcname = func.decl.name
+            return (Subgraph(filename, filename),
+                    Subgraph(funcname, funcname), )
+        return ()
 
     @property
     def function(self):

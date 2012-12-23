@@ -119,6 +119,9 @@ class ExplodedNode(Node):
     def stmt(self):
         return self.innernode.stmt
 
+    def get_subgraph_path(self, ctxt):
+        return self.innernode.get_subgraph_path(ctxt)
+
 class SoloExplodedNode(ExplodedNode):
     """
     A node within the ExplodedGraph in which the underlying node has only

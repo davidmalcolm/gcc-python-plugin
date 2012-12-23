@@ -74,30 +74,77 @@ class Graph:
         return result
 
     def _nodes_to_dot(self, ctxt):
-        # 1st pass: split nodes out by subgraph:
-        from collections import OrderedDict
-        subgraphs = OrderedDict()
+        # A subgraph path is a tuple of Subgraph instances
+
+        from pprint import pprint
+
+        # 1st pass: get the subgraph path for every node
+        # This is a dict from subgraph path to set of nodes:
+        subgraph_paths = {}
         for node in self.nodes:
-            subgraph = node.get_subgraph(ctxt)
-            if subgraph in subgraphs:
-                subgraphs[subgraph].append(node)
+            subgraph_path = node.get_subgraph_path(ctxt)
+            assert isinstance(subgraph_path, tuple)
+            if 0:
+                print('node: %s' % node)
+                print('subgraph_path: %s' % (subgraph_path, ))
+            if subgraph_path in subgraph_paths:
+                subgraph_paths[subgraph_path].add(node)
             else:
-                subgraphs[subgraph] = [node]
+                subgraph_paths[subgraph_path] = set([node])
 
-        # 2nd pass: render the subgraphs (and the "None" subgraph, at the
-        # top level):
-        result = ''
-        for subgraph in subgraphs:
-            if subgraph:
-                result += '  subgraph cluster_%s {\n' % subgraph
-            for node in subgraphs[subgraph]:
-                result += ('  %s [label=<%s>];\n'
-                           % (node.to_dot_id(),
+        if 0:
+            print('subgraph_paths:')
+            pprint(subgraph_paths)
+
+        # 2nd pass: construct a tree of subgraphs:
+        # dict from subgraph path (parent) to set of subgraph paths
+        # (immediate children):
+        child_paths = {}
+        # sort the paths, so that they are in order of increasing
+        # length:
+        for path in sorted(subgraph_paths.keys()):
+            if path:
+                for i in range(len(path) + 1):
+                    subpath = path[0:i]
+                    if 0:
+                        print('subpath: %s' % (subpath, ))
+                    if subpath:
+                        parent = subpath[0:-1]
+                        if parent in child_paths:
+                            child_paths[parent].add(subpath)
+                        else:
+                            child_paths[parent] = set([subpath])
+        if 0:
+            print('child_paths:')
+            pprint(child_paths)
+
+        # 3rd pass: recursively render the subgraph paths:
+        def render_subgraph_path(subgraph_path, indent):
+            def _indent():
+                return ' ' * indent
+            result = ''
+            if subgraph_path:
+                result += ('%ssubgraph cluster_%s {\n'
+                           % (_indent(), subgraph_path[-1].id))
+                indent += 2
+                result += ('%slabel = "%s";\n'
+                           % (_indent(), subgraph_path[-1].label))
+
+            for node in subgraph_paths.get(subgraph_path, set()):
+                result += ('%s%s [label=<%s>];\n'
+                           % (_indent(),
+                              node.to_dot_id(),
                               node.to_dot_label(ctxt)))
-            if subgraph:
-                result += '  }\n'
+            # Recurse:
+            for child_path in child_paths.get(subgraph_path, set()):
+                result += render_subgraph_path(child_path, indent)
 
-        return result
+            if subgraph_path:
+                indent -= 2
+                result += '%s}\n' % _indent()
+            return result
+
+        return render_subgraph_path( (), 2)
 
     def _edges_to_dot(self, ctxt):
         result = ''
@@ -223,9 +270,10 @@ class Node:
         # Optionally, build a tree of gccutils.dot.Node
         return None
 
-    def get_subgraph(self, ctxt):
-        # Optionally, allow nodes to be partitioned into subgraphs (by name)
-        return None
+    def get_subgraph_path(self, ctxt):
+        # Optionally, allow nodes to be partitioned into a tree of subgraphs
+        # Return a tuple of Subgraph instances
+        return ()
 
 class Edge:
     def __init__(self, srcnode, dstnode):
@@ -243,3 +291,27 @@ class Edge:
 
     def to_dot_attrs(self, ctxt):
         return ''
+
+class Subgraph:
+    def __init__(self, id_, label):
+        self.id = ''
+        for ch in id_:
+            if ch.isalnum():
+                self.id += ch
+            else:
+                self.id += '_'
+        self.label = label
+
+    def __eq__(self, other):
+        if self.id == other.id:
+            if self.label == other.label:
+                return True
+
+    def __hash__(self):
+        return hash(self.id) ^ hash(self.label)
+
+    def __str__(self):
+        return '(%r, %r)' % (self.id, self.label)
+
+    def __repr__(self):
+        return 'Subgraph(%r, %r)' % (self.id, self.label)

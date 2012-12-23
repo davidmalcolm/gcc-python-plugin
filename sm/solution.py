@@ -114,6 +114,9 @@ class ErrorNode(Node):
     def stmt(self):
         return self.innernode.stmt
 
+    def get_subgraph_path(self, ctxt):
+        return self.innernode.get_subgraph_path(ctxt)
+
 class ErrorEdge(Edge):
     def __init__(self, srcnode, dstnode, inneredge):
         Edge.__init__(self, srcnode, dstnode)
