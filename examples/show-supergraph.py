@@ -19,7 +19,7 @@
 # Show the "supergraph": the CFG of all functions, linked by
 # interproceduraledges:
 import gcc
-from gccutils.graph import Supergraph
+from gccutils.graph.supergraph import Supergraph
 from gccutils import invoke_dot
 
 # We'll implement this as a custom pass, to be called directly after the
