@@ -26,6 +26,14 @@ from gccutils.graph import Graph, Node, Edge
 # the empty BBs in the original CFG (entry and exit)
 ############################################################################
 class StmtGraph(Graph):
+    __slots__ = ('fun',
+                 'entry', 'exit',
+                 'entry_of_bb',
+                 'exit_of_bb',
+                 'node_for_stmt',
+                 '__lastnode',
+                 'supernode_for_stmtnode')
+
     def __init__(self, fun, split_phi_nodes):
         """
         fun : the underlying gcc.Function
@@ -153,6 +161,8 @@ class StmtGraph(Graph):
         return self.entry_of_bb[bb]
 
 class StmtNode(Node):
+    __slots__ = ('fun', 'stmt')
+
     def __init__(self, fun, stmt):
         Node.__init__(self)
         self.fun = fun
@@ -194,6 +204,8 @@ class StmtNode(Node):
             return Text(str(self))
 
 class EntryNode(StmtNode):
+    __slots__ = ()
+
     def to_dot_html(self, ctxt):
         from gccutils.dot import Table, Tr, Td, Text
 
@@ -224,6 +236,8 @@ class EntryNode(StmtNode):
         return 'EntryNode(%r)' % self.fun.decl.name
 
 class ExitNode(StmtNode):
+    __slots__ = ()
+
     def __str__(self):
         return 'EXIT %s' % self.fun.decl.name
 
@@ -251,6 +265,8 @@ class ExitNode(StmtNode):
             return returnnode.stmt.retval
 
 class SplitPhiNode(StmtNode):
+    __slots__ = ('inneredge', 'rhs')
+
     def __init__(self, fun, stmt, inneredge):
         StmtNode.__init__(self, fun, stmt)
         self.inneredge = inneredge
@@ -273,6 +289,8 @@ class SplitPhiNode(StmtNode):
         return 'SplitPhiNode(%r, %r)' % (self.stmt, self.inneredge)
 
 class StmtEdge(Edge):
+    __slots__ = ('cfgedge', 'caselabelexprs')
+
     def __init__(self, srcnode, dstnode, cfgedge):
         Edge.__init__(self, srcnode, dstnode)
         self.cfgedge = cfgedge # will be None within a BB

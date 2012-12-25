@@ -574,7 +574,7 @@ class SpecialPattern(Pattern):
 class LeakedPattern(SpecialPattern):
     def iter_matches(self, stmt, edge, ctxt):
         ctxt.debug('LeakedPattern.iter_matches(%s, %s)', stmt, edge)
-        for vardecl in edge.leaks:
+        for vardecl in ctxt.leaks_for_edge[edge]:
             m = Match(self, edge.srcnode)
             m._dict[ctxt._stateful_decl] = vardecl
             yield m

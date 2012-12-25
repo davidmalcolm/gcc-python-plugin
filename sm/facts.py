@@ -54,7 +54,9 @@ exprcodenames = {
     gcc.TruncDivExpr: '__div__',
     }
 
-class Fact:
+class Fact(object):
+    __slots__ = ('lhs', 'op', 'rhs')
+
     def __init__(self, lhs, op, rhs):
         self.lhs = lhs
         self.op = op
@@ -86,6 +88,8 @@ class Factoid:
     """
     Like a fact, but has an context-dependent LHS
     """
+    __slots__ = ('op', 'rhs')
+
     def __init__(self, op, rhs):
         self.op = op
         self.rhs = rhs
@@ -118,6 +122,8 @@ class Factoid:
         return Factoid(self.op, getattr(const, opname)(other))
 
 class Facts(AbstractValue, set):
+    __slots__ = ('partitions', )
+
     def __init__(self, *args):
         set.__init__(self, *args)
 
@@ -391,6 +397,8 @@ class Facts(AbstractValue, set):
                 yield Factoid(flippedops[fact.op], fact.rhs)
 
 class Factoids(set):
+    __slots__ = ()
+
     def __str__(self):
         return '(%s)' % (' && '.join([str(factoid)
                                       for factoid in sorted(self)]))

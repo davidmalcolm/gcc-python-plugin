@@ -87,11 +87,13 @@ class Timer:
                          self.name,
                          self.elapsed_time_as_str())
 
-class State:
+class State(object):
     """
     States are normally just names (strings), but potentially can have extra
     named attributes
     """
+    __slots__ = ('name', 'kwargs')
+
     def __init__(self, name, **kwargs):
         self.name = name
         self.kwargs = kwargs
@@ -309,7 +311,7 @@ def consider_edge(ctxt, solution, item, edge):
 
     # Check to see if any of the precalculated matches from the sm script
     # apply:
-    for pm in edge.possible_matches:
+    for pm in ctxt.possible_matches_for_edge[edge]:
         ctxt.debug('possible match: %s' % pm)
         if state.name in pm.statenames and (equivcls is None or pm.expr in equivcls):
             if ENABLE_LOG:
@@ -385,6 +387,8 @@ class WorklistItem:
         return '(%r, %r, %r, %r)' % (self.node, self.equivcls, self.state, self.match)
 
 class StateNameSet(frozenset):
+    __slots__ = ('has_wildcard', )
+
     def __init__(self, statenames):
         frozenset.__init__(self, statenames)
         self.has_wildcard = False
@@ -398,7 +402,14 @@ class StateNameSet(frozenset):
             return True
         return frozenset.__contains__(self, key)
 
-class PossibleMatch:
+class PossibleMatch(object):
+    __slots__ = ('expr',
+                 'statenames',
+                 'sc',
+                 'pattern',
+                 'outcome',
+                 'match')
+
     def __init__(self, expr, sc, pattern, outcome, match):
         self.expr = expr
         self.statenames = StateNameSet(sc.statelist)
@@ -455,6 +466,8 @@ class FixedPointMatchContext:
     """
     An actual match of a PossibleMatch, to be supplied to Outcome.get_result()
     """
+    __slots__ = ('ctxt', 'pm', 'edge', 'matchingstates', 'errors')
+
     def __init__(self, ctxt, pm, edge, matchingstates):
         self.ctxt = ctxt
         self.pm = pm
@@ -693,7 +706,7 @@ class StatesForNode(AbstractValue):
 
         # Check to see if any of the precalculated matches from the sm script
         # apply:
-        for pm in edge.possible_matches:
+        for pm in ctxt.possible_matches_for_edge[edge]:
             if ENABLE_LOG:
                 ctxt.log('possible match: %s', pm.describe(ctxt))
             matchingstates = srcvalue.match_states_by_name(ctxt, pm.expr, pm.statenames)
@@ -845,7 +858,7 @@ def generate_errors_from_fixed_point(ctxt):
             for edge in node.succs:
                 ctxt.debug('analyzing out-edge: %s', edge)
                 with ctxt.indent():
-                    for pm in edge.possible_matches:
+                    for pm in ctxt.possible_matches_for_edge[edge]:
                         if ENABLE_LOG:
                             ctxt.debug('possible match: %s', pm.describe(ctxt))
                         matchingstates = states.match_states_by_name(ctxt, pm.expr, pm.statenames)
@@ -868,11 +881,57 @@ def generate_errors_from_fixed_point(ctxt):
                             for err in fpmctxt.errors:
                                 ctxt.errors_from_fixed_point.add(err)
 
-class Context:
+class Context(object):
     # An sm.checker.Sm (do we need any other context?)
 
     # in context, with a mapping from its vars to gcc.VarDecl
     # (or ParmDecl) instances
+    __slots__ = ('options',
+                 'ch',
+                 'sm',
+                 'graph',
+                 'statenames',
+
+                 # A mapping from str (decl names) to Decl instances:
+                 '_decls',
+
+                 # The stateful decl, if any:
+                 '_stateful_decl',
+
+                 # A mapping from str (pattern names) to NamedPattern
+                 # instances:
+                 '_namedpatterns',
+
+                 # All StateClause instance, in order:
+                 '_stateclauses',
+
+                 # Does any Python code call set_state()?
+                 # (If so, we can't detect unreachable states)
+                 '_uses_set_state',
+
+                 '_indent',
+
+                 # State instance for the default state
+                 '_default_state',
+
+                 'errors_from_find_states',
+                 'errors_from_fixed_point',
+
+                 'python_locals',
+                 'python_globals',
+
+                 'allexprs',
+                 'smexprs',
+
+                 'facts_for_node',
+                 'leaks_for_edge',
+                 'possible_matches_for_edge',
+                 'states_for_node',
+                 'expgraph',
+                 'facts_for_errnode',
+                 '_errors',
+                 )
+
     def __init__(self, ch, sm, graph, options):
         self.options = options
 
@@ -1160,15 +1219,14 @@ class Context:
         # later use by $leaked/LeakedPattern
         from sm.leaks import find_leaks
         with Timer(self, 'find_leaks'):
-            find_leaks(self)
+            self.leaks_for_edge = find_leaks(self)
 
-        # Preprocessing: set up "possible_matches" attribute for every edge
-        # in the graph.  Although this is per-checker state, it's OK to
-        # store on the graph itself as it will be overwritten for any
-        # subsequent checkers:
+        # Preprocessing: set up possible_matches_for_edge dict:
         with Timer(self, 'find_possible_matches'):
+            self.possible_matches_for_edge = {}
             for edge in self.graph.edges:
-                edge.possible_matches = list(find_possible_matches(self, edge))
+                self.possible_matches_for_edge[edge] = \
+                    list(find_possible_matches(self, edge))
 
         # Work-in-progress: find the fixed point of all possible states
         # reachable for each in-scope expr at each node:
@@ -1391,7 +1449,7 @@ class Context:
                                 path))
 
     def assert_edge_matches_pattern(self, edge, patternsrc):
-        for pm in edge.possible_matches:
+        for pm in self.possible_matches_for_edge[edge]:
             if patternsrc == str(pm.match.pattern):
                 # We have a match
                 return pm

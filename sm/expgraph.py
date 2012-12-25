@@ -50,6 +50,10 @@ class ExplodedGraph(Graph):
     Every edge is also labelled with the sm.checker.Match (if any) that
     causes it.
     """
+    __slots__ = ('ctxt', 'innergraph',
+                 'expnode_for_triple',
+                 'expnodes_for_innernode')
+
     def __init__(self, ctxt, innergraph):
         Graph.__init__(self)
         self.ctxt = ctxt
@@ -93,6 +97,8 @@ class ExplodedGraph(Graph):
         return ExplodedEdge(srcnode, dstnode, inneredge, match)
 
 class ExplodedNode(Node):
+    __slots__ = ('innernode', 'states_subset', )
+
     def __init__(self, ctxt, innernode):
         Node.__init__(self)
         self.innernode = innernode
@@ -127,6 +133,8 @@ class SoloExplodedNode(ExplodedNode):
     A node within the ExplodedGraph in which the underlying node has only
     one possible combination of state variables
     """
+    __slots__ = ()
+
     def __init__(self, ctxt, innernode):
         ExplodedNode.__init__(self, ctxt, innernode)
         self.states_subset = ctxt.states_for_node[self.innernode]
@@ -142,6 +150,8 @@ class StatewiseExplodedNode(ExplodedNode):
     A node within the ExplodedGraph exploring the case that a particular
     equivcls has a particular state
     """
+    __slots__ = ('equivcls', 'state')
+
     def __init__(self, ctxt, innernode, equivcls, state):
         ExplodedNode.__init__(self, ctxt, innernode)
         self.equivcls = equivcls
@@ -167,6 +177,8 @@ class StatewiseExplodedNode(ExplodedNode):
                        self.state))
 
 class ExplodedEdge(Edge):
+    __slots__ = ('inneredge', 'match')
+
     def __init__(self, srcnode, dstnode, inneredge, match):
         Edge.__init__(self, srcnode, dstnode)
         self.inneredge = inneredge

@@ -200,9 +200,8 @@ class IvpGraph(Graph):
             yield node
 
 class IvpNode(Node):
-    """
-    A node in the supergraph, wrapping a StmtNode
-    """
+    __slots__ = ('callstring', 'innernode', )
+
     def __init__(self, callstring, innernode):
         Node.__init__(self)
         self.callstring = callstring
@@ -254,10 +253,8 @@ class IvpNode(Node):
         return ()
 
 class IvpEdge(Edge):
-    """
-    An edge in the supergraph, wrapping a StmtEdge,
-    or None for the intraprocedual edges for function call/return
-    """
+    __slots__ = ('inneredge', )
+
     def __init__(self, srcnode, dstnode, inneredge):
         Edge.__init__(self, srcnode, dstnode)
         self.inneredge = inneredge

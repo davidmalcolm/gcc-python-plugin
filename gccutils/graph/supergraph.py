@@ -23,6 +23,10 @@ from gccutils.graph.stmtgraph import StmtGraph
 # A graph in which the nodes wrap StmtNode
 ############################################################################
 class Supergraph(Graph):
+    __slots__ = ('supernode_for_stmtnode',
+                 'stmtg_for_fun',
+                 'fake_entry_node')
+
     def __init__(self, split_phi_nodes, add_fake_entry_node):
         Graph.__init__(self)
         self.supernode_for_stmtnode = {}
@@ -156,6 +160,8 @@ class SupergraphNode(Node):
     """
     A node in the supergraph, wrapping a StmtNode
     """
+    __slots__ = ('innernode', 'stmtg')
+
     def __init__(self, innernode, stmtg):
         Node.__init__(self)
         self.innernode = innernode
@@ -210,7 +216,8 @@ class CallNode(SupergraphNode):
     function.
     It has the same stmt (the gcc.GimpleCall) as the ReturnNode
     """
-    pass
+    __slots__ = ('returnnode', # the corresponding ReturnNode
+                 )
 
 class ReturnNode(SupergraphNode):
     """
@@ -218,7 +225,8 @@ class ReturnNode(SupergraphNode):
     return value from the completed call into the LHS.
     It has the same stmt (the gcc.GimpleCall) as the CallNode
     """
-    pass
+    __slots__ = ('callnode', # the corresponding CallNode
+                 )
 
 class FakeEntryNode(SupergraphNode):
     """
@@ -228,6 +236,8 @@ class FakeEntryNode(SupergraphNode):
     It represents "the outside world" when analyzing the supergraph of a
     shared library.
     """
+    __slots__ = ()
+
     def __str__(self):
         return 'ALL ENTRYPOINTS'
 
@@ -243,6 +253,8 @@ class SupergraphEdge(Edge):
     An edge in the supergraph, wrapping a StmtEdge,
     or None for the intraprocedual edges for function call/return
     """
+    __slots__ = ('inneredge', )
+
     def __init__(self, srcnode, dstnode, inneredge):
         Edge.__init__(self, srcnode, dstnode)
         self.inneredge = inneredge
@@ -270,6 +282,8 @@ class CallToReturnSiteEdge(SupergraphEdge):
     The intraprocedural edge for a function call, from
     the gcc.GimpleCall to the next statement
     """
+    __slots__ = ()
+
     def to_dot_label(self, ctxt):
         return 'within function'
 
@@ -281,6 +295,8 @@ class CallToStart(SupergraphEdge):
     The interprocedural edge for the start of a function call: from
     the gcc.GimpleCall to the entry node of the callee
     """
+    __slots__ = ()
+
     def to_dot_label(self, ctxt):
         return 'call of %s' % self.dstnode.function.decl.name
 
@@ -294,6 +310,8 @@ class ExitToReturnSite(SupergraphEdge):
     the exit node of the callee to the successor node of the
     gcc.GimpleCall within the caller
     """
+    __slots__ = ('calling_stmtnode', )
+
     def to_dot_label(self, ctxt):
         return 'return to %s' % self.dstnode.function.decl.name
 
@@ -308,5 +326,7 @@ class FakeEntryEdge(SupergraphEdge):
     This represents a call "from outside" the scope of the supergraph
     (e.g. for analyzing a library)
     """
+    __slots__ = ()
+
     def to_dot_label(self, ctxt):
         return 'external call'

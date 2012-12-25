@@ -20,7 +20,9 @@ from gccutils.dot import to_html
 ############################################################################
 # Generic directed graphs
 ############################################################################
-class Graph:
+class Graph(object):
+    __slots__ = ('nodes', 'edges')
+
     def __init__(self):
         self.nodes = set()
         self.edges = set()
@@ -248,7 +250,9 @@ class Graph:
         return None
 
 
-class Node:
+class Node(object):
+    __slots__ = ('preds', 'succs')
+
     def __init__(self):
         self.preds = set()
         self.succs = set()
@@ -275,7 +279,9 @@ class Node:
         # Return a tuple of Subgraph instances
         return ()
 
-class Edge:
+class Edge(object):
+    __slots__ = ('srcnode', 'dstnode')
+
     def __init__(self, srcnode, dstnode):
         self.srcnode = srcnode
         self.dstnode = dstnode
@@ -292,7 +298,9 @@ class Edge:
     def to_dot_attrs(self, ctxt):
         return ''
 
-class Subgraph:
+class Subgraph(object):
+    __slots__ = ('id', 'label')
+
     def __init__(self, id_, label):
         self.id = ''
         for ch in id_:
