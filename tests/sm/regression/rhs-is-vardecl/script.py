@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-from sm import main, Options
+from sm import main
 from sm.parser import parse_file
 
 checker = parse_file('sm/checkers/malloc_checker.sm')

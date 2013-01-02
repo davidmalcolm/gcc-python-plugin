@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
 #   Copyright 2012, 2013 Red Hat, Inc.
 #
@@ -16,18 +15,19 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-from sm import main
-from sm.parser import parse_file
+class Options:
+    """
+    dump_json: if set to True, then error reports will be written out as
+               JSON files with names of the form
+                   "INPUTFILENAME.hash.sm.json"
+               rather than to stderr, and the presence of such errors will
+               not lead to gcc treating the compilation as a failure
+    """
+    def __init__(self,
+                 cache_errors=True,
+                 during_lto=False,
+                 dump_json=False):
+        self.cache_errors = cache_errors
+        self.during_lto = during_lto
+        self.dump_json = dump_json
 
-def selftest(ctxt, solution):
-    if 0:
-        import sys
-        solution.dump(sys.stderr)
-
-    node = ctxt.find_call_of('marker_A')
-
-    node = ctxt.find_call_of('marker_B')
-    ctxt.assert_fact(node, 'i', '>', 10)
-
-checker = parse_file('sm/checkers/malloc_checker.sm')
-main([checker], selftest=selftest)

@@ -19,6 +19,7 @@ ENABLE_PROFILE=0
 
 import gcc
 
+from sm.options import Options
 from sm.solver import Context, solve, SHOW_SUPERGRAPH
 from sm.utils import Timer
 
@@ -76,25 +77,9 @@ class IpaSmPass(gcc.IpaPass):
                     # Unprofiled version:
                     run()
 
-class Options:
-    """
-    dump_json: if set to True, then error reports will be written out as
-               JSON files with names of the form
-                   "INPUTFILENAME.hash.sm.json"
-               rather than to stderr, and the presence of such errors will
-               not lead to gcc treating the compilation as a failure
-    """
-    def __init__(self,
-                 cache_errors=True,
-                 during_lto=False,
-                 dump_json=False):
-        self.cache_errors = cache_errors
-        self.during_lto = during_lto
-        self.dump_json = dump_json
-
 def main(checkers, options=None, selftest=None):
     if not options:
-        options = Options(cache_errors=True)
+        options = Options()
 
     # Run as an interprocedural pass (over SSA gimple), potentially
     # during lto1:

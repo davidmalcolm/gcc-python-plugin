@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -27,7 +27,8 @@
 import glob
 import json
 
-from sm import main, Options
+from sm import main
+from sm.options import Options
 from sm.parser import parse_file
 
 def get_json_reports():
