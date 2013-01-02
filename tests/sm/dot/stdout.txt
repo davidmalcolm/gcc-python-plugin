@@ -68,7 +68,7 @@ digraph test_script {
                   cwe=&apos;CWE-690&apos;)
           >];
     ptr_null -> ptr_null [label=<$arg_must_not_be_null$: 
-            error(&apos;NULL pointer %s passed as argument %i to %s&apos;,
+            error(&apos;NULL pointer %s passed as argument %i to %s&apos;
                   % (ptr, argnumber, function),
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)

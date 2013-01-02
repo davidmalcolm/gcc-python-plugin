@@ -61,7 +61,7 @@ sm malloc_checker {
   ptr.null:
     $arg_must_not_be_null$
       => {{
-            error('NULL pointer %s passed as argument %i to %s',
+            error('NULL pointer %s passed as argument %i to %s'
                   % (ptr, argnumber, function),
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')

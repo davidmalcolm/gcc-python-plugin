@@ -1,0 +1,4 @@
+tests/sm/checkers/malloc-checker/arg_must_not_be_null/input.c: In function 'test':
+tests/sm/checkers/malloc-checker/arg_must_not_be_null/input.c:29:nn: error: NULL pointer p passed as argument 1 to foo [CWE-690]
+tests/sm/checkers/malloc-checker/arg_must_not_be_null/input.c:27:nn: note: p assigned to 0
+tests/sm/checkers/malloc-checker/arg_must_not_be_null/input.c:29:nn: note: NULL pointer p passed as argument 1 to foo
