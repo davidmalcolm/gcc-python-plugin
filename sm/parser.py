@@ -52,8 +52,9 @@ def t_PYTHON(t):
     r'\{\{(.|\n)*?\}\}'
     # matched double-braces, with arbitrary text (and whitespace) inside:
     # Drop the double-braces, and record the offset for the line number:
+    numlines = t.value.count('\n')
     t.value = (t.value[2:-2], t.lexer.lineno - 1)
-    t.lexer.lineno += t.value.count('\n')
+    t.lexer.lineno += numlines
     if DEBUG_LINE_NUMBERING:
         print('t_PYTHON with %i lines' % t.value.count('\n'))
         print('  t.lexer.lineno: %i' % t.lexer.lineno)
