@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -39,6 +39,9 @@ PLUGIN = os.path.join(abspath, 'python.so')
 # Create arg parser:
 parser = argparse.ArgumentParser(usage='%(prog)s [sm-files] [options] gcc-options')
 
+parser.add_argument('--enable-timing', action='store_true',
+                    help='dump timing information to stderr')
+
 # Only consume args we understand, leaving the rest for gcc:
 ns, other_args = parser.parse_known_args()
 if 0:
@@ -52,14 +55,18 @@ other_args = [arg for arg in other_args
               if not arg.endswith('.sm')]
 
 with tempfile.NamedTemporaryFile() as tmpfile:
-    tmpfile.write('from sm import main, Options\n')
+    tmpfile.write('from sm import main\n')
+    tmpfile.write('from sm.options import Options\n')
     tmpfile.write('from sm.parser import parse_file\n')
     tmpfile.write('checkers = [\n')
     for smpath in sm_paths:
         tmpfile.write('    parse_file(%r),\n' % smpath)
     tmpfile.write(']\n')
-    tmpfile.write('options = Options(during_lto=%s)\n'
+    tmpfile.write('options = Options(during_lto=%s,\n'
                   % ('-flto' in other_args))
+    tmpfile.write('                  enable_timing=%s,\n'
+                  % (ns.enable_timing))
+    tmpfile.write('                  )\n')
     tmpfile.write('main(checkers, options=options)\n')
     tmpfile.flush()
 

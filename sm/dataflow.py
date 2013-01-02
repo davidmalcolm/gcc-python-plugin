@@ -20,8 +20,6 @@
 
 import gcc
 
-from sm.solver import ENABLE_TIMING
-
 class AbstractValue:
     """
     Roughly speaking, an AbstractValue instance is an item of dataflow
@@ -96,7 +94,7 @@ def fixed_point_solver(ctxt, graph, cls):
         node = worklist.pop()
         workset.remove(node)
         numiters += 1
-        if ENABLE_TIMING:
+        if ctxt.options.enable_timing:
             if numiters % 1000 == 0:
                 ctxt.timing('iter %i: len(worklist): %i  analyzing node: %s',
                             numiters, len(worklist), node)

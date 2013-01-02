@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -183,6 +183,13 @@ demo-sm-lto: plugin
 	    sm/checkers/malloc_checker.sm \
 	    -flto -flto-partition=none \
             tests/sm/lto/*.c
+
+demo-sm-lemon-timing: plugin
+	$(srcdir)./gcc-with-sm \
+	    --enable-timing \
+	    sm/checkers/malloc_checker.sm \
+	    -D=_U_ \
+	    slow-tests/sm/integration/lemon/input.c
 
 json-examples: plugin
 	$(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 libcpychecker/html/test/example1/bug.c

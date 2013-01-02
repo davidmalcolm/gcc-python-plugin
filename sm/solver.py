@@ -19,7 +19,6 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
-ENABLE_TIMING=0
 ENABLE_LOG=0
 ENABLE_DEBUG=0
 SHOW_SUPERGRAPH=0
@@ -944,7 +943,7 @@ class Context(object):
 
     def timing(self, msg, *args):
         # Highest-level logging: how long does each stage take to run?
-        if ENABLE_TIMING:
+        if self.options.enable_timing:
             formattedmsg = msg % args
             sys.stderr.write('TIMING: %s: %s%s\n'
                              % (self.sm.name, self._get_indent(), formattedmsg))
@@ -1122,7 +1121,7 @@ class Context(object):
         with Timer(self, 'sm.dataflow.fixed_point_solver(StatesForNode)'):
             self.states_for_node = sm.dataflow.fixed_point_solver(self, self.graph, StatesForNode)
 
-        if ENABLE_TIMING:
+        if self.options.enable_timing:
             show_state_histogram(self)
 
         self.timing('len(graph.nodes): %i', len(self.graph.nodes))

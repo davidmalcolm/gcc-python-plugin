@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+ENABLE_TIMING=0
+
 class Options:
     """
     dump_json: if set to True, then error reports will be written out as
@@ -22,12 +24,16 @@ class Options:
                    "INPUTFILENAME.hash.sm.json"
                rather than to stderr, and the presence of such errors will
                not lead to gcc treating the compilation as a failure
+
+    enable_timing: if set to True, dump timing information to stderr
     """
     def __init__(self,
                  cache_errors=True,
                  during_lto=False,
-                 dump_json=False):
+                 dump_json=False,
+                 enable_timing=ENABLE_TIMING):
         self.cache_errors = cache_errors
         self.during_lto = during_lto
         self.dump_json = dump_json
+        self.enable_timing = enable_timing
 

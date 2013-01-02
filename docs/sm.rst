@@ -1,5 +1,5 @@
-.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+.. Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -93,6 +93,13 @@ The following warnings are generated:
 
 .. FIXME: what about internal API?
 .. FIXME: what about rpm builds?
+
+Command-line options to `gcc-with-sm`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. option:: --enable-timing
+
+   If set, `gcc-with-sm` will emit timing information to stderr
 
 
 Syntax
