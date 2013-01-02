@@ -914,10 +914,7 @@ class Context(object):
         self.python_globals = {}
         for clause in sm.clauses:
             if isinstance(clause, PythonFragment):
-                filename = self.ch.filename
-                if not filename:
-                    filename = '<string>'
-                code = clause.get_code(self)
+                code = clause.get_code()
                 result = eval(code, self.python_globals, self.python_locals)
 
     def __repr__(self):

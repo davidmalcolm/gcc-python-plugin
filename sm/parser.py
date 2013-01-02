@@ -197,10 +197,9 @@ def p_smclause_python(p):
     '''
     smclause : PYTHON
     '''
-    if DEBUG_LINE_NUMBERING:
-        print('p.lexer.lineno: %i' % p.lexer.lineno)
-        print("p[1].count('\\n') %i" % p[1].count('\n'))
     src, lineoffset = p[1]
+    if DEBUG_LINE_NUMBERING:
+        print("src.count('\\n') %i" % src.count('\n'))
     p[0] = PythonFragment(src=src,
                           lineoffset=lineoffset)
 
@@ -423,6 +422,8 @@ def p_outcome_python(p):
     'outcome : PYTHON'
     # e.g. "{ error('use of possibly-NULL pointer %s' % ptr)}"
     src, lineoffset = p[1]
+    if DEBUG_LINE_NUMBERING:
+        print("src.count('\\n') %i" % src.count('\n'))
     p[0] = PythonOutcome(src=src,
                          lineoffset=lineoffset)
 
@@ -478,6 +479,24 @@ class ParserError(Exception):
 def p_error(p):
     raise ParserError.from_production(p, p.value, 'Parser error')
 
+
+def _compile_python_fragments(ch):
+    """
+    Precompile any PythonFragment instances within the ch
+
+    We can't do this during construction because unfortunately both CPython
+    and ply use SyntaxError: a syntax error in embedded Python code will be
+    caught (and misunderstood) by ply.
+
+    Hence we have to postprocess the ch tree after parsing
+    """
+    class PythonVisitor:
+        def visit(self, node):
+            if isinstance(node, PythonFragment):
+                node.compile(ch.filename)
+    pv = PythonVisitor()
+    ch.accept(pv)
+
 ############################################################################
 # Interface:
 ############################################################################
@@ -490,6 +509,7 @@ def parse_string(s):
     parser = yacc.yacc(debug=0, write_tables=0)
     ch = parser.parse(s)#, debug=1)
     ch.filename = None
+    _compile_python_fragments(ch)
     return ch
 
 def parse_file(filename):
@@ -499,6 +519,7 @@ def parse_file(filename):
     try:
         ch = parser.parse(s)#, debug=1)
         ch.filename = filename
+        _compile_python_fragments(ch)
         return ch
     except ParserError, err:
         err.filename = filename

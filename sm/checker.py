@@ -45,6 +45,11 @@ class Checker:
         from sm.dot import checker_to_dot
         return checker_to_dot(self, name)
 
+    def accept(self, visitor):
+        visitor.visit(self)
+        for sm in self.sms:
+            sm.accept(visitor)
+
 class Sm:
     def __init__(self, name, clauses):
         self.name = name
@@ -72,9 +77,15 @@ class Sm:
                         statenames.add(statename)
                         yield statename
 
+    def accept(self, visitor):
+        visitor.visit(self)
+        for sc in self.clauses:
+            sc.accept(visitor)
+
 class Clause:
     # top-level item within an sm
-    pass
+    def accept(self, visitor):
+        visitor.visit(self)
 
 class Decl(Clause):
     # a matchable thing
@@ -139,10 +150,30 @@ class PythonFragment(Clause):
     """
     def __init__(self, src, lineoffset):
         self.src = src
-        if 0:
+        from sm.parser import DEBUG_LINE_NUMBERING
+        if DEBUG_LINE_NUMBERING:
             print('setting self.lineoffset = %r' % lineoffset)
+            print('  repr(src): %r' % src)
         self.lineoffset = lineoffset
         self._code = None
+
+    def compile(self, filename):
+        if not filename:
+            filename = '<string>'
+
+        expr, num_stripped_lines = self._get_source()
+        from sm.parser import DEBUG_LINE_NUMBERING
+        if DEBUG_LINE_NUMBERING:
+            print('num_stripped_lines: %i' % num_stripped_lines)
+            print('self.lineoffset: %i' % self.lineoffset)
+        try:
+            astroot = parse(expr, filename)
+        except SyntaxError, err:
+            err.lineno += self.lineoffset + num_stripped_lines
+            raise err
+        increment_lineno(astroot, self.lineoffset + num_stripped_lines)
+        self._code = compile(astroot, filename, 'exec')
+
     def __str__(self):
         return '{{%s}}' % self.src
     def __repr__(self):
@@ -176,21 +207,8 @@ class PythonFragment(Clause):
         lines = try_to_fix_indent()
         return '\n'.join(lines), num_stripped_lines
 
-    def get_code(self, ctxt):
-        return self.lazily_compile(ctxt.ch.filename)
-
-    def lazily_compile(self, filename):
-        if self._code is None:
-            if not filename:
-                filename = '<string>'
-            expr, num_stripped_lines = self._get_source()
-            if 0:
-                print('num_stripped_lines: %i' % num_stripped_lines)
-                print('self.lineoffset: %i' % self.lineoffset)
-            astroot = parse(expr, filename)
-            increment_lineno(astroot, self.lineoffset + num_stripped_lines)
-            self._code = compile(astroot, filename, 'exec')
-
+    def get_code(self):
+        assert self._code
         return self._code
 
 class StateClause(Clause):
@@ -210,6 +228,11 @@ class StateClause(Clause):
     def __repr__(self):
         return 'StateClause(statelist=%r, patternrulelist=%r)' % (self.statelist, self.patternrulelist)
 
+    def accept(self, visitor):
+        visitor.visit(self)
+        for pr in self.patternrulelist:
+            pr.accept(visitor)
+
 class PatternRule:
     def __init__(self, pattern, outcomes):
         self.pattern = pattern
@@ -224,6 +247,11 @@ class PatternRule:
 
     def __repr__(self):
         return 'PatternRule(pattern=%r, outcomes=%r)' % (self.pattern, self.outcomes)
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        for outcome in self.outcomes:
+            outcome.accept(visitor)
 
 class Match:
     """
@@ -644,7 +672,8 @@ class OrPattern(Pattern):
                 yield match
 
 class Outcome:
-    pass
+    def accept(self, visitor):
+        visitor.visit(self)
 
 class TransitionTo(Outcome):
     def __init__(self, statename):
@@ -706,6 +735,10 @@ class BooleanOutcome(Outcome):
     def iter_reachable_statenames(self):
         for statename in self.outcome.iter_reachable_statenames():
             yield statename
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        self.outcome.accept(visitor)
 
 class BoundVariable:
     """
@@ -786,7 +819,7 @@ class PythonOutcome(Outcome, PythonFragment):
         Generate a PythonEffect for this fragment on the given
         edge/match/state input
         """
-        code = self.get_code(ctxt)
+        code = self.get_code()
         errors = []
 
         # Create environment for execution of the code:
