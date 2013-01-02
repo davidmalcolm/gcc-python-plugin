@@ -23,6 +23,38 @@ import gcc
 from sm.solver import ENABLE_TIMING
 
 class AbstractValue:
+    """
+    Roughly speaking, an AbstractValue instance is an item of dataflow
+    information at a given node; the class knows the initial value for
+    entry nodes, how to compute the effect of an edge on a value (flow
+    function), and how to merge together the information for multiple
+    in-edges at a node.  The solver can then use this to analyze a graph,
+    obtaining an instance per-node.
+
+    More formally, an AbstractValue should be a meet-semilattice with no
+    infinitely-descending chains.
+
+    Translating the jargon somewhat: a "meet-semilattice" is a
+    partially-ordered set in which every non-empty finite subset has a
+    greatest lower bound (or "meet") within the set.  Informally, we have
+    a set of descriptions of the program state at a particular node, and
+    we can use "meet" on them when control-flow merges to obtain the best
+    description of the intersection of said information: any value which is
+    lower than all of the in-values is a coarser description of the program
+    state than any of them, giving some description of the possible
+    resulting state.  By picking the *greatest* such lower bound, meet() is
+    picking the finest approximation to program state that's still safe.
+
+    The infinitely-descending chains rule informally means that repeated
+    calls to meet() should always eventually reach some fixed point after
+    a finite number of steps, so that the analysis is guaranteed to
+    terminate.  It also implies that there is a bottom element, less than
+    all other values.
+
+    For more information, see e.g. chapter 3 of
+       "Data Flow Analysis: Theory and Practice" (2009)
+       Uday Khedker, Amitabha Sanyal, Bageshri Karkare
+    """
     @classmethod
     def make_entry_point(cls, ctxt, node):
         raise NotImplementedError

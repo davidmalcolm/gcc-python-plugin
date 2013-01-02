@@ -123,6 +123,26 @@ class Factoid:
         return Factoid(self.op, getattr(const, opname)(other))
 
 class Facts(sm.dataflow.AbstractValue, set):
+    """
+    A set of facts describing the possible state of the program at a
+    particular node in the graph.
+
+    * topmost value: None signifies "unreachable": the empty set of possible
+      states: no states are possible
+
+    * intermediate values: various non-empty sets of Fact statements.
+      (F1 and F2) is more specific than merely (F1) or (F2), hence
+         "(a == 0)" < "(a==0 and b > 3)"
+      and
+          "(b > 3)" < "(a==0 and b > 3)"
+
+    * bottom value: empty set of Fact statements, meaning the full set of
+      possible states: all states are possible
+
+    * the "meet" of two values is the set of all possible states from
+      either: the union of possible states, and hence (for now) the
+      intersection of the possible facts.
+    """
     __slots__ = ('partitions', )
 
     def __init__(self, *args):

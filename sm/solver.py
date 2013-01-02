@@ -440,6 +440,23 @@ class FixedPointMatchContext:
         self.errors.append(err)
 
 class StatesForNode(sm.dataflow.AbstractValue):
+    """
+    The possible states that data can be in at a particular node in the
+    graph, tracked by equivalence classes (which themselves come from
+    sm.facts.Facts for the node).
+
+    * topmost value: None signifies "unreachable": empty set of possible
+      states
+
+    * intermediate values: mapping from equivalence classes to sets of
+      possible states that the given equivalence class can be in
+
+    * bottommost value: each mapping has the set of *all* possible states
+
+    * the "meet" of two values is the set of all possible states from
+      either, hence keywise-union of the possible states for each
+      equivalence class.
+    """
     def __init__(self, node, _dict):
         assert isinstance(node, SupergraphNode)
         self.node = node
