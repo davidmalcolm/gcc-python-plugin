@@ -87,9 +87,9 @@ def fixed_point_solver(ctxt, graph, cls):
     worklist = []
     for node in graph.get_entry_nodes():
         result[node] = cls.make_entry_point(ctxt, node)
-        for edge in node.succs:
-            worklist.append(edge.dstnode)
-            workset.add(edge.dstnode)
+        assert result[node] is not None
+        worklist.append(node)
+        workset.add(node)
 
     numiters = 0
     while worklist:
@@ -104,35 +104,41 @@ def fixed_point_solver(ctxt, graph, cls):
             ctxt.log('iter %i: len(worklist): %i  analyzing node: %s',
                      numiters, len(worklist), node)
         with ctxt.indent():
-            oldvalue = result[node]
-            ctxt.log('old value: %s', oldvalue)
-            newvalue = None
-            for edge in node.preds:
-                ctxt.log('analyzing in-edge: %s', edge)
-                with ctxt.indent():
-                    srcvalue = result[edge.srcnode]
-                    ctxt.log('srcvalue: %s', srcvalue)
-                    if srcvalue is not None:
+            # Set the location so that if an unhandled
+            # exception occurs, it should at least identify the
+            # code that triggered it:
+            stmt = node.stmt
+            if stmt:
+                if stmt.loc:
+                    gcc.set_location(stmt.loc)
 
-                        # Set the location so that if an unhandled
-                        # exception occurs, it should at least identify the
-                        # code that triggered it:
-                        stmt = edge.srcnode.stmt
-                        if stmt:
-                            if stmt.loc:
-                                gcc.set_location(stmt.loc)
+            srcvalue = result[node]
+            ctxt.log('srcvalue: %s', srcvalue)
+            assert srcvalue is not None
 
-                        edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
-                        ctxt.log('  edge value: %s', edgevalue)
-                        newvalue = cls.meet(ctxt, newvalue, edgevalue)
-                        ctxt.log('  new value: %s', newvalue)
-            if newvalue != oldvalue:
-                ctxt.log('  value changed from: %s  to %s',
-                         oldvalue,
-                         newvalue)
-                result[node] = newvalue
-                for edge in node.succs:
-                    dstnode = edge.dstnode
+            for edge in node.succs:
+                ctxt.log('analyzing out-edge: %s', edge)
+
+                dstnode = edge.dstnode
+                oldvalue = result[dstnode]
+
+                # Get value along outedge:
+                edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
+                ctxt.log('  edge value: %s', edgevalue)
+                ctxt.log('  oldvalue: %s', oldvalue)
+
+                newvalue = cls.meet(ctxt, oldvalue, edgevalue)
+
+                ctxt.log('  newvalue: %s', newvalue)
+
+                if newvalue != oldvalue:
+                    # strictly speaking, newvalue must be < oldvalue, but we
+                    # rely on the AbstractValue to correctly implement that
+                    ctxt.log('  value changed from: %s  to %s',
+                             oldvalue,
+                             newvalue)
+                    assert newvalue is not None
+                    result[dstnode] = newvalue
                     if dstnode not in workset:
                         worklist.append(dstnode)
                         workset.add(dstnode)
