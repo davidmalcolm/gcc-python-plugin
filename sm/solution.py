@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 from gccutils import invoke_dot, get_src_for_loc
 from gccutils.dot import Table, Tr, Td, Text, Br, Font
 from gccutils.graph import Graph, Node, Edge
+
+import sm.dataflow
 
 num_error_graphs = 0
 
@@ -420,16 +422,16 @@ class Solution:
             errgraph = self.build_error_graph(dstnode, equivcls, state)
 
             from sm.facts import remove_impossible, Facts
-            from sm.solver import fixed_point_solver, Timer
+            from sm.solver import Timer
 
-            with Timer(ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                ctxt.facts_for_errnode = fixed_point_solver(ctxt, errgraph, Facts)
+            with Timer(ctxt, 'sm.dataflow.fixed_point_solver(errgraph, Facts)'):
+                ctxt.facts_for_errnode = sm.dataflow.fixed_point_solver(ctxt, errgraph, Facts)
             changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
             # Removing impossible nodes may lead to more facts being known;
             # keep going until you can't remove any more:
             while changes:
-                with Timer(ctxt, 'fixed_point_solver(errgraph, Facts)'):
-                    ctxt.facts_for_errnode = fixed_point_solver(ctxt, errgraph, Facts)
+                with Timer(ctxt, 'sm.dataflow.fixed_point_solver(errgraph, Facts)'):
+                    ctxt.facts_for_errnode = sm.dataflow.fixed_point_solver(ctxt, errgraph, Facts)
                 changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
 
             dsttriple = (dstnode,

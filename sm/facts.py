@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ import gcc
 from gccutils.graph.stmtgraph import SplitPhiNode
 from gccutils.graph.supergraph import CallToReturnSiteEdge
 
-from sm.solver import simplify, AbstractValue, fixed_point_solver, Timer
+import sm.dataflow
+from sm.solver import simplify, Timer
 
 # For applying boolean not:
 inverseops =  {'==' : '!=',
@@ -121,7 +122,7 @@ class Factoid:
             const = const.constant
         return Factoid(self.op, getattr(const, opname)(other))
 
-class Facts(AbstractValue, set):
+class Facts(sm.dataflow.AbstractValue, set):
     __slots__ = ('partitions', )
 
     def __init__(self, *args):

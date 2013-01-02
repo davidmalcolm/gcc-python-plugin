@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ import sm.checker
 from sm.checker import Match, BooleanOutcome, \
     Decl, NamedPattern, StateClause, \
     PythonFragment, PythonOutcome
+import sm.dataflow
 import sm.error
 import sm.parser
 from sm.reporter import StderrReporter, JsonReporter
@@ -478,24 +479,7 @@ class FixedPointMatchContext:
     def add_error(self, err):
         self.errors.append(err)
 
-class AbstractValue:
-    @classmethod
-    def make_entry_point(cls, ctxt, node):
-        raise NotImplementedError
-
-    @classmethod
-    def get_edge_value(cls, ctxt, srcvalue, edge):
-        """
-        Generate a (dstvalue, details) pair, where "details" can be of an
-        arbitrary type (per AbstractValue) and could be None
-        """
-        raise NotImplementedError
-
-    @classmethod
-    def meet(cls, ctxt, lhs, rhs):
-        raise NotImplementedError
-
-class StatesForNode(AbstractValue):
+class StatesForNode(sm.dataflow.AbstractValue):
     def __init__(self, node, _dict):
         assert isinstance(node, SupergraphNode)
         self.node = node
@@ -752,75 +736,6 @@ class StatesForNode(AbstractValue):
             else:
                 _dict[expr] = states
         return StatesForNode(lhs.node, _dict)
-
-def fixed_point_solver(ctxt, graph, cls):
-    # Given an AbstractValue subclass "cls", find the fixed point,
-    # generating a dict from Node to cls instance
-    # Use "None" as the bottom element: unreachable
-    # otherwise, a cls instance
-    result = {}
-    for node in graph.nodes:
-        result[node] = None
-
-    # FIXME: make this a priority queue, in the node's topological order?
-
-    # Set up worklist:
-    workset = set()
-    worklist = []
-    for node in graph.get_entry_nodes():
-        result[node] = cls.make_entry_point(ctxt, node)
-        for edge in node.succs:
-            worklist.append(edge.dstnode)
-            workset.add(edge.dstnode)
-
-    numiters = 0
-    while worklist:
-        node = worklist.pop()
-        workset.remove(node)
-        numiters += 1
-        if ENABLE_TIMING:
-            if numiters % 1000 == 0:
-                ctxt.timing('iter %i: len(worklist): %i  analyzing node: %s',
-                            numiters, len(worklist), node)
-        else:
-            ctxt.log('iter %i: len(worklist): %i  analyzing node: %s',
-                     numiters, len(worklist), node)
-        with ctxt.indent():
-            oldvalue = result[node]
-            ctxt.log('old value: %s', oldvalue)
-            newvalue = None
-            for edge in node.preds:
-                ctxt.log('analyzing in-edge: %s', edge)
-                with ctxt.indent():
-                    srcvalue = result[edge.srcnode]
-                    ctxt.log('srcvalue: %s', srcvalue)
-                    if srcvalue is not None:
-
-                        # Set the location so that if an unhandled
-                        # exception occurs, it should at least identify the
-                        # code that triggered it:
-                        stmt = edge.srcnode.stmt
-                        if stmt:
-                            if stmt.loc:
-                                gcc.set_location(stmt.loc)
-
-                        edgevalue, details = cls.get_edge_value(ctxt, srcvalue, edge)
-                        ctxt.log('  edge value: %s', edgevalue)
-                        newvalue = cls.meet(ctxt, newvalue, edgevalue)
-                        ctxt.log('  new value: %s', newvalue)
-            if newvalue != oldvalue:
-                ctxt.log('  value changed from: %s  to %s',
-                         oldvalue,
-                         newvalue)
-                result[node] = newvalue
-                for edge in node.succs:
-                    dstnode = edge.dstnode
-                    if dstnode not in workset:
-                        worklist.append(dstnode)
-                        workset.add(dstnode)
-
-    ctxt.timing('took %i iterations to reach fixed point', numiters)
-    return result
 
 def show_state_histogram(ctxt):
     # Show an ASCII-art histogram to analyze how many state combinations
@@ -1212,8 +1127,8 @@ class Context(object):
         # giving better names for temporaries, and for identifying the return
         # values of functions
         from sm.facts import Facts
-        with Timer(self, 'fixed_point_solver(Facts)'):
-            self.facts_for_node = fixed_point_solver(self, self.graph, Facts)
+        with Timer(self, 'sm.dataflow.fixed_point_solver(Facts)'):
+            self.facts_for_node = sm.dataflow.fixed_point_solver(self, self.graph, Facts)
 
         # Preprocessing phase: locate places where rvalues are leaked, for
         # later use by $leaked/LeakedPattern
@@ -1230,8 +1145,8 @@ class Context(object):
 
         # Work-in-progress: find the fixed point of all possible states
         # reachable for each in-scope expr at each node:
-        with Timer(self, 'fixed_point_solver(StatesForNode)'):
-            self.states_for_node = fixed_point_solver(self, self.graph, StatesForNode)
+        with Timer(self, 'sm.dataflow.fixed_point_solver(StatesForNode)'):
+            self.states_for_node = sm.dataflow.fixed_point_solver(self, self.graph, StatesForNode)
 
         if ENABLE_TIMING:
             show_state_histogram(self)
