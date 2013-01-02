@@ -24,7 +24,7 @@ from gccutils.graph.stmtgraph import SplitPhiNode
 from gccutils.graph.supergraph import CallToReturnSiteEdge
 
 import sm.dataflow
-from sm.solver import simplify, Timer
+from sm.utils import simplify, Timer
 
 # For applying boolean not:
 inverseops =  {'==' : '!=',
@@ -420,9 +420,3 @@ def remove_impossible(ctxt, facts_for_node, graph):
                 changes += graph.remove_node(node)
         ctxt.log('removed %i node(s)' % changes)
         return changes
-
-def equivcls_to_str(equivcls):
-    if equivcls is None:
-        return 'None'
-    return '{%s}' % ', '.join([str(expr)
-                               for expr in equivcls])

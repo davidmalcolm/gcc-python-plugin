@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ import gcc
 
 from gccutils.graph.stmtgraph import ExitNode
 
-def get_retval_aliases(ctxt, supernode):
-    from sm.solver import simplify
+from sm.utils import simplify
 
+def get_retval_aliases(ctxt, supernode):
     exitstmtnode = supernode.stmtg.exit
     retval = exitstmtnode.returnval
     if retval is None:

@@ -30,7 +30,6 @@ SHOW_ERROR_GRAPH=0
 
 from collections import Counter
 import sys
-import time
 
 import gcc
 
@@ -51,42 +50,9 @@ import sm.error
 import sm.parser
 from sm.reporter import StderrReporter, JsonReporter
 import sm.solution
+from sm.utils import Timer, simplify, stateset_to_str, equivcls_to_str
 
 VARTYPES = (gcc.VarDecl, gcc.ParmDecl, )
-
-class Timer:
-    """
-    Context manager for logging the start/finish of a particular activity
-    and how long it takes
-    """
-    def __init__(self, ctxt, name):
-        self.ctxt = ctxt
-        self.name = name
-        self.starttime = time.time()
-
-    def get_elapsed_time(self):
-        """Get elapsed time in seconds as a float"""
-        curtime = time.time()
-        return curtime - self.starttime
-
-    def elapsed_time_as_str(self):
-        """Get elapsed time as a string (with units)"""
-        elapsed = self.get_elapsed_time()
-        result = '%0.3f seconds' % elapsed
-        if elapsed > 120:
-            result += ' (%i minutes)' % int(elapsed / 60)
-        return result
-
-    def __enter__(self):
-        self.ctxt.timing('START: %s', self.name)
-        self.ctxt._indent += 1
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.ctxt._indent -= 1
-        self.ctxt.timing('%s: %s  TIME TAKEN: %s',
-                         'STOP' if exc_type is None else 'ERROR',
-                         self.name,
-                         self.elapsed_time_as_str())
 
 class State(object):
     """
@@ -155,11 +121,6 @@ class MatchContext:
 
     def get_stateful_gccvar(self):
         return self.match.get_stateful_gccvar(self.ctxt)
-
-def simplify(gccexpr):
-    if isinstance(gccexpr, gcc.SsaName):
-        return gccexpr.var
-    return gccexpr
 
 def consider_edge(ctxt, solution, item, edge):
     """
@@ -381,7 +342,6 @@ class WorklistItem:
                         return True
 
     def __str__(self):
-        from sm.facts import equivcls_to_str
         return 'node: %s   equivcls: %s   state: %s   match: %s' % (self.node, equivcls_to_str(self.equivcls), self.state, self.match)
 
     def __repr__(self):
@@ -1398,9 +1358,3 @@ def solve(ctxt, name, selftest):
 
     if selftest:
         selftest(ctxt, solution)
-
-def stateset_to_str(states):
-    return '{%s}' % ', '.join([str(state) for state in states])
-
-def equivcls_to_str(equivcls):
-    return '{%s}' % ', '.join([str(expr) for expr in equivcls])

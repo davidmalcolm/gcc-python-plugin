@@ -25,6 +25,7 @@ from gccutils.dot import Table, Tr, Td, Text, Br, Font
 from gccutils.graph import Graph, Node, Edge
 
 import sm.dataflow
+from sm.utils import Timer, stateset_to_str, equivcls_to_str
 
 num_error_graphs = 0
 
@@ -157,9 +158,6 @@ class Solution:
             self.changes[node] = {}
 
     def dump(self, out):
-        from sm.facts import equivcls_to_str
-        from sm.solver import stateset_to_str
-
         global _indent
         _indent = 0
         def writeln(line, indent=0):
@@ -422,7 +420,6 @@ class Solution:
             errgraph = self.build_error_graph(dstnode, equivcls, state)
 
             from sm.facts import remove_impossible, Facts
-            from sm.solver import Timer
 
             with Timer(ctxt, 'sm.dataflow.fixed_point_solver(errgraph, Facts)'):
                 ctxt.facts_for_errnode = sm.dataflow.fixed_point_solver(ctxt, errgraph, Facts)

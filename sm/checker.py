@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from gccutils import get_nonnull_arguments
 from gccutils.graph.supergraph import ReturnNode
 
 from sm.error import gccexpr_to_str, Error
+from sm.utils import simplify
 
 def indent(text):
     return '\n'.join(['  %s' % line
@@ -258,7 +259,6 @@ class Match:
         if gccexpr:
             if isinstance(smexpr, str):
                 decl = ctxt.lookup_decl(smexpr)
-                from sm.solver import simplify
                 gccexpr = simplify(gccexpr)
                 self._dict[decl] = gccexpr
             return True
@@ -590,8 +590,6 @@ class NonnullArg(SpecialPattern):
 
         if not isinstance(stmt, gcc.GimpleCall):
             return
-
-        from sm.solver import simplify
 
         for argindex in get_nonnull_arguments(stmt.fn.type.dereference):
             m = Match(self, edge.srcnode)
