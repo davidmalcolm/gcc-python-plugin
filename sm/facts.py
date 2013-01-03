@@ -145,18 +145,22 @@ class Facts(sm.dataflow.AbstractValue):
     """
     __slots__ = ('set_', 'partitions', )
 
-    def __init__(self, srcvalue=None):
-        if srcvalue is None:
-            self.set_ = set()
-        else:
-            self.set_ = set(srcvalue.set_)
+    def __init__(self):
+        self.set_ = set()
 
         # lazily constructed
         # dict from expr to (shared) sets of exprs
         self.partitions = None
 
+    def copy(self):
+        clone = Facts()
+        clone.set_ = set(self.set_)
+        clone.partitions = self.partitions
+        return clone
+
     def add(self, fact):
         self.set_.add(fact)
+        self.partitions = None
 
     def __and__(self, other):
         result = Facts()
@@ -199,7 +203,7 @@ class Facts(sm.dataflow.AbstractValue):
             return None, None
 
         stmt = edge.srcnode.stmt
-        dstfacts = Facts(srcvalue)
+        dstfacts = srcvalue.copy()
         if isinstance(stmt, gcc.GimpleAssign):
             exprcode = stmt.exprcode
             if 1:
@@ -296,7 +300,7 @@ class Facts(sm.dataflow.AbstractValue):
             return rhs
         if rhs is None:
             return lhs
-        return Facts(lhs & rhs)
+        return lhs & rhs
 
     def _make_equiv_classes(self):
         partitions = {}
