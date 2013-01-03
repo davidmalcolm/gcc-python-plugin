@@ -15,8 +15,6 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-ENABLE_PROFILE=0
-
 import gcc
 
 from sm.options import Options
@@ -60,7 +58,7 @@ class IpaSmPass(gcc.IpaPass):
                     with Timer(ctxt, 'running %s' % sm.name):
                         solve(ctxt, 'solution', self.selftest)
 
-                if ENABLE_PROFILE:
+                if self.options.enable_profile:
                     # Profiled version:
                     import cProfile
                     prof_filename = '%s.%s.sm-profile' % (gcc.get_dump_base_name(),

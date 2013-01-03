@@ -186,6 +186,7 @@ demo-sm-lto: plugin
 
 demo-sm-lemon-timing: plugin
 	$(srcdir)./gcc-with-sm \
+	    --enable-profile \
 	    --enable-timing \
 	    sm/checkers/malloc_checker.sm \
 	    -D=_U_ \

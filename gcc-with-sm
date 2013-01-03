@@ -39,6 +39,8 @@ PLUGIN = os.path.join(abspath, 'python.so')
 # Create arg parser:
 parser = argparse.ArgumentParser(usage='%(prog)s [sm-files] [options] gcc-options')
 
+parser.add_argument('--enable-profile', action='store_true',
+                    help='write out profiling information')
 parser.add_argument('--enable-timing', action='store_true',
                     help='dump timing information to stderr')
 
@@ -64,6 +66,8 @@ with tempfile.NamedTemporaryFile() as tmpfile:
     tmpfile.write(']\n')
     tmpfile.write('options = Options(during_lto=%s,\n'
                   % ('-flto' in other_args))
+    tmpfile.write('                  enable_profile=%s,\n'
+                  % (ns.enable_profile))
     tmpfile.write('                  enable_timing=%s,\n'
                   % (ns.enable_timing))
     tmpfile.write('                  )\n')

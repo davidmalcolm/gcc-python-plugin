@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+ENABLE_PROFILE=0
 ENABLE_TIMING=0
 
 class Options:
@@ -25,15 +26,30 @@ class Options:
                rather than to stderr, and the presence of such errors will
                not lead to gcc treating the compilation as a failure
 
+    enable_profile:
+
+       If set to True, use CPython's cProfile module to generate a profile
+       of the activity for each checker.  The top 20 longest functions calls
+       (cumulatively) will be emitted to stdout, and a profile will be
+       written to a file for each checker that was run, suitable for viewing
+       e.g. by RunSnakeRun
+
+       Given an input file "foo.c" and checkers "bar" and "baz", it will
+       write out files:
+          foo.c.bar.sm-profile
+          foo.c.baz.sm-profile
+
     enable_timing: if set to True, dump timing information to stderr
     """
     def __init__(self,
                  cache_errors=True,
                  during_lto=False,
                  dump_json=False,
+                 enable_profile=ENABLE_PROFILE,
                  enable_timing=ENABLE_TIMING):
         self.cache_errors = cache_errors
         self.during_lto = during_lto
         self.dump_json = dump_json
+        self.enable_profile = enable_profile
         self.enable_timing = enable_timing
 

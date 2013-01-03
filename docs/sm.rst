@@ -101,6 +101,21 @@ Command-line options to `gcc-with-sm`
 
    If set, `gcc-with-sm` will emit timing information to stderr
 
+.. option:: --enable-profile
+
+   If set, use CPython's cProfile module to generate a profile
+   of the activity for each checker.  The top 20 longest functions calls
+   (cumulatively) will be emitted to stdout, and a profile will be
+   written to a file for each checker that was run, suitable for viewing
+   e.g. by RunSnakeRun
+
+   Given an input file "foo.c" and checkers "bar" and "baz", it will
+   write out files:
+
+      foo.c.bar.sm-profile
+
+      foo.c.baz.sm-profile
+
 
 Syntax
 ------
