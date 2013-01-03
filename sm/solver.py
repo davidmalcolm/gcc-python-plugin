@@ -1280,13 +1280,13 @@ class Context(object):
             lhs = self.get_expr_by_str(node, lhs)
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
-        if expectedfact not in actualfacts:
+        if expectedfact not in actualfacts.set_:
             self._error_at_node(node)
             raise ValueError('%s not in %s' % (expectedfact, actualfacts))
 
     def assert_no_facts(self, node):
         actualfacts = self.facts_for_node[node]
-        if actualfacts:
+        if actualfacts.set_:
             raise ValueError('unexpectedly found facts: %s' % (actualfacts, ))
 
     def assert_not_fact(self, node, lhs, op, rhs):
@@ -1295,7 +1295,7 @@ class Context(object):
             lhs = self.get_expr_by_str(node, lhs)
         expectedfact = Fact(lhs, op, rhs)
         actualfacts = self.facts_for_node[node]
-        if expectedfact in actualfacts:
+        if expectedfact in actualfacts.set_:
             self._error_at_node(node)
             raise ValueError('%s unexpectedly within %s' % (expectedfact, actualfacts))
 

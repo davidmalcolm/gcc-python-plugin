@@ -21,7 +21,8 @@ import unittest
 from sm.facts import Facts, Fact
 
 def make_facts(factlist):
-    f = Facts(factlist)
+    f = Facts()
+    f.set_ = set(factlist)
     return f
 
 class FactsTests(unittest.TestCase):

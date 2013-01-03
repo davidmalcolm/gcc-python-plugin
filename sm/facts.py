@@ -122,7 +122,7 @@ class Factoid:
             const = const.constant
         return Factoid(self.op, getattr(const, opname)(other))
 
-class Facts(sm.dataflow.AbstractValue, set):
+class Facts(sm.dataflow.AbstractValue):
     """
     A set of facts describing the possible state of the program at a
     particular node in the graph.
@@ -143,18 +143,39 @@ class Facts(sm.dataflow.AbstractValue, set):
       either: the union of possible states, and hence (for now) the
       intersection of the possible facts.
     """
-    __slots__ = ('partitions', )
+    __slots__ = ('set_', 'partitions', )
 
-    def __init__(self, *args):
-        set.__init__(self, *args)
+    def __init__(self, srcvalue=None):
+        if srcvalue is None:
+            self.set_ = set()
+        else:
+            self.set_ = set(srcvalue.set_)
 
         # lazily constructed
         # dict from expr to (shared) sets of exprs
         self.partitions = None
 
+    def add(self, fact):
+        self.set_.add(fact)
+
+    def __and__(self, other):
+        result = Facts()
+        result.set_ = self.set_ & other.set_
+        return result
+
     def __str__(self):
         return '(%s)' % (' && '.join([str(fact)
-                                      for fact in sorted(self)]))
+                                      for fact in sorted(self.set_)]))
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.set_ == other.set_
+
+    def __ne__(self, other):
+        if other is None:
+            return True
+        return self.set_ != other.set_
 
     @classmethod
     def make_entry_point(cls, ctxt, node):
@@ -280,7 +301,7 @@ class Facts(sm.dataflow.AbstractValue, set):
     def _make_equiv_classes(self):
         partitions = {}
 
-        for fact in self:
+        for fact in self.set_:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op == '==':
                 if lhs in partitions:
@@ -334,7 +355,7 @@ class Facts(sm.dataflow.AbstractValue, set):
         ctxt.debug('constants: %s' % constants)
 
         # Check any such constants against other inequalities:
-        for fact in self:
+        for fact in self.set_:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op in ('!=', '<', '>'):
                 if isinstance(rhs, (gcc.IntegerCst, int)):
@@ -359,7 +380,7 @@ class Facts(sm.dataflow.AbstractValue, set):
 
     def expr_is_referenced_externally(self, ctxt, var):
         ctxt.debug('expr_is_referenced_externally(%s, %s)', self, var)
-        for fact in self:
+        for fact in self.set_:
             lhs, op, rhs = fact.lhs, fact.op, fact.rhs
             if op == '==':
                 # For now, any equality will do it
@@ -373,9 +394,9 @@ class Facts(sm.dataflow.AbstractValue, set):
     def _remove_invalidated_facts(self, expr):
         # remove any facts relating to an expression that might have changed
         # value:
-        for fact in list(self):
+        for fact in list(self.set_):
             if expr == fact.lhs or expr == fact.rhs:
-                self.remove(fact)
+                self.set_.remove(fact)
 
     def _assignment(self, lhs, rhs):
         if lhs == rhs:
@@ -405,13 +426,13 @@ class Facts(sm.dataflow.AbstractValue, set):
 
             self._remove_invalidated_facts(lhs)
 
-            for fact in resultfactoids.make_facts_for_lhs(lhs):
+            for fact in resultfactoids.make_facts_for_lhs(lhs).set_:
                 self.add(fact)
         else:
             self._remove_invalidated_facts(lhs)
 
     def iter_factoids_about(self, expr):
-        for fact in self:
+        for fact in self.set_:
             if expr == fact.lhs:
                 yield Factoid(fact.op, fact.rhs)
             if expr == fact.rhs:
@@ -425,8 +446,10 @@ class Factoids(set):
                                       for factoid in sorted(self)]))
 
     def make_facts_for_lhs(self, lhs):
-        return Facts([Fact(lhs, factoid.op, factoid.rhs)
-                      for factoid in self])
+        result = Facts()
+        result.set_ = set([Fact(lhs, factoid.op, factoid.rhs)
+                           for factoid in self])
+        return result
 
 def remove_impossible(ctxt, facts_for_node, graph):
     # Purge graph of any nodes with contradictory facts which are thus
