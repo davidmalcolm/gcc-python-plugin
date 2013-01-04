@@ -20,8 +20,9 @@
 ############################################################################
 import gcc
 
-from gccutils.graph.stmtgraph import SplitPhiNode
-from gccutils.graph.supergraph import CallToReturnSiteEdge
+from gccutils.graph.stmtgraph import SplitPhiNode, ExitNode
+from gccutils.graph.supergraph import CallToReturnSiteEdge, CallToStart, \
+    ExitToReturnSite
 
 import sm.dataflow
 from sm.utils import simplify, Timer
@@ -54,6 +55,8 @@ exprcodenames = {
     gcc.MultExpr: '__mul__',
     gcc.TruncDivExpr: '__div__',
     }
+
+LOCAL_VAR_TYPES = (gcc.VarDecl, gcc.ParmDecl)
 
 class Fact(object):
     __slots__ = ('lhs', 'op', 'rhs')
@@ -202,8 +205,32 @@ class Facts(sm.dataflow.AbstractValue):
         if isinstance(edge, CallToReturnSiteEdge):
             return None, None
 
-        stmt = edge.srcnode.stmt
+        srcnode = edge.srcnode
+        stmt = srcnode.stmt
         dstfacts = srcvalue.copy()
+
+        # Handle interprocedural edges:
+        if isinstance(edge, CallToStart):
+            # Rewrite any facts referencing the arguments to contain the
+            # parameters:
+            args_to_params = dict((simplify(arg), simplify(param))
+                                  for arg, param in zip(stmt.args,
+                                                        stmt.fndecl.arguments))
+            dstfacts = srcvalue.remap_for_scope(args_to_params)
+
+        elif isinstance(edge, ExitToReturnSite):
+            # Rewrite any facts referencing the return value:
+            if edge.calling_stmtnode.stmt.lhs:
+                exitsupernode = srcnode
+                assert isinstance(exitsupernode.innernode, ExitNode)
+                retval = simplify(exitsupernode.innernode.returnval)
+                ctxt.debug('retval: %s', retval)
+
+                lhs = edge.calling_stmtnode.stmt.lhs
+                ctxt.debug('lhs: %s', lhs)
+                retval_to_lhs = {retval : simplify(lhs)}
+                dstfacts = srcvalue.remap_for_scope(retval_to_lhs)
+
         if isinstance(stmt, gcc.GimpleAssign):
             exprcode = stmt.exprcode
             if 1:
@@ -285,7 +312,7 @@ class Facts(sm.dataflow.AbstractValue):
                 ctxt.debug('  srcnode.innernode: %r', srcnode.innernode)
             assert isinstance(srcnode.supergraphnode.innernode, SplitPhiNode)
             rhs = simplify(srcnode.supergraphnode.innernode.rhs)
-            lhs = simplify(srcnode.stmt.lhs)
+            lhs = simplify(stmt.lhs)
             dstfacts._assignment(lhs, rhs)
 
         return dstfacts, None
@@ -441,6 +468,49 @@ class Facts(sm.dataflow.AbstractValue):
                 yield Factoid(fact.op, fact.rhs)
             if expr == fact.rhs:
                 yield Factoid(flippedops[fact.op], fact.rhs)
+
+    def remap_for_scope(self, dict_):
+        if 0:
+            print('remap_for_scope: %s with %s' % (self, dict_))
+        result = Facts()
+        for fact in self.iter_all_facts():
+            if fact.lhs in dict_:
+                fact = Fact(dict_[fact.lhs],
+                            fact.op,
+                            fact.rhs)
+            else:
+                if isinstance(fact.lhs, LOCAL_VAR_TYPES):
+                    if 0:
+                        print('dropping: %s' % fact)
+                    continue
+            if fact.rhs in dict_:
+                fact = Fact(fact.lhs,
+                            fact.op,
+                            dict_[fact.rhs])
+            else:
+                if isinstance(fact.rhs, LOCAL_VAR_TYPES):
+                    if 0:
+                        print('dropping: %s' % fact)
+                    continue
+
+            result.add(fact)
+        if 0:
+            print('  result: %s' % result)
+        return result
+
+    def iter_all_facts(self):
+        for fact in self.set_:
+            if fact.op == '==':
+                for other in self.set_:
+                    if fact.lhs == other.lhs:
+                        yield Fact(fact.rhs, other.op, other.rhs)
+                    if fact.lhs == other.rhs:
+                        yield Fact(other.rhs, other.op, fact.rhs)
+                    if fact.rhs == other.lhs:
+                        yield Fact(fact.lhs, other.op, other.rhs)
+                    if fact.rhs == other.rhs:
+                        yield Fact(other.rhs, other.op, fact.lhs)
+            yield fact
 
 class Factoids(set):
     __slots__ = ()
