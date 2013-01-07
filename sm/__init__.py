@@ -39,7 +39,7 @@ class IpaSmPass(gcc.IpaPass):
         if 0:
             from gccutils import callgraph_to_dot, invoke_dot
             dot = callgraph_to_dot()
-            invoke_dot(dot)
+            invoke_dot(dot, name='callgraph')
 
         # Interprocedural implementation, using the supergraph of all calls:
         from gccutils.graph.supergraph import Supergraph
@@ -48,7 +48,7 @@ class IpaSmPass(gcc.IpaPass):
             dot = sg.to_dot('supergraph')
             from gccutils import invoke_dot
             # print(dot)
-            invoke_dot(dot)
+            invoke_dot(dot, name='supergraph')
 
         for checker in self.checkers:
             for sm in checker.sms:
