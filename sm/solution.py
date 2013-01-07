@@ -292,20 +292,6 @@ class Solution:
                     td = tr.add_child(Td(align='left'))
                     td.add_child(Text('NOT REACHED'))
 
-                """
-                changes = self.solution.changes[node]
-                if changes:
-                    for key in changes:
-                        for item in changes[key]:
-                            tr = table.add_child(Tr())
-                            td = tr.add_child(Td(align='left'))
-                            td.add_child(Text('CHANGE FROM %s TO %s'
-                                          % (key, item)))
-                else:
-                    tr = table.add_child(Tr())
-                    td = tr.add_child(Td(align='left'))
-                    td.add_child(Text('NO CHANGES'))
-                """
                 facts = self.solution.ctxt.facts_for_node[node]
                 if facts is not None:
                     for fact in facts:
@@ -418,43 +404,12 @@ class Solution:
 
         ctxt.log('building error graph')
         with ctxt.indent():
-            errgraph = self.build_error_graph(dstnode, equivcls, state)
+            expgraph = ctxt.expgraph
+            with Timer(ctxt, 'calculating shortest path through exploded graph'):
+                dstexpnode = expgraph.get_expnode_with_state(dstnode, equivcls, state)
+                if dstexpnode is None:
+                    return None
+                srcexpnode = expgraph.get_entry_node()
 
-            from sm.facts import remove_impossible, Facts
-
-            with Timer(ctxt, 'sm.dataflow.fixed_point_solver(errgraph, Facts)'):
-                ctxt.facts_for_errnode = sm.dataflow.fixed_point_solver(ctxt, errgraph, Facts)
-            changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
-            # Removing impossible nodes may lead to more facts being known;
-            # keep going until you can't remove any more:
-            while changes:
-                with Timer(ctxt, 'sm.dataflow.fixed_point_solver(errgraph, Facts)'):
-                    ctxt.facts_for_errnode = sm.dataflow.fixed_point_solver(ctxt, errgraph, Facts)
-                changes = remove_impossible(ctxt, ctxt.facts_for_errnode, errgraph)
-
-            dsttriple = (dstnode,
-                         equivcls,
-                         state)
-            dsterrnode = errgraph.node_for_triple[dsttriple]
-            if dsterrnode not in errgraph.nodes:
-                ctxt.log('dsttriple removed from errgraph')
-                return None
-
-            from sm.solver import SHOW_ERROR_GRAPH
-            if SHOW_ERROR_GRAPH:
-                global num_error_graphs
-                num_error_graphs += 1
-                name = 'error_graph_%i' % num_error_graphs
-                dot = errgraph.to_dot(name, ctxt)
-                invoke_dot(dot, name)
-        ctxt.log('calculating shortest path through error graph')
-        srctriple = (ctxt.graph.fake_entry_node,
-                     None,
-                     ctxt.get_default_state())
-        if srctriple in errgraph.node_for_triple:
-            srcerrnode = errgraph.node_for_triple[srctriple]
-            return errgraph.get_shortest_path(srcerrnode, dsterrnode)
-        else:
-            ctxt.log('srctriple not present in errgraph')
-            return None
+                return expgraph.get_shortest_path(srcexpnode, dstexpnode)
 

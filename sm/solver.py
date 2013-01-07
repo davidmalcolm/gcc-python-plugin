@@ -21,11 +21,8 @@
 
 ENABLE_LOG=0
 ENABLE_DEBUG=0
-SHOW_SUPERGRAPH=0
 DUMP_SOLUTION=0
 SHOW_SOLUTION=0
-SHOW_EXPLODED_GRAPH=0
-SHOW_ERROR_GRAPH=0
 
 from collections import Counter
 import sys
@@ -805,7 +802,6 @@ class Context(object):
                  # State instance for the default state
                  '_default_state',
 
-                 'errors_from_find_states',
                  'errors_from_fixed_point',
 
                  'python_locals',
@@ -819,7 +815,7 @@ class Context(object):
                  'possible_matches_for_edge',
                  'states_for_node',
                  'expgraph',
-                 'facts_for_errnode',
+                 'facts_for_expnode',
                  '_errors',
                  )
 
@@ -901,11 +897,6 @@ class Context(object):
                                 return str(self.statename)
                         raise UnreachableState(statename)
 
-        # Store the errors so that we can play them back in source order
-        # (for greater predicability of selftests)
-        # We create two different over-approximations of errors, and take
-        # the intersection:
-        self.errors_from_find_states = set()
         self.errors_from_fixed_point = set()
 
         # Run any initial python code:
@@ -983,14 +974,6 @@ class Context(object):
         if patname not in self._namedpatterns:
             raise UnknownNamedPattern(patname)
         return self._namedpatterns[patname]
-
-    def add_error(self, err):
-        if self.options.cache_errors:
-            self.errors_from_find_states.add(err)
-        else:
-            # Easier to debug tracebacks this way:
-            # err.emit(self, solution)
-            pass # FIXME
 
     def emit_errors(self, solution):
         if self.options.dump_json:
@@ -1127,14 +1110,7 @@ class Context(object):
         self.timing('len(graph.nodes): %i', len(self.graph.nodes))
         self.timing('len(graph.edges): %i', len(self.graph.edges))
 
-        # Another unrelated approach: an older implementation, which
-        # generates:
-        #   self.errors_from_find_states
-        # for later processing:
-        with Timer(self, 'solution.find_states'):
-            solution = sm.solution.Solution(self)
-            solution.find_states(self)
-        self.timing('len(self.errors_from_find_states): %i', len(self.errors_from_find_states))
+        solution = sm.solution.Solution(self)
 
         # Generate self.errors_from_fixed_point:
         with Timer(self, 'generate_errors'):
@@ -1150,7 +1126,9 @@ class Context(object):
             self.timing('len(expgraph.nodes): %i', len(self.expgraph.nodes))
             self.timing('len(expgraph.edges): %i', len(self.expgraph.edges))
 
-            if SHOW_EXPLODED_GRAPH:
+            self.facts_for_expnode = None
+
+            if self.options.show_exploded_graph:
                 from gccutils import invoke_dot
                 dot = self.expgraph.to_dot('exploded_graph', self)
                 # Debug: view the exploded graph:
@@ -1158,10 +1136,32 @@ class Context(object):
                     ctxt.debug(dot)
                 invoke_dot(dot, 'exploded_graph')
 
+            # Now prune the exploded graph, removing impossible paths:
+            with Timer(self, 'pruning exploded graph'):
+                from sm.facts import remove_impossible, Facts
+
+                with Timer(self, 'sm.dataflow.fixed_point_solver(Facts for expgraph)'):
+                    self.facts_for_expnode = \
+                        sm.dataflow.fixed_point_solver(self,
+                                                       self.expgraph,
+                                                       Facts)
+
+                # Remove nodes that the factfinder thinks are unreachable:
+                with Timer(self, 'removing unreachable expnodes'):
+                    pruned = 0
+                    for expnode in list(self.expgraph.nodes):
+                        if self.facts_for_expnode[expnode] is None:
+                            pruned += self.expgraph.remove_node(expnode)
+                    self.timing('pruned %i expnodes', pruned)
+
+            if self.options.show_exploded_graph:
+                from gccutils import invoke_dot
+                dot = self.expgraph.to_dot('pruned_graph', self)
+                invoke_dot(dot, 'pruned_graph')
+
         # We now have two over-approximations of the errors, take the
         # intersection:
-        self._errors = list(self.errors_from_find_states
-                            & self.errors_from_fixed_point)
+        self._errors = list(self.errors_from_fixed_point)
 
         return solution
 

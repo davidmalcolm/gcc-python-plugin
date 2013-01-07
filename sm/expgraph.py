@@ -78,21 +78,20 @@ class ExplodedGraph(Graph):
             self.expnodes_for_innernode[expnode.innernode] = set([expnode])
         return Graph.add_node(self, expnode)
 
+    def get_entry_nodes(self):
+        return [self.get_entry_node()]
+
+    def get_entry_node(self):
+        for expnode in self.expnodes_for_innernode[self.innergraph.fake_entry_node]:
+            return expnode # there should be just one
+
     def get_expnode_with_state(self, innernode, equivcls, state):
         assert equivcls is not None
         assert state is not None
-        key = (innernode, equivcls, state)
-        if key in self.expnode_for_triple:
-            return self.expnode_for_triple[key]
-        else:
-            key = (innernode, None, None)
-            return self.expnode_for_triple[key]
-            # FIXME: tests/sm/interprocedural/complex needs this for some reason:
-            # (and lto)
-            if key in self.expnode_for_triple:
-                return self.expnode_for_triple[key]
-            # Not found:
-            return None
+
+        for expnode in self.expnodes_for_innernode[innernode]:
+            if state in expnode.states_subset._dict[equivcls]:
+                return expnode
 
     def _make_edge(self, srcnode, dstnode, inneredge, match):
         return ExplodedEdge(srcnode, dstnode, inneredge, match)
@@ -117,6 +116,17 @@ class ExplodedNode(Node):
         td = tr.add_child(Td(align='left'))
         td.add_child(Text('states_subset: %s'
                           % self.states_subset))
+        if ctxt.facts_for_expnode:
+            facts = ctxt.facts_for_expnode[self]
+            if facts:
+                for fact in facts.set_:
+                    tr = table.add_child(Tr())
+                    td = tr.add_child(Td(align='left'))
+                    td.add_child(Text('FACT: %s' % (fact, )))
+            else:
+                tr = table.add_child(Tr())
+                td = tr.add_child(Td(align='left'))
+                td.add_child(Text('NO FACTS'))
         tr = table.add_child(Tr())
         td = tr.add_child(Td(align='left'))
         td.add_child(inner)
@@ -126,8 +136,19 @@ class ExplodedNode(Node):
     def stmt(self):
         return self.innernode.stmt
 
+    @property
+    def supergraphnode(self):
+        return self.innernode.supergraphnode
+
+    @property
+    def stmtnode(self):
+        return self.innernode.supergraphnode.stmtnode
+
     def get_subgraph_path(self, ctxt):
         return self.innernode.get_subgraph_path(ctxt)
+
+    def get_states_for_expr(self, ctxt, expr):
+        return self.states_subset.get_states_for_expr(ctxt, expr)
 
 class SoloExplodedNode(ExplodedNode):
     """
@@ -210,6 +231,10 @@ class ExplodedEdge(Edge):
     @property
     def false_value(self):
         return self.inneredge.false_value
+
+    @property
+    def stmtedge(self):
+        return self.inneredge.stmtedge
 
 def build_exploded_graph(ctxt):
     expgraph = ExplodedGraph(ctxt, ctxt.graph)

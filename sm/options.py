@@ -17,6 +17,8 @@
 
 ENABLE_PROFILE=0
 ENABLE_TIMING=0
+SHOW_SUPERGRAPH=0
+SHOW_EXPLODED_GRAPH=0
 
 class Options:
     """
@@ -40,16 +42,30 @@ class Options:
           foo.c.baz.sm-profile
 
     enable_timing: if set to True, dump timing information to stderr
+
+    show_supergraph:
+
+        If set to True, render and display a png visualization of the
+        supergraph
+
+    show_exploded_graph:
+
+        If set to True, render and display a png visualization of the
+        supergraph exploded by state, before and after pruning valid paths
     """
     def __init__(self,
                  cache_errors=True,
                  during_lto=False,
                  dump_json=False,
                  enable_profile=ENABLE_PROFILE,
-                 enable_timing=ENABLE_TIMING):
+                 enable_timing=ENABLE_TIMING,
+                 show_supergraph=SHOW_SUPERGRAPH,
+                 show_exploded_graph=SHOW_EXPLODED_GRAPH):
         self.cache_errors = cache_errors
         self.during_lto = during_lto
         self.dump_json = dump_json
         self.enable_profile = enable_profile
         self.enable_timing = enable_timing
+        self.show_supergraph = show_supergraph
+        self.show_exploded_graph = show_exploded_graph
 

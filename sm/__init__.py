@@ -18,7 +18,7 @@
 import gcc
 
 from sm.options import Options
-from sm.solver import Context, solve, SHOW_SUPERGRAPH
+from sm.solver import Context, solve
 from sm.utils import Timer
 
 class IpaSmPass(gcc.IpaPass):
@@ -44,7 +44,7 @@ class IpaSmPass(gcc.IpaPass):
         # Interprocedural implementation, using the supergraph of all calls:
         from gccutils.graph.supergraph import Supergraph
         sg = Supergraph(split_phi_nodes=True, add_fake_entry_node=True)
-        if SHOW_SUPERGRAPH:
+        if self.options.show_supergraph:
             dot = sg.to_dot('supergraph')
             from gccutils import invoke_dot
             # print(dot)

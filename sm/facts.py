@@ -315,9 +315,13 @@ class Facts(sm.dataflow.AbstractValue):
             lhs = simplify(stmt.lhs)
             dstfacts._assignment(lhs, rhs)
 
+        # Full check to see if the resulting facts aren't contradictory:
+        if dstfacts != srcvalue:
+            if dstfacts.is_possible(ctxt):
+                return dstfacts, None
+            else:
+                return None, None
         return dstfacts, None
-
-
 
     @classmethod
     def meet(cls, ctxt, lhs, rhs):

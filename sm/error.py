@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -17,11 +17,13 @@
 
 import gcc
 
-from gccutils.graph.stmtgraph import ExitNode
-from gccutils.graph.supergraph import CallNode, ReturnNode
+from gccutils.graph.stmtgraph import ExitNode, SplitPhiNode
+from gccutils.graph.supergraph import CallNode, ReturnNode, \
+    CallToStart, ExitToReturnSite
 
 from sm.leaks import get_retval_aliases
 from sm.reporter import Report, Note
+from sm.utils import simplify, stateset_to_str
 
 class Error:
     # A stored error
@@ -89,35 +91,109 @@ class Error:
             ctxt.log('unreachable error')
             return None
 
+        # Determine important events within the path
+        # Walk backwards along it, tracking the expression of importance
+        # and its state
+        ctxt.debug('self.match: %s', self.match)
+        expr = stateful_gccvar
+        states = frozenset([self.state])
+        ctxt.debug('expr, states: %s, %s', expr, states)
+        significant_for_node = {path[-1].dstnode : (expr, states)}
+        for edge in path[::-1]:
+            ctxt.debug('edge: %s', edge)
+            ctxt.debug('  edge.inneredge: %s', edge.inneredge)
+            ctxt.debug('  edge.match: %s', edge.match)
+            srcnode = edge.srcnode
+            dstnode = edge.dstnode
+            inneredge = edge.inneredge
+            stmt = srcnode.stmt
+            if isinstance(edge.inneredge, CallToStart):
+                # Update the expr of interest based on param/arg mapping:
+                for param, arg  in zip(srcnode.stmt.fndecl.arguments,
+                                       srcnode.stmt.args):
+                    param = simplify(param)
+                    arg = simplify(arg)
+                    if expr == param:
+                        expr = arg
+            elif isinstance(edge.inneredge, ExitToReturnSite):
+                # Was state propagated through the return value?
+                if inneredge.calling_stmtnode.stmt.lhs:
+                    exitsupernode = inneredge.srcnode
+                    assert isinstance(exitsupernode.innernode, ExitNode)
+                    retval = simplify(exitsupernode.innernode.returnval)
+                    lhs = simplify(inneredge.calling_stmtnode.stmt.lhs)
+                    if expr == lhs:
+                        expr = retval
+
+                # Did the params change state?
+                callsite = inneredge.dstnode.callnode.innernode
+                ctxt.debug('callsite: %s', callsite)
+                for param, arg  in zip(callsite.stmt.fndecl.arguments,
+                                       callsite.stmt.args):
+                    param = simplify(param)
+                    arg = simplify(arg)
+                    ctxt.debug('param: %s', param)
+                    ctxt.debug('arg: %s', arg)
+                    if expr == arg:
+                        expr = param
+            elif isinstance(stmt, gcc.GimpleAssign):
+                lhs = simplify(stmt.lhs)
+                if stmt.exprcode == gcc.VarDecl:
+                    rhs = simplify(stmt.rhs[0])
+                    if expr == lhs:
+                        expr = rhs
+                elif stmt.exprcode == gcc.ComponentRef:
+                    compref = stmt.rhs[0]
+                    if expr == lhs:
+                        srcsupernode = srcnode.supergraphnode
+                        if ctxt.get_aliases(srcsupernode, compref) in ctxt.states_for_node[srcsupernode]._dict:
+                            expr = compref
+                        else:
+                            expr = compref.target
+            elif isinstance(stmt, gcc.GimplePhi):
+                assert isinstance(srcnode.stmtnode, SplitPhiNode)
+                rhs = simplify(srcnode.stmtnode.rhs)
+                ctxt.debug('  rhs: %r', rhs)
+                lhs = simplify(stmt.lhs)
+                ctxt.debug('  lhs: %r', lhs)
+                if expr == lhs:
+                    expr = rhs
+            if edge.match:
+                if edge.match.get_stateful_gccvar(ctxt) == expr:
+                    # This is a match affecting the expr of interest:
+                    states = srcnode.get_states_for_expr(ctxt, expr)
+
+            ctxt.debug('  expr, states: %s, %s', expr, states)
+            significant_for_node[srcnode] = (expr, states)
+
+        # Now generate a report, using the significant events:
         for edge in path:
-            # ctxt.debug(srcnode)
-            # FIXME: this needs to respect the StateVar, in case of a returned value...
-            # we need to track changes to the value of the specific StateVar (but we can't, because it's a copy each time.... grrr...)
-            # we should also report relevant aliasing information
-            # ("foo" passed to fn bar as "baz"; "baz" returned from fn bar into "foo")
-            # TODO: backtrace down the path, tracking the StateVar aliases of interest...
+            srcnode = edge.srcnode
             srcsupernode = edge.srcnode.innernode
             srcgccloc = srcsupernode.get_gcc_loc()
-            srcequivcls = edge.srcnode.equivcls
-            srcstate = edge.srcnode.state
+            srcexpr = significant_for_node[srcnode][0]
+            srcstates = significant_for_node[srcnode][1]
 
+            dstnode = edge.dstnode
             dstsupernode = edge.dstnode.innernode
             dstgccloc = dstsupernode.get_gcc_loc()
-            dstequivcls = edge.dstnode.equivcls
-            dststate = edge.dstnode.state
+            dststates = significant_for_node[dstnode][1]
+            dstexpr = significant_for_node[dstnode][0]
 
             with ctxt.indent():
                 ctxt.debug('edge from:')
                 with ctxt.indent():
                     ctxt.debug('srcnode: %s', srcsupernode)
-                    ctxt.debug('equivcls: %s', srcequivcls)
-                    ctxt.debug('state: %s', srcstate)
+                    ctxt.debug('significant_for_node[srcnode]: %s',
+                               significant_for_node[srcnode])
+                    ctxt.debug('srcstates: %s', srcstates)
                     ctxt.debug('srcloc: %s', srcgccloc)
                 ctxt.debug('to:')
                 with ctxt.indent():
                     ctxt.debug('dstnode: %s', dstsupernode)
-                    ctxt.debug('equivcls: %s', dstequivcls)
-                    ctxt.debug('state: %s', dststate)
+                    ctxt.debug('significant_for_node[dstnode]: %s',
+                               significant_for_node[dstnode])
+                    ctxt.debug('dststates: %s', dststates)
                     ctxt.debug('dstloc: %s', dstgccloc)
 
             gccloc = srcgccloc
@@ -135,36 +211,39 @@ class Error:
                          % (srcsupernode.function.decl.name,
                             dstsupernode.function.decl.name))
             if gccloc:
-                if srcstate != dststate:
-                    ctxt.log('state change!')
-                    # Describe state change:
-                    if edge.srcnode.match:
+                if significant_for_node[srcnode] != significant_for_node[dstnode]:
+                    if edge.match:
+                        # Describe state change:
                         if desc:
                             desc += ': '
-                        desc += edge.srcnode.match.description(ctxt)
+                        desc += edge.match.description(ctxt)
                         notes.append(Note(gccloc, desc))
-                elif get_user_expr(srcequivcls) != get_user_expr(dstequivcls) \
-                        and srcstate != ctxt.get_default_state():
-                    ctxt.log('equivcls change!')
-                    # Debugging information on state change:
-                    if desc:
-                        desc += ': '
-                    desc += ('state of %s ("%s") propagated to %s'
-                             % (equivcls_to_user_str(ctxt, srcsupernode, srcequivcls),
-                                srcstate,
-                                equivcls_to_user_str(ctxt, dstsupernode, dstequivcls)))
+                        continue
+
+                    # We care about state changes, or state propagations,
+                    # but we don't care about propagations of the "start" state:
+                    newstates = dststates - srcstates
+                    ctxt.debug('newstates: %s', newstates)
+                    if newstates or ctxt.get_default_state() not in srcstates:
+                        # Debugging information on state change:
+                        if desc:
+                            desc += ': '
+                        desc += ('state of %s (%s) propagated to %s'
+                                 % (gccexpr_to_str(ctxt, srcsupernode, srcexpr),
+                                    ' or '.join(['"%s"' % state for state in srcstates]),
+                                    gccexpr_to_str(ctxt, dstsupernode, dstexpr)))
+                        notes.append(Note(gccloc, desc))
+                        continue
+                # Debugging information on state change:
+                if 0:
+                    desc += ('%s: %s:%s -> %s:%s'
+                             % (ctxt.sm.name,
+                                srcexpr, stateset_to_str(srcstates),
+                                dstexpr, stateset_to_str(dststates)))
                     notes.append(Note(gccloc, desc))
                 else:
-                    # Debugging information on state change:
-                    if 0:
-                        desc += ('%s: %s:%s -> %s:%s'
-                                 % (ctxt.sm.name,
-                                    srcequivcls, srcstate,
-                                    dstequivcls, dststate))
+                    if desc:
                         notes.append(Note(gccloc, desc))
-                    else:
-                        if desc:
-                            notes.append(Note(gccloc, desc))
             continue
 
         # repeat the message at the end of the path, if anything else has
