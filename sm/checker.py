@@ -686,16 +686,6 @@ class TransitionTo(Outcome):
         if self.__class__ == other.__class__:
             if self.statename == other.statename:
                 return True
-    def apply(self, mctxt):
-        from sm.solver import State, WorklistItem
-        # print('transition %s to %s' % (match.var, outcome.state))
-
-        dststate = State(self.statename)
-        yield WorklistItem.from_expr(mctxt.ctxt,
-                                     mctxt.dstnode,
-                                     mctxt.get_stateful_gccvar(),
-                                     dststate,
-                                     mctxt.match)
 
     def get_result(self, fpmctxt, srcvalue):
         from sm.solver import StatesForNode, State
@@ -724,13 +714,6 @@ class BooleanOutcome(Outcome):
             if self.guard == other.guard:
                 if self.outcome == other.outcome:
                     return True
-    def apply(self, mctxt):
-        if mctxt.edge.true_value and self.guard:
-            for item in self.outcome.apply(mctxt):
-                yield item
-        if mctxt.edge.false_value and not self.guard:
-            for item in self.outcome.apply(mctxt):
-                yield item
 
     def iter_reachable_statenames(self):
         for statename in self.outcome.iter_reachable_statenames():
@@ -766,23 +749,6 @@ class PythonEffect:
         self.errors = errors
 
 class PythonOutcome(Outcome, PythonFragment):
-    def apply(self, mctxt):
-        from sm.solver import WorklistItem
-
-        ctxt = mctxt.ctxt
-
-        effect = self.get_effect_for_state(ctxt, mctxt.edge,
-                                           mctxt.match, mctxt.srcstate)
-
-        for error in effect.errors:
-            ctxt.add_error(error)
-
-        yield WorklistItem.from_expr(ctxt,
-                                     mctxt.dstnode,
-                                     mctxt.get_stateful_gccvar(),
-                                     effect.dststate,
-                                     mctxt.match)
-
     def iter_reachable_statenames(self):
         return []
 

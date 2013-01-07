@@ -27,135 +27,9 @@ from gccutils.graph import Graph, Node, Edge
 import sm.dataflow
 from sm.utils import Timer, stateset_to_str, equivcls_to_str
 
-num_error_graphs = 0
-
-class ErrorGraph(Graph):
-    # An exploded graph, culled to only the nodes of interest
-    # for a specific error
-    def __init__(self, ctxt, innergraph):
-        Graph.__init__(self)
-        self.ctxt = ctxt
-        self.innergraph = innergraph
-        self.node_for_triple = {}
-        self.edgedict = {}
-
-    def add_node(self, node):
-        # Lazily add nodes, discarding duplicates:
-        key = (node.innernode, node.equivcls, node.state)
-        if key in self.node_for_triple:
-            # Already present:
-            return self.node_for_triple[key], False
-        else:
-            self.node_for_triple[key] = node
-            return Graph.add_node(self, node), True
-
-    def add_edge(self, srcnode, dstnode, inneredge):
-        # Lazily add nodes, discarding duplicates:
-        key = (srcnode, dstnode, inneredge)
-        if key in self.edgedict:
-            return self.edgedict[key]
-        else:
-            e = Graph.add_edge(self, srcnode, dstnode, inneredge)
-            self.edgedict[key] = e
-            return e
-
-    def _make_edge(self, srcnode, dstnode, inneredge):
-        return ErrorEdge(srcnode, dstnode, inneredge)
-
-    def get_entry_nodes(self):
-        for srcnode in self.innergraph.get_entry_nodes():
-            srctriple = (srcnode,
-                         None,
-                         self.ctxt.get_default_state())
-            if srctriple in self.node_for_triple:
-                yield self.node_for_triple[srctriple]
-
-class ErrorNode(Node):
-    def __init__(self, innernode, equivcls, state, match):
-        Node.__init__(self)
-        self.innernode = innernode
-        self.equivcls = equivcls
-        self.state = state
-        self.match = match
-
-    def __repr__(self):
-        return 'ErrorNode(%r, %r, %r, %r)' % (self.innernode, self.equivcls, self.state, self.match)
-
-    @property
-    def supergraphnode(self):
-        return self.innernode
-
-    def to_dot_html(self, ctxt):
-        inner = self.innernode.to_dot_html(self)
-        table = Table(cellborder=1)
-        tr = table.add_child(Tr())
-        td = tr.add_child(Td(align='left'))
-        td.add_child(Text('equivcls: %s' % self.equivcls))
-        tr = table.add_child(Tr())
-        td = tr.add_child(Td(align='left'))
-        td.add_child(Text('state: %s' % self.state))
-        tr = table.add_child(Tr())
-        td = tr.add_child(Td(align='left'))
-        td.add_child(Text('match: %s' % self.match))
-        facts = ctxt.facts_for_errnode[self]
-        if facts is not None:
-            for fact in facts:
-                tr = table.add_child(Tr())
-                td = tr.add_child(Td(align='left'))
-                td.add_child(Text('FACT: %s' % (fact, )))
-                #td.add_child(Text('FACT: %r' % fact))
-        else:
-            tr = table.add_child(Tr())
-            td = tr.add_child(Td(align='left'))
-            td.add_child(Text('NO FACTS'))
-        tr = table.add_child(Tr())
-        td = tr.add_child(Td(align='left'))
-        td.add_child(inner)
-        return table
-
-    @property
-    def stmt(self):
-        return self.innernode.stmt
-
-    def get_subgraph_path(self, ctxt):
-        return self.innernode.get_subgraph_path(ctxt)
-
-class ErrorEdge(Edge):
-    def __init__(self, srcnode, dstnode, inneredge):
-        Edge.__init__(self, srcnode, dstnode)
-        self.inneredge = inneredge
-
-    def to_dot_label(self, ctxt):
-        return self.inneredge.to_dot_label(ctxt)
-
-    @property
-    def true_value(self):
-        return self.inneredge.true_value
-
-    @property
-    def false_value(self):
-        return self.inneredge.false_value
-
-    @property
-    def stmtedge(self):
-        return self.inneredge.stmtedge
-
 class Solution:
     def __init__(self, ctx):
         self.ctxt = ctx
-
-        # dict from SupergraphNode to dict from expr to set of State:
-        #   self.states[node][expr] : set of State
-        self.states = {}
-
-        # dict from SupergraphNode to dict from (srcequivcls, srcstate) to set
-        # of WorklistItem:
-        #   self.changes[node][(srcequivcls, srcstate)] : set of WorklistItem
-        self.changes = {}
-
-        for node in self.ctxt.graph.nodes:
-            self.states[node] = {}
-            self.changes[node] = {}
 
     def dump(self, out):
         global _indent
@@ -210,17 +84,6 @@ class Solution:
             else:
                 writeln('None', indent=2)
 
-            # Write out state information from old solver:
-            states = self.states[node]
-            if states:
-                writeln('reachable states:')
-                for equivcls in states:
-                    writeln('%s: %s'
-                            % (equivcls_to_str(equivcls),
-                               stateset_to_str(states[equivcls])),
-                            indent=2)
-            else:
-                writeln('NOT REACHED', indent=4)
             _indent -= 2
 
             changes = self.changes[node]
@@ -309,83 +172,6 @@ class Solution:
                 return table
 
         return self.ctxt.graph.to_dot(name, SolutionRenderer(self))
-
-    def find_states(self, ctxt):
-        from sm.solver import consider_edge, WorklistItem
-        worklist = [WorklistItem(node, None, ctxt.get_default_state(), None)
-                    for node in ctxt.graph.get_entry_nodes()]
-        done = set()
-        while worklist:
-            item = worklist.pop()
-            done.add(item)
-            statedict = self.states[item.node]
-            if item.equivcls in statedict:
-                statedict[item.equivcls].add(item.state)
-            else:
-                statedict[item.equivcls] = set([item.state])
-            with ctxt.indent():
-                ctxt.debug('considering %s', item)
-                for edge in item.node.succs:
-                    ctxt.debug('considering edge %s', edge)
-                    assert edge.srcnode == item.node
-                    for nextitem in consider_edge(ctxt, self, item, edge):
-                        assert isinstance(nextitem, WorklistItem)
-                        if nextitem not in done:
-                            worklist.append(nextitem)
-                        # FIXME: we can also handle *transitions* here,
-                        # adding them to the per-node dict.
-                        # We can use them when reporting errors in order
-                        # to reconstruct paths
-                        changesdict = self.changes[item.node]
-                        key = (item.equivcls, item.state)
-                        if key in changesdict:
-                            changesdict[key].add(nextitem)
-                        else:
-                            changesdict[key] = set([nextitem])
-                        # FIXME: what exactly should we be storing?
-
-    def build_error_graph(self, dstnode, expr, state):
-        errgraph = ErrorGraph(self.ctxt, self.ctxt.graph)
-        dsterrnode, _ = errgraph.add_node(ErrorNode(dstnode, expr, state, None))
-
-        # srcnodes = list(innergraph.get_entry_nodes())
-        worklist = [dsterrnode]
-        while worklist:
-            errnode = worklist[0]
-            worklist = worklist[1:]
-
-            self.ctxt.debug('considering routes to errnode: %s', errnode)
-
-            dstsupernode = errnode.innernode
-
-            # backtrack to find nodes that lead to errnode,
-            # lazily adding them:
-            for edge in dstsupernode.preds:
-                srcsupernode = edge.srcnode
-                self.ctxt.debug('considering srcnode: %s', srcsupernode)
-                changesdict = self.changes[srcsupernode]
-                for key in changesdict:
-                    self.ctxt.debug('key: %s', key)
-                    srcequivcls, srcstate = key
-                    for item in changesdict[key]:
-                        self.ctxt.debug('item: %s', item)
-                        if item.node == errnode.innernode:
-                            # The items must match, unless the srcnode is
-                            # None, in which case it's legitimate to
-                            # transition to a more specific expr:
-                            if item.equivcls == errnode.equivcls or item.equivcls is None:
-                                if item.state == errnode.state:
-                                    srcerrnode, new = errgraph.add_node(ErrorNode(srcsupernode,
-                                                                                  srcequivcls,
-                                                                                  srcstate,
-                                                                                  item.match))
-                                    errgraph.add_edge(srcerrnode, errnode, edge)
-                                    if new:
-                                        worklist.append(srcerrnode)
-                                        self.ctxt.debug('added')
-                                    else:
-                                        self.ctxt.debug('already present')
-        return errgraph
 
     def get_shortest_path_to(self, dstnode, equivcls, state):
         # backtrack from destination until you reach a srcnode whilst
