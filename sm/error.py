@@ -25,6 +25,92 @@ from sm.leaks import get_retval_aliases
 from sm.reporter import Report, Note
 from sm.utils import simplify, stateset_to_str
 
+class PathAnnotations:
+    """
+    Important events along a path
+    """
+    def __init__(self, ctxt, error, path):
+        # Determine important events within the path
+        # Walk backwards along it, tracking the expression of importance
+        # and its state
+        ctxt.debug('error.match: %s', error.match)
+        expr = error.match.get_stateful_gccvar(ctxt)
+        states = frozenset([error.state])
+        ctxt.debug('expr, states: %s, %s', expr, states)
+        self._significant_for_node = {path[-1].dstnode : (expr, states)}
+        for edge in path[::-1]:
+            ctxt.debug('edge: %s', edge)
+            ctxt.debug('  edge.inneredge: %s', edge.inneredge)
+            ctxt.debug('  edge.match: %s', edge.match)
+            srcnode = edge.srcnode
+            dstnode = edge.dstnode
+            inneredge = edge.inneredge
+            stmt = srcnode.stmt
+            if isinstance(edge.inneredge, CallToStart):
+                # Update the expr of interest based on param/arg mapping:
+                for param, arg  in zip(srcnode.stmt.fndecl.arguments,
+                                       srcnode.stmt.args):
+                    param = simplify(param)
+                    arg = simplify(arg)
+                    if expr == param:
+                        expr = arg
+            elif isinstance(edge.inneredge, ExitToReturnSite):
+                # Was state propagated through the return value?
+                if inneredge.calling_stmtnode.stmt.lhs:
+                    exitsupernode = inneredge.srcnode
+                    assert isinstance(exitsupernode.innernode, ExitNode)
+                    retval = simplify(exitsupernode.innernode.returnval)
+                    lhs = simplify(inneredge.calling_stmtnode.stmt.lhs)
+                    if expr == lhs:
+                        expr = retval
+
+                # Did the params change state?
+                callsite = inneredge.dstnode.callnode.innernode
+                ctxt.debug('callsite: %s', callsite)
+                for param, arg  in zip(callsite.stmt.fndecl.arguments,
+                                       callsite.stmt.args):
+                    param = simplify(param)
+                    arg = simplify(arg)
+                    ctxt.debug('param: %s', param)
+                    ctxt.debug('arg: %s', arg)
+                    if expr == arg:
+                        expr = param
+            elif isinstance(stmt, gcc.GimpleAssign):
+                lhs = simplify(stmt.lhs)
+                if stmt.exprcode == gcc.VarDecl:
+                    rhs = simplify(stmt.rhs[0])
+                    if expr == lhs:
+                        expr = rhs
+                elif stmt.exprcode == gcc.ComponentRef:
+                    compref = stmt.rhs[0]
+                    if expr == lhs:
+                        srcsupernode = srcnode.supergraphnode
+                        if ctxt.get_aliases(srcsupernode, compref) in ctxt.states_for_node[srcsupernode]._dict:
+                            expr = compref
+                        else:
+                            expr = compref.target
+            elif isinstance(stmt, gcc.GimplePhi):
+                assert isinstance(srcnode.stmtnode, SplitPhiNode)
+                rhs = simplify(srcnode.stmtnode.rhs)
+                ctxt.debug('  rhs: %r', rhs)
+                lhs = simplify(stmt.lhs)
+                ctxt.debug('  lhs: %r', lhs)
+                if expr == lhs:
+                    expr = rhs
+            if edge.match:
+                if edge.match.get_stateful_gccvar(ctxt) == expr:
+                    # This is a match affecting the expr of interest:
+                    states = srcnode.get_states_for_expr(ctxt, expr)
+
+            ctxt.debug('  expr, states: %s, %s', expr, states)
+            self._significant_for_node[srcnode] = (expr, states)
+
+    def get_significant_expr_at(self, node):
+        return self._significant_for_node[node][0]
+
+    def get_significant_states_at(self, node):
+        return self._significant_for_node[node][1]
+
 class Error:
     # A stored error
     def __init__(self, srcnode, match, msg, state, cwe, sm_filename, sm_lineno):
@@ -91,108 +177,36 @@ class Error:
             ctxt.log('unreachable error')
             return None
 
-        # Determine important events within the path
-        # Walk backwards along it, tracking the expression of importance
-        # and its state
-        ctxt.debug('self.match: %s', self.match)
-        expr = stateful_gccvar
-        states = frozenset([self.state])
-        ctxt.debug('expr, states: %s, %s', expr, states)
-        significant_for_node = {path[-1].dstnode : (expr, states)}
-        for edge in path[::-1]:
-            ctxt.debug('edge: %s', edge)
-            ctxt.debug('  edge.inneredge: %s', edge.inneredge)
-            ctxt.debug('  edge.match: %s', edge.match)
-            srcnode = edge.srcnode
-            dstnode = edge.dstnode
-            inneredge = edge.inneredge
-            stmt = srcnode.stmt
-            if isinstance(edge.inneredge, CallToStart):
-                # Update the expr of interest based on param/arg mapping:
-                for param, arg  in zip(srcnode.stmt.fndecl.arguments,
-                                       srcnode.stmt.args):
-                    param = simplify(param)
-                    arg = simplify(arg)
-                    if expr == param:
-                        expr = arg
-            elif isinstance(edge.inneredge, ExitToReturnSite):
-                # Was state propagated through the return value?
-                if inneredge.calling_stmtnode.stmt.lhs:
-                    exitsupernode = inneredge.srcnode
-                    assert isinstance(exitsupernode.innernode, ExitNode)
-                    retval = simplify(exitsupernode.innernode.returnval)
-                    lhs = simplify(inneredge.calling_stmtnode.stmt.lhs)
-                    if expr == lhs:
-                        expr = retval
-
-                # Did the params change state?
-                callsite = inneredge.dstnode.callnode.innernode
-                ctxt.debug('callsite: %s', callsite)
-                for param, arg  in zip(callsite.stmt.fndecl.arguments,
-                                       callsite.stmt.args):
-                    param = simplify(param)
-                    arg = simplify(arg)
-                    ctxt.debug('param: %s', param)
-                    ctxt.debug('arg: %s', arg)
-                    if expr == arg:
-                        expr = param
-            elif isinstance(stmt, gcc.GimpleAssign):
-                lhs = simplify(stmt.lhs)
-                if stmt.exprcode == gcc.VarDecl:
-                    rhs = simplify(stmt.rhs[0])
-                    if expr == lhs:
-                        expr = rhs
-                elif stmt.exprcode == gcc.ComponentRef:
-                    compref = stmt.rhs[0]
-                    if expr == lhs:
-                        srcsupernode = srcnode.supergraphnode
-                        if ctxt.get_aliases(srcsupernode, compref) in ctxt.states_for_node[srcsupernode]._dict:
-                            expr = compref
-                        else:
-                            expr = compref.target
-            elif isinstance(stmt, gcc.GimplePhi):
-                assert isinstance(srcnode.stmtnode, SplitPhiNode)
-                rhs = simplify(srcnode.stmtnode.rhs)
-                ctxt.debug('  rhs: %r', rhs)
-                lhs = simplify(stmt.lhs)
-                ctxt.debug('  lhs: %r', lhs)
-                if expr == lhs:
-                    expr = rhs
-            if edge.match:
-                if edge.match.get_stateful_gccvar(ctxt) == expr:
-                    # This is a match affecting the expr of interest:
-                    states = srcnode.get_states_for_expr(ctxt, expr)
-
-            ctxt.debug('  expr, states: %s, %s', expr, states)
-            significant_for_node[srcnode] = (expr, states)
+        # Figure out the interesting events along the path:
+        pa = PathAnnotations(ctxt, self, path)
 
         # Now generate a report, using the significant events:
         for edge in path:
             srcnode = edge.srcnode
             srcsupernode = edge.srcnode.innernode
             srcgccloc = srcsupernode.get_gcc_loc()
-            srcexpr = significant_for_node[srcnode][0]
-            srcstates = significant_for_node[srcnode][1]
+            srcexpr = pa.get_significant_expr_at(srcnode)
+            srcstates = pa.get_significant_states_at(srcnode)
 
             dstnode = edge.dstnode
             dstsupernode = edge.dstnode.innernode
             dstgccloc = dstsupernode.get_gcc_loc()
-            dststates = significant_for_node[dstnode][1]
-            dstexpr = significant_for_node[dstnode][0]
+            dstexpr = pa.get_significant_expr_at(dstnode)
+            dststates = pa.get_significant_states_at(dstnode)
 
             with ctxt.indent():
                 ctxt.debug('edge from:')
                 with ctxt.indent():
                     ctxt.debug('srcnode: %s', srcsupernode)
-                    ctxt.debug('significant_for_node[srcnode]: %s',
-                               significant_for_node[srcnode])
+                    ctxt.debug('pa._significant_for_node[srcnode]: %s',
+                               pa._significant_for_node[srcnode])
                     ctxt.debug('srcstates: %s', srcstates)
                     ctxt.debug('srcloc: %s', srcgccloc)
                 ctxt.debug('to:')
                 with ctxt.indent():
                     ctxt.debug('dstnode: %s', dstsupernode)
-                    ctxt.debug('significant_for_node[dstnode]: %s',
-                               significant_for_node[dstnode])
+                    ctxt.debug('pa._significant_for_node[dstnode]: %s',
+                               pa._significant_for_node[dstnode])
                     ctxt.debug('dststates: %s', dststates)
                     ctxt.debug('dstloc: %s', dstgccloc)
 
@@ -211,7 +225,7 @@ class Error:
                          % (srcsupernode.function.decl.name,
                             dstsupernode.function.decl.name))
             if gccloc:
-                if significant_for_node[srcnode] != significant_for_node[dstnode]:
+                if pa._significant_for_node[srcnode] != pa._significant_for_node[dstnode]:
                     if edge.match:
                         # Describe state change:
                         if desc:
