@@ -31,6 +31,7 @@ from gccutils.graph.stmtgraph import ExitNode, SplitPhiNode
 from gccutils.graph.supergraph import \
     CallToReturnSiteEdge, CallToStart, ExitToReturnSite, \
     SupergraphNode, SupergraphEdge, CallNode, ReturnNode, FakeEntryEdge
+from gccutils.graph.query import Query
 
 import sm.checker
 from sm.checker import Match, BooleanOutcome, \
@@ -929,21 +930,10 @@ class Context(object):
                 gcc.set_location(node.stmt.loc)
 
     def find_call_of(self, funcname, within=None):
-        for node in self.graph.nodes:
-            if not self._is_within(node, within):
-                continue
-            # For an interprocedural call, we want the CallNode, not the
-            # ReturnNode.
-            # For a call to an external function, the GimpleCall will be
-            # within a regular SupergraphNode:
-            if not isinstance(node, ReturnNode):
-                stmt = node.stmt
-                if isinstance(stmt, gcc.GimpleCall):
-                    if isinstance(stmt.fn, gcc.AddrExpr):
-                        if isinstance(stmt.fn.operand, gcc.FunctionDecl):
-                            if stmt.fn.operand.name == funcname:
-                                return node
-        raise ValueError('call to %s() not found' % funcname)
+        query = Query(self.graph).get_calls_of(funcname)
+        if within:
+            query = query.within(funcname=within)
+        return query.first()
 
     def find_implementation_of(self, funcname):
         for fun in self.graph.stmtg_for_fun:
