@@ -18,7 +18,7 @@
 from gccutils.dot import Table, Tr, Td, Text, Br, Font
 from gccutils.graph import Graph, Node, Edge
 
-from sm.solver import StatesForNode, ENABLE_LOG
+from sm.solver import StatesForNode
 from sm.utils import stateset_to_str, equivcls_to_str
 
 class ExplodedGraph(Graph):
@@ -289,7 +289,7 @@ def build_exploded_graph(ctxt):
                     # (which might be the whole of the state set):
                     dstnode = inneredge.dstnode
                     dstvalue, match = StatesForNode.get_edge_value(ctxt, srcvalue, inneredge)
-                    if ENABLE_LOG:
+                    if ctxt.options.enable_log:
                         ctxt.log('dstvalue (subset): %s', dstvalue)
                         ctxt.log('match: %s', match)
                         ctxt.log('states for dstnode: %s', ctxt.states_for_node[dstnode])
@@ -307,7 +307,7 @@ def build_exploded_graph(ctxt):
                             ctxt.log('added edge to solo node')
                     else:
                         for dstexpnode in dstexpnodes:
-                            if ENABLE_LOG:
+                            if ctxt.options.enable_log:
                                 ctxt.log('dstexpnode: equivcls: %s state: %s states_subset: %s',
                                          equivcls_to_str(dstexpnode.equivcls),
                                          dstexpnode.state,

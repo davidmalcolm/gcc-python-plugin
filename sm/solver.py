@@ -19,8 +19,6 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
-ENABLE_LOG=0
-ENABLE_DEBUG=0
 DUMP_SOLUTION=0
 SHOW_SOLUTION=0
 
@@ -394,7 +392,7 @@ class StatesForNode(sm.dataflow.AbstractValue):
                     return srcvalue.assign_to_from(ctxt, dstnode, lhs, compref), None
                 else:
                     # Inherit the state from the struct:
-                    if ENABLE_LOG:
+                    if ctxt.options.enable_log:
                         ctxt.log('%s inheriting states %s from "%s" via field "%s"',
                                  lhs,
                                  stateset_to_str(srcvalue.get_states_for_expr(ctxt, compref.target)),
@@ -418,18 +416,18 @@ class StatesForNode(sm.dataflow.AbstractValue):
         # Check to see if any of the precalculated matches from the sm script
         # apply:
         for pm in ctxt.possible_matches_for_edge[edge]:
-            if ENABLE_LOG:
+            if ctxt.options.enable_log:
                 ctxt.log('possible match: %s', pm.describe(ctxt))
             matchingstates = srcvalue.match_states_by_name(ctxt, pm.expr, pm.statenames)
             if matchingstates:
-                if ENABLE_LOG:
+                if ctxt.options.enable_log:
                     ctxt.log('matchingstates: %s' % stateset_to_str(matchingstates))
                     ctxt.log('got match in states %s of %s at %s',
                              stateset_to_str(matchingstates),
                              pm.describe(ctxt),
                              stmt)
                 fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
-                if ENABLE_LOG:
+                if ctxt.options.enable_log:
                     ctxt.log('applying outcome to %s => %s',
                              fpmctxt.pm.expr,
                              pm.outcome)
@@ -437,7 +435,7 @@ class StatesForNode(sm.dataflow.AbstractValue):
                 ctxt.log('got result: %s', result)
                 return result, pm.match
             else:
-                if ENABLE_LOG:
+                if ctxt.options.enable_log:
                     ctxt.log('matchingstates: %s', matchingstates)
                     ctxt.log('got match for wrong state {%s} for %s at %s',
                              stateset_to_str(srcvalue.get_states_for_expr(ctxt, pm.expr)),
@@ -501,18 +499,18 @@ def generate_errors_from_fixed_point(ctxt):
                 ctxt.debug('analyzing out-edge: %s', edge)
                 with ctxt.indent():
                     for pm in ctxt.possible_matches_for_edge[edge]:
-                        if ENABLE_LOG:
+                        if ctxt.options.enable_log:
                             ctxt.debug('possible match: %s', pm.describe(ctxt))
                         matchingstates = states.match_states_by_name(ctxt, pm.expr, pm.statenames)
                         if matchingstates:
-                            if ENABLE_LOG:
+                            if ctxt.options.enable_log:
                                 ctxt.debug('matchingstates: %s' % stateset_to_str(matchingstates))
                                 ctxt.debug('got match in states %s of %s at %s',
                                            stateset_to_str(matchingstates),
                                            pm.describe(ctxt),
                                            stmt)
                             fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
-                            if ENABLE_LOG:
+                            if ctxt.options.enable_log:
                                 ctxt.debug('applying outcome to %s => %s',
                                            fpmctxt.pm.expr,
                                            pm.outcome)
@@ -695,14 +693,14 @@ class Context(object):
 
     def log(self, msg, *args):
         # High-level logging
-        if ENABLE_LOG:
+        if self.options.enable_log:
             formattedmsg = msg % args
             sys.stderr.write('LOG  : %s: %s%s\n'
                              % (self.sm.name, self._get_indent(), formattedmsg))
 
     def debug(self, msg, *args):
         # Lower-level logging
-        if ENABLE_DEBUG:
+        if self.options.enable_debug:
             formattedmsg = msg % args
             sys.stderr.write('DEBUG: %s: %s%s\n'
 

@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+ENABLE_LOG=0
+ENABLE_DEBUG=0
 ENABLE_PROFILE=0
 ENABLE_TIMING=0
 SHOW_SUPERGRAPH=0
@@ -27,6 +29,14 @@ class Options:
                    "INPUTFILENAME.hash.sm.json"
                rather than to stderr, and the presence of such errors will
                not lead to gcc treating the compilation as a failure
+
+    enable_log:
+
+       If set to True, emit medium-level debug information to stderr
+
+    enable_debug:
+
+       If set to True, emit low-level debug information to stderr
 
     enable_profile:
 
@@ -57,6 +67,8 @@ class Options:
                  cache_errors=True,
                  during_lto=False,
                  dump_json=False,
+                 enable_log = ENABLE_LOG,
+                 enable_debug = ENABLE_DEBUG,
                  enable_profile=ENABLE_PROFILE,
                  enable_timing=ENABLE_TIMING,
                  show_supergraph=SHOW_SUPERGRAPH,
@@ -64,6 +76,8 @@ class Options:
         self.cache_errors = cache_errors
         self.during_lto = during_lto
         self.dump_json = dump_json
+        self.enable_log = enable_log
+        self.enable_debug = enable_debug
         self.enable_profile = enable_profile
         self.enable_timing = enable_timing
         self.show_supergraph = show_supergraph
