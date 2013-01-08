@@ -86,7 +86,6 @@ class Solution:
 
             _indent -= 2
 
-            changes = self.changes[node]
             for edge in node.succs:
                 if edge.true_value:
                     boolstr = "true: "
@@ -110,24 +109,6 @@ class Solution:
                     for match in possible_matches:
                         writeln(match.describe(self.ctxt),
                                 indent=6)
-                for key in changes:
-                    srcequivcls, srcstate = key
-                    for dstitem in changes[key]:
-                        if dstitem.node == edge.dstnode:
-                            if dstitem.match:
-                                matchstr = ' (via %s)' % dstitem.match.description(self.ctxt)
-                            else:
-                                matchstr = ''
-                            if srcequivcls == dstitem.state and srcstate == dstitem.state:
-                                writeln('propagation of %s: %s'
-                                        % (equivcls_to_str(srcequivcls), srcstate),
-                                        indent=4)
-                            else:
-                                writeln('change from %s: %s  to  %s: %s%s'
-                                        % (equivcls_to_str(srcequivcls), srcstate,
-                                           equivcls_to_str(dstitem.equivcls), dstitem.state,
-                                           matchstr),
-                                        indent=4)
             _indent -= 2
 
     def to_dot(self, name):
@@ -142,14 +123,14 @@ class Solution:
 
                 inner = node.to_dot_html(self)
                 table = Table(cellborder=1)
-                states = self.solution.states[node]
+                states = self.solution.ctxt.states_for_node[node]
                 if states:
-                    for expr in states:
+                    for equivcls in states._dict:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('%s: %s'
-                                          % (expr, ',' .join(str(state)
-                                                            for state in states[expr]))))
+                                          % (equivcls_to_str(equivcls),
+                                             stateset_to_str(states._dict[equivcls]))))
                 else:
                     tr = table.add_child(Tr())
                     td = tr.add_child(Td(align='left'))
@@ -157,7 +138,7 @@ class Solution:
 
                 facts = self.solution.ctxt.facts_for_node[node]
                 if facts is not None:
-                    for fact in facts:
+                    for fact in facts.set_:
                         tr = table.add_child(Tr())
                         td = tr.add_child(Td(align='left'))
                         td.add_child(Text('FACT: %s' % (fact, )))
