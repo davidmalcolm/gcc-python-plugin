@@ -19,9 +19,6 @@
 # Solver: what states are possible at each location?
 ############################################################################
 
-DUMP_SOLUTION=0
-SHOW_SOLUTION=0
-
 from collections import Counter
 import sys
 
@@ -1102,9 +1099,9 @@ def solve(ctxt, name, selftest):
     ctxt.log('len(ctxt.graph.edges): %i', len(ctxt.graph.edges))
     with Timer(ctxt, 'generating solution'):
         solution = ctxt.solve(name)
-    if DUMP_SOLUTION:
+    if ctxt.options.dump_solution:
         solution.dump(sys.stderr)
-    if SHOW_SOLUTION:
+    if ctxt.options.show_solution:
         dot = solution.to_dot(name)
         # Debug: view the solution:
         if 0:

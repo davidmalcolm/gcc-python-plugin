@@ -21,6 +21,8 @@ ENABLE_PROFILE=0
 ENABLE_TIMING=0
 SHOW_SUPERGRAPH=0
 SHOW_EXPLODED_GRAPH=0
+DUMP_SOLUTION=0
+SHOW_SOLUTION=0
 
 class Options:
     """
@@ -62,6 +64,16 @@ class Options:
 
         If set to True, render and display a png visualization of the
         supergraph exploded by state, before and after pruning valid paths
+
+    dump_solution:
+
+        If set to True, print detailed information about the solver's
+        internal state to stderr
+
+    show_solution:
+
+        If set to True, render and display a png visualization of the
+        solver's internal state
     """
     def __init__(self,
                  cache_errors=True,
@@ -72,7 +84,9 @@ class Options:
                  enable_profile=ENABLE_PROFILE,
                  enable_timing=ENABLE_TIMING,
                  show_supergraph=SHOW_SUPERGRAPH,
-                 show_exploded_graph=SHOW_EXPLODED_GRAPH):
+                 show_exploded_graph=SHOW_EXPLODED_GRAPH,
+                 dump_solution=DUMP_SOLUTION,
+                 show_solution=SHOW_SOLUTION):
         self.cache_errors = cache_errors
         self.during_lto = during_lto
         self.dump_json = dump_json
@@ -82,4 +96,6 @@ class Options:
         self.enable_timing = enable_timing
         self.show_supergraph = show_supergraph
         self.show_exploded_graph = show_exploded_graph
+        self.dump_solution = dump_solution
+        self.show_solution = show_solution
 
