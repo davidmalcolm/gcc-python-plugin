@@ -403,24 +403,8 @@ characters ("|") to signify "or":
    { x < y } | { x <= y }
 
 
-There are also some special patterns, referenced by wrapping them in a pair
+There are also special patterns, referenced by wrapping them in a pair
 of dollar characters:
-
-$leaked$
-$$$$$$$$
-
-This special pattern matches whenever a value is lost e.g. the values of
-locals at the end of function:
-
-.. code-block:: c
-
-  ptr.nonnull:
-    $leaked$ => { error("leak of %s" % ptr) }
-
-.. warning::
-
-   The `$leaked$` pattern is only a placeholder for now, and doesn't work
-   properly
 
 $arg_must_not_be_null$
 $$$$$$$$$$$$$$$$$$$$$$

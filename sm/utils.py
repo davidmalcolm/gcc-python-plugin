@@ -70,3 +70,14 @@ def equivcls_to_str(equivcls):
         return 'None'
     return '{%s}' % ', '.join([str(expr) for expr in equivcls])
 
+def get_retval_aliases(ctxt, supernode):
+    exitstmtnode = supernode.stmtg.exit
+    retval = exitstmtnode.returnval
+    if retval is None:
+        # No return value
+        return frozenset()
+
+    retval = simplify(retval)
+    ctxt.debug('retval: %s', retval)
+    exitsupernode = ctxt.graph.supernode_for_stmtnode[exitstmtnode]
+    return ctxt.get_aliases(exitsupernode, retval)

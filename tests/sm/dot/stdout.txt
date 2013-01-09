@@ -73,22 +73,6 @@ digraph test_script {
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
-    ptr_unchecked -> ptr_unchecked [label=<$leaked$: 
-            error(&apos;leak of %s&apos; % ptr,
-                  # This appears to be:
-                  # &quot;CWE-401: Improper Release of Memory Before Removing
-                  #  Last Reference (&apos;Memory Leak&apos;)&quot;
-                  # although the title of CWE-401 appears to be misleading
-                  cwe=&apos;CWE-401&apos;)
-         >];
-    ptr_nonnull -> ptr_nonnull [label=<$leaked$: 
-            error(&apos;leak of %s&apos; % ptr,
-                  # This appears to be:
-                  # &quot;CWE-401: Improper Release of Memory Before Removing
-                  #  Last Reference (&apos;Memory Leak&apos;)&quot;
-                  # although the title of CWE-401 appears to be misleading
-                  cwe=&apos;CWE-401&apos;)
-         >];
   }
 }
 

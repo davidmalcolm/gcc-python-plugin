@@ -66,15 +66,4 @@ sm malloc_checker {
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
          }};
-
-  ptr.unchecked, ptr.nonnull:
-    $leaked$
-      => {{
-            error('leak of %s' % ptr,
-                  # This appears to be:
-                  # "CWE-401: Improper Release of Memory Before Removing
-                  #  Last Reference ('Memory Leak')"
-                  # although the title of CWE-401 appears to be misleading
-                  cwe='CWE-401')
-         }};
 }

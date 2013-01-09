@@ -21,9 +21,8 @@ from gccutils.graph.stmtgraph import ExitNode, SplitPhiNode
 from gccutils.graph.supergraph import CallNode, ReturnNode, \
     CallToStart, ExitToReturnSite
 
-from sm.leaks import get_retval_aliases
 from sm.reporter import Report, Note
-from sm.utils import simplify, stateset_to_str
+from sm.utils import simplify, stateset_to_str, get_retval_aliases
 
 class PathAnnotations:
     """

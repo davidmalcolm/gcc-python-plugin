@@ -589,8 +589,6 @@ class SpecialPattern(Pattern):
 
     @classmethod
     def make(cls, name):
-        if name == 'leaked':
-            return LeakedPattern(name)
         if name == 'arg_must_not_be_null':
             return NonnullArg(name)
 
@@ -598,17 +596,6 @@ class SpecialPattern(Pattern):
             def __init__(self, name):
                 self.name = name
         raise UnknownSpecialPattern(name)
-
-class LeakedPattern(SpecialPattern):
-    def iter_matches(self, stmt, edge, ctxt):
-        ctxt.debug('LeakedPattern.iter_matches(%s, %s)', stmt, edge)
-        for vardecl in ctxt.leaks_for_edge[edge]:
-            m = Match(self, edge.srcnode)
-            m._dict[ctxt._stateful_decl] = vardecl
-            yield m
-
-    def description(self, match, ctxt):
-        return 'leak of %s' % match.get_stateful_gccvar(ctxt)
 
 class NonnullArg(SpecialPattern):
     def iter_matches(self, stmt, edge, ctxt):

@@ -836,12 +836,6 @@ class Context(object):
         with Timer(self, 'sm.dataflow.fixed_point_solver(Facts)'):
             self.facts_for_node = sm.dataflow.fixed_point_solver(self, self.graph, Facts)
 
-        # Preprocessing phase: locate places where rvalues are leaked, for
-        # later use by $leaked/LeakedPattern
-        from sm.leaks import find_leaks
-        with Timer(self, 'find_leaks'):
-            self.leaks_for_edge = find_leaks(self)
-
         # Preprocessing: set up possible_matches_for_edge dict:
         with Timer(self, 'find_possible_matches'):
             self.possible_matches_for_edge = {}
