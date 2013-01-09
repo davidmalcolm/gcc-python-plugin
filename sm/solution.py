@@ -93,15 +93,6 @@ class Solution:
                     boolstr = "false: "
                 else:
                     boolstr = ""
-                leaks = self.ctxt.leaks_for_edge[edge]
-                if leaks:
-                    leakstr = (" leaks: {%s}"
-                               % (', '.join([str(expr)
-                                             for expr in leaks])))
-                else:
-                    leakstr = ""
-                writeln('%sgoto %i;%s' % (boolstr, index_for_node[edge.dstnode], leakstr),
-                        indent=2)
                 possible_matches = self.ctxt.possible_matches_for_edge[edge]
                 if possible_matches:
                     writeln('possible matches:',
