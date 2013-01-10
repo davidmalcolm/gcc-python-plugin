@@ -93,6 +93,8 @@ class Solution:
                     boolstr = "false: "
                 else:
                     boolstr = ""
+                writeln('%sgoto %i' % (boolstr, index_for_node[edge.dstnode]),
+                        indent=2)
                 possible_matches = self.ctxt.possible_matches_for_edge[edge]
                 if possible_matches:
                     writeln('possible matches:',
