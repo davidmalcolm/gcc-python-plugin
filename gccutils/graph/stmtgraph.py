@@ -283,7 +283,7 @@ class SplitPhiNode(StmtNode):
             raise UnknownEdge()
 
     def __str__(self):
-        return '%s via %s' % (self.stmt, self.inneredge)
+        return '%s = %s (via %s)' % (self.stmt.lhs, self.rhs, self.stmt)
 
     def __repr__(self):
         return 'SplitPhiNode(%r, %r)' % (self.stmt, self.inneredge)
