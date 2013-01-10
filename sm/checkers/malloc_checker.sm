@@ -29,7 +29,7 @@ sm malloc_checker {
             error('use of NULL pointer %s' % ptr,
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
-         }};
+         }}, ptr.stop;
 
   ptr.start, ptr.unchecked, ptr.null, ptr.nonnull:
     { free(ptr) } => ptr.free;
@@ -40,13 +40,13 @@ sm malloc_checker {
                 error('double-free of %s' % ptr,
                       # "CWE-415: Double Free"
                       cwe='CWE-415')
-             }}
+             }}, ptr.stop
     | { ptr }
           => {{
                 error('use-after-free of %s' % ptr,
                       # "CWE-416: Use After Free"
                       cwe='CWE-416')
-             }}
+             }}, ptr.stop
     ;
 
   ptr.unchecked:
@@ -56,7 +56,7 @@ sm malloc_checker {
                   % (ptr, argnumber, function),
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
-          }};
+          }}, ptr.nonnull;
 
   ptr.null:
     $arg_must_not_be_null$
@@ -65,5 +65,5 @@ sm malloc_checker {
                   % (ptr, argnumber, function),
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
-         }};
+         }}, ptr.stop;
 }

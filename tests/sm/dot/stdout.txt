@@ -47,6 +47,7 @@ digraph test_script {
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
+    ptr_null -> ptr_stop [label=<{ *ptr }>];
     ptr_start -> ptr_free [label=<{ free(ptr) } >];
     ptr_unchecked -> ptr_free [label=<{ free(ptr) } >];
     ptr_null -> ptr_free [label=<{ free(ptr) } >];
@@ -56,23 +57,27 @@ digraph test_script {
                       # &quot;CWE-415: Double Free&quot;
                       cwe=&apos;CWE-415&apos;)
              >];
+    ptr_free -> ptr_stop [label=<{ free(ptr) } >];
     ptr_free -> ptr_free [label=<{ ptr }: 
                 error(&apos;use-after-free of %s&apos; % ptr,
                       # &quot;CWE-416: Use After Free&quot;
                       cwe=&apos;CWE-416&apos;)
              >];
+    ptr_free -> ptr_stop [label=<{ ptr }>];
     ptr_unchecked -> ptr_unchecked [label=<$arg_must_not_be_null$: 
             error(&apos;possibly-NULL pointer %s passed as argument %i to %s&apos;
                   % (ptr, argnumber, function),
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
           >];
+    ptr_unchecked -> ptr_nonnull [label=<$arg_must_not_be_null$>];
     ptr_null -> ptr_null [label=<$arg_must_not_be_null$: 
             error(&apos;NULL pointer %s passed as argument %i to %s&apos;
                   % (ptr, argnumber, function),
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
+    ptr_null -> ptr_stop [label=<$arg_must_not_be_null$>];
   }
 }
 

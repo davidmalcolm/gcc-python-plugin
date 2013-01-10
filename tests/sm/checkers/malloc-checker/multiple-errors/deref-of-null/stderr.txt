@@ -1,0 +1,4 @@
+tests/sm/checkers/malloc-checker/multiple-errors/deref-of-null/input.c: In function 'test':
+tests/sm/checkers/malloc-checker/multiple-errors/deref-of-null/input.c:34:nn: error: use of NULL pointer p [CWE-690]
+tests/sm/checkers/malloc-checker/multiple-errors/deref-of-null/input.c:31:nn: note: p assigned to 0
+tests/sm/checkers/malloc-checker/multiple-errors/deref-of-null/input.c:34:nn: note: use of NULL pointer p

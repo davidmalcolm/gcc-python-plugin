@@ -674,15 +674,10 @@ class TransitionTo(Outcome):
             if self.statename == other.statename:
                 return True
 
-    def get_result(self, fpmctxt, srcvalue):
-        from sm.solver import StatesForNode, State
-        assert isinstance(srcvalue, StatesForNode) # not None
-
+    def get_effect_for_state(self, ctxt, edge, match, state):
+        from sm.solver import State
         dststate = State(self.statename)
-        return srcvalue.set_state_for_expr(fpmctxt.ctxt,
-                                           fpmctxt.edge.dstnode,
-                                           fpmctxt.pm.expr,
-                                           dststate)
+        return Effect(dststate, [])
 
     def iter_reachable_statenames(self):
         yield self.statename
@@ -710,6 +705,10 @@ class BooleanOutcome(Outcome):
         visitor.visit(self)
         self.outcome.accept(visitor)
 
+    # get_effect_for_state() is never called on a BooleanOutcome; the
+    # BooleanOutcome is always resolved per-edge into the guarded outcome,
+    # or discarded.  This happens within find_possible_matches()
+
 class BoundVariable:
     """
     A variable exposed to a Python script fragment
@@ -725,9 +724,9 @@ class BoundVariable:
     def __getattr__(self, name):
         return getattr(self.gccexpr, name)
 
-class PythonEffect:
+class Effect:
     """
-    The result of applying a PythonOutcome to a particular state.
+    The result of applying an Outcome to a particular state.
     """
     def __init__(self, dststate, errors):
         from sm.solver import State
@@ -738,34 +737,6 @@ class PythonEffect:
 class PythonOutcome(Outcome, PythonFragment):
     def iter_reachable_statenames(self):
         return []
-
-    def get_result(self, fpmctxt, srcvalue):
-        from sm.solver import StatesForNode, State
-        assert isinstance(srcvalue, StatesForNode) # not None
-
-        ctxt = fpmctxt.ctxt
-
-        result = None
-        # We run the python fragment repeatedly, once for each possible
-        # input state.
-        edge = fpmctxt.edge
-        pm = fpmctxt.pm
-        for state in fpmctxt.matchingstates:
-            effect = self.get_effect_for_state(ctxt, edge, pm.match, state)
-
-            # Add the errors to the fpmctxt.  They will be discarded
-            # during fixed-point solving, but will be acted on in
-            # sm.solver.generate_errors_from_fixed_point()
-            for error in effect.errors:
-                fpmctxt.add_error(error)
-
-            newresult = srcvalue.set_state_for_expr(ctxt,
-                                                    edge.dstnode,
-                                                    pm.expr,
-                                                    effect.dststate)
-            ctxt.log('newresult: %s' % newresult)
-            result = StatesForNode.meet(ctxt, result, newresult)
-        return result
 
     def get_effect_for_state(self, ctxt, edge, match, state):
         """
@@ -818,4 +789,4 @@ class PythonOutcome(Outcome, PythonFragment):
         for name in locals_:
             del ctxt.python_locals[name]
 
-        return PythonEffect(globals_['state'], errors)
+        return Effect(globals_['state'], errors)

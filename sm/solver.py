@@ -114,22 +114,24 @@ class PossibleMatch(object):
                  'statenames',
                  'sc',
                  'pattern',
-                 'outcome',
+                 'outcomes',
                  'match')
 
-    def __init__(self, expr, sc, pattern, outcome, match):
+    def __init__(self, expr, sc, pattern, outcomes, match):
         self.expr = expr
         self.statenames = StateNameSet(sc.statelist)
         self.sc = sc
         self.pattern = pattern
-        self.outcome = outcome
+        self.outcomes = outcomes
         self.match = match
 
     def describe(self, ctxt):
         stateliststr = ', '.join([str(state)
                                   for state in self.statenames])
+        outcomeliststr = ', '.join([str(outcome)
+                                    for outcome in self.outcomes])
         return '%r: %s => %s due to %s' % (str(self.expr), stateliststr,
-                                           self.outcome, self.pattern)
+                                           outcomeliststr, self.pattern)
 
 def find_possible_matches(ctxt, edge):
     result = []
@@ -152,6 +154,9 @@ def find_possible_matches(ctxt, edge):
                     ctxt.debug('pr.pattern: %r', pr.pattern)
                     ctxt.debug('match: %r', match)
                     ctxt.debug('match.get_stateful_gccvar(ctxt): %r', match.get_stateful_gccvar(ctxt))
+
+                    # Filter the list of outcomes to those that actually apply:
+                    outcomes = []
                     for outcome in pr.outcomes:
                         # Resolve any booleans for the edge, either going
                         # directly to the guarded outcome, or discarding
@@ -163,27 +168,13 @@ def find_possible_matches(ctxt, edge):
                                 outcome = outcome.outcome
                             else:
                                 continue
-                        yield PossibleMatch(match.get_stateful_gccvar(ctxt),
-                                            sc,
-                                            pr.pattern,
-                                            outcome,
-                                            match)
+                        outcomes.append(outcome)
 
-class FixedPointMatchContext:
-    """
-    An actual match of a PossibleMatch, to be supplied to Outcome.get_result()
-    """
-    __slots__ = ('ctxt', 'pm', 'edge', 'matchingstates', 'errors')
-
-    def __init__(self, ctxt, pm, edge, matchingstates):
-        self.ctxt = ctxt
-        self.pm = pm
-        self.edge = edge
-        self.matchingstates = matchingstates
-        self.errors = []
-
-    def add_error(self, err):
-        self.errors.append(err)
+                    yield PossibleMatch(match.get_stateful_gccvar(ctxt),
+                                        sc,
+                                        pr.pattern,
+                                        outcomes,
+                                        match)
 
 class StatesForNode(sm.dataflow.AbstractValue):
     """
@@ -424,12 +415,43 @@ class StatesForNode(sm.dataflow.AbstractValue):
                              stateset_to_str(matchingstates),
                              pm.describe(ctxt),
                              stmt)
-                fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
-                if ctxt.options.enable_log:
-                    ctxt.log('applying outcome to %s => %s',
-                             fpmctxt.pm.expr,
-                             pm.outcome)
-                result = pm.outcome.get_result(fpmctxt, srcvalue)
+
+                # What state changes happen in the outcomes?
+                # Apply the outcomes in order, merging the result of any
+                # that lead to state changes.
+                result = None
+                for state in matchingstates:
+                    oldstate = state
+                    for outcome in pm.outcomes:
+                        if ctxt.options.enable_log:
+                            ctxt.log('applying outcome to %s => %s with %s',
+                                     pm.expr,
+                                     outcome,
+                                     state)
+                        effect = outcome.get_effect_for_state(ctxt, edge,
+                                                              pm.match, state)
+
+                        # Update the effective state as seen by subsequent
+                        # outcomes for this pattern match:
+                        state = effect.dststate
+
+                    # Extract state changes from the effect:
+                    newresult = srcvalue.set_state_for_expr(ctxt,
+                                                            edge.dstnode,
+                                                            pm.expr,
+                                                            state)
+                    ctxt.log('newresult: %s' % newresult)
+                    result = StatesForNode.meet(ctxt, result, newresult)
+
+                # "result" is now the merger of all possible result states
+                # for all input states
+
+                # If none of the outcomes caused state changes, propagate
+                # them:
+                if result is None:
+                    raise foo
+                    #result = srcvalue.propagate_to(ctxt, edge.dstnode)
+
                 ctxt.log('got result: %s', result)
                 return result, pm.match
             else:
@@ -507,17 +529,18 @@ def generate_errors_from_fixed_point(ctxt):
                                            stateset_to_str(matchingstates),
                                            pm.describe(ctxt),
                                            stmt)
-                            fpmctxt = FixedPointMatchContext(ctxt, pm, edge, matchingstates)
-                            if ctxt.options.enable_log:
-                                ctxt.debug('applying outcome to %s => %s',
-                                           fpmctxt.pm.expr,
-                                           pm.outcome)
-                            result = pm.outcome.get_result(fpmctxt, states)
-                            ctxt.debug('got result: %s', result)
-
-                            # Merge errors from fpmctxt into one set:
-                            for err in fpmctxt.errors:
-                                ctxt.errors_from_fixed_point.add(err)
+                            for outcome in pm.outcomes:
+                                for state in matchingstates:
+                                    if ctxt.options.enable_log:
+                                        ctxt.debug('applying outcome to %s => %s with %s',
+                                                   pm.expr,
+                                                   outcome,
+                                                   states)
+                                    effect = outcome.get_effect_for_state(ctxt, edge,
+                                                                          pm.match, state)
+                                    # Extract errors from the effect:
+                                    for err in effect.errors:
+                                        ctxt.errors_from_fixed_point.add(err)
 
 class Context(object):
     # An sm.checker.Sm (do we need any other context?)
@@ -922,6 +945,10 @@ class Context(object):
         if node.stmt:
             if node.stmt.loc:
                 gcc.set_location(node.stmt.loc)
+
+    def get_nodes(self):
+        query = Query(self.graph)
+        return query
 
     def find_call_of(self, funcname, within=None):
         query = Query(self.graph).get_calls_of(funcname)

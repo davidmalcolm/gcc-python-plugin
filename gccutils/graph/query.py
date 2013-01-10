@@ -86,6 +86,25 @@ class BaseQuery:
                 return '%s in which the LHS is assigned to a variable named %s' % (self.innerquery, self.varname)
         return AssigningTo(self, varname)
 
+    def assigning_constant(self, constant):
+        class AssigningConstant(CompoundQuery):
+            def __init__(self, innerquery, constant):
+                CompoundQuery.__init__(self, innerquery)
+                self.constant = constant
+            def __iter__(self):
+                for node in self.innerquery:
+                    stmt = node.stmt
+                    if isinstance(stmt, gcc.GimpleAssign):
+                        if stmt.exprcode == gcc.IntegerCst:
+                            if stmt.rhs[0] == self.constant:
+                                yield node
+            def __repr__(self):
+                return ('AssigningConstant(%r, constant=%r)'
+                        % (self.innerquery, self.constant))
+            def __str__(self):
+                return '%s in which an assignment of the value %s is made' % (self.innerquery, self.constant)
+        return AssigningConstant(self, constant)
+
     def within(self, funcname):
         class Within(CompoundQuery):
             def __init__(self, innerquery, funcname):
