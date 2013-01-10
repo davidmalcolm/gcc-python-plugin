@@ -37,13 +37,13 @@ digraph test_script {
     ptr_free -> ptr_nonnull [label=<{ ptr != 0 } is True>];
     ptr_free -> ptr_null [label=<{ ptr != 0 } is False>];
     ptr_unchecked -> ptr_unchecked [label=<{ *ptr }: 
-            error(&apos;use of possibly-NULL pointer %s&apos; % ptr,
+            error(&apos;dereference of possibly-NULL pointer %s&apos; % ptr,
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];
     ptr_unchecked -> ptr_nonnull [label=<{ *ptr }>];
     ptr_null -> ptr_null [label=<{ *ptr }: 
-            error(&apos;use of NULL pointer %s&apos; % ptr,
+            error(&apos;dereference of NULL pointer %s&apos; % ptr,
                   # &quot;CWE-690: Unchecked Return Value to NULL Pointer Dereference&quot;
                   cwe=&apos;CWE-690&apos;)
          >];

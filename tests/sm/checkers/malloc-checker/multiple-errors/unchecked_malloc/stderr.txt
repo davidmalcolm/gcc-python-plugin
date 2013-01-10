@@ -1,4 +1,4 @@
 tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c: In function 'test':
-tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c:34:nn: error: use of possibly-NULL pointer p [CWE-690]
+tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c:34:nn: error: dereference of possibly-NULL pointer p [CWE-690]
 tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c:31:nn: note: p assigned to the result of malloc()
-tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c:34:nn: note: use of possibly-NULL pointer p
+tests/sm/checkers/malloc-checker/multiple-errors/unchecked_malloc/input.c:34:nn: note: dereference of possibly-NULL pointer p

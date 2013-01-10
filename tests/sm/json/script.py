@@ -85,7 +85,7 @@ def verify_json(jsonobj):
     assert jsonobj['loc']['column'] == 8
 
     # Verify jsonobj['message']:
-    assert jsonobj['message'] == "use of possibly-NULL pointer foo"
+    assert jsonobj['message'] == "dereference of possibly-NULL pointer foo"
 
     # Verify jsonobj['notes']:
     assert len(jsonobj['notes']) == 2

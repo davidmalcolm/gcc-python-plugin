@@ -1,4 +1,4 @@
 tests/sm/assignments/dereference-on-rhs/input.c: In function 'test':
-tests/sm/assignments/dereference-on-rhs/input.c:25:nn: error: use of possibly-NULL pointer foo [CWE-690]
+tests/sm/assignments/dereference-on-rhs/input.c:25:nn: error: dereference of possibly-NULL pointer foo [CWE-690]
 tests/sm/assignments/dereference-on-rhs/input.c:24:nn: note: foo assigned to the result of malloc()
-tests/sm/assignments/dereference-on-rhs/input.c:25:nn: note: use of possibly-NULL pointer foo
+tests/sm/assignments/dereference-on-rhs/input.c:25:nn: note: dereference of possibly-NULL pointer foo

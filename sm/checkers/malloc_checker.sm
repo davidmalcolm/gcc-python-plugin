@@ -18,7 +18,7 @@ sm malloc_checker {
   ptr.unchecked:
     { *ptr }
       => {{
-            error('use of possibly-NULL pointer %s' % ptr,
+            error('dereference of possibly-NULL pointer %s' % ptr,
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
          }}, ptr.nonnull;
@@ -26,7 +26,7 @@ sm malloc_checker {
   ptr.null:
     { *ptr }
       => {{
-            error('use of NULL pointer %s' % ptr,
+            error('dereference of NULL pointer %s' % ptr,
                   # "CWE-690: Unchecked Return Value to NULL Pointer Dereference"
                   cwe='CWE-690')
          }}, ptr.stop;
