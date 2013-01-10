@@ -471,15 +471,15 @@ You can provide more than one outcome, separated by commas:
    x.tainted:
       { x < y } => true=x.has_ub, false=x.has_lb
 
-All applicable outcomes are run, so that you can have both a Python fragment
-and a named state:
+All applicable outcomes are run in sequence, so that you can have both a
+Python fragment and a named state:
 
 .. code-block:: c
 
   /*
      Example of both a Python outcome (to issue an error), and a
      transition to a named state (since we only want to warn about the first
-     dereference)
+     such dereference)
    */
   ptr.unchecked:
     { *ptr }
