@@ -1,0 +1,5 @@
+tests/sm/checkers/points_to_stack/return_of_ptr_to_local/input.c: In function 'test':
+tests/sm/checkers/points_to_stack/return_of_ptr_to_local/input.c:41:nn: error: return of "result" returns address within stack of local variable "buffer" [CWE-562]
+tests/sm/checkers/points_to_stack/return_of_ptr_to_local/input.c:38:nn: note: assignment of result to &buffer
+tests/sm/checkers/points_to_stack/return_of_ptr_to_local/input.c:41:nn: note: state of result ("State('ptr.points_to_stack', 'var_pointed_to'=gcc.VarDecl('buffer'))") propagated to result
+tests/sm/checkers/points_to_stack/return_of_ptr_to_local/input.c:41:nn: note: return of "result" returns address within stack of local variable "buffer"

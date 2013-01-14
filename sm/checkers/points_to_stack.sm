@@ -1,0 +1,60 @@
+/*
+   Copyright 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2013 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+*/
+
+/*
+   Checker for CWE-562: Return of Stack Variable Address
+
+   This will only detect simple cases: it doesn't attempt to track e.g.
+   pointers within a return struct, or within a reference graph.
+
+   Also, it potentially exhibits false positives for the case where
+   a pointer to a variable deeper in the stack is returned by a frame
+   higher up, where the usage of the area is within the lifetime of
+   the stack frame holding it.
+
+ */
+sm points_to_stack {
+   stateful decl any_pointer ptr;
+   decl any_variable var;
+
+   {{
+        def is_on_stack(var):
+           import gcc
+
+           if isinstance(var.context, gcc.FunctionDecl):
+               if not var.static:
+                  return True
+   }}
+
+   ptr.*:
+      { ptr = &var } =>
+        {{
+            if is_on_stack(var):
+                set_state('ptr.points_to_stack', var_pointed_to=var)
+        }};
+
+   ptr.points_to_stack:
+       { return ptr }
+         => {{
+                error('return of "%s" returns address within stack of local variable "%s"'
+                      % (ptr, state.var_pointed_to),
+                      # "CWE-562: Return of Stack Variable Address":
+                      cwe='CWE-562')
+            }};
+}

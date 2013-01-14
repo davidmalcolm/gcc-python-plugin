@@ -60,6 +60,15 @@ Example script: checking for tainted data
 .. literalinclude:: ../sm/checkers/taint.sm
   :language: c
 
+Example script: detecting return of pointers to the stack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+http://cwe.mitre.org/data/definitions/562.html
+
+.. literalinclude:: ../sm/checkers/points_to_stack.sm
+  :lines: 20-
+  :language: c
+
 Invoking the checker
 --------------------
 
@@ -132,7 +141,7 @@ Reserved words, which can't be used as identifiers:
   * decl
   * stateful
   * true, false:
-  * any_pointer, any_expr
+  * any_pointer, any_variable, any_expr
   * pat
 
 Fragments of Python are enclosed in pairs of braces e.g.::
@@ -248,8 +257,8 @@ fragments of C code.  They are of the form::
 
    decl TYPE NAME;
 
-where TYPE can be one of `any_expr` or `any_pointer`, and NAME is an
-identifier.
+where TYPE can be one of `any_expr`, `any_pointer` or `any_variable`, and
+NAME is an identifier.
 
 One of the declarations should be prepended with "stateful", indicating that
 this is the expression whose state is being tracked.
@@ -357,6 +366,15 @@ enclosed in braces:
     { q = 0 }
     { str = "hello world" }
     { a = b }
+
+    /* Assignment to address of another variable: */
+    { p = &q }
+
+    /* Return statement: */
+    { return p }
+    { return 42 }
+    { return "foo" }
+    { return }
 
     /* Invocation of a specific named function: */
     { ptr = malloc(sz) }
@@ -693,6 +711,15 @@ Various kinds of "cpattern"::
             | ID ASSIGNMENT LITERAL_NUMBER
             | ID ASSIGNMENT ID
        # e.g. "q = 0"
+
+   cpattern : ID ASSIGNMENT AMPERSAND ID
+       # e.g. "&var"
+
+   cpattern : RETURN ID
+            | RETURN LITERAL_STRING
+            | RETURN LITERAL_NUMBER
+            | RETURN
+       # e.g. "return var"
 
    cpattern : ID ASSIGNMENT ID LPAREN fncall_args RPAREN
        # e.g. "ptr = malloc()"

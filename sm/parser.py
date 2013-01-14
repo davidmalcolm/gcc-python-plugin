@@ -24,9 +24,9 @@ import ply.yacc as yacc
 from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
     PatternRule, PythonFragment, \
     NamedPatternReference, SpecialPattern, OrPattern, \
-    Assignment, \
+    Assignment, Return, \
     ResultOfFnCall, ArgsOfFnCall, Comparison, VarDereference, ArrayLookup, \
-    VarUsage, \
+    VarUsage, AddressOf, \
     TransitionTo, BooleanOutcome, PythonOutcome
 
 ############################################################################
@@ -35,11 +35,12 @@ from sm.checker import Checker, Sm, Decl, NamedPattern, StateClause, \
 DEBUG_LINE_NUMBERING = 0
 
 reserved = ['decl', 'sm', 'stateful', 'true', 'false',
-            'any_pointer', 'any_expr', 'pat']
+            'any_pointer', 'any_variable', 'any_expr', 'pat', 'return']
 tokens = [
     'ID','LITERAL_NUMBER', 'LITERAL_STRING',
     'ACTION',
     'LBRACE','RBRACE', 'LPAREN', 'RPAREN', 'LSQUARE', 'RSQUARE',
+    'AMPERSAND',
     'COMMA', 'DOT',
     'COLON', 'SEMICOLON',
     'ASSIGNMENT', 'STAR', 'PIPE',
@@ -67,6 +68,7 @@ t_LBRACE     = r'{'
 t_RBRACE     = r'}'
 t_LSQUARE     = r'\['
 t_RSQUARE     = r'\]'
+t_AMPERSAND  = r'&'
 t_COMMA      = r','
 t_DOT        = r'\.'
 t_COLON      = r':'
@@ -231,6 +233,7 @@ def p_optional_stateful(p):
 def p_declkind(p):
     '''
     declkind : ANY_POINTER
+             | ANY_VARIABLE
              | ANY_EXPR
     '''
     p[0] = p[1]
@@ -329,6 +332,24 @@ def p_cpattern_assignment(p):
     '''
     # e.g. "q = 0"
     p[0] = Assignment(lhs=p[1], rhs=p[3])
+
+def p_cpattern_address_of(p):
+    'cpattern : ID ASSIGNMENT AMPERSAND ID'
+    # e.g. "&var"
+    p[0] = AddressOf(lhs=p[1], rhs=p[4])
+
+def p_cpattern_return(p):
+    '''
+    cpattern : RETURN ID
+             | RETURN LITERAL_STRING
+             | RETURN LITERAL_NUMBER
+             | RETURN
+    '''
+    # e.g. "return var"
+    if len(p) == 3:
+        p[0] = Return(retval=p[2])
+    else:
+        p[0] = Return(retval=None)
 
 def p_cpattern_result_of_fn_call(p):
     'cpattern : ID ASSIGNMENT ID LPAREN fncall_args RPAREN'

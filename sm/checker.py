@@ -106,6 +106,8 @@ class Decl(Clause):
     def make(cls, has_state, declkind, name):
         if declkind == 'any_pointer':
             return AnyPointer(has_state, name)
+        elif declkind == 'any_variable':
+            return AnyVariable(has_state, name)
         elif declkind == 'any_expr':
             return AnyExpr(has_state, name)
         raise UnknownDeclkind(declkind)
@@ -126,6 +128,11 @@ class AnyPointer(Decl):
     kind = 'any_pointer'
     def matched_by(self, gccexpr):
         return isinstance(gccexpr.type, gcc.PointerType)
+
+class AnyVariable(Decl):
+    kind = 'any_variable'
+    def matched_by(self, gccexpr):
+        return isinstance(gccexpr, (gcc.VarDecl, gcc.ParmDecl))
 
 class AnyExpr(Decl):
     kind = 'any_expr'
@@ -349,6 +356,60 @@ class Assignment(Pattern):
         return ('%s assigned to %s'
                 % (match.describe(ctxt, self.lhs),
                    match.describe(ctxt, self.rhs)))
+
+class AddressOf(Pattern):
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+    def __repr__(self):
+        return 'AddressOf(lhs=%r, rhs=%r)' % (self.lhs, self.rhs)
+    def __str__(self):
+        return '{ %s = &%s }' % (self.lhs, self.rhs)
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            if self.lhs == other.lhs:
+                if self.rhs == other.rhs:
+                    return True
+    def iter_matches(self, stmt, edge, ctxt):
+        if isinstance(stmt, gcc.GimpleAssign):
+            if stmt.exprcode == gcc.AddrExpr:
+                m = Match(self, edge.srcnode)
+                if m.match_term(ctxt, stmt.lhs, self.lhs):
+                    if m.match_term(ctxt, stmt.rhs[0], self.rhs):
+                        yield m
+
+    def description(self, match, ctxt):
+        return ('assignment of %s to &%s' %
+                (match.describe(ctxt, self.lhs),
+                 match.describe(ctxt, self.rhs)))
+
+class Return(Pattern):
+    def __init__(self, retval):
+        self.retval = retval
+    def __repr__(self):
+        return 'Return(retval=%r)' % (self.retval, )
+    def __str__(self):
+        return '{ return %s }' % (self.retval, )
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            if self.retval == other.retval:
+                return True
+    def iter_matches(self, stmt, edge, ctxt):
+        if isinstance(stmt, gcc.GimpleReturn):
+            m = Match(self, edge.srcnode)
+            if self.retval is not None:
+                if m.match_term(ctxt, stmt.retval, self.retval):
+                    yield m
+            else:
+                if stmt.retval is None:
+                    yield m
+
+    def description(self, match, ctxt):
+        if self.retval is not None:
+            return ('return of %s' %
+                    match.describe(ctxt, self.retval))
+        else:
+            return 'return'
 
 class FunctionCall(Pattern):
     def __init__(self, fnname, args):
