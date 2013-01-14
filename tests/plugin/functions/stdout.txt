@@ -4,31 +4,37 @@ len(fn.local_decls): 6
 local_decls[0]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'f'
+  local.context: gcc.FunctionDecl('foo')
   local.initial: None
   str(local.type): 'float'
 local_decls[1]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'g'
+  local.context: gcc.FunctionDecl('foo')
   local.initial: None
   str(local.type): 'float'
 local_decls[2]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'h'
+  local.context: gcc.FunctionDecl('foo')
   local.initial: None
   str(local.type): 'float'
 local_decls[3]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'i'
+  local.context: gcc.FunctionDecl('foo')
   local.initial.constant: 42
   str(local.type): 'int'
 local_decls[4]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'keywords'
+  local.context: gcc.FunctionDecl('foo')
   local.initial: None
   str(local.type): 'char *[2]'
 local_decls[5]
   type(local): <type 'gcc.VarDecl'>
   local.name: 'd'
+  local.context: gcc.FunctionDecl('foo')
   local.initial: None
   str(local.type): 'const double'
 fn.funcdef_no: 0

@@ -465,6 +465,12 @@ def generate_tree_code_classes():
                               'PyBool_FromLong(TREE_STATIC(self->t))',
                               "Boolean: is this variable to be allocated with static storage")
 
+        if tree_type.SYM in ('VAR_DECL', 'PARM_DECL', 'FUNCTION_DECL',
+                             'LABEL_DECL', 'RESULT_DECL', 'CONST_DECL'):
+            add_simple_getter('context',
+                              'gcc_python_make_wrapper_tree(DECL_CONTEXT(self->t))',
+                              'The context of the declaration: a gcc.FunctionDecl or gcc.TranslationUnitDecl')
+
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
                               "The elements of this constructor, as a list of (index, gcc.Tree) pairs")

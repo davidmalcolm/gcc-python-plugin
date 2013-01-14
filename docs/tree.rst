@@ -313,10 +313,20 @@ Declarations
    A subclass of :py:class:`gcc.Declaration` indicating the declaration of a
    parameter to a function or method.
 
+   .. py:attribute:: context
+
+      This gives the :py:class:`gcc.FunctionDecl` where the parameter was
+      declared.
+
 .. py:class:: gcc.ResultDecl
 
    A subclass of :py:class:`gcc.Declaration` declararing a dummy variable that
    will hold the return value from a function.
+
+   .. py:attribute:: context
+
+      This gives the :py:class:`gcc.FunctionDecl` for the corresponding
+      function.
 
 .. py:class:: gcc.VarDecl
 
@@ -331,6 +341,14 @@ Declarations
    .. py:attribute:: static
 
       (boolean) Is this variable to be allocated with static storage?
+
+   .. py:attribute:: context
+
+      This gives the :py:class:`gcc.Tree` where the variable was declared.
+
+      For a local variable, this will be a :py:class:`gcc.FunctionDecl`, and
+      for a global variable, this will be a
+      :py:class:`gcc.TranslationUnitDecl`
 
 .. py:class:: gcc.NamespaceDecl
 

@@ -38,6 +38,7 @@ def on_pass_execution(p, fn):
             print('local_decls[%i]' % i)
             print('  type(local): %r' % type(local))
             print('  local.name: %r' % local.name)
+            print('  local.context: %r' % local.context)
             # The "initial" only seems to be present for static variables
             # with initializers.  Other variables seem to get initialized
             # in explicit gimple statements (see below)
