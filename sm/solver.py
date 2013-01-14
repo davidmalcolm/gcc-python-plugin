@@ -884,6 +884,13 @@ class Context(object):
             generate_errors_from_fixed_point(self)
         self.timing('len(self.errors_from_fixed_point): %i', len(self.errors_from_fixed_point))
 
+        self._errors = list(self.errors_from_fixed_point)
+
+        # Don't bother setting up error-reporting if there were no errors
+        # to report:
+        if len(self._errors) == 0:
+            return solution
+
         # Work-in-progress:
         # Build exploded graph:
         with Timer(self, 'build_exploded_graph'):
@@ -925,8 +932,6 @@ class Context(object):
                 from gccutils import invoke_dot
                 dot = self.expgraph.to_dot('pruned_graph', self)
                 invoke_dot(dot, 'pruned_graph')
-
-        self._errors = list(self.errors_from_fixed_point)
 
         return solution
 
