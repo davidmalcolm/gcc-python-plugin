@@ -31,30 +31,23 @@ if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
     from libcpychecker.compat import on_finish_decl
 
 class Context:
-    def __init__(self):
+    def __init__(self, outputxmlpath=None):
         generator = Generator(name='cpychecker',
                               version=None)
         metadata=Metadata(generator=generator,
                           sut=None,
                           file_=None,
                           stats=None)
+        self.outputxmlpath = outputxmlpath
         self.analysis = Analysis(metadata, [])
 
     def flush(self):
         if 0:
             self.analysis.to_xml().write(sys.stderr)
 
-        # FIXME: only do this if the user asks for it!
-        # FIXME: need options for this!
-        from StringIO import StringIO
-
-        buf = StringIO()
-        self.analysis.to_xml().write(buf)
-        xmlsrc = buf.getvalue()
-        from hashlib import sha1
-        filename = '%s.xml' % sha1(xmlsrc).hexdigest()
-        with open(filename, 'w') as f:
-            self.analysis.to_xml().write(f)
+        if self.outputxmlpath:
+            with open(self.outputxmlpath, 'w') as f:
+                self.analysis.to_xml().write(f)
 
 class CpyCheckerGimplePass(gcc.GimplePass):
     """
