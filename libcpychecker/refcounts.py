@@ -4180,9 +4180,7 @@ def warn_about_NULL_without_exception(v_return,
                                               ExceptionStateAnnotator())
 
 
-def impl_check_refcounts(ctxt, fun, dump_traces=False,
-                         show_possible_null_derefs=False,
-                         maxtrans=256):
+def impl_check_refcounts(ctxt, fun, options):
     """
     Inner implementation of the refcount checker, checking the refcounting
     behavior of a function, returning a Reporter instance.
@@ -4191,9 +4189,6 @@ def impl_check_refcounts(ctxt, fun, dump_traces=False,
     that want to get at the Reporter directly (e.g. for JSON output)
 
     fun: the gcc.Function to be checked
-
-    dump_traces: bool: if True, dump information about the traces through
-    the function to stdout (for self tests)
     """
     # Abstract interpretation:
     # Walk the CFG, gathering the information we're interested in
@@ -4209,7 +4204,7 @@ def impl_check_refcounts(ctxt, fun, dump_traces=False,
     if get_PyObject():
         facets['cpython'] = CPython
 
-    limits=Limits(maxtrans=maxtrans)
+    limits=Limits(maxtrans=options.maxtrans)
 
     try:
         traces = iter_traces(fun,
@@ -4222,7 +4217,7 @@ def impl_check_refcounts(ctxt, fun, dump_traces=False,
                    'this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed')
         traces = err.complete_traces
 
-    if dump_traces:
+    if options.dump_traces:
         traces = list(traces)
         dump_traces_to_stdout(traces)
 
@@ -4262,7 +4257,7 @@ def impl_check_refcounts(ctxt, fun, dump_traces=False,
             if isinstance(trace.err, (NullPtrDereference, NullPtrArgument,
                                       PredictedArithmeticError)):
                 if not trace.err.isdefinite:
-                    if not show_possible_null_derefs:
+                    if not options.show_possible_null_derefs:
                         continue
 
             w = rep.make_warning(fun, trace.err.loc, str(trace.err),
@@ -4324,35 +4319,24 @@ def impl_check_refcounts(ctxt, fun, dump_traces=False,
     return rep
 
 
-def check_refcounts(ctxt, fun, dump_traces=False, show_traces=False,
-                    show_possible_null_derefs=False,
-                    show_timings=False,
-                    maxtrans=256,
-                    dump_json=False):
+def check_refcounts(ctxt, fun, options):
     """
     The top-level function of the refcount checker, checking the refcounting
     behavior of a function
 
     fun: the gcc.Function to be checked
-
-    dump_traces: bool: if True, dump information about the traces through
-    the function to stdout (for self tests)
-
-    show_traces: bool: if True, display a diagram of the state transition graph
-
-    show_timings: bool: if True, add timing information to stderr
     """
 
-    log('check_refcounts(%r, %r, %r)', fun, dump_traces, show_traces)
+    log('check_refcounts(%r)', fun)
 
     # show_timings = 1
 
-    if show_timings:
+    if options.show_timings:
         import time
         start_cpusecs = time.clock()
         gcc.inform(fun.start, 'Analyzing reference-counting within %s' % fun.decl.name)
 
-    if show_traces:
+    if options.show_traces:
         from libcpychecker.visualizations import StateGraphPrettyPrinter
         sg = StateGraph(fun, log, MyState)
         sgpp = StateGraphPrettyPrinter(sg)
@@ -4361,10 +4345,7 @@ def check_refcounts(ctxt, fun, dump_traces=False, show_traces=False,
         # print(dot)
         invoke_dot(dot)
 
-    rep = impl_check_refcounts(ctxt, fun,
-                               dump_traces,
-                               show_possible_null_derefs,
-                               maxtrans)
+    rep = impl_check_refcounts(ctxt, fun, options)
 
     # Organize the Report instances into equivalence classes, simplifying
     # the list of reports:
@@ -4376,12 +4357,6 @@ def check_refcounts(ctxt, fun, dump_traces=False, show_traces=False,
     rep.flush()
 
     if rep.got_warnings():
-        if dump_json:
-            # JSON output:
-            filename = ('%s.%s.json'
-                    % (gcc.get_dump_base_name(), fun.decl.name))
-            rep.dump_json(fun, filename)
-
         filename = ('%s.%s-refcount-errors.html'
                     % (gcc.get_dump_base_name(), fun.decl.name))
         rep.dump_html(fun, filename)
@@ -4389,7 +4364,7 @@ def check_refcounts(ctxt, fun, dump_traces=False, show_traces=False,
                    ('graphical error report for function %r written out to %r'
                     % (fun.decl.name, filename)))
 
-    if show_timings:
+    if options.show_timings:
         end_cpusecs = time.clock()
         gcc.inform(fun.start, 'Finished analyzing reference-counting within %s' % fun.decl.name)
         gcc.inform(fun.start,

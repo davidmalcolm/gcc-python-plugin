@@ -23,7 +23,7 @@ from firehose.report import Analysis
 
 import gcc
 
-from libcpychecker import Context
+from libcpychecker import Context, Options
 from libcpychecker.refcounts import impl_check_refcounts
 
 XML_OUTPUT_PATH = 'tests/cpychecker/refcounts/xml/basic/output.xml'
@@ -95,7 +95,7 @@ def verify_firehose(optpass, fun):
     if optpass.name == '*warn_function_return':
         if fun:
             ctxt = Context(outputxmlpath=XML_OUTPUT_PATH)
-            rep = impl_check_refcounts(ctxt, fun)
+            rep = impl_check_refcounts(ctxt, fun, Options())
             rep.flush()
             ctxt.flush()
 

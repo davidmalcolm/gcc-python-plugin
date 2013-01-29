@@ -30,6 +30,33 @@ from libcpychecker.types import get_PyObject
 if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
     from libcpychecker.compat import on_finish_decl
 
+class Options:
+    '''
+    dump_traces: bool: if True, dump information about the traces through
+    the function to stdout (for self tests)
+
+    show_traces: bool: if True, display a diagram of the state transition graph
+
+    show_timings: bool: if True, add timing information to stderr
+    '''
+    def __init__(self,
+                 dump_traces=False,
+                 show_traces=False,
+                 show_timings=False,
+                 verify_pyargs=True,
+                 verify_refcounting=False,
+                 show_possible_null_derefs=False,
+                 only_on_python_code=True,
+                 maxtrans=256):
+        self.dump_traces = dump_traces
+        self.show_traces = show_traces
+        self.show_timings = show_timings
+        self.verify_pyargs = verify_pyargs
+        self.verify_refcounting = verify_refcounting
+        self.show_possible_null_derefs = show_possible_null_derefs
+        self.only_on_python_code = only_on_python_code
+        self.maxtrans = maxtrans
+
 class Context:
     def __init__(self, outputxmlpath=None):
         generator = Generator(name='cpychecker',
@@ -54,41 +81,25 @@ class CpyCheckerGimplePass(gcc.GimplePass):
     The custom pass that implements the per-function part of
     our extra compile-time checks
     """
-    def __init__(self,
-                 ctxt,
-                 dump_traces=False,
-                 show_traces=False,
-                 verify_pyargs=True,
-                 verify_refcounting=False,
-                 show_possible_null_derefs=False,
-                 only_on_python_code=True,
-                 maxtrans=256,
-                 dump_json=False):
+    def __init__(self, ctxt, options):
         gcc.GimplePass.__init__(self, 'cpychecker-gimple')
         self.ctxt = ctxt
-        self.dump_traces = dump_traces
-        self.show_traces = show_traces
-        self.verify_pyargs = verify_pyargs
-        self.verify_refcounting = verify_refcounting
-        self.show_possible_null_derefs = show_possible_null_derefs
-        self.only_on_python_code = only_on_python_code
-        self.maxtrans = maxtrans
-        self.dump_json = dump_json
+        self.options = options
 
     def execute(self, fun):
         if fun:
             log('%s', fun)
-            if self.verify_pyargs:
+            if self.options.verify_pyargs:
                 check_pyargs(fun, self.ctxt)
 
-            if self.only_on_python_code:
+            if self.options.only_on_python_code:
                 # Only run the refcount checker on code that
                 # includes <Python.h>:
                 if not get_PyObject():
                     return
 
             # The refcount code is too buggy for now to be on by default:
-            if self.verify_refcounting:
+            if self.options.verify_refcounting:
                 if 0:
                     # Profiled version:
                     import cProfile
@@ -107,10 +118,7 @@ class CpyCheckerGimplePass(gcc.GimplePass):
     def _check_refcounts(self, fun):
         check_refcounts(self.ctxt,
                         fun,
-                        self.dump_traces, self.show_traces,
-                        self.show_possible_null_derefs,
-                        maxtrans=self.maxtrans,
-                        dump_json=self.dump_json)
+                        self.options)
 
 
 class CpyCheckerIpaPass(gcc.SimpleIpaPass):
@@ -128,7 +136,10 @@ class CpyCheckerIpaPass(gcc.SimpleIpaPass):
         # We assume that we're now done:
         self.ctxt.flush()
 
-def main(**kwargs):
+def main(options=None, **kwargs):
+    if options is None:
+        options = Options(**kwargs)
+
     ctxt = Context()
 
     # Register our custom attributes:
@@ -141,7 +152,7 @@ def main(**kwargs):
                               on_finish_decl)
 
     # Register our GCC passes:
-    gimple_ps = CpyCheckerGimplePass(ctxt, **kwargs)
+    gimple_ps = CpyCheckerGimplePass(ctxt, options)
     if 1:
         # non-SSA version:
         gimple_ps.register_before('*warn_function_return')
