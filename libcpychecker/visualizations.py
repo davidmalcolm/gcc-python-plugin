@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -244,6 +244,17 @@ pre {
     font-size: 90%;
 }
 
+.visindex {
+    border: 0.2em solid #ccc;
+    -moz-box-shadow: 2px 2px 2px #ccc;
+    -webkit-box-shadow: 2px 2px 2px #ccc;
+    box-shadow: 2px 2px 2px #ccc;
+    #margin-left: 5em;
+    font-family: proportional;
+    #font-style: bold;
+    #font-size: 100%;
+}
+
 .error {
     #border: 0.1em dotted #ddffdd;
     #padding: 1em;
@@ -295,7 +306,7 @@ pre {
         result += '<table>\n'
         result += '  <tr><td>File:</td> <td><b>%s</b></td></tr>\n' % self.fun.start.file
         result += '  <tr><td>Function:</td> <td><b>%s</b></td></tr>\n' % self.fun.decl.name
-        result += '  <tr><td>Error:</td> <td><b>%s</b></td></tr>\n' % report.msg
+        result += '  <tr><td>Error:</td> <td><b>%s</b></td></tr>\n' % report.message.text
         result += '</table>\n'
 
         # Render any trace that we have:
@@ -314,9 +325,7 @@ pre {
         # (Is this the finest granularity we can measure?)
         reached_lines = set()
         for state in trace.states:
-            loc = state.get_gcc_loc_or_none()
-            if loc:
-                reached_lines.add(loc.line)
+            reached_lines.add(state.location.line)
 
         # Render source code:
         srcfile = self.fun.start.file
@@ -343,13 +352,6 @@ pre {
         lines = html.splitlines()
         result = lines[0]
 
-        # Generate any notes from the report's annotator (if any):
-        notes = []
-        annotator = report.get_annotator_for_trace(trace)
-        if annotator:
-            for trans in trace.transitions:
-                notes += annotator.get_notes(trans)
-
         # The rest contains the actual source lines:
         lines = lines[1:]
         for linenum, line in zip(range(start_line, end_line), lines):
@@ -370,22 +372,18 @@ pre {
             result += '</span>\n'
 
             # Add any comments for this line:
-            for trans in trace.transitions:
-                if trans.desc:
-                    src_loc = trans.src.get_gcc_loc_or_none()
-                    if src_loc and src_loc.line == linenum:
-                        result += '<span class="transition">%s</span>\n' % trans.desc
+            visindex = 0
+            for state in trace.states:
+                if state.notes:
+                    visindex += 1
+                    if state.location.line == linenum:
+                        notes = '<span>%s</span>\n' % state.notes.text # FIXME: escape
+                        for text in state.extra_notes:
+                            notes += '<span>%s</span>\n' % text
+                        result += '<div class="transition"><span class="visindex">%i</span> %s</div>\n' % (visindex, notes.strip()) # FIXME: escape
             # Report the top-level message, if it happens here:
-            if report.loc.line == linenum:
-                result += '<span class="error">%s</span>\n' % report.msg
-            # Add notes attached to the report:
-            for note in report.notes:
-                if note.loc and note.loc.line == linenum:
-                    result += '<span class="note">%s</span>\n' % note.msg
-            # Add any notes from the annotator:
-            for note in notes:
-                if note.loc and note.loc.line == linenum:
-                    result += '<span class="transition">%s</span>\n' % note.msg
+            if report.location.line == linenum:
+                result += '<span class="error">%s</span>\n' % report.message.text # FIXME: escape
 
         result += '</pre></div>\n'
         result += '\n'
@@ -400,18 +398,20 @@ pre {
         #result += '    jsPlumb.Defaults.Anchors =  [ "Center", "Center" ];\n'
         result += '\n'
         result += '    /* Add lines: */\n'
-        for i, trans in enumerate(trace.transitions):
-            if trans.desc:
-                src_loc = trans.src.get_gcc_loc_or_none()
-                dest_loc = trans.dest.get_gcc_loc_or_none()
-                if src_loc and dest_loc and src_loc != dest_loc:
+        for i in range(len(trace.states)-1):
+            src = trace.states[i]
+            dst = trace.states[i + 1]
+            if src.notes:
+                src_loc = src.location
+                dst_loc = dst.location
+                if src_loc != dst_loc:
                     result += ("    jsPlumb.connect({source:'trace%i-line%i',\n"
                                "                     target:'trace%i-line%i',\n"
                                "                     label:%r,\n"
                                "                     overlays:[['PlainArrow', { width:10, length:10, location:1.0 }]]\n"
                                "                   });\n"
                                % (self.trace_idx, src_loc.line,
-                                  self.trace_idx, dest_loc.line,
+                                  self.trace_idx, dst_loc.line,
                                   ''))#trans.desc))
         result += '  })\n'
         result += '</script>\n'

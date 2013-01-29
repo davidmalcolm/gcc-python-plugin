@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 # for a description of how such code is meant to be written
 
 import sys
+
+from firehose.report import Notes
+
 import gcc
 
 from gccutils import cfg_to_dot, invoke_dot, get_src_for_loc, check_isinstance
@@ -29,7 +32,8 @@ from libcpychecker.absinterp import *
 from libcpychecker.attributes import fnnames_returning_borrowed_refs, \
     stolen_refs_by_fnname, fnnames_setting_exception, \
     fnnames_setting_exception_on_negative_result
-from libcpychecker.diagnostics import Reporter, Annotator, Note
+from libcpychecker.diagnostics import Reporter, Annotator, emit_warning, \
+    make_firehose_trace
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringWarning,\
     TypeCheckCheckerType, TypeCheckResultType, \
     ConverterCallbackType, ConverterResultType
@@ -1195,6 +1199,7 @@ class CPython(Facet):
         # Detect wrong number of arguments:
         if len(v_varargs) != v_max.value:
             class WrongNumberOfVarargs(PredictedError):
+                testid = 'wrong-number-of-varargs'
                 def __init__(self, v_max, v_varargs):
                     self.v_max = v_max
                     self.v_varargs = v_varargs
@@ -2711,15 +2716,23 @@ class CPython(Facet):
                 loc = v_arg.loc
                 if not loc:
                     loc = stmt.loc
-                gcc.warning(loc,
-                            ('argument %i had type %s but was expecting a PyObject* (or subclass)'
-                             % (i + base_idx + 1, v_arg.gcctype)))
+                emit_warning(loc,
+                             ('argument %i had type %s but was expecting a PyObject* (or subclass)'
+                              % (i + base_idx + 1, v_arg.gcctype)),
+                             self.state.fun.decl.name,
+                             testid='arg-was-not-PyObject-ptr', # FIXME
+                             cwe=None,
+                             notes=None)
 
         # check NULL-termination:
         if not args or not args[-1].is_null_ptr():
-            gcc.warning(stmt.loc,
+            emit_warning(stmt.loc,
                         ('arguments to %s were not NULL-terminated'
-                         % fnmeta.name))
+                         % fnmeta.name),
+                         self.state.fun.decl.name,
+                         testid='arguments-not-NULL-terminated',
+                         cwe=None,
+                         notes=None)
 
     def impl_PyObject_CallFunctionObjArgs(self, stmt, v_callable, *args):
         fnmeta = FnMeta(name='PyObject_CallFunctionObjArgs',
@@ -3528,6 +3541,7 @@ class CPython(Facet):
         if isinstance(v_n, ConcreteValue):
             if v_n.value != len(v_args):
                 class WrongArgCount(PredictedError):
+                    testid = 'wrong-argument-count'
                     def __str__(self):
                         return 'mismatching argument count in call to %s' % fnmeta.name
                 raise WrongArgCount()
@@ -3879,13 +3893,11 @@ class DebugAnnotator(Annotator):
             if region in transition.src.value_for_region:
                 src_value = transition.src.value_for_region[region]
                 if dest_value != src_value:
-                    result.append(Note(loc,
-                                       ('%s now has value: %s'
-                                        % (region, dest_value))))
+                    result.append('%s now has value: %s'
+                                  % (region, dest_value))
             else:
-                result.append(Note(loc,
-                                   ('%s has initial value: %s'
-                                    % (region, dest_value))))
+                result.append('%s has initial value: %s'
+                              % (region, dest_value))
 
         # Show exception information:
         esa = ExceptionStateAnnotator()
@@ -3925,19 +3937,17 @@ class RefcountAnnotator(Annotator):
         if src_refcnt != dest_refcnt:
             log('src_refcnt: %r', src_refcnt)
             log('dest_refcnt: %r', dest_refcnt)
-            result.append(Note(loc,
-                               ('ob_refcnt is now %s' % dest_refcnt)))
+            result.append('ob_refcnt is now %s' % dest_refcnt)
 
         # Add a note when there's a change to the set of persistent storage
         # locations referencing this object:
         src_refs = transition.src.get_persistent_refs_for_region(self.region)
         dest_refs = transition.dest.get_persistent_refs_for_region(self.region)
         if src_refs != dest_refs:
-            result.append(Note(loc,
-                               ('%s is now referenced by %i non-stack value(s): %s'
-                                % (self.desc,
-                                   len(dest_refs),
-                                   ', '.join([ref.name for ref in dest_refs])))))
+            result.append('%s is now referenced by %i non-stack value(s): %s'
+                          % (self.desc,
+                             len(dest_refs),
+                             ', '.join([ref.name for ref in dest_refs])))
 
         if 0:
             # For debugging: show the history of all references to the given
@@ -3945,8 +3955,7 @@ class RefcountAnnotator(Annotator):
             src_refs = transition.src.get_all_refs_for_region(self.region)
             dest_refs = transition.dest.get_all_refs_for_region(self.region)
             if src_refs != dest_refs:
-                result.append(Note(loc,
-                                   ('all refs: %s' % dest_refs)))
+                result.append('all refs: %s' % dest_refs)
         return result
 
 class ExceptionStateAnnotator(Annotator):
@@ -3968,9 +3977,8 @@ class ExceptionStateAnnotator(Annotator):
 
         if hasattr(transition.dest, 'cpython'):
             if transition.dest.cpython.exception_rvalue != transition.src.cpython.exception_rvalue:
-                result.append(Note(loc,
-                                   ('thread-local exception state now has value: %s'
-                                    % transition.dest.cpython.exception_rvalue)))
+                result.append('thread-local exception state now has value: %s'
+                              % transition.dest.cpython.exception_rvalue)
 
         return result
 
@@ -3989,27 +3997,34 @@ def function_is_tp_iternext_callback(fun):
 # Helper function for when ob_refcnt is wrong:
 def emit_refcount_warning(msg,
                           exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
-                          trace, endstate, fun, rep):
-    w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
-    w.add_note(endstate.get_gcc_loc(fun),
-               ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
-                % exp_refcnt))
+                          trace, endstate, fun, rep,
+                          testid,
+                          cwe):
+    w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg, testid, cwe)
+    gccloc = w.location.gccloc
+    w.initial_notes.append((gccloc,
+                            'was expecting final ob_refcnt to be N + %i (for some unknown N)'
+                            % exp_refcnt))
     if exp_refcnt > 0:
-        w.add_note(endstate.get_gcc_loc(fun),
-                   ('due to object being referenced by: %s'
-                    % ', '.join(exp_refs)))
-    w.add_note(endstate.get_gcc_loc(fun),
-               ('but final ob_refcnt is N + %i'
-                % v_ob_refcnt.relvalue))
+        w.initial_notes.append((gccloc,
+                                'due to object being referenced by: %s'
+                                % ', '.join(exp_refs)))
+    w.initial_notes.append((gccloc,
+                            'but final ob_refcnt is N + %i'
+                            % v_ob_refcnt.relvalue))
+    if 0:
+        # Handy for debugging:
+        notetext += 'this was trace %i' % i
+
     # For dynamically-allocated objects, indicate where they
     # were allocated:
     if isinstance(r_obj, RegionOnHeap):
         alloc_loc = r_obj.alloc_stmt.loc
         if alloc_loc:
-            w.add_note(r_obj.alloc_stmt.loc,
-                         ('%s allocated at: %s'
-                          % (r_obj.name,
-                             get_src_for_loc(alloc_loc))))
+            w.initial_notes.append((r_obj.alloc_stmt.loc,
+                                    ('%s allocated at: %s'
+                                     % (r_obj.name,
+                                        get_src_for_loc(alloc_loc)))))
 
     # Summarize the control flow we followed through the function:
     if 1:
@@ -4018,12 +4033,8 @@ def emit_refcount_warning(msg,
         # Debug help:
         from libcpychecker.diagnostics import TestAnnotator
         annotator = TestAnnotator()
-    w.add_trace(trace, annotator)
+    w.trace = make_firehose_trace(fun.decl.name, trace, annotator)
 
-    if 0:
-        # Handy for debugging:
-        w.add_note(endstate.get_gcc_loc(fun),
-                   'this was trace %i' % i)
     return w
 
 
@@ -4078,20 +4089,24 @@ def check_refcount_for_one_object(r_obj, v_ob_refcnt, v_return,
                                       % (desc,
                                          v_ob_refcnt.relvalue - exp_refcnt),
                                       exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
-                                      trace, endstate, fun, rep)
+                                      trace, endstate, fun, rep,
+                                      testid='refcount-too-high',
+                                      cwe=None)
         elif v_ob_refcnt.relvalue < exp_refcnt:
             # Refcount is too low:
             w = emit_refcount_warning('ob_refcnt of %s is %i too low'
                                       % (desc,
                                          exp_refcnt - v_ob_refcnt.relvalue),
                                       exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
-                                      trace, endstate, fun, rep)
+                                      trace, endstate, fun, rep,
+                                      testid='refcount-too-low',
+                                      cwe=None)
             # Special-case hint for when None has too low a refcount:
             if is_return_value:
                 if isinstance(v_return.region, RegionForGlobal):
                     if v_return.region.vardecl.name == '_Py_NoneStruct':
-                        w.add_note(endstate.get_gcc_loc(fun),
-                                   'consider using "Py_RETURN_NONE;"')
+                        w.final_notes.append((endstate.get_gcc_loc(fun),
+                                              'consider using "Py_RETURN_NONE;"'))
 
 # Detect failure to set exceptions when returning NULL,
 # and verify usage of
@@ -4116,8 +4131,12 @@ def warn_about_NULL_without_exception(v_return,
 
                 w = rep.make_warning(fun,
                                      endstate.get_gcc_loc(fun),
-                                     'returning (PyObject*)NULL without setting an exception')
-                w.add_trace(trace, ExceptionStateAnnotator())
+                                     'returning (PyObject*)NULL without setting an exception',
+                                     testid='returns-NULL-without-setting-exception',
+                                     cwe=None)
+                w.trace = make_firehose_trace(fun.decl.name,
+                                              trace,
+                                              ExceptionStateAnnotator())
 
     # If this is function was marked with our custom
     #    __attribute__((cpychecker_sets_exception))
@@ -4130,8 +4149,12 @@ def warn_about_NULL_without_exception(v_return,
                       endstate.get_gcc_loc(fun),
                       ('function is marked with'
                        ' __attribute__((cpychecker_sets_exception))'
-                       ' but can return without setting an exception'))
-            w.add_trace(trace, ExceptionStateAnnotator())
+                       ' but can return without setting an exception'),
+                      testid='marked-as-setting-exception-but-does-not',
+                      cwe=None)
+            w.trace = make_firehose_trace(fun.decl.name,
+                                          trace,
+                                          ExceptionStateAnnotator())
 
     # If this is function was marked with our custom
     #    __attribute__((cpychecker_negative_result_sets_exception))
@@ -4147,8 +4170,12 @@ def warn_about_NULL_without_exception(v_return,
                       ('function is marked with __attribute__(('
                        'cpychecker_negative_result_sets_exception))'
                        ' but can return %s without setting an exception'
-                       % v_return.value))
-                w.add_trace(trace, ExceptionStateAnnotator())
+                       % v_return.value),
+                      testid='marked-as-setting-exception-but-does-not',
+                      cwe=None)
+                w.trace = make_firehose_trace(fun.decl.name,
+                                              trace,
+                                              ExceptionStateAnnotator())
 
 
 def impl_check_refcounts(fun, dump_traces=False,
@@ -4235,12 +4262,14 @@ def impl_check_refcounts(fun, dump_traces=False,
                     if not show_possible_null_derefs:
                         continue
 
-            w = rep.make_warning(fun, trace.err.loc, str(trace.err))
-            w.add_trace(trace)
+            w = rep.make_warning(fun, trace.err.loc, str(trace.err),
+                                 trace.err.testid,
+                                 cwe=None)
+            w.trace = make_firehose_trace(fun.decl.name, trace, None)
             if hasattr(trace.err, 'why'):
                 if trace.err.why:
-                    w.add_note(trace.err.loc,
-                               trace.err.why)
+                    w.final_notes.append((trace.err.loc,
+                                          trace.err.why))
             # FIXME: in our example this ought to mention where the values came from
             continue
         # Otherwise, the trace proceeds normally
@@ -4277,10 +4306,12 @@ def impl_check_refcounts(fun, dump_traces=False,
                 if isinstance(rvalue, DeallocatedMemory):
                     w = rep.make_warning(fun,
                                          endstate.get_gcc_loc(fun),
-                                         'returning pointer to deallocated memory')
-                    w.add_trace(trace)
-                    w.add_note(rvalue.loc,
-                               'memory deallocated here')
+                                         'returning pointer to deallocated memory',
+                                         testid='returns-pointer-to-deallocated-memory',
+                                         cwe=None)
+                    w.trace = make_firehose_trace(fun.decl.name, trace, None)
+                    w.final_notes.append((rvalue.loc,
+                                          'memory deallocated here'))
 
         warn_about_NULL_without_exception(v_return,
                                           trace, endstate, fun, rep)

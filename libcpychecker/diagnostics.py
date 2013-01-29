@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -23,10 +23,94 @@ GCC diagnostic messages are buffered up within Report instances and eventually
 flushed, allowing us to de-duplicate error reports.
 """
 
+import sys
+
+from firehose.report import Analysis, Issue, Location, File, Function, \
+    Point, Message, Notes, Metadata, Generator, Trace, State
+
 import gcc
 from gccutils import get_src_for_loc, check_isinstance
 from libcpychecker.visualizations import HtmlRenderer
 from libcpychecker.utils import log
+
+
+# Firehose support
+class CpycheckerIssue(Issue):
+    """
+    Subclass of firehose.report.Issue, which adds the concept
+    of adding notes at the end of the trace in the gcc output,
+    mostly for byte-for-byte compatibility with old stderr in the
+    selftests
+    """
+    def __init__(self, *args, **kwargs):
+        self.initial_notes = []
+        self.final_notes = []
+        Issue.__init__(self, *args, **kwargs)
+
+class WrappedGccLocation(Location):
+    """
+    A firehose.report.Location
+    wrapping a gcc.Location
+    """
+    def __init__(self, gccloc, funcname):
+        self.gccloc = gccloc
+
+        function=Function(funcname)
+        if gccloc:
+            file_ = File(givenpath=gccloc.file,
+                         abspath=None)
+            point = Point(line=gccloc.line,
+                          column=gccloc.column)
+        else:
+            file_ = File(givenpath='FIXME',
+                         abspath=None)
+            point = None
+        Location.__init__(self,
+                          file=file_,
+                          function=Function(funcname),
+                          point=point)
+
+class WrappedAbsinterpLocation(WrappedGccLocation):
+    """
+    A firehose.report.Location that wraps a libcpychecker.absinterp.Location
+    """
+    def __init__(self, loc, funcname):
+        self.loc = loc
+        gccloc = loc.get_gcc_loc()
+        WrappedGccLocation.__init__(self, gccloc, funcname)
+
+class CustomState(State):
+    '''
+    A firehose.report.State, but with hooks for byte-for-byte compat with
+    old output
+    '''
+    def __init__(self, *args, **kwargs):
+        State.__init__(self, *args, **kwargs)
+        self.extra_notes = []
+
+    def add_note(self, text):
+        assert isinstance(text, str)
+        if self.notes is None:
+            self.notes = Notes(text)
+        else:
+            self.extra_notes.append(text)
+
+def make_issue(funcname, gccloc, msg, testid, cwe):
+    '''
+    generator = Generator(name=primaryid,
+                          version=None)
+    metadata=Metadata(generator=generator,
+    sut=None)
+    '''
+    r = CpycheckerIssue(cwe=cwe,
+                        testid=testid,
+                        location=WrappedGccLocation(gccloc, funcname),
+                        message=Message(text=msg),
+                        notes=None,
+                        trace=None)
+    return r
+
+
 
 class Annotator:
     """
@@ -38,10 +122,40 @@ class Annotator:
     """
     def get_notes(self, transition):
         """
-        Return a list of Note instances giving extra information about the
+        Return a list of str instances giving extra information about the
         transition
         """
         raise NotImplementedError
+
+def make_firehose_trace(funcname, trace, annotator):
+    """
+    input is a libcpychecker.absinterp.Trace
+    output is a firehose.report.Trace (aka a Trace within this module)
+    """
+    result = Trace([])
+    for t in trace.transitions:
+        log('transition: %s', t)
+        def add_state(s_in, is_src):
+            srcloc = s_in.get_gcc_loc_or_none()
+            if srcloc:
+                location=WrappedAbsinterpLocation(s_in.loc,
+                                                  funcname=funcname)
+                s = CustomState(location,
+                                notes=None)
+                paras = []
+                if t.desc and is_src:
+                    s.add_note(t.desc)
+
+                if annotator:
+                    notes = annotator.get_notes(t)
+                    for note in notes:
+                        s.add_note(note)
+
+                result.add_state(s)
+        add_state(t.src, True)
+    add_state(t.dest, False)
+
+    return result
 
 class TestAnnotator(Annotator):
     """
@@ -53,42 +167,26 @@ class TestAnnotator(Annotator):
         srcloc = transition.src.get_gcc_loc_or_none()
         if srcloc:
             if transition.src.loc != transition.dest.loc:
-                result.append(Note(srcloc,
-                                   ('transition from "%s" to "%s"'
-                                    % (transition.src.loc.get_stmt(),
-                                       transition.dest.loc.get_stmt()))))
+                result.append('transition from "%s" to "%s"'
+                              % (transition.src.loc.get_stmt(),
+                                 transition.dest.loc.get_stmt()))
         return result
 
-def describe_trace(trace, report, annotator):
-    """
-    Buffer up more details about the path through the function that
-    leads to the error, using report.add_inform()
-    """
-    awaiting_target = None
-    for t in trace.transitions:
-        log('transition: %s', t)
-        srcloc = t.src.get_gcc_loc_or_none()
-        if t.desc:
-            if srcloc:
-                report.add_inform(t.src.get_gcc_loc(report.fun),
-                                  ('%s at: %s'
-                                   % (t.desc, get_src_for_loc(srcloc))))
-            else:
-                report.add_inform(t.src.get_gcc_loc(report.fun),
-                                  '%s' % t.desc)
+def is_duplicate_of(r1, r2):
+    check_isinstance(r1, Issue)
+    check_isinstance(r2, Issue)
 
-            if t.src.loc.bb != t.dest.loc.bb:
-                # Tell the user where conditionals reach:
-                destloc = t.dest.get_gcc_loc_or_none()
-                if destloc:
-                    report.add_inform(destloc,
-                                      'reaching: %s' % get_src_for_loc(destloc))
+    # Simplistic equivalence classes for now:
+    # the same function, source location, and message; everything
+    # else can be different
+    if r1.location.function != r2.location.function:
+        return False
+    if r1.location.point != r2.location.point:
+        return False
+    if r1.message != r2.message:
+        return False
 
-        if annotator:
-            notes = annotator.get_notes(t)
-            for note in notes:
-                if note.loc and note.loc == srcloc:
-                    report.add_inform(note.loc, note.msg)
+    return True
 
 class Reporter:
     """
@@ -103,16 +201,14 @@ class Reporter:
         self.reports = []
         self._got_warnings = False
 
-    def make_warning(self, fun, loc, msg):
+    def make_warning(self, fun, loc, msg, testid, cwe):
         assert isinstance(fun, gcc.Function)
         assert isinstance(loc, gcc.Location)
 
         self._got_warnings = True
 
-        w = Report(fun, loc, msg)
+        w = make_issue(fun.decl.name, loc, msg, testid, cwe)
         self.reports.append(w)
-
-        w.add_warning(loc, msg)
 
         return w
 
@@ -164,155 +260,133 @@ class Reporter:
         Try to organize Report instances into equivalence classes, and only
         keep the first Report within each class
         """
+
+        # Set of all Report instances that are a duplicate of another:
+        duplicates = set()
+
+        # dict from "primary" Report to the set of its duplicates:
+        duplicates_of = {}
+
         for report in self.reports[:]:
             # The report might have been removed during the iteration:
-            if report.is_duplicate:
+            if report in duplicates:
                 continue
             for candidate in self.reports[:]:
-                if report != candidate and not report.is_duplicate:
-                    if candidate.is_duplicate_of(report):
-                        report.add_duplicate(candidate)
+                if report != candidate and report not in duplicates:
+                    if is_duplicate_of(candidate, report):
+                        duplicates.add(candidate)
                         self.reports.remove(candidate)
+                        if report not in duplicates_of:
+                            duplicates_of[report] = set([candidate])
+                        else:
+                            duplicates_of[report].add(candidate)
 
         # Add a note to each report that survived about any duplicates:
-        for report in self.reports:
-            if report.duplicates:
-                report.add_note(report.loc,
-                                ('found %i similar trace(s) to this'
-                                 % len(report.duplicates)))
+        for report in duplicates_of:
+            num_duplicates = len(duplicates_of[report])
+            report.final_notes.append((report.location.gccloc,
+                                       'found %i similar trace(s) to this'
+                                       % num_duplicates))
 
     def flush(self):
         for r in self.reports:
-            r.flush()
+            emit_report(r)
 
-class SavedDiagnostic:
+def emit_warning(loc, msg, funcname, testid, cwe, notes):
+    #gcc.warning(loc, msg)
+
+    if notes is not None:
+        text = notes
+        notes = Notes(text)
+    r = make_issue(funcname, loc, msg, testid, cwe)
+    r.notes = notes
+
+    emit_report(r)
+
+def emit_report(r):
+    emit_report_as_warning(r)
+
+    return # FIXME
+
+    # r.to_xml().write(sys.stderr)
+
+    # FIXME: only do this if the user asks for it!
+    # FIXME: need options for this!
+    from StringIO import StringIO
+
+    buf = StringIO()
+    r.to_xml().write(buf)
+    xmlsrc = buf.getvalue()
+    from hashlib import sha1
+    filename = '%s.xml' % sha1(xmlsrc).hexdigest()
+    with open(filename, 'w') as f:
+        r.to_xml().write(f)
+
+def emit_report_as_warning(r):
+    # Emit gcc output to stderr, using the Report instance:
+    gcc.warning(r.location.gccloc, r.message.text)
+
+    for gccloc, msg in r.initial_notes:
+        gcc.inform(gccloc, msg)
+
+    if r.notes:
+        sys.stderr.write(r.notes.text)
+        if not r.notes.text.endswith('\n'):
+            sys.stderr.write('\n')
+
+    if r.trace:
+        last_state_with_notes = None
+        for state in r.trace.states:
+            gccloc = state.location.gccloc
+            if last_state_with_notes:
+                if last_state_with_notes.location.loc.bb != state.location.loc.bb:
+                    # Tell the user where conditionals reach:
+                    gcc.inform(gccloc,
+                               'reaching: %s' % get_src_for_loc(gccloc))
+            last_state_with_notes = None
+            #gcc.inform(gccloc,
+            #           'reaching: %s' % get_src_for_loc(gccloc))
+            if state.notes:
+                text = state.notes.text
+                if gccloc is not None:
+                    text += ' at: %s' % get_src_for_loc(gccloc)
+                    last_state_with_notes = state
+                gcc.inform(gccloc, text)
+                for text in state.extra_notes:
+                    gcc.inform(gccloc, text)
+
+    for gccloc, msg in r.final_notes:
+        gcc.inform(gccloc, msg)
+
+'''
+def describe_trace(trace, report, annotator):
     """
-    A saved GCC diagnostic, which we can choose to emit or suppress at a later
-    date
+    Buffer up more details about the path through the function that
+    leads to the error, using report.add_inform()
     """
-    def __init__(self, loc, msg):
-        assert isinstance(loc, gcc.Location)
-        assert isinstance(msg, str)
-        self.loc = loc
-        self.msg = msg
+    for t in trace.transitions:
+        log('transition: %s', t)
+        srcloc = t.src.get_gcc_loc_or_none()
+        if t.desc:
+            if srcloc:
+                report.add_inform(t.src.get_gcc_loc(report.fun),
+                                  ('%s at: %s'
+                                   % (t.desc, get_src_for_loc(srcloc))))
+            else:
+                report.add_inform(t.src.get_gcc_loc(report.fun),
+                                  '%s' % t.desc)
 
-class SavedWarning(SavedDiagnostic):
-    def flush(self):
-        gcc.warning(self.loc, self.msg)
+            if t.src.loc.bb != t.dest.loc.bb:
+                # Tell the user where conditionals reach:
+                destloc = t.dest.get_gcc_loc_or_none()
+                if destloc:
+                    report.add_inform(destloc,
+                                      'reaching: %s' % get_src_for_loc(destloc))
 
-class SavedInform(SavedDiagnostic):
-    def flush(self):
-        gcc.inform(self.loc, self.msg)
+        if annotator:
+            notes = annotator.get_notes(t)
+            for note in notes:
+                if note.loc and note.loc == srcloc:
+                    report.add_inform(note.loc, note.msg)
+'''
 
-class Report:
-    """
-    Data about a particular bug found by the checker
-    """
-    def __init__(self, fun, loc, msg):
-        self.fun = fun
-        self.loc = loc
-        self.msg = msg
-        self.trace = None
-        self._annotators = {}
-        self.notes = []
-        self._saved_diagnostics = [] # list of SavedDiagnostic
-
-        # De-duplication handling:
-        self.is_duplicate = False
-        self.duplicates = [] # list of Report
-
-    def add_warning(self, loc, msg):
-        # Add a gcc.warning() to the buffer of GCC diagnostics
-        self._saved_diagnostics.append(SavedWarning(loc, msg))
-
-    def add_inform(self, loc, msg):
-        # Add a gcc.inform() to the buffer of GCC diagnostics
-        self._saved_diagnostics.append(SavedInform(loc, msg))
-
-    def flush(self):
-        # Flush the buffer of GCC diagnostics
-        for d in self._saved_diagnostics:
-            d.flush()
-
-    def add_trace(self, trace, annotator=None):
-        self.trace = trace
-        self._annotators[trace] = annotator
-        describe_trace(trace, self, annotator)
-
-    def add_note(self, loc, msg):
-        """
-        Add a note at the given location.  This is added both to
-        the buffer of GCC diagnostics, and also to a saved list that's
-        available to the HTML renderer.
-        """
-        self.add_inform(loc, msg)
-        note = Note(loc, msg)
-        self.notes.append(note)
-        return note
-
-    def get_annotator_for_trace(self, trace):
-        return self._annotators.get(trace)
-
-    def is_duplicate_of(self, other):
-        check_isinstance(other, Report)
-
-        # Simplistic equivalence classes for now:
-        # the same function, source location, and message; everything
-        # else can be different
-        if self.fun != other.fun:
-            return False
-        if self.loc != other.loc:
-            return False
-        if self.msg != other.msg:
-            return False
-
-        return True
-
-    def add_duplicate(self, other):
-        assert not self.is_duplicate
-        self.duplicates.append(other)
-        other.is_duplicate = True
-
-    def to_json(self, fun):
-        assert self.trace
-        result = dict(message=self.msg,
-                      severity='warning', # FIXME
-                      states=[])
-        # Generate a list of (state, desc) pairs, putting the desc from the
-        # transition into source state; the final state will have an empty
-        # string
-        pairs = []
-        for t_iter in self.trace.transitions:
-            pairs.append( (t_iter.src, t_iter.desc) )
-        pairs.append( (self.trace.transitions[-1].dest, None) )
-        for i, (s_iter, desc) in enumerate(pairs):
-            result['states'].append(s_iter.as_json(desc))
-        result['notes'] = [dict(location=location_as_json(note.loc),
-                                message=note.msg)
-                           for note in self.notes]
-        return result
-
-
-class Note:
-    """
-    A note within a self
-    """
-    def __init__(self, loc, msg):
-        self.loc = loc
-        self.msg = msg
-
-
-def location_as_json(loc):
-    if loc:
-        return (dict(line=loc.line,
-                     column=loc.column),
-                dict(line=loc.line,
-                     column=loc.column))
-    else:
-        return None
-
-def type_as_json(t):
-    if t:
-        return str(t)
-    else:
-        return None

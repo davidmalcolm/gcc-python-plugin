@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
 from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
-from libcpychecker.diagnostics import location_as_json, type_as_json
 
 debug_comparisons = 0
 
@@ -454,6 +453,8 @@ class ConcreteValue(AbstractValue):
         check_isinstance(stmt, gcc.GimpleCall)
 
         class CallOfNullFunctionPtr(PredictedError):
+            testid = 'call-of-null-function-ptr'
+
             def __init__(self, stmt, value):
                 check_isinstance(stmt, gcc.Gimple)
                 check_isinstance(value, AbstractValue)
@@ -958,6 +959,8 @@ class UninitializedData(AbstractValue):
         check_isinstance(stmt, gcc.GimpleCall)
 
         class CallOfUninitializedFunctionPtr(PredictedError):
+            testid = 'call-of-uninitialized-function-ptr'
+
             def __init__(self, stmt, value):
                 check_isinstance(stmt, gcc.Gimple)
                 check_isinstance(value, AbstractValue)
@@ -984,6 +987,8 @@ class PredictedError(Exception):
     pass
 
 class InvalidlyNullParameter(PredictedError):
+    testid = 'invalidly-null-parameter'
+
     # Use this when we can predict that a function is called with NULL as an
     # argument for an argument that must not be NULL
     def __init__(self, fnname, paramidx, nullvalue):
@@ -1007,6 +1012,8 @@ class PredictedValueError(PredictedError):
         self.isdefinite = isdefinite
 
 class PredictedArithmeticError(PredictedError):
+    testid = 'arithmetic-error'
+
     def __init__(self, err, rhsvalue, isdefinite):
         check_isinstance(err, (ArithmeticError, ValueError))
         self.err = err
@@ -1020,6 +1027,8 @@ class PredictedArithmeticError(PredictedError):
             return 'possible %s with right-hand-side %s' % (self.err, self.rhsvalue)
 
 class UsageOfUninitializedData(PredictedValueError):
+    testid = 'usage-of-uninitialized-data'
+
     def __init__(self, state, expr, value, desc):
         check_isinstance(state, State)
         check_isinstance(expr, gcc.Tree)
@@ -1033,6 +1042,8 @@ class UsageOfUninitializedData(PredictedValueError):
                 % (self.desc, self.state.loc.get_stmt().loc))
 
 class NullPtrDereference(PredictedValueError):
+    testid = 'null-ptr-dereference'
+
     def __init__(self, state, expr, ptr, isdefinite):
         check_isinstance(state, State)
         check_isinstance(expr, gcc.Tree)
@@ -1048,6 +1059,8 @@ class NullPtrDereference(PredictedValueError):
                     % (self.expr, self.state.loc.get_stmt().loc))
 
 class NullPtrArgument(PredictedValueError):
+    testid = 'null-ptr-argument'
+
     def __init__(self, state, stmt, idx, ptr, isdefinite, why):
         check_isinstance(state, State)
         check_isinstance(stmt, gcc.Gimple)
@@ -1079,6 +1092,8 @@ class NullPtrArgument(PredictedValueError):
 
 
 class ReadFromDeallocatedMemory(PredictedError):
+    testid = 'read-from-deallocated-memory'
+
     def __init__(self, stmt, value):
         check_isinstance(stmt, gcc.Gimple)
         check_isinstance(value, DeallocatedMemory)
@@ -1090,6 +1105,8 @@ class ReadFromDeallocatedMemory(PredictedError):
                 % (self.stmt.loc, self.value))
 
 class PassingPointerToDeallocatedMemory(PredictedError):
+    testid = 'passing-pointer-to-deallocated-memory'
+
     def __init__(self, argidx, fnname, stmt, value):
         check_isinstance(stmt, gcc.Gimple)
         check_isinstance(value, DeallocatedMemory)
