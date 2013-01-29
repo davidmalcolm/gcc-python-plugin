@@ -94,8 +94,9 @@ def verify_firehose(optpass, fun):
     # FIXME: should we be adding our own pass for this?
     if optpass.name == '*warn_function_return':
         if fun:
-            ctxt = Context(outputxmlpath=XML_OUTPUT_PATH)
-            rep = impl_check_refcounts(ctxt, fun, Options())
+            options = Options(outputxmlpath=XML_OUTPUT_PATH)
+            ctxt = Context(options)
+            rep = impl_check_refcounts(ctxt, fun, options)
             rep.flush()
             ctxt.flush()
 

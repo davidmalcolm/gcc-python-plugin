@@ -16,14 +16,14 @@
 #   <http://www.gnu.org/licenses/>.
 
 import gcc
-from libcpychecker import main, get_traces, Context
+from libcpychecker import main, get_traces, Context, Options
 
 def verify_traces(optpass, fun):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
     if optpass.name == '*warn_function_return':
         if fun:
-            ctxt = Context()
+            ctxt = Context(Options())
             traces = get_traces(fun, ctxt)
 
             # We should have a single trace

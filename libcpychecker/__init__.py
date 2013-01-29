@@ -47,7 +47,8 @@ class Options:
                  verify_refcounting=False,
                  show_possible_null_derefs=False,
                  only_on_python_code=True,
-                 maxtrans=256):
+                 maxtrans=256,
+                 outputxmlpath=None):
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.show_timings = show_timings
@@ -56,24 +57,25 @@ class Options:
         self.show_possible_null_derefs = show_possible_null_derefs
         self.only_on_python_code = only_on_python_code
         self.maxtrans = maxtrans
+        self.outputxmlpath = outputxmlpath
 
 class Context:
-    def __init__(self, outputxmlpath=None):
+    def __init__(self, options):
         generator = Generator(name='cpychecker',
                               version=None)
         metadata=Metadata(generator=generator,
                           sut=None,
                           file_=None,
                           stats=None)
-        self.outputxmlpath = outputxmlpath
+        self.options = options
         self.analysis = Analysis(metadata, [])
 
     def flush(self):
         if 0:
             self.analysis.to_xml().write(sys.stderr)
 
-        if self.outputxmlpath:
-            with open(self.outputxmlpath, 'w') as f:
+        if self.options.outputxmlpath:
+            with open(self.options.outputxmlpath, 'w') as f:
                 self.analysis.to_xml().write(f)
 
 class CpyCheckerGimplePass(gcc.GimplePass):
@@ -140,7 +142,7 @@ def main(options=None, **kwargs):
     if options is None:
         options = Options(**kwargs)
 
-    ctxt = Context()
+    ctxt = Context(options)
 
     # Register our custom attributes:
     gcc.register_callback(gcc.PLUGIN_ATTRIBUTES,
