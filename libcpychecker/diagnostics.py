@@ -230,25 +230,6 @@ class Reporter:
     def got_warnings(self):
         return self._got_warnings
 
-    def to_json(self, fun):
-        result = dict(filename=fun.start.file,
-                      function=dict(name=fun.decl.name,
-                                    # line number range:
-                                    lines=(fun.decl.location.line - 1,
-                                           fun.end.line + 1)),
-                      reports=[])
-        for report in self.reports:
-            result['reports'].append(report.to_json(fun))
-        return result
-
-    def dump_json(self, fun, filename):
-        js = self.to_json(fun)
-        from json import dump, dumps
-        with open(filename, 'w') as f:
-            dump(js, f, sort_keys=True, indent=4)
-        if 0:
-            print(dumps(js, sort_keys=True, indent=4))
-
     def to_html(self, fun):
         # (FIXME: eliminate self.fun from HtmlRenderer and the above arg)
         r = HtmlRenderer(fun)
