@@ -323,7 +323,7 @@ def compatible_type(exp_type, actual_type, actualarg=None):
 
     return False
 
-def check_pyargs(fun):
+def check_pyargs(fun, ctxt):
     from libcpychecker.PyArg_ParseTuple import PyArgParseFmt
     from libcpychecker.Py_BuildValue import PyBuildValueFmt
 
@@ -361,7 +361,8 @@ def check_pyargs(fun):
                         elif isinstance(contents, gcc.IntegerCst):
                             elements[elt_idx] = contents.constant
                     if elements[-1] != 0:
-                        emit_warning(stmt.loc, 'keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated',
+                        emit_warning(ctxt,
+                                     stmt.loc, 'keywords to PyArg_ParseTupleAndKeywords are not NULL-terminated',
                                      fun.decl.name,
                                      testid='missing-null-termination',
                                      cwe=None,
@@ -369,7 +370,8 @@ def check_pyargs(fun):
                     i = 0
                     for elt in elements[0:-1]:
                         if not elt:
-                            emit_warning(stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i,
+                            emit_warning(ctxt,
+                                         stmt.loc, 'keyword argument %d missing in PyArg_ParseTupleAndKeywords call' % i,
                                          fun.decl.name,
                                          testid='missing-keyword-argument',
                                          cwe=None,
@@ -402,7 +404,8 @@ def check_pyargs(fun):
                     fmt = parser.from_string(fmt_string, with_size_t)
                 except FormatStringWarning:
                     exc = sys.exc_info()[1]
-                    emit_warning(stmt.loc, str(exc),
+                    emit_warning(ctxt,
+                                 stmt.loc, str(exc),
                                  fun.decl.name,
                                  testid=exc.testid, # FIXME
                                  cwe=None,
@@ -417,7 +420,8 @@ def check_pyargs(fun):
                 varargs = stmt.args[varargs_idx:]
                 # log('varargs: %r', varargs)
                 if len(varargs) < len(exp_types):
-                    emit_warning(loc, str(NotEnoughVars(funcname, fmt, varargs)),
+                    emit_warning(ctxt,
+                                 loc, str(NotEnoughVars(funcname, fmt, varargs)),
                                  fun.decl.name,
                                  testid='not-enough-vars-in-format-string',
                                  cwe=None,
@@ -425,7 +429,8 @@ def check_pyargs(fun):
                     return
 
                 if len(varargs) > len(exp_types):
-                    emit_warning(loc, str(TooManyVars(funcname, fmt, varargs)),
+                    emit_warning(ctxt,
+                                 loc, str(TooManyVars(funcname, fmt, varargs)),
                                  fun.decl.name,
                                  testid='too-many-vars-in-format-string',
                                  cwe=None,
@@ -441,7 +446,8 @@ def check_pyargs(fun):
                             loc = vararg.location
                         else:
                             loc = stmt.loc
-                        emit_warning(loc,
+                        emit_warning(ctxt,
+                                     loc,
                                      str(err),
                                      fun.decl.name,
                                      testid='mismatching-type-in-format-string',

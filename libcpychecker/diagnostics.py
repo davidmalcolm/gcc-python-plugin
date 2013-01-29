@@ -25,8 +25,8 @@ flushed, allowing us to de-duplicate error reports.
 
 import sys
 
-from firehose.report import Analysis, Issue, Location, File, Function, \
-    Point, Message, Notes, Metadata, Generator, Trace, State
+from firehose.report import Issue, Location, File, Function, \
+    Point, Message, Notes, Trace, State
 
 import gcc
 from gccutils import get_src_for_loc, check_isinstance
@@ -42,10 +42,20 @@ class CpycheckerIssue(Issue):
     mostly for byte-for-byte compatibility with old stderr in the
     selftests
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self,
+                 cwe,
+                 testid,
+                 location,
+                 message,
+                 notes,
+                 trace):
+        # We don't want any of our testids to be None:
+        assert isinstance(testid, str)
+
+        Issue.__init__(self, cwe, testid, location, message, notes, trace)
+
         self.initial_notes = []
         self.final_notes = []
-        Issue.__init__(self, *args, **kwargs)
 
 class WrappedGccLocation(Location):
     """
@@ -55,7 +65,10 @@ class WrappedGccLocation(Location):
     def __init__(self, gccloc, funcname):
         self.gccloc = gccloc
 
-        function=Function(funcname)
+        if funcname:
+            function = Function(funcname)
+        else:
+            function = None
         if gccloc:
             file_ = File(givenpath=gccloc.file,
                          abspath=None)
@@ -67,7 +80,7 @@ class WrappedGccLocation(Location):
             point = None
         Location.__init__(self,
                           file=file_,
-                          function=Function(funcname),
+                          function=function,
                           point=point)
 
 class WrappedAbsinterpLocation(WrappedGccLocation):
@@ -96,12 +109,6 @@ class CustomState(State):
             self.extra_notes.append(text)
 
 def make_issue(funcname, gccloc, msg, testid, cwe):
-    '''
-    generator = Generator(name=primaryid,
-                          version=None)
-    metadata=Metadata(generator=generator,
-    sut=None)
-    '''
     r = CpycheckerIssue(cwe=cwe,
                         testid=testid,
                         location=WrappedGccLocation(gccloc, funcname),
@@ -197,7 +204,8 @@ class Reporter:
     instances, and only fully flushing one of them within each equivalence
     class
     """
-    def __init__(self):
+    def __init__(self, ctxt):
+        self.ctxt = ctxt
         self.reports = []
         self._got_warnings = False
 
@@ -290,9 +298,9 @@ class Reporter:
 
     def flush(self):
         for r in self.reports:
-            emit_report(r)
+            emit_report(self.ctxt, r)
 
-def emit_warning(loc, msg, funcname, testid, cwe, notes):
+def emit_warning(ctxt, loc, msg, funcname, testid, cwe, notes):
     #gcc.warning(loc, msg)
 
     if notes is not None:
@@ -301,26 +309,11 @@ def emit_warning(loc, msg, funcname, testid, cwe, notes):
     r = make_issue(funcname, loc, msg, testid, cwe)
     r.notes = notes
 
-    emit_report(r)
+    emit_report(ctxt, r)
 
-def emit_report(r):
+def emit_report(ctxt, r):
     emit_report_as_warning(r)
-
-    return # FIXME
-
-    # r.to_xml().write(sys.stderr)
-
-    # FIXME: only do this if the user asks for it!
-    # FIXME: need options for this!
-    from StringIO import StringIO
-
-    buf = StringIO()
-    r.to_xml().write(buf)
-    xmlsrc = buf.getvalue()
-    from hashlib import sha1
-    filename = '%s.xml' % sha1(xmlsrc).hexdigest()
-    with open(filename, 'w') as f:
-        r.to_xml().write(f)
+    ctxt.analysis.results.append(r)
 
 def emit_report_as_warning(r):
     # Emit gcc output to stderr, using the Report instance:

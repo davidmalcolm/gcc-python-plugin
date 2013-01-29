@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,14 +16,15 @@
 #   <http://www.gnu.org/licenses/>.
 
 import gcc
-from libcpychecker import main, get_traces
+from libcpychecker import main, get_traces, Context
 
 def verify_traces(optpass, fun):
     # Only run in one pass
     # FIXME: should we be adding our own pass for this?
     if optpass.name == '*warn_function_return':
         if fun:
-            traces = get_traces(fun)
+            ctxt = Context()
+            traces = get_traces(fun, ctxt)
 
             # We should have a single trace
             #print('traces: %r' % traces)

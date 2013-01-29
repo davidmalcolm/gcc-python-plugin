@@ -1393,12 +1393,14 @@ class State(object):
     # We can't use the __slots__ optimization here, as we're adding additional
     # per-facet attributes
 
-    def __init__(self, fun, loc, facets, region_for_var=None, value_for_region=None,
+    def __init__(self, fun, ctxt, loc, facets, region_for_var=None,
+                 value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
         check_isinstance(fun, gcc.Function)
         check_isinstance(loc, Location)
         check_isinstance(facets, dict)
         self.fun = fun
+        self.ctxt = ctxt
         self.loc = loc
         self.facets = facets
 
@@ -1473,6 +1475,7 @@ class State(object):
 
     def copy(self):
         s_new = State(self.fun,
+                      self.ctxt,
                       self.loc,
                       self.facets,
                       self.region_for_var.copy(),
@@ -2984,7 +2987,7 @@ class Limits:
         if self.trans_seen > self.maxtrans:
             raise TooComplicated(result)
 
-def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
+def iter_traces(fun, ctxt, facets, prefix=None, limits=None, depth=0):
     """
     Traverse the tree of traces of program state, returning a list
     of Trace instances.
@@ -3001,6 +3004,7 @@ def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
     if prefix is None:
         prefix = Trace()
         curstate = State(fun,
+                         ctxt,
                          Location.get_block_start(fun.cfg.entry),
                          facets,
                          None, None, None)
@@ -3077,7 +3081,7 @@ def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
             # Recurse
             # This gives us a depth-first traversal of the state tree
             try:
-                for trace in iter_traces(fun, facets, newprefix, limits,
+                for trace in iter_traces(fun, ctxt, facets, newprefix, limits,
                                          depth + 1):
                     result.append(trace)
             except TooComplicated:

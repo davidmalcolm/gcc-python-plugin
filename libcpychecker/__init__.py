@@ -15,7 +15,12 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import sys
+
 import gcc
+
+from firehose.report import Analysis, Metadata, Generator
+
 from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
@@ -25,12 +30,39 @@ from libcpychecker.types import get_PyObject
 if hasattr(gcc, 'PLUGIN_FINISH_DECL'):
     from libcpychecker.compat import on_finish_decl
 
+class Context:
+    def __init__(self):
+        generator = Generator(name='cpychecker',
+                              version=None)
+        metadata=Metadata(generator=generator,
+                          sut=None,
+                          file_=None,
+                          stats=None)
+        self.analysis = Analysis(metadata, [])
+
+    def flush(self):
+        if 0:
+            self.analysis.to_xml().write(sys.stderr)
+
+        # FIXME: only do this if the user asks for it!
+        # FIXME: need options for this!
+        from StringIO import StringIO
+
+        buf = StringIO()
+        self.analysis.to_xml().write(buf)
+        xmlsrc = buf.getvalue()
+        from hashlib import sha1
+        filename = '%s.xml' % sha1(xmlsrc).hexdigest()
+        with open(filename, 'w') as f:
+            self.analysis.to_xml().write(f)
+
 class CpyCheckerGimplePass(gcc.GimplePass):
     """
     The custom pass that implements the per-function part of
     our extra compile-time checks
     """
     def __init__(self,
+                 ctxt,
                  dump_traces=False,
                  show_traces=False,
                  verify_pyargs=True,
@@ -40,6 +72,7 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                  maxtrans=256,
                  dump_json=False):
         gcc.GimplePass.__init__(self, 'cpychecker-gimple')
+        self.ctxt = ctxt
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.verify_pyargs = verify_pyargs
@@ -53,7 +86,7 @@ class CpyCheckerGimplePass(gcc.GimplePass):
         if fun:
             log('%s', fun)
             if self.verify_pyargs:
-                check_pyargs(fun)
+                check_pyargs(fun, self.ctxt)
 
             if self.only_on_python_code:
                 # Only run the refcount checker on code that
@@ -79,7 +112,9 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                     self._check_refcounts(fun)
 
     def _check_refcounts(self, fun):
-        check_refcounts(fun, self.dump_traces, self.show_traces,
+        check_refcounts(self.ctxt,
+                        fun,
+                        self.dump_traces, self.show_traces,
                         self.show_possible_null_derefs,
                         maxtrans=self.maxtrans,
                         dump_json=self.dump_json)
@@ -90,13 +125,19 @@ class CpyCheckerIpaPass(gcc.SimpleIpaPass):
     The custom pass that implements the whole-program part of
     our extra compile-time checks
     """
-    def __init__(self):
+    def __init__(self, ctxt):
         gcc.SimpleIpaPass.__init__(self, 'cpychecker-ipa')
+        self.ctxt = ctxt
 
     def execute(self):
-        check_initializers()
+        check_initializers(self.ctxt)
+
+        # We assume that we're now done:
+        self.ctxt.flush()
 
 def main(**kwargs):
+    ctxt = Context()
+
     # Register our custom attributes:
     gcc.register_callback(gcc.PLUGIN_ATTRIBUTES,
                           register_our_attributes)
@@ -107,7 +148,7 @@ def main(**kwargs):
                               on_finish_decl)
 
     # Register our GCC passes:
-    gimple_ps = CpyCheckerGimplePass(**kwargs)
+    gimple_ps = CpyCheckerGimplePass(ctxt, **kwargs)
     if 1:
         # non-SSA version:
         gimple_ps.register_before('*warn_function_return')
@@ -115,5 +156,5 @@ def main(**kwargs):
         # SSA version:
         gimple_ps.register_after('ssa')
 
-    ipa_ps = CpyCheckerIpaPass()
+    ipa_ps = CpyCheckerIpaPass(ctxt)
     ipa_ps.register_before('*free_lang_data')

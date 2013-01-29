@@ -2716,7 +2716,8 @@ class CPython(Facet):
                 loc = v_arg.loc
                 if not loc:
                     loc = stmt.loc
-                emit_warning(loc,
+                emit_warning(self.state.ctxt,
+                             loc,
                              ('argument %i had type %s but was expecting a PyObject* (or subclass)'
                               % (i + base_idx + 1, v_arg.gcctype)),
                              self.state.fun.decl.name,
@@ -2726,7 +2727,8 @@ class CPython(Facet):
 
         # check NULL-termination:
         if not args or not args[-1].is_null_ptr():
-            emit_warning(stmt.loc,
+            emit_warning(self.state.ctxt,
+                         stmt.loc,
                         ('arguments to %s were not NULL-terminated'
                          % fnmeta.name),
                          self.state.fun.decl.name,
@@ -3786,8 +3788,8 @@ class CPython(Facet):
         return result
 
 
-def get_traces(fun):
-    return list(iter_traces(fun,
+def get_traces(fun, ctxt):
+    return list(iter_traces(fun, ctxt,
                             {'cpython':CPython},
                             limits=Limits(maxtrans=1024)))
 
@@ -4178,7 +4180,7 @@ def warn_about_NULL_without_exception(v_return,
                                               ExceptionStateAnnotator())
 
 
-def impl_check_refcounts(fun, dump_traces=False,
+def impl_check_refcounts(ctxt, fun, dump_traces=False,
                          show_possible_null_derefs=False,
                          maxtrans=256):
     """
@@ -4211,6 +4213,7 @@ def impl_check_refcounts(fun, dump_traces=False,
 
     try:
         traces = iter_traces(fun,
+                             ctxt,
                              facets,
                              limits=limits)
     except TooComplicated:
@@ -4227,7 +4230,7 @@ def impl_check_refcounts(fun, dump_traces=False,
     if 0:
         filename = ('%s.%s-refcount-traces.html'
                     % (gcc.get_dump_base_name(), fun.decl.name))
-        rep = Reporter()
+        rep = Reporter(ctxt)
         for i, trace in enumerate(traces):
             endstate = trace.states[-1]
             r = rep.make_debug_dump(fun,
@@ -4240,7 +4243,7 @@ def impl_check_refcounts(fun, dump_traces=False,
                    ('graphical debug report for function %r written out to %r'
                     % (fun.decl.name, filename)))
 
-    rep = Reporter()
+    rep = Reporter(ctxt)
 
     # Iterate through all traces, adding reports to the Reporter:
     for i, trace in enumerate(traces):
@@ -4321,7 +4324,7 @@ def impl_check_refcounts(fun, dump_traces=False,
     return rep
 
 
-def check_refcounts(fun, dump_traces=False, show_traces=False,
+def check_refcounts(ctxt, fun, dump_traces=False, show_traces=False,
                     show_possible_null_derefs=False,
                     show_timings=False,
                     maxtrans=256,
@@ -4358,7 +4361,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         # print(dot)
         invoke_dot(dot)
 
-    rep = impl_check_refcounts(fun,
+    rep = impl_check_refcounts(ctxt, fun,
                                dump_traces,
                                show_possible_null_derefs,
                                maxtrans)

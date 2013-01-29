@@ -21,11 +21,12 @@ import gcc
 
 from gccutils import check_isinstance
 
+from libcpychecker.diagnostics import emit_warning
 from libcpychecker.utils import log
 
-def check_initializers():
+def check_initializers(ctxt):
     # Invoked by the "cpychecker-ipa" pass, once per compilation unit
-    verify_any_PyMethodDef_flags()
+    verify_any_PyMethodDef_flags(ctxt)
 
 from collections import OrderedDict
 class StructInitializer(object):
@@ -103,14 +104,14 @@ METH_CLASS    = 0x0010
 METH_STATIC   = 0x0020
 METH_COEXIST  = 0x0040
 
-def verify_any_PyMethodDef_flags():
+def verify_any_PyMethodDef_flags(ctxt):
     """
     Check all initializers for PyMethodDef arrays.
     Verify that the flags used match the real signature of the callback
     function (albeit usually cast to a PyCFunction):
       http://docs.python.org/c-api/structures.html#PyMethodDef
     """
-    methods = get_all_PyMethodDef_initializers()
+    methods = get_all_PyMethodDef_initializers(ctxt)
     #from pprint import pprint
     #pprint(methods)
 
@@ -134,10 +135,15 @@ def verify_any_PyMethodDef_flags():
                 exptypemsg = 'expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)"'
             actualargs = len(ml_meth.type.argument_types)
             if expargs != actualargs:
-                gcc.warning(si.get_location(),
-                            'flags do not match callback signature for %r'
-                            ' within PyMethodDef table'
-                            % ml_meth.name)
+                emit_warning(ctxt,
+                             si.get_location(),
+                             msg=('flags do not match callback signature for %r'
+                                  ' within PyMethodDef table'
+                                  % ml_meth.name),
+                             funcname=None,
+                             testid='flags-within-PyMethodDef',
+                             cwe=None,
+                             notes=None) # FIXME: add the notes from below
                 gcc.inform(si.get_location(),
                            exptypemsg + ' (%s arguments)' % expargs)
                 gcc.inform(si.get_location(),
@@ -146,7 +152,7 @@ def verify_any_PyMethodDef_flags():
                 gcc.inform(si.get_location(),
                            'see http://docs.python.org/c-api/structures.html#PyMethodDef')
 
-def get_all_PyMethodDef_initializers():
+def get_all_PyMethodDef_initializers(ctxt):
     """
     Locate all initializers for PyMethodDef, returning a list
     of StructInitializer instances
@@ -171,8 +177,13 @@ def get_all_PyMethodDef_initializers():
                         if 0:
                             print('final ml_name: %r' % ml_name)
                         if ml_name is not None:
-                            gcc.warning(table[-1].get_location(),
-                                        'missing NULL sentinel value at end of PyMethodDef table')
+                            emit_warning(ctxt,
+                                         table[-1].get_location(),
+                                         'missing NULL sentinel value at end of PyMethodDef table',
+                                         funcname=None,
+                                         testid='missing-NULL-terminator-in-PyMethodDef-table',
+                                         cwe=None,
+                                         notes=None)
                         result += table
     return result
 
