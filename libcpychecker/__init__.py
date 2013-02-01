@@ -15,6 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+import atexit
 import sys
 
 import gcc
@@ -69,6 +70,7 @@ class Context:
                           stats=None)
         self.options = options
         self.analysis = Analysis(metadata, [])
+        self.was_flushed = False
 
     def flush(self):
         if 0:
@@ -77,6 +79,8 @@ class Context:
         if self.options.outputxmlpath:
             with open(self.options.outputxmlpath, 'w') as f:
                 self.analysis.to_xml().write(f)
+
+        self.was_flushed = True
 
 class CpyCheckerGimplePass(gcc.GimplePass):
     """
@@ -135,9 +139,6 @@ class CpyCheckerIpaPass(gcc.SimpleIpaPass):
     def execute(self):
         check_initializers(self.ctxt)
 
-        # We assume that we're now done:
-        self.ctxt.flush()
-
 def main(options=None, **kwargs):
     if options is None:
         options = Options(**kwargs)
@@ -164,3 +165,8 @@ def main(options=None, **kwargs):
 
     ipa_ps = CpyCheckerIpaPass(ctxt)
     ipa_ps.register_before('*free_lang_data')
+
+    # Ensure that the ctxt is flushed after everything is run:
+    atexit.register(ctxt.flush)
+
+    return ctxt
