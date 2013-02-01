@@ -1164,8 +1164,12 @@ class Location(object):
                 # Next gimple statement:
                 return Location(self.bb, self.idx + 1)
             else:
-                assert len(self.bb.succs) == 1
-                return Location.get_block_start(self.bb.succs[0].dest)
+                # Ignore exception-handling edges:
+                succs = [succ
+                         for succ in self.bb.succs
+                         if not succ.eh]
+                assert len(succs) == 1
+                return Location.get_block_start(succs[0].dest)
 
     def __eq__(self, other):
         return self.bb == other.bb and self.idx == other.idx
