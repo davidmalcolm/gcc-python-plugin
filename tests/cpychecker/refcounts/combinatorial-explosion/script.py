@@ -40,6 +40,8 @@ def verify_analysis(analysis):
     assertEqual(f.location.file.givenpath,
                 'tests/cpychecker/refcounts/combinatorial-explosion/input.c')
     assertEqual(f.location.function.name, 'test_adding_module_objects')
+    assertEqual(f.location.line, 31)
+    assertEqual(f.location.column, 1)
     assertEqual(f.stdout, None)
     assertEqual(f.stderr,
                 ('this function is too complicated for the reference-count'
