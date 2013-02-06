@@ -17,11 +17,13 @@
 
 import atexit
 import sys
+import traceback
 
 import gcc
 
-from firehose.report import Analysis, Metadata, Generator
+from firehose.report import Analysis, Metadata, Generator, Failure
 
+from libcpychecker.diagnostics import WrappedGccLocation
 from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
 from libcpychecker.refcounts import check_refcounts, get_traces
@@ -122,10 +124,24 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                     self._check_refcounts(fun)
 
     def _check_refcounts(self, fun):
-        check_refcounts(self.ctxt,
-                        fun,
-                        self.options)
-
+        try:
+            check_refcounts(self.ctxt,
+                            fun,
+                            self.options)
+        except:
+            if self.options.outputxmlpath:
+                # If we're capturing Firehose XML output, simply capture
+                # unhandled exception there:
+                loc = WrappedGccLocation(gcc.get_location(),
+                                         fun.decl.name)
+                tb = traceback.format_exc()
+                failure = Failure(location=loc,
+                                  stdout=None,
+                                  stderr=tb,
+                                  returncode=None)
+                self.ctxt.analysis.results.append(failure)
+            else:
+                raise
 
 class CpyCheckerIpaPass(gcc.SimpleIpaPass):
     """

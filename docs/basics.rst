@@ -258,6 +258,11 @@ You can override this using gcc.set_location:
    each time after returning from Python back to the plugin, after printing
    any traceback.
 
+.. py:function:: gcc.get_location(loc)
+
+   Obtain the error-reporting location that would be used if an exception
+   occurs, as a `gcc.Location`
+
 
 Accessing parameters
 --------------------

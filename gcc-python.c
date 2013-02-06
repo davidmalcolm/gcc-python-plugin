@@ -127,6 +127,12 @@ gcc_python_set_location(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+gcc_python_get_location(PyObject *self, PyObject *ignored)
+{
+    return gcc_python_make_wrapper_location(input_location);
+}
+
+static PyObject *
 gcc_python_get_option_list(PyObject *self, PyObject *args)
 {
     PyObject *result;
@@ -385,7 +391,11 @@ static PyMethodDef GccMethods[] = {
     {"set_location",
      (PyCFunction)gcc_python_set_location,
      METH_VARARGS,
-     ("Temporarily set the default location for error reports\n")},
+     ("Temporarily set the default gcc.Location for error reports\n")},
+    {"get_location",
+     (PyCFunction)gcc_python_get_location,
+     METH_NOARGS,
+     ("Get the default gcc.Location for error reports\n")},
 
     /* Options: */
     {"get_option_list",
