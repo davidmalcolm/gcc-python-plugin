@@ -1,2 +1,4 @@
 tests/cpychecker/refcounts/combinatorial-explosion/input.c: In function 'test_adding_module_objects':
-tests/cpychecker/refcounts/combinatorial-explosion/input.c:31:1: note: this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed
+tests/cpychecker/refcounts/combinatorial-explosion/input.c:31:nn: note: this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed
+verify_firehose()
+GOT HERE

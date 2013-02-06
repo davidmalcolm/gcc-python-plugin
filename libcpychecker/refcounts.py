@@ -22,7 +22,7 @@
 
 import sys
 
-from firehose.report import Notes
+from firehose.report import Notes, Failure
 
 import gcc
 
@@ -33,7 +33,7 @@ from libcpychecker.attributes import fnnames_returning_borrowed_refs, \
     stolen_refs_by_fnname, fnnames_setting_exception, \
     fnnames_setting_exception_on_negative_result
 from libcpychecker.diagnostics import Reporter, Annotator, emit_warning, \
-    make_firehose_trace
+    make_firehose_trace, WrappedGccLocation
 from libcpychecker.PyArg_ParseTuple import PyArgParseFmt, FormatStringWarning,\
     TypeCheckCheckerType, TypeCheckResultType, \
     ConverterCallbackType, ConverterResultType
@@ -4213,8 +4213,15 @@ def impl_check_refcounts(ctxt, fun, options):
                              limits=limits)
     except TooComplicated:
         err = sys.exc_info()[1]
-        gcc.inform(fun.start,
-                   'this function is too complicated for the reference-count checker to fully analyze: not all paths were analyzed')
+        MESSAGE = ('this function is too complicated for the reference-count'
+                   ' checker to fully analyze: not all paths were analyzed')
+        gcc.inform(fun.start, MESSAGE)
+        failure = Failure(location=WrappedGccLocation(fun.start, fun.decl.name),
+                          stdout=None,
+                          stderr=MESSAGE,
+                          returncode=None)
+        ctxt.analysis.results.append(failure)
+
         traces = err.complete_traces
 
     if options.dump_traces:
