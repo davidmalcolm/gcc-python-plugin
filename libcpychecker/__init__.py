@@ -21,7 +21,8 @@ import traceback
 
 import gcc
 
-from firehose.report import Analysis, Metadata, Generator, Failure
+from firehose.report import Analysis, Metadata, Generator, Failure, \
+    CustomFields
 
 from libcpychecker.diagnostics import WrappedGccLocation
 from libcpychecker.formatstrings import check_pyargs
@@ -136,9 +137,9 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                                          fun.decl.name)
                 tb = traceback.format_exc()
                 failure = Failure(location=loc,
-                                  stdout=None,
-                                  stderr=tb,
-                                  returncode=None)
+                                  failureid='python-exception',
+                                  message=None,
+                                  customfields=CustomFields(traceback=tb))
                 self.ctxt.analysis.results.append(failure)
             else:
                 raise

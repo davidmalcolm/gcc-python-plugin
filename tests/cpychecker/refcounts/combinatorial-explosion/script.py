@@ -37,16 +37,17 @@ def verify_analysis(analysis):
 
     assert isinstance(f, Failure)
 
+    assertEqual(f.failureid, 'too-complicated')
     assertEqual(f.location.file.givenpath,
                 'tests/cpychecker/refcounts/combinatorial-explosion/input.c')
     assertEqual(f.location.function.name, 'test_adding_module_objects')
     assertEqual(f.location.line, 31)
     assertEqual(f.location.column, 1)
-    assertEqual(f.stdout, None)
-    assertEqual(f.stderr,
+    assertEqual(f.message.text,
                 ('this function is too complicated for the reference-count'
                  ' checker to fully analyze: not all paths were analyzed'))
-    assertEqual(f.returncode, None)
+    assert isinstance(f.customfields['maxtrans'], int)
+    assertEqual(f.customfields['maxtrans'], options.maxtrans)
 
 def verify_firehose():
     global ctxt
@@ -67,10 +68,11 @@ def verify_firehose():
     # checked):
     sys.stderr.write('GOT HERE\n')
 
+options = Options(verify_refcounting=True,
+                  dump_traces=False,
+                  show_traces=False,
+                  outputxmlpath=XML_OUTPUT_PATH)
 atexit.register(verify_firehose)
-ctxt = main(Options(verify_refcounting=True,
-                    dump_traces=False,
-                    show_traces=False,
-                    outputxmlpath=XML_OUTPUT_PATH))
+ctxt = main(options)
 if 0:
     sys.stderr.write('%s\n' % atexit._exithandlers)

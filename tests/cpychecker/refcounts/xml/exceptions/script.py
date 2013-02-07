@@ -38,15 +38,16 @@ def verify_analysis(analysis):
 
     assert isinstance(f, Failure)
 
+    assertEqual(f.failureid, 'python-exception')
+    assertEqual(f.message, None)
     assertEqual(f.location.file.givenpath,
                 'tests/cpychecker/refcounts/xml/exceptions/input.c')
     assertEqual(f.location.function.name, 'test')
     assertEqual(f.location.line, 31)
     assertEqual(f.location.column, 5)
-    assertEqual(f.stdout, None)
-    assert f.stderr.startswith('Traceback (most recent call last):\n')
-    assert f.stderr.endswith('ValueError: this exception exists to test XML output\n')
-    assertEqual(f.returncode, None)
+    tb = f.customfields['traceback']
+    assert tb.startswith('Traceback (most recent call last):\n')
+    assert tb.endswith('ValueError: this exception exists to test XML output\n')
 
 def verify_firehose():
     global ctxt

@@ -22,7 +22,7 @@
 
 import sys
 
-from firehose.report import Notes, Failure
+from firehose.report import Notes, Failure, Message, CustomFields
 
 import gcc
 
@@ -4216,10 +4216,10 @@ def impl_check_refcounts(ctxt, fun, options):
         MESSAGE = ('this function is too complicated for the reference-count'
                    ' checker to fully analyze: not all paths were analyzed')
         gcc.inform(fun.start, MESSAGE)
-        failure = Failure(location=WrappedGccLocation(fun.start, fun.decl.name),
-                          stdout=None,
-                          stderr=MESSAGE,
-                          returncode=None)
+        failure = Failure(failureid='too-complicated',
+                          location=WrappedGccLocation(fun.start, fun.decl.name),
+                          message=Message(MESSAGE),
+                          customfields=CustomFields(maxtrans=options.maxtrans))
         ctxt.analysis.results.append(failure)
 
         traces = err.complete_traces
