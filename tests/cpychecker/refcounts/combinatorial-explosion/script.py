@@ -30,6 +30,10 @@ def assertEqual(lhs, rhs):
     if lhs != rhs:
         raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
 
+def assertGreater(lhs, rhs):
+    if not (lhs > rhs):
+        raise ValueError('%r <= %r' % (lhs, rhs))
+
 def verify_analysis(analysis):
     # Verify that a Failure instance made it into the firehose output:
     assertEqual(len(analysis.results), 1)
@@ -48,6 +52,17 @@ def verify_analysis(analysis):
                  ' checker to fully analyze: not all paths were analyzed'))
     assert isinstance(f.customfields['maxtrans'], int)
     assertEqual(f.customfields['maxtrans'], options.maxtrans)
+    assertGreater(f.customfields['num_basic_blocks'], 50)
+    # 72 with gcc 4.7.2 and python 2.7.3
+
+    assertGreater(f.customfields['num_gimple_statements'], 100)
+    # 166 with gcc 4.7.2 and python 2.7.3
+
+    assertEqual(f.customfields['num_Py_api_calls'], 33)
+    # 33 with gcc 4.7.2 and python 2.7.3
+    # (1 call to PyLong_FromLong, 32 calls to PyModule_AddObject):
+    assertEqual(f.customfields['calls_to_PyLong_FromLong'], 1)
+    assertEqual(f.customfields['calls_to_PyModule_AddObject'], 32)
 
 def verify_firehose():
     global ctxt

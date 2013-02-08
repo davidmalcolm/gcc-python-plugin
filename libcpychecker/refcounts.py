@@ -4180,6 +4180,31 @@ def warn_about_NULL_without_exception(v_return,
                                               ExceptionStateAnnotator())
 
 
+# Gather stats on function:
+def gather_stats_on_function(fun, dstdict):
+    dstdict['num_basic_blocks'] = 0
+    dstdict['num_edges'] = 0
+    dstdict['num_gimple_statements'] = 0
+    dstdict['num_Py_api_calls'] = 0
+    for bb in fun.cfg.basic_blocks:
+        dstdict['num_basic_blocks'] += 1
+        for edge in bb.succs:
+            dstdict['num_edges'] += 1
+        if bb.gimple:
+            for stmt in bb.gimple:
+                dstdict['num_gimple_statements'] += 1
+                if isinstance(stmt, gcc.GimpleCall):
+                    if stmt.fndecl:
+                        if stmt.fndecl.name.startswith('Py') \
+                                or stmt.fndecl.name.startswith('_Py'):
+                            dstdict['num_Py_api_calls'] += 1
+                        # Gather stats on all function calls:
+                        key = 'calls_to_%s' % stmt.fndecl.name
+                        if key in dstdict:
+                            dstdict[key] += 1
+                        else:
+                            dstdict[key] = 1
+
 def impl_check_refcounts(ctxt, fun, options):
     """
     Inner implementation of the refcount checker, checking the refcounting
@@ -4216,10 +4241,13 @@ def impl_check_refcounts(ctxt, fun, options):
         MESSAGE = ('this function is too complicated for the reference-count'
                    ' checker to fully analyze: not all paths were analyzed')
         gcc.inform(fun.start, MESSAGE)
+        customfields = CustomFields(maxtrans=options.maxtrans)
+        gather_stats_on_function(fun, customfields)
+
         failure = Failure(failureid='too-complicated',
                           location=WrappedGccLocation(fun.start, fun.decl.name),
                           message=Message(MESSAGE),
-                          customfields=CustomFields(maxtrans=options.maxtrans))
+                          customfields=customfields)
         ctxt.analysis.results.append(failure)
 
         traces = err.complete_traces
