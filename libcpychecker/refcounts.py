@@ -236,7 +236,7 @@ class Outcome:
 
     def returns(self, value):
         check_isinstance(value, numeric_types)
-        self._returns(ConcreteValue(self.get_stmt().lhs.type,
+        self._returns(ConcreteValue(self.get_return_type(),
                                     self.get_stmt().loc,
                                     value))
     def returns_ptr(self, region):
