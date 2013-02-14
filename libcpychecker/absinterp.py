@@ -371,6 +371,8 @@ def eval_binop(exprcode, a, b, rhsvalue):
             return a * b
         elif exprcode == gcc.TruncDivExpr:
             return a // b
+        elif exprcode == gcc.ExactDivExpr:
+            return a / b
         elif exprcode == gcc.TruncModExpr:
             return a % b
         elif exprcode == gcc.MaxExpr:
@@ -2542,7 +2544,7 @@ class State(object):
         # Handle arithmetic and boolean expressions:
         if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
                              gcc.TruncModExpr,
-                             gcc.RdivExpr,
+                             gcc.RdivExpr, gcc.ExactDivExpr,
                              gcc.MaxExpr, gcc.MinExpr,
                              gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
                              gcc.LshiftExpr, gcc.RshiftExpr,
