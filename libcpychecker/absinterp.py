@@ -481,7 +481,8 @@ class ConcreteValue(AbstractValue):
         elif exprcode == gcc.ConvertExpr:
             # Is this value expressible within the new type?
             # If not, we might lose information
-            if isinstance(self.gcctype, gcc.IntegerType):
+            if isinstance(self.gcctype, gcc.IntegerType) \
+                    and isinstance(gcctype, gcc.IntegerType):
                 if (self.value >= gcctype.min_value.constant
                     and self.value <= gcctype.max_value.constant):
                     # The old range will convert OK to the new type:
