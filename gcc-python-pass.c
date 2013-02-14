@@ -77,9 +77,10 @@ static bool impl_gate(void)
             input_location = saved_loc;
             return false;
         }
-        result_obj = PyObject_CallMethod(pass_obj, "gate", "O", cfun_obj, NULL);
+        result_obj = PyObject_CallMethod(pass_obj, (char*)"gate", (char*)"O",
+                                         cfun_obj, NULL);
     } else {
-        result_obj = PyObject_CallMethod(pass_obj, "gate", NULL);
+        result_obj = PyObject_CallMethod(pass_obj, (char*)"gate", NULL);
     }
 
     Py_XDECREF(cfun_obj);
@@ -119,9 +120,10 @@ static unsigned int impl_execute(void)
             input_location = saved_loc;
             return false;
         }
-        result_obj = PyObject_CallMethod(pass_obj, "execute", "O", cfun_obj, NULL);
+        result_obj = PyObject_CallMethod(pass_obj, (char*)"execute",
+                                         (char*)"O", cfun_obj, NULL);
     } else {
-        result_obj = PyObject_CallMethod(pass_obj, "execute", NULL);
+        result_obj = PyObject_CallMethod(pass_obj, (char*)"execute", NULL);
     }
 
     Py_XDECREF(cfun_obj);
@@ -172,8 +174,8 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
 {
     struct PyGccPass *self = (struct PyGccPass *)s;
     const char *name;
-    char *keywords[] = {"name",
-                        NULL};
+    const char *keywords[] = {"name",
+                              NULL};
     struct opt_pass *pass;
 
     /*
@@ -182,12 +184,12 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     gcc_python_wrapper_track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:gcc.Pass.__init__", keywords,
+                                     "s:gcc.Pass.__init__", (char**)keywords,
                                      &name)) {
         return -1;
     }
 
-    pass = PyMem_Malloc(sizeof_pass);
+    pass = (struct opt_pass*)PyMem_Malloc(sizeof_pass);
     if (!pass) {
         return -1;
     }
@@ -377,12 +379,12 @@ PyObject *
 gcc_Pass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
 {
     const char *name;
-    char *keywords[] = {"name",
-                        NULL};
+    const char *keywords[] = {"name",
+                              NULL};
     struct opt_pass *result;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:get_by_name", keywords,
+                                     "s:get_by_name", (char**)keywords,
                                      &name)) {
         return NULL;
     }
@@ -409,16 +411,16 @@ impl_register(struct PyGccPass *self, PyObject *args, PyObject *kwargs,
               enum pass_positioning_ops pos_op, const char *arg_format)
 {
     struct register_pass_info rpi;
-    char *keywords[] = {"name",
-                        "instance_number",
-                        NULL};
+    const char *keywords[] = {"name",
+                              "instance_number",
+                              NULL};
 
     rpi.pass = self->pass;
     rpi.pos_op = pos_op;
     rpi.ref_pass_instance_number = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     arg_format, keywords,
+                                     arg_format, (char**)keywords,
                                      &rpi.reference_pass_name,
                                      &rpi.ref_pass_instance_number)) {
         return NULL;

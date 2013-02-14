@@ -1,0 +1,68 @@
+.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+.. this covers up to 9bfec18f7eebf9af2dde8b8db132cf97c7d9c17d
+
+0.11
+~~~~
+
+Changes to the GCC Python Plugin
+================================
+
+The main change in this release is support for compiling the plugin with a
+C++ compiler.  Recent versions of GCC 4.7 are now built with C++ rather than
+C, meaning that plugins must also be built with C++ (since all of GCC's
+internal symbols are name-mangled).  This release fixes the plugin's
+Makefile so that it autodetects whether the plugin needs to be built with a
+C or C++ compiler and (I hope) does the right thing automatically.  I've also
+made the necessary changes to the C source code of the plugin so that it is
+compilable as either language.
+
+This should enable the plugin to now be usable with recent builds of gcc
+4.7.* (along with gcc 4.6).
+
+The plugin doesn't yet support gcc 4.8 prereleases.
+
+Other fixes:
+
+  * there is now a unique :py:class:`gcc.Edge` wrapper for each underlying
+    edge in GCC's control flow graphs, rather than the old erroneous
+    behavior of having multiple identical duplicate wrappers.
+
+  * fixed missing documentation for :py:class:`gcc.SsaName`, and
+    :py:class:`gcc.Edge`'s `true_value` and `false_value` flags
+
+
+Internal improvements to :doc:`gcc-with-cpychecker </cpychecker>`
+=================================================================
+
+The CPython static analysis code shipped with the plugin contains a detailed
+description of the behavior of the
+`CPython API <http://docs.python.org/c-api/>`_ (e.g. which arguments will
+lead to a segfault if NULL, and why; the possible outcomes of a call and
+their impact on reference-counts; etc).
+
+However, these descriptions were tightly bound to implementation details of
+the checker.
+
+This release introduces a new internal API to the analyzer for describing
+the possible behaviors of CPython API entrypoints, in an attempt to decouple
+these descriptions from the checker, and ports many of the descriptions to
+using it.
+
+These changes shouldn't be visible to users of the checker, but should make
+future maintenance much easier.

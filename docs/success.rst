@@ -101,6 +101,8 @@ copy:
 
      * http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=2922ad81c8e0ea954d462433ecc83d86d9ebab68
 
+     * http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=4642a564e03c9e2c8114bca206205ad9c8fbc308>
+
    * bad format string: https://fedorahosted.org/pipermail/gcc-python-plugin/2011-August/000065.html
 
    * minor const-correctness error: http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=commitdiff;h=4fe4a83288e04be35a96d0bfec332197fb32c358

@@ -196,7 +196,7 @@ PyObject *
 gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
-    int i;
+    unsigned int i;
 
     assert(gimple_has_ops(self->stmt));
 
@@ -324,7 +324,7 @@ gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
     unsigned num_labels = gimple_switch_num_labels(self->stmt);
-    int i;
+    unsigned int i;
 
     result = PyList_New(num_labels);
     if (!result) {

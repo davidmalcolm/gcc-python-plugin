@@ -87,11 +87,11 @@ gcc_python_define_macro(PyObject *self,
                         PyObject *args, PyObject *kwargs)
 {
     const char *macro;
-    char *keywords[] = {"macro",
+    const char *keywords[] = {"macro",
                         NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s:define_preprocessor_name", keywords,
+                                     "s:define_preprocessor_name", (char**)keywords,
                                      &macro)) {
         return NULL;
     }
@@ -136,7 +136,7 @@ static PyObject *
 gcc_python_get_option_list(PyObject *self, PyObject *args)
 {
     PyObject *result;
-    int i;
+    unsigned int i;
 
     result = PyList_New(0);
     if (!result) {
@@ -206,7 +206,7 @@ gcc_python_get_parameters(PyObject *self, PyObject *args)
     }
 
     for (i = 0; i < get_num_compiler_params(); i++) {
-        PyObject *param_obj = gcc_python_make_wrapper_param_num(i);
+        PyObject *param_obj = gcc_python_make_wrapper_param_num((compiler_param)i);
         if (!param_obj) {
 	    goto error;
         }
@@ -501,7 +501,7 @@ static struct PyModuleDef gcc_module_def = {
 };
 #endif
 
-static PyMODINIT_FUNC PyInit_gcc(void)
+PyMODINIT_FUNC PyInit_gcc(void)
 {
 #if PY_MAJOR_VERSION == 3
     PyObject *m;
@@ -666,7 +666,7 @@ setup_sys(struct plugin_name_args *plugin_info)
     if (!full_name) {
         goto error;
     }
-    if (-1 == PySys_SetObject("plugin_full_name", full_name)) {
+    if (-1 == PySys_SetObject((char*)"plugin_full_name", full_name)) {
         goto error;
     }
 
@@ -675,7 +675,7 @@ setup_sys(struct plugin_name_args *plugin_info)
     if (!base_name) {
         goto error;
     }
-    if (-1 == PySys_SetObject("plugin_base_name", base_name)) {
+    if (-1 == PySys_SetObject((char*)"plugin_base_name", base_name)) {
         goto error;
     }
 

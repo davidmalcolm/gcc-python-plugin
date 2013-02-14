@@ -69,12 +69,12 @@ gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
-    char *keywords[] = {"location",
-                        "message",
-                        NULL};
+    const char *keywords[] = {"location",
+                              "message",
+                              NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O!s:error", keywords,
+                                     "O!s:error", (char**)keywords,
                                      &gcc_LocationType, &loc_obj,
                                      &msg)) {
         return NULL;
@@ -92,14 +92,14 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
     const char *msg;
     PyObject *opt_obj = &_Py_NoneStruct;
     int opt_code;
-    char *keywords[] = {"location",
-                        "message",
-                        "option",
-                        NULL};
+    const char *keywords[] = {"location",
+                              "message",
+                              "option",
+                              NULL};
     bool was_reported;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O!s|O:warning", keywords,
+                                     "O!s|O:warning", (char**)keywords,
 
                                      /* code "O!": */
                                      &gcc_LocationType, &loc_obj,
@@ -119,7 +119,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
         opt_code = ((PyGccOption*)opt_obj)->opt_code;
 
         /* Ugly workaround; see this function: */
-        if (0 == gcc_python_option_is_enabled(opt_code)) {
+        if (0 == gcc_python_option_is_enabled((enum opt_code)opt_code)) {
             return PyBool_FromLong(0);
         }
 
@@ -145,12 +145,12 @@ gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
-    char *keywords[] = {"location",
-                        "message",
-                        NULL};
+    const char *keywords[] = {"location",
+                              "message",
+                              NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O!s:inform", keywords,
+                                     "O!s:inform", (char**)keywords,
                                      &gcc_LocationType, &loc_obj,
                                      &msg)) {
         return NULL;
