@@ -756,7 +756,8 @@ class WithinRange(AbstractValue):
         elif exprcode == gcc.ConvertExpr:
             # Is the whole of this range fully expressible within the new type?
             # If not, we might lose information
-            if isinstance(self.gcctype, gcc.IntegerType):
+            if isinstance(self.gcctype, gcc.IntegerType) \
+                    and isinstance(gcctype, gcc.IntegerType):
                 if (self.minvalue >= gcctype.min_value.constant
                     and self.maxvalue <= gcctype.max_value.constant):
                     # The old range will convert OK to the new type:
