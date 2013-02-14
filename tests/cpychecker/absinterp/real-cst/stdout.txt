@@ -1,8 +1,0 @@
-Trace 0:
-  Transitions:
-    'returning'
-  Return value:
-    repr(): ConcreteValue(gcctype='double', loc=gcc.Location(file='tests/cpychecker/absinterp/real-cst/input.c', line=30), value=42.0)
-    str(): (double)42.0 from tests/cpychecker/absinterp/real-cst/input.c:30
-  Exception:
-    (struct PyObject *)0 from tests/cpychecker/absinterp/real-cst/input.c:29
