@@ -1,6 +1,6 @@
 Trace 0:
   Transitions:
-    'PyErr_SetFromErrno()'
+    'calling PyErr_SetFromErrno()'
     'returning'
   Return value:
     repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyErr_SetFromErrno/correct/input.c', line=29), value=0)

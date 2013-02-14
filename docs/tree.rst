@@ -1168,6 +1168,28 @@ Statements
 
       The target of the case label, as a :py:class:`gcc.LabelDecl`
 
+SSA Names
+---------
+
+.. py:class:: gcc.SsaName
+
+   A subclass of :py:class:`gcc.Tree` representing a variable references
+   during SSA analysis.  New SSA names are created every time a variable
+   is assigned a new value.
+
+   .. py:attribute:: var
+
+      The variable being referenced, as a :py:class:`gcc.VarDecl` or
+      :py:class:`gcc.ParmDecl`
+
+   .. py:attribute:: def_stmt
+
+      The :py:class:`gcc.Gimple` statement which defines this SSA name
+
+   .. py:attribute:: version
+
+      An `int` value giving the version number of this SSA name
+
   .. Here's a dump of the class hierarchy, from help(gcc):
   ..    Tree
   ..        ArgumentPackSelect
