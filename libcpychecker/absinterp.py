@@ -491,6 +491,8 @@ class ConcreteValue(AbstractValue):
             return UnknownValue.make(gcctype, loc)
         elif exprcode == gcc.FixTruncExpr:
             return ConcreteValue(gcctype, loc, int(self.value))
+        elif exprcode == gcc.FloatExpr:
+            return ConcreteValue(gcctype, loc, float(self.value))
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
                                       % (exprcode, exprcode, self, loc))
@@ -764,6 +766,8 @@ class WithinRange(AbstractValue):
                     return WithinRange.make(gcctype, loc,
                                        self.minvalue, self.maxvalue)
             # We might lose information e.g. truncation; be pessimistic for now:
+            return UnknownValue.make(gcctype, loc)
+        elif exprcode == gcc.FloatExpr:
             return UnknownValue.make(gcctype, loc)
         else:
             raise NotImplementedError("Don't know how to cope with exprcode: %r (%s) on %s at %s"
@@ -2538,6 +2542,7 @@ class State(object):
         # Handle arithmetic and boolean expressions:
         if stmt.exprcode in (gcc.PlusExpr, gcc.MinusExpr,  gcc.MultExpr, gcc.TruncDivExpr,
                              gcc.TruncModExpr,
+                             gcc.RdivExpr,
                              gcc.MaxExpr, gcc.MinExpr,
                              gcc.BitIorExpr, gcc.BitAndExpr, gcc.BitXorExpr,
                              gcc.LshiftExpr, gcc.RshiftExpr,
@@ -2594,7 +2599,7 @@ class State(object):
                 return UnknownValue.make(stmt.lhs.type, stmt.loc)
         # Unary expressions:
         elif stmt.exprcode in (gcc.AbsExpr, gcc.BitNotExpr, gcc.ConvertExpr,
-                               gcc.NegateExpr, gcc.FixTruncExpr):
+                               gcc.NegateExpr, gcc.FixTruncExpr, gcc.FloatExpr):
             v_rhs = self.eval_rvalue(stmt.rhs[0], stmt.loc)
             return v_rhs.eval_unary_op(stmt.exprcode, stmt.lhs.type, stmt.loc)
         elif stmt.exprcode == gcc.BitFieldRef:
