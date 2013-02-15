@@ -419,6 +419,7 @@ def generate_tree_code_classes():
             add_simple_getter('index',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
                               "The gcc.Tree for index being referenced'")
+            tp_repr = '(reprfunc)gcc_ArrayRef_repr'
 
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
@@ -427,6 +428,7 @@ def generate_tree_code_classes():
             add_simple_getter('field',
                               'gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1))',
                               "The gcc.FieldDecl for the field within the target'")
+            tp_repr = '(reprfunc)gcc_ComponentRef_repr'
 
         if tree_type.SYM == 'MEM_REF':
             add_simple_getter('operand',
