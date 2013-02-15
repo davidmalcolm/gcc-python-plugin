@@ -939,6 +939,25 @@ void gcc_python_print_exception(const char *msg)
     PyErr_PrintEx(1);
 }
 
+PyObject *
+PyGcc_GetReprOfAttribute(PyObject *obj, const char *attrname)
+{
+    PyObject *attr_obj;
+    PyObject *attr_repr;
+
+    attr_obj = PyObject_GetAttrString(obj, attrname);
+    if (!attr_obj) {
+        return NULL;
+    }
+    attr_repr = PyObject_Repr(attr_obj);
+    if (!attr_repr) {
+        Py_DECREF(attr_obj);
+        return NULL;
+    }
+
+    return attr_repr;
+}
+
 /*
   PEP-7
 Local variables:

@@ -786,6 +786,39 @@ gcc_TreeList_repr(struct PyGccTree * self)
     return result;
 }
 
+PyObject *
+gcc_CaseLabelExpr_repr(PyObject * self)
+{
+    PyObject *low_repr = NULL;
+    PyObject *high_repr = NULL;
+    PyObject *target_repr = NULL;
+    PyObject *result = NULL;
+
+    low_repr = PyGcc_GetReprOfAttribute(self, "low");
+    if (!low_repr) {
+        goto cleanup;
+    }
+    high_repr = PyGcc_GetReprOfAttribute(self, "high");
+    if (!high_repr) {
+        goto cleanup;
+    }
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
+    if (!target_repr) {
+        goto cleanup;
+    }
+
+    result = gcc_python_string_from_format("%s(low=%s, high=%s, target=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(low_repr),
+                                           gcc_python_string_as_string(high_repr),
+                                           gcc_python_string_as_string(target_repr));
+
+ cleanup:
+    Py_XDECREF(low_repr);
+    Py_XDECREF(high_repr);
+    Py_XDECREF(target_repr);
+    return result;
+}
 
 PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs)

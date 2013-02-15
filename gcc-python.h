@@ -315,6 +315,12 @@ char * gcc_python_strdup(const char *str) __attribute__((nonnull));
 
 void gcc_python_print_exception(const char *msg);
 
+/*
+  Shorthand for:  repr(getattr(obj, attrname))
+*/
+PyObject *
+PyGcc_GetReprOfAttribute(PyObject *obj, const char *attrname);
+
 /* Python 2 vs Python 3 compat: */
 #if PY_MAJOR_VERSION == 3
 /* Python 3: use PyUnicode for "str" and PyLong for "int": */
