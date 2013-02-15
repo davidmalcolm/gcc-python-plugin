@@ -178,7 +178,7 @@ Here's an example::
    # ...and wire it up, after the "cfg" pass:
    my_pass.register_after('cfg')
 
-For :py:class:`gcc.GimplePass` and :py:class:`gcc.IpaPass`, the signatures of
+For :py:class:`gcc.GimplePass` and :py:class:`gcc.RtlPass`, the signatures of
 `gate` and `execute` are:
 
    .. method:: gate(self, fun)
@@ -191,6 +191,12 @@ of `gate` and `execute` are:
 
    .. method:: gate(self)
    .. method:: execute(self)
+
+.. warning::
+
+   Unfortunately it doesn't appear to be possible to implement `gate()` for
+   `gcc.IpaPass` yet; for now, the `gate()` method on such passes will not be
+   called.  See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54959
 
 If an unhandled exception is raised within `gate` or `execute`, it will lead
 to a GCC error:
