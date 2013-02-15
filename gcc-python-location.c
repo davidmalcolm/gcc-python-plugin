@@ -67,6 +67,38 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     locobj2 = (struct PyGccLocation *)o2;
 
     switch (op) {
+    case Py_LT:
+    case Py_LE:
+    case Py_GT:
+    case Py_GE:
+        {
+            /* Locations are only comparable within the same source file: */
+            int line1 = LOCATION_LINE(locobj1->loc);
+            int line2 = LOCATION_LINE(locobj2->loc);
+
+            if (LOCATION_FILE(locobj1->loc) != LOCATION_FILE(locobj2->loc)) {
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+
+            switch (op) {
+            default: /* not reachable, but silence compiler warnings */
+            case Py_LT:
+                cond = (line1 < line2);
+                break;
+            case Py_LE:
+                cond = (line1 <= line2);
+                break;
+            case Py_GT:
+                cond = (line1 > line2);
+                break;
+            case Py_GE:
+                cond = (line1 >= line2);
+                break;
+            }
+        }
+        break;
+
     case Py_EQ:
 	cond = (locobj1->loc == locobj2->loc);
 	break;
