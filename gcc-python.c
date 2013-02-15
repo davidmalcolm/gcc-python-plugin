@@ -76,6 +76,12 @@ static void trace_callback_for_##NAME(void *gcc_data, void *user_data) \
 # undef DEFEVENT
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
+/*
+  Weakly import parse_in; it will be non-NULL in the C and C++ frontend,
+  but it's not available lto1 (link-time optimization)
+*/
+__typeof__ (parse_in) parse_in __attribute__ ((weak));
+
 static PyObject*
 gcc_python_define_macro(PyObject *self,
                         PyObject *args, PyObject *kwargs)

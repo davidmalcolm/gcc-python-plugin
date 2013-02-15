@@ -55,6 +55,14 @@ raise_cplusplus_only(const char *what)
                         what);
 }
 
+static PyObject *
+raise_not_during_lto(const char *what)
+{
+    return PyErr_Format(PyExc_RuntimeError,
+                        "%s is not available during link-time optimization",
+                        what);
+}
+
 //#include "rtl.h"
 /*
   "struct rtx_def" is declarted within rtl.h, c.f:
@@ -279,9 +287,19 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
     return NULL;
 }
 
+/*
+  Weakly import c_sizeof_or_alignof_type; it's not available in lto1
+  (link-time optimization)
+*/
+__typeof__ (c_sizeof_or_alignof_type) c_sizeof_or_alignof_type __attribute__ ((weak));
+
 PyObject *
 gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
 {
+    if (NULL == c_sizeof_or_alignof_type) {
+        return raise_not_during_lto("Type.sizeof");
+    }
+
     /*
       c_sizeof_or_alignof_type wants a location; we use a fake one
     */
@@ -306,6 +324,28 @@ gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
                      "type does not have a \"sizeof\"");
     }
     return NULL;
+}
+
+__typeof__ (c_common_signed_type) c_common_signed_type __attribute__ ((weak));
+
+PyObject *
+gcc_IntegerType_get_signed_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_signed_type)
+        return raise_not_during_lto("gcc.IntegerType.signed_equivalent");
+
+    return gcc_python_make_wrapper_tree(c_common_signed_type(self->t));
+}
+
+__typeof__ (c_common_unsigned_type) c_common_unsigned_type __attribute__ ((weak));
+
+PyObject *
+gcc_IntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_unsigned_type)
+        return raise_not_during_lto("gcc.IntegerType.unsigned_equivalent");
+
+    return gcc_python_make_wrapper_tree(c_common_unsigned_type(self->t));
 }
 
 PyObject *
