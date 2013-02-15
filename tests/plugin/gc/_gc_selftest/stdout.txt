@@ -1,7 +1,7 @@
 gcc._gc_selftest() starting
 creating test GCC objects
-  gcc_python_wrapper_track: gcc.IntegerCst
-  gcc_python_wrapper_track: gcc.StringCst
+  PyGccWrapper_Track: gcc.IntegerCst
+  PyGccWrapper_Track: gcc.StringCst
 forcing a garbage collection:
   walking the live PyGccWrapper objects
     marking inner object for: gcc.IntegerCst(42)
@@ -11,8 +11,8 @@ completed the forced garbage collection
 verifying that the underlying GCC objects were marked
 all of the underlying GCC objects were indeed marked
 invoking DECREF on Python wrapper objects
-  gcc_python_wrapper_dealloc: gcc.IntegerCst
-    gcc_python_wrapper_untrack: gcc.IntegerCst
-  gcc_python_wrapper_dealloc: gcc.StringCst
-    gcc_python_wrapper_untrack: gcc.StringCst
+  PyGccWrapper_Dealloc: gcc.IntegerCst
+    PyGcc_wrapper_untrack: gcc.IntegerCst
+  PyGccWrapper_Dealloc: gcc.StringCst
+    PyGcc_wrapper_untrack: gcc.StringCst
 gcc._gc_selftest() complete
