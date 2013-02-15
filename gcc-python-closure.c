@@ -135,6 +135,19 @@ gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, Py
     return NULL;
 }
 
+
+void
+gcc_python_closure_free(struct callback_closure *closure)
+{
+    assert(closure);
+
+    Py_XDECREF(closure->callback);
+    Py_XDECREF(closure->extraargs);
+    Py_XDECREF(closure->kwargs);
+
+    PyMem_Free(closure);
+}
+
 /*
   PEP-7  
 Local variables:

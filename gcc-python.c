@@ -83,6 +83,12 @@ static void trace_callback_for_##NAME(void *gcc_data, void *user_data) \
 # undef DEFEVENT
 #endif /* GCC_PYTHON_TRACE_ALL_EVENTS */
 
+/*
+  Weakly import parse_in; it will be non-NULL in the C and C++ frontend,
+  but it's not available lto1 (link-time optimization)
+*/
+__typeof__ (parse_in) parse_in __attribute__ ((weak));
+
 static PyObject*
 gcc_python_define_macro(PyObject *self,
                         PyObject *args, PyObject *kwargs)
@@ -342,6 +348,21 @@ gcc_python_get_dump_base_name(PyObject *self, PyObject *noargs)
     return gcc_python_string_or_none(dump_base_name);
 }
 
+static PyObject *
+gcc_python_get_is_lto(PyObject *self, PyObject *noargs)
+{
+    /*
+      The generated gcc/options.h has:
+          #ifdef GENERATOR_FILE
+          extern bool in_lto_p;
+          #else
+            bool x_in_lto_p;
+          #define in_lto_p global_options.x_in_lto_p
+          #endif
+    */
+    return PyBool_FromLong(in_lto_p);
+}
+
 static PyMethodDef GccMethods[] = {
     {"register_attribute",
      (PyCFunction)gcc_python_register_attribute,
@@ -428,6 +449,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_dump_base_name", gcc_python_get_dump_base_name, METH_NOARGS,
      "Get the base name used when writing dump files"},
+
+    {"is_lto", gcc_python_get_is_lto, METH_NOARGS,
+     "Determine whether or not we're being invoked during link-time optimization"},
 
     /* Garbage collection */
     {"_force_garbage_collection", gcc_python__force_garbage_collection, METH_VARARGS,
@@ -907,6 +931,25 @@ void gcc_python_print_exception(const char *msg)
 
     /* Print the traceback: */
     PyErr_PrintEx(1);
+}
+
+PyObject *
+PyGcc_GetReprOfAttribute(PyObject *obj, const char *attrname)
+{
+    PyObject *attr_obj;
+    PyObject *attr_repr;
+
+    attr_obj = PyObject_GetAttrString(obj, attrname);
+    if (!attr_obj) {
+        return NULL;
+    }
+    attr_repr = PyObject_Repr(attr_obj);
+    if (!attr_repr) {
+        Py_DECREF(attr_obj);
+        return NULL;
+    }
+
+    return attr_repr;
 }
 
 /*

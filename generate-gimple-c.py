@@ -228,6 +228,8 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                           tp_getset = getsettable.identifier,
                           tp_repr = '(reprfunc)gcc_Gimple_repr',
                           tp_str = '(reprfunc)gcc_Gimple_str',
+                          tp_hash = '(hashfunc)gcc_Gimple_hash',
+                          tp_richcompare = 'gcc_Gimple_richcompare',
                           tp_flags = 'Py_TPFLAGS_BASETYPE',
                           )
     methods = PyMethodTable('gcc_Gimple_methods', [])
@@ -384,6 +386,7 @@ def generate_gimple_subclasses():
     for gt in gimple_types:
         cc = gt.camel_cased_string()
 
+        tp_repr = None
         getsettable = None
         if cc == 'GimpleAsm':
             getsettable = make_getset_Asm()
@@ -399,6 +402,8 @@ def generate_gimple_subclasses():
             getsettable = make_getset_Phi()
         elif cc == 'GimpleSwitch':
             getsettable = make_getset_Switch()
+        elif cc == 'GimpleLabel':
+            tp_repr = '(reprfunc)gcc_GimpleLabel_repr'
 
         if getsettable:
             cu.add_defn(getsettable.c_defn())
@@ -412,7 +417,7 @@ def generate_gimple_subclasses():
                               tp_new = 'PyType_GenericNew',
                               tp_base = '&gcc_GimpleType',
                               tp_getset = getsettable.identifier if getsettable else None,
-                              #tp_repr = '(reprfunc)gcc_Gimple_repr',
+                              tp_repr = tp_repr,
                               #tp_str = '(reprfunc)gcc_Gimple_str',
                               )
         cu.add_defn(pytype.c_defn())

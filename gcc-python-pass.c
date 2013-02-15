@@ -46,6 +46,18 @@ static bool impl_gate(void)
     int result;
     gcc_location saved_loc = gcc_get_input_location();
 
+    /*
+       It appears that current_pass is not set by when gcc (4.7 at least) when
+       it invokes gate for an IPA_PASS within execute_ipa_summary_passes
+       (in gcc/passes.c), so we don't have a way of figuring out which pass
+       we were called on.
+
+       Reported as http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54959
+    */
+    if (NULL == current_pass) {
+        return true;
+    }
+
     assert(current_pass);
     pass_obj = gcc_python_make_wrapper_pass(current_pass);
     assert(pass_obj); /* we own a ref at this point */

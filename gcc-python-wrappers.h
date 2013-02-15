@@ -143,6 +143,9 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op);
 
 /* gcc-python-cfg.c: */
 PyObject *
+gcc_BasicBlock_repr(struct PyGccBasicBlock * self);
+
+PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure);
 
 PyObject *
@@ -223,6 +226,18 @@ gcc_Tree_get_symbol(PyObject *cls, PyObject *args);
 PyObject *
 gcc_Function_repr(struct PyGccFunction * self);
 
+long
+gcc_Function_hash(struct PyGccFunction * self);
+
+PyObject *
+gcc_Function_richcompare(PyObject *o1, PyObject *o2, int op);
+
+PyObject *
+gcc_ArrayRef_repr(PyObject *self);
+
+PyObject *
+gcc_ComponentRef_repr(PyObject *self);
+
 PyObject *
 gcc_Declaration_get_name(struct PyGccTree *self, void *closure);
 
@@ -260,6 +275,12 @@ PyObject *
 gcc_RealCst_repr(struct PyGccTree * self);
 
 PyObject *
+gcc_IntegerType_get_signed_equivalent(struct PyGccTree * self, void *closure);
+
+PyObject *
+gcc_IntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure);
+
+PyObject *
 gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
@@ -269,7 +290,13 @@ PyObject *
 gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 
 PyObject *
+gcc_SsaName_repr(struct PyGccTree * self);
+
+PyObject *
 gcc_TreeList_repr(struct PyGccTree * self);
+
+PyObject *
+gcc_CaseLabelExpr_repr(PyObject *self);
 
 PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
@@ -312,6 +339,12 @@ gcc_Gimple_repr(struct PyGccGimple * self);
 PyObject *
 gcc_Gimple_str(struct PyGccGimple * self);
 
+long
+gcc_Gimple_hash(struct PyGccGimple * self);
+
+PyObject *
+gcc_Gimple_richcompare(PyObject *o1, PyObject *o2, int op);
+
 PyObject *
 gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs);
 
@@ -323,6 +356,9 @@ gcc_Gimple_get_str_no_uid(struct PyGccGimple *self, void *closure);
 
 PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure);
+
+PyObject *
+gcc_GimpleLabel_repr(PyObject * self);
 
 PyObject *
 gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure);

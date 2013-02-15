@@ -1,0 +1,28 @@
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c: In function 'test':
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: warning: ob_refcnt of new ref from call to PyObject_CallObject is 1 too high [enabled by default]
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: but final ob_refcnt is N + 1
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: new ref from call to PyObject_CallObject allocated at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: taking False path at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: reaching:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when taking True path at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: reaching: }
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: returning at: }
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: found 4 similar trace(s) to this
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: warning: dereferencing NULL (D.nnnnn->ob_type) at tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35 [enabled by default]
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: taking False path at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: reaching:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when taking False path at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: reaching:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() fails at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: warning: dereferencing NULL (D.nnnnn->ob_refcnt) at tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35 [enabled by default]
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: taking False path at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: reaching:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() fails at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:29:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c.test-refcount-errors.html'

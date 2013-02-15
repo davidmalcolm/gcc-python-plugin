@@ -79,6 +79,8 @@ def generate_function():
                           tp_new = 'PyType_GenericNew',
                           tp_repr = '(reprfunc)gcc_Function_repr',
                           tp_str = '(reprfunc)gcc_Function_repr',
+                          tp_hash = '(hashfunc)gcc_Function_hash',
+                          tp_richcompare = 'gcc_Function_richcompare',
                           tp_getset = getsettable.identifier,
                                     )
     cu.add_defn(pytype.c_defn())

@@ -390,11 +390,9 @@ def generate_tree_code_classes():
             add_simple_getter('unsigned',
                               'PyBool_FromLong(TYPE_UNSIGNED(self->t.inner))',
                               "Boolean: True for 'unsigned', False for 'signed'")
-            add_simple_getter('signed_equivalent',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_signed_type(self->t.inner)))',
+            add_complex_getter('signed_equivalent',
                               'The gcc.IntegerType for the signed version of this type')
-            add_simple_getter('unsigned_equivalent',
-                              'gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)))',
+            add_complex_getter('unsigned_equivalent',
                               'The gcc.IntegerType for the unsigned version of this type')
             add_simple_getter('max_value',
                               'gcc_python_make_wrapper_tree(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_max_value(PyGccTree_as_gcc_integer_type(self))))',
@@ -426,6 +424,7 @@ def generate_tree_code_classes():
             add_simple_getter('index',
                               'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
                               "The gcc.Tree for index being referenced'")
+            tp_repr = '(reprfunc)gcc_ArrayRef_repr'
 
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
@@ -434,6 +433,7 @@ def generate_tree_code_classes():
             add_simple_getter('field',
                               'gcc_python_make_wrapper_tree(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
                               "The gcc.FieldDecl for the field within the target'")
+            tp_repr = '(reprfunc)gcc_ComponentRef_repr'
 
         if tree_type.SYM == 'MEM_REF':
             add_simple_getter('operand',
@@ -559,6 +559,8 @@ def generate_tree_code_classes():
             add_simple_getter('version',
                               'gcc_python_int_from_long(gcc_ssa_name_get_version(PyGccTree_as_gcc_ssa_name(self)))',
                               "The SSA version number of this SSA name'")
+            tp_repr = '(reprfunc)gcc_SsaName_repr'
+
 
         if tree_type.SYM == 'TREE_LIST':
             # c.f. "struct GTY(()) tree_list":
@@ -574,6 +576,7 @@ def generate_tree_code_classes():
             add_simple_getter('target',
                               'gcc_python_make_wrapper_tree(gcc_label_decl_as_gcc_tree(gcc_case_label_expr_get_target(PyGccTree_as_gcc_case_label_expr(self))))',
                               "The target of the case label, as a gcc.LabelDecl")
+            tp_repr = '(reprfunc)gcc_CaseLabelExpr_repr'
 
         cu.add_defn(getsettable.c_defn())
         cu.add_defn(methods.c_defn())

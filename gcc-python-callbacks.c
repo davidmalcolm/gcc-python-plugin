@@ -170,6 +170,8 @@ cleanup:
     Py_XDECREF(args);
     Py_XDECREF(result);
 
+    /* We never cleanup "closure"; we don't know if we'll be called again */
+
     PyGILState_Release(gstate);
     gcc_set_input_location(saved_loc);
 }

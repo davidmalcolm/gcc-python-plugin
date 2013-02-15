@@ -31,6 +31,7 @@
 #include "gcc-c-api/gcc-tree.h"
 #include "gcc-c-api/gcc-type.h"
 
+extern PyGccWrapperTypeObject gcc_IntegerCstType;
 
 /*
   Unfortunately, decl_as_string() is only available from the C++
@@ -55,6 +56,14 @@ raise_cplusplus_only(const char *what)
 {
     return PyErr_Format(PyExc_RuntimeError,
                         "%s is only available when compiling C++ code",
+                        what);
+}
+
+static PyObject *
+raise_not_during_lto(const char *what)
+{
+    return PyErr_Format(PyExc_RuntimeError,
+                        "%s is not available during link-time optimization",
                         what);
 }
 
@@ -173,6 +182,22 @@ gcc_Tree_str(struct PyGccTree * self)
 long
 gcc_Tree_hash(struct PyGccTree * self)
 {
+    if (Py_TYPE(self) == (PyTypeObject*)&gcc_ComponentRefType) {
+        return (long)TREE_OPERAND(self->t.inner, 0) ^ (long)TREE_OPERAND(self->t.inner, 1);
+    }
+
+    if (Py_TYPE(self) == (PyTypeObject*)&gcc_IntegerCstType) {
+        /* Ensure that hash(cst) == hash(int(cst)) */
+        PyObject *constant = gcc_IntegerConstant_get_constant(self, NULL);
+        long result;
+        if (!constant) {
+            return -1;
+        }
+        result = PyObject_Hash(constant);
+        Py_DECREF(constant);
+        return result;
+    }
+
     /* Use the ptr as the hash value: */
     return (long)self->t.inner;
 }
@@ -186,6 +211,22 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
     int cond;
     PyObject *result_obj;
 
+    /* Specialcases: */
+    if (Py_TYPE(o1) == (PyTypeObject*)&gcc_IntegerCstType) {
+        o1 = gcc_IntegerConstant_get_constant((struct PyGccTree *)o1, NULL);
+        if (!o1) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o1);
+        return result_obj;
+    }
+    if (Py_TYPE(o2) == (PyTypeObject*)&gcc_IntegerCstType) {
+        o2 = gcc_IntegerConstant_get_constant((struct PyGccTree *)o2, NULL);
+        if (!o2) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o2);
+        return result_obj;
+    }
+
     if (!PyObject_TypeCheck(o1, (PyTypeObject*)&gcc_TreeType)) {
 	result_obj = Py_NotImplemented;
 	goto out;
@@ -197,6 +238,28 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
 
     treeobj1 = (struct PyGccTree *)o1;
     treeobj2 = (struct PyGccTree *)o2;
+
+    if (Py_TYPE(o1) == (PyTypeObject*)&gcc_ComponentRefType) {
+        if (Py_TYPE(o2) == (PyTypeObject*)&gcc_ComponentRefType) {
+            switch (op) {
+            case Py_EQ:
+                cond = ((TREE_OPERAND(treeobj1->t.inner, 0) == TREE_OPERAND(treeobj2->t.inner, 0)) &&
+                        (TREE_OPERAND(treeobj1->t.inner, 1) == TREE_OPERAND(treeobj2->t.inner, 1)));
+                break;
+
+            case Py_NE:
+                cond = !((TREE_OPERAND(treeobj1->t.inner, 0) == TREE_OPERAND(treeobj2->t.inner, 0)) &&
+                         (TREE_OPERAND(treeobj1->t.inner, 1) == TREE_OPERAND(treeobj2->t.inner, 1)));
+                break;
+
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+            result_obj = cond ? Py_True : Py_False;
+            goto out;
+        }
+    }
 
     switch (op) {
     case Py_EQ:
@@ -285,6 +348,62 @@ gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+gcc_ArrayRef_repr(PyObject *self)
+{
+    PyObject *array_repr = NULL;
+    PyObject *index_repr = NULL;
+    PyObject *result = NULL;
+
+    array_repr = PyGcc_GetReprOfAttribute(self, "array");
+    if (!array_repr) {
+        goto error;
+    }
+    index_repr =PyGcc_GetReprOfAttribute(self, "index");
+    if (!index_repr) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(array=%s, index=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(array_repr),
+                                           gcc_python_string_as_string(index_repr));
+
+ error:
+    Py_XDECREF(array_repr);
+    Py_XDECREF(index_repr);
+
+    return result;
+}
+
+PyObject *
+gcc_ComponentRef_repr(PyObject *self)
+{
+    PyObject *target_repr = NULL;
+    PyObject *field_repr = NULL;
+    PyObject *result = NULL;
+
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
+    if (!target_repr) {
+        goto error;
+    }
+    field_repr = PyGcc_GetReprOfAttribute(self, "field");
+    if (!field_repr) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(target=%s, field=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(target_repr),
+                                           gcc_python_string_as_string(field_repr));
+
+ error:
+    Py_XDECREF(target_repr);
+    Py_XDECREF(field_repr);
+
+    return result;
+}
+
+PyObject *
 gcc_IdentifierNode_repr(struct PyGccTree * self)
 {
     if (IDENTIFIER_POINTER(self->t.inner)) {
@@ -347,9 +466,19 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
     return NULL;
 }
 
+/*
+  Weakly import c_sizeof_or_alignof_type; it's not available in lto1
+  (link-time optimization)
+*/
+__typeof__ (c_sizeof_or_alignof_type) c_sizeof_or_alignof_type __attribute__ ((weak));
+
 PyObject *
 gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
 {
+    if (NULL == c_sizeof_or_alignof_type) {
+        return raise_not_during_lto("Type.sizeof");
+    }
+
     /*
       c_sizeof_or_alignof_type wants a location; we use a fake one
     */
@@ -374,6 +503,28 @@ gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
                      "type does not have a \"sizeof\"");
     }
     return NULL;
+}
+
+__typeof__ (c_common_signed_type) c_common_signed_type __attribute__ ((weak));
+
+PyObject *
+gcc_IntegerType_get_signed_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_signed_type)
+        return raise_not_during_lto("gcc.IntegerType.signed_equivalent");
+
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_signed_type(self->t.inner)));
+}
+
+__typeof__ (c_common_unsigned_type) c_common_unsigned_type __attribute__ ((weak));
+
+PyObject *
+gcc_IntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_unsigned_type)
+        return raise_not_during_lto("gcc.IntegerType.unsigned_equivalent");
+
+    return gcc_python_make_wrapper_tree(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)));
 }
 
 PyObject *
@@ -597,6 +748,30 @@ gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+gcc_SsaName_repr(struct PyGccTree * self)
+{
+    int version;
+    PyObject *repr_var = NULL;
+    PyObject *result = NULL;
+
+    version = SSA_NAME_VERSION(self->t.inner);
+    repr_var = PyGcc_GetReprOfAttribute((PyObject*)self, "var");
+    if (!repr_var) {
+        goto error;
+    }
+
+    result = gcc_python_string_from_format("%s(var=%s, version=%i)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(repr_var),
+                                           version);
+
+ error:
+    Py_XDECREF(repr_var);
+
+    return result;
+}
+
+PyObject *
 gcc_TreeList_repr(struct PyGccTree * self)
 {
     PyObject *purpose = NULL;
@@ -649,6 +824,39 @@ gcc_TreeList_repr(struct PyGccTree * self)
     return result;
 }
 
+PyObject *
+gcc_CaseLabelExpr_repr(PyObject * self)
+{
+    PyObject *low_repr = NULL;
+    PyObject *high_repr = NULL;
+    PyObject *target_repr = NULL;
+    PyObject *result = NULL;
+
+    low_repr = PyGcc_GetReprOfAttribute(self, "low");
+    if (!low_repr) {
+        goto cleanup;
+    }
+    high_repr = PyGcc_GetReprOfAttribute(self, "high");
+    if (!high_repr) {
+        goto cleanup;
+    }
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
+    if (!target_repr) {
+        goto cleanup;
+    }
+
+    result = gcc_python_string_from_format("%s(low=%s, high=%s, target=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           gcc_python_string_as_string(low_repr),
+                                           gcc_python_string_as_string(high_repr),
+                                           gcc_python_string_as_string(target_repr));
+
+ cleanup:
+    Py_XDECREF(low_repr);
+    Py_XDECREF(high_repr);
+    Py_XDECREF(target_repr);
+    return result;
+}
 
 PyObject *
 gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs)

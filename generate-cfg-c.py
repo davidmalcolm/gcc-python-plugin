@@ -121,7 +121,7 @@ def generate_basic_block():
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
                           struct_name = 'PyGccBasicBlock',
                           tp_new = 'PyType_GenericNew',
-                          #tp_repr = '(reprfunc)gcc_BasicBlock_repr',
+                          tp_repr = '(reprfunc)gcc_BasicBlock_repr',
                           #tp_str = '(reprfunc)gcc_BasicBlock_repr',
                           tp_getset = getsettable.identifier,
                           )

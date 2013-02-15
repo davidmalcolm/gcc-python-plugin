@@ -92,6 +92,14 @@ IMPL_APPENDER(add_edge_to_list,
               gcc_python_make_wrapper_edge)
 
 PyObject *
+gcc_BasicBlock_repr(struct PyGccBasicBlock * self)
+{
+    return gcc_python_string_from_format("%s(index=%i)",
+                                         Py_TYPE(self)->tp_name,
+                                         gcc_cfg_block_get_index(self->bb));
+}
+
+PyObject *
 gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 {
     IMPL_LIST_MAKER(gcc_cfg_block_for_each_pred_edge,
@@ -367,9 +375,30 @@ gcc_python_make_wrapper_basic_block(gcc_cfg_block bb)
 					    real_make_basic_block_wrapper);
 }
 
-IMPL_APPENDER(add_block_to_list,
-              gcc_cfg_block,
-              gcc_python_make_wrapper_basic_block)
+static bool
+add_block_to_list(gcc_cfg_block bb, void *user_data)
+{
+    PyObject *result = (PyObject*)user_data;
+    PyObject *obj_var;
+    obj_var = gcc_python_make_wrapper_basic_block(bb);
+    if (!obj_var) {
+        return true;
+    }
+
+    /* It appears that with optimization there can be occasional NULLs,
+       which get turned into None.  Skip them:
+    */
+    if (obj_var != Py_None) {
+        if (-1 == PyList_Append(result, obj_var)) {
+            Py_DECREF(obj_var);
+            return true;
+        }
+
+        /* Success: */
+    }
+    Py_DECREF(obj_var);
+    return false;
+}
 
 PyObject *
 gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
