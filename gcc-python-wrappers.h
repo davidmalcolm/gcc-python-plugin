@@ -245,6 +245,9 @@ PyObject *
 gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure);
 
 PyObject *
+gcc_GimpleLabel_repr(struct PyGccGimple * self);
+
+PyObject *
 gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure);
 
 PyObject *
