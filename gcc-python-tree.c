@@ -28,6 +28,7 @@
 
 #include "tree-flow.h" /* for op_symbol_code */
 
+extern PyGccWrapperTypeObject gcc_IntegerCstType;
 
 /*
   Unfortunately, decl_as_string() is only available from the C++
@@ -125,6 +126,22 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
     struct PyGccTree *treeobj2;
     int cond;
     PyObject *result_obj;
+
+    /* Specialcases: */
+    if (Py_TYPE(o1) == (PyTypeObject*)&gcc_IntegerCstType) {
+        o1 = gcc_IntegerConstant_get_constant((struct PyGccTree *)o1, NULL);
+        if (!o1) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o1);
+        return result_obj;
+    }
+    if (Py_TYPE(o2) == (PyTypeObject*)&gcc_IntegerCstType) {
+        o2 = gcc_IntegerConstant_get_constant((struct PyGccTree *)o2, NULL);
+        if (!o2) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o2);
+        return result_obj;
+    }
 
     if (!PyObject_TypeCheck(o1, (PyTypeObject*)&gcc_TreeType)) {
 	result_obj = Py_NotImplemented;
