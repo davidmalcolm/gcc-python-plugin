@@ -353,6 +353,9 @@ and the corresponding Python objects.
 
 More information can be seen in `run-test-suite.py`
 
+By default, `run-test-suite.py` will invoke all the tests.  You can pass it
+a list of paths and it run all tests found in those paths and below.
+
 You can generate the "gold" stdout.txt by hacking up this line in
 run-test-suite.py::
 
@@ -364,6 +367,28 @@ this to take effect though.
 
 Unfortunately, this approach over-specifies the selftests, making them
 rather "brittle".  Improvements to this approach would be welcome.
+
+To directly see the GCC command line being invoked for each test, and to see
+the resulting stdout and stderr, add `--show` to the arguments of
+`run-test-suite.py`.
+
+For example::
+
+   $ python run-test-suite.py tests/plugin/diagnostics --show
+   tests/plugin/diagnostics: gcc -c -o tests/plugin/diagnostics/output.o -fplugin=/home/david/coding/gcc-python-plugin/python.so -fplugin-arg-python-script=tests/plugin/diagnostics/script.py -Wno-format tests/plugin/diagnostics/input.c
+   tests/plugin/diagnostics/input.c: In function 'main':
+   tests/plugin/diagnostics/input.c:23:1: error: this is an error (with positional args)
+   tests/plugin/diagnostics/input.c:23:1: error: this is an error (with keyword args)
+   tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with positional args) [-Wdiv-by-zero]
+   tests/plugin/diagnostics/input.c:25:1: warning: this is a warning (with keyword args) [-Wdiv-by-zero]
+   tests/plugin/diagnostics/input.c:23:1: error: a warning with some embedded format strings %s and %i
+   tests/plugin/diagnostics/input.c:25:1: warning: this is an unconditional warning [enabled by default]
+   tests/plugin/diagnostics/input.c:25:1: warning: this is another unconditional warning [enabled by default]
+   expected error was found: option must be either None, or of type gcc.Option
+   tests/plugin/diagnostics/input.c:23:1: note: This is the start of the function
+   tests/plugin/diagnostics/input.c:25:1: note: This is the end of the function
+   OK
+   1 success; 0 failures; 0 skipped
 
 
 Documentation
