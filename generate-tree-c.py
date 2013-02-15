@@ -76,7 +76,7 @@ gcc_Tree_get_addr(struct PyGccTree *self, void *closure)
 
     cu.add_defn(getsettable.c_defn())
     
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_TreeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccTree_TypeObj',
                           localname = 'Tree',
                           tp_name = 'gcc.Tree',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -112,17 +112,17 @@ gcc_Tree_debug(PyObject *self, PyObject *args)
 generate_tree()
 
 type_for_code_class = {
-    'tcc_exceptional' : 'gcc_TreeType',
-    'tcc_constant' : 'gcc_ConstantType',
-    'tcc_type' : 'gcc_TypeType',
-    'tcc_declaration' : 'gcc_DeclarationType',
-    'tcc_reference' : 'gcc_ReferenceType',
-    'tcc_comparison' : 'gcc_ComparisonType',
-    'tcc_unary' : 'gcc_UnaryType',
-    'tcc_binary' : 'gcc_BinaryType',
-    'tcc_statement' : 'gcc_StatementType',
-    'tcc_vl_exp' : 'gcc_VlExpType',
-    'tcc_expression' : 'gcc_ExpressionType',
+    'tcc_exceptional' : 'PyGccTree_TypeObj',
+    'tcc_constant' : 'PyGccConstant_TypeObj',
+    'tcc_type' : 'PyGccType_TypeObj',
+    'tcc_declaration' : 'PyGccDeclaration_TypeObj',
+    'tcc_reference' : 'PyGccReference_TypeObj',
+    'tcc_comparison' : 'PyGccComparison_TypeObj',
+    'tcc_unary' : 'PyGccUnary_TypeObj',
+    'tcc_binary' : 'PyGccBinary_TypeObj',
+    'tcc_statement' : 'PyGccStatement_TypeObj',
+    'tcc_vl_exp' : 'PyGccVlExp_TypeObj',
+    'tcc_expression' : 'PyGccExpression_TypeObj',
 }
 
 def generate_intermediate_tree_classes():
@@ -136,11 +136,11 @@ def generate_intermediate_tree_classes():
     
     for code_type in type_for_code_class.values():
         # We've already built the base class:
-        if code_type == 'gcc_TreeType':
+        if code_type == 'PyGccTree_TypeObj':
             continue
 
-        # Strip off the "gcc_" prefix and "Type" suffix:
-        localname = code_type[4:-4]
+        # Strip off the "PyGcc" prefix and "_TypeObj" suffix:
+        localname = code_type[5:-8]
 
         getsettable = PyGetSetDefTable('gcc_%s_getset_table' % localname, [])
 
@@ -151,13 +151,13 @@ def generate_intermediate_tree_classes():
                               tp_name = 'gcc.%s' % localname,
                               struct_name = 'PyGccTree',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&gcc_TreeType',
+                              tp_base = '&PyGccTree_TypeObj',
                               tp_getset = getsettable.identifier,
                               tp_methods = methods.identifier)
 
         def add_simple_getter(name, c_expression, doc):
             getsettable.add_gsdef(name,
-                                  cu.add_simple_getter('gcc_%s_get_%s' % (localname, name),
+                                  cu.add_simple_getter('PyGcc%s_get_%s' % (localname, name),
                                                        'PyGccTree',
                                                        c_expression),
                                   None,
@@ -329,7 +329,7 @@ def generate_tree_code_classes():
         methods = PyMethodTable('gcc_%s_methods' % cc, [])
 
         def get_getter_identifier(name):
-            return 'gcc_%s_get_%s' % (cc, name)
+            return 'PyGcc%s_get_%s' % (cc, name)
 
         def add_simple_getter(name, c_expression, doc):
             getsettable.add_gsdef(name,
@@ -580,7 +580,7 @@ def generate_tree_code_classes():
 
         cu.add_defn(getsettable.c_defn())
         cu.add_defn(methods.c_defn())
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGcc%s_TypeObj' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
                               struct_name = 'PyGccTree',
@@ -601,7 +601,7 @@ def generate_tree_code_classes():
     cu.add_defn('\n/* Map from GCC tree codes to PyGccWrapperTypeObject* */\n')
     cu.add_defn('PyGccWrapperTypeObject *pytype_for_tree_code[] = {\n')
     for tree_type in tree_types:
-        cu.add_defn('    &gcc_%sType, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
+        cu.add_defn('    &PyGcc%s_TypeObj, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
     cu.add_defn('};\n\n')
 
     cu.add_defn('\n/* Map from PyGccWrapperTypeObject* to GCC tree codes*/\n')
@@ -609,7 +609,7 @@ def generate_tree_code_classes():
     cu.add_defn('gcc_python_tree_type_object_as_tree_code(PyObject *cls, enum tree_code *out)\n')
     cu.add_defn('{\n')
     for tree_type in tree_types:
-        cu.add_defn('    if (cls == (PyObject*)&gcc_%sType) {\n'
+        cu.add_defn('    if (cls == (PyObject*)&PyGcc%s_TypeObj) {\n'
                     '        *out = %s; return 0;\n'
                     '    }\n'
                     % (tree_type.camel_cased_string(),

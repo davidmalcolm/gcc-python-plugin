@@ -46,7 +46,7 @@ def generate_variable():
 
     cu.add_defn(getsettable.c_defn())
     
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_VariableType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Variable_TypeObj',
                           localname = 'Variable',
                           tp_name = 'gcc.Variable',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',

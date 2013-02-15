@@ -62,7 +62,7 @@ def generate_edge():
 
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_EdgeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccEdge_TypeObj',
                           localname = 'Edge',
                           tp_name = 'gcc.Edge',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -115,7 +115,7 @@ def generate_basic_block():
                                   None)
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_BasicBlockType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccBasicBlock_TypeObj',
                           localname = 'BasicBlock',
                           tp_name = 'gcc.BasicBlock',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -157,7 +157,7 @@ def generate_cfg():
                                                 'The final gcc.BasicBlock in this graph'),
                                     ])
     cu.add_defn(getsettable.c_defn())
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CfgType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccCfg_TypeObj',
                           localname = 'Cfg',
                           tp_name = 'gcc.Cfg',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',

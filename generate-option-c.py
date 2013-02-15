@@ -68,7 +68,7 @@ def generate_option():
 
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_OptionType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Option_TypeObj',
                           localname = 'Option',
                           tp_name = 'gcc.Option',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',

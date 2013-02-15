@@ -131,7 +131,7 @@ gcc_python_wrapper_meta_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwd
     return (PyObject*)new_type;
 }
 
-PyTypeObject PyGccWrapperMetaType  = {
+PyTypeObject PyGccWrapperMeta_TypeObj  = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "gcc.WrapperMeta", /*tp_name*/
     sizeof(PyGccWrapperTypeObject), /*tp_basicsize*/

@@ -65,7 +65,7 @@ gcc_Rtl_get_block(struct PyGccRtl *self, void *closure)
                           'Operands of this expression, as a tuple')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_RtlType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccRtl_TypeObj',
                           localname = 'Rtl',
                           tp_name = 'gcc.Rtl',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -102,12 +102,12 @@ def generate_intermediate_rtx_class_subclasses():
 
     for rtx_class in enum_rtx_class:
         cc = camel_case(rtx_class)
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_RtlClassType%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGccRtlClassType%s_TypeObj' % cc,
                               localname = 'RtlClassType' + cc,
                               tp_name = 'gcc.%s' % cc,
                               struct_name = 'PyGccRtl',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&gcc_RtlType',
+                              tp_base = '&PyGccRtl_TypeObj',
                               #tp_getset = getsettable.identifier,
                               #tp_repr = '(reprfunc)gcc_Rtl_repr',
                               #tp_str = '(reprfunc)gcc_Rtl_str',
@@ -131,13 +131,12 @@ def generate_concrete_rtx_code_subclasses():
         if getsettable:
             cu.add_defn(getsettable.c_defn())
 
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGcc%s_TypeObj' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
                               struct_name = 'PyGccRtl',
                               tp_new = 'PyType_GenericNew',
-                              #tp_base = '&gcc_RtlType',
-                              tp_base = ('&gcc_RtlClassType%sType'
+                              tp_base = ('&PyGccRtlClassType%s_TypeObj'
                                          % camel_case(expr_type.CLASS)),
                               tp_getset = getsettable.identifier if getsettable else None,
                               tp_repr = '(reprfunc)gcc_Rtl_repr',
@@ -154,7 +153,7 @@ def generate_rtl_code_map():
     cu.add_defn('PyGccWrapperTypeObject *pytype_for_rtx_code[] = {\n')
     for expr_type in rtl_expr_types:
         cc = expr_type.camel_cased_string()
-        cu.add_defn('    &gcc_%sType, /* %s */\n' % (cc, expr_type.ENUM))
+        cu.add_defn('    &PyGcc%s_TypeObj, /* %s */\n' % (cc, expr_type.ENUM))
     cu.add_defn('};\n\n')
 
     cu.add_defn("""

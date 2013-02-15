@@ -26,11 +26,11 @@ def indent(lines):
 class PyGccWrapperTypeObject(PyTypeObject):
     """
     A PyTypeObject that's also a PyGccWrapperTypeObject
-    (with metaclass PyGccWrapperMetaType)
+    (with metaclass PyGccWrapperMeta_TypeObj)
     """
     def __init__(self, *args, **kwargs):
         PyTypeObject.__init__(self, *args, **kwargs)
-        self.ob_type = '&PyGccWrapperMetaType'
+        self.ob_type = '&PyGccWrapperMeta_TypeObj'
 
     def c_defn(self):
         result = '\n'

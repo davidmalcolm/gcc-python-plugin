@@ -77,7 +77,7 @@ def generate_param():
 
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_ParameterType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Parameter_TypeObj',
                           localname = 'Parameter',
                           tp_name = 'gcc.Parameter',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',

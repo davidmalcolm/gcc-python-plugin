@@ -71,7 +71,7 @@ def generate_function():
                                   'Location of the end of the function')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_FunctionType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Function_TypeObj',
                           localname = 'Function',
                           tp_name = 'gcc.Function',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',

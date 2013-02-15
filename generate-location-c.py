@@ -65,7 +65,7 @@ gcc_Location_get_column(struct PyGccLocation *self, void *closure)
                                     ])
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_LocationType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Location_TypeObj',
                           localname = 'Location',
                           tp_name = 'gcc.Location',
                           struct_name = 'PyGccLocation',

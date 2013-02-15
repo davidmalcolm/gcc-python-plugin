@@ -54,7 +54,7 @@ def generate_callgraph_edge():
                                   'The gcc.GimpleCall statememt for the function call')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphEdgeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphEdge_TypeObj',
                           localname = 'CallgraphEdge',
                           tp_name = 'gcc.CallgraphEdge',
                           struct_name = 'PyGccCallgraphEdge',
@@ -97,7 +97,7 @@ def generate_callgraph_node():
 
     # see gcc/cgraph.c: dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphNodeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphNode_TypeObj',
                           localname = 'CallgraphNode',
                           tp_name = 'gcc.CallgraphNode',
                           struct_name = 'PyGccCallgraphNode',

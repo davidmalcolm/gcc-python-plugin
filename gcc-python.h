@@ -142,10 +142,10 @@ extern PyTypeObject PyGccWrapperMetaType;
   typedef struct ARG_structname ARG_structname;                          \
                                                                          \
   extern PyObject *                                                      \
-  gcc_python_make_wrapper_##ARG_typename(ARG_wrappedtype ARG_fieldname); \
+  ARG_structname##_New(ARG_wrappedtype ARG_fieldname); \
                                                                          \
   extern PyObject *                                                      \
-  gcc_python_make_wrapper_##ARG_typename##_unique(ARG_wrappedtype ARG_fieldname); \
+  ARG_structname##_NewUnique(ARG_wrappedtype ARG_fieldname); \
                                                                          \
   extern PyGccWrapperTypeObject ARG_typeobj                              \
     CPYCHECKER_TYPE_OBJECT_FOR_TYPEDEF(#ARG_structname);                 \

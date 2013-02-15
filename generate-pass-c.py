@@ -88,7 +88,7 @@ def generate_pass():
 
     cu.add_defn(methods.c_defn())
     
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_PassType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccPass_TypeObj',
                           localname = 'Pass',
                           tp_name = 'gcc.Pass',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -113,14 +113,14 @@ def generate_pass_subclasses():
     for opt_pass_type in ('GIMPLE_PASS', 'RTL_PASS',
                           'SIMPLE_IPA_PASS', 'IPA_PASS'):
         cc = camel_case(opt_pass_type)
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGcc%s_TypeObj' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
                               tp_dealloc = 'gcc_python_wrapper_dealloc',
                               struct_name = 'PyGccPass',
                               tp_new = 'PyType_GenericNew',
-                              tp_init = 'gcc_%s_init' % cc,
-                              tp_base = '&gcc_PassType',
+                              tp_init = 'PyGcc%s_init' % cc,
+                              tp_base = '&PyGccPass_TypeObj',
                               tp_flags = '(Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE)'
                               )
         cu.add_defn(pytype.c_defn())

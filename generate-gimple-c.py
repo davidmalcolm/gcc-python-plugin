@@ -162,13 +162,13 @@ def generate_gimple_struct_subclasses():
     for gt in gimple_struct_types:
     #print gimple_types
         cc = gt.camel_cased_string()
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_GimpleStructType%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGccGimpleStructType%s_TypeObj' % cc,
                               localname = 'GimpleStructType' + cc,
                               tp_name = 'gcc.GimpleStructType%s' % cc,
                               tp_dealloc = 'gcc_python_wrapper_dealloc',
                               struct_name = 'PyGccGimple',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&gcc_GimpleType',
+                              tp_base = '&PyGccGimple_TypeObj',
                               #tp_getset = getsettable.identifier,
                               #tp_repr = '(reprfunc)gcc_Gimple_repr',
                               #tp_str = '(reprfunc)gcc_Gimple_str',
@@ -219,7 +219,7 @@ gcc_Gimple_get_block(struct PyGccGimple *self, void *closure)
                                     ])
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_GimpleType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccGimple_TypeObj',
                           localname = 'Gimple',
                           tp_name = 'gcc.Gimple',
                           tp_dealloc = 'gcc_python_wrapper_dealloc',
@@ -409,13 +409,13 @@ def generate_gimple_subclasses():
             cu.add_defn(getsettable.c_defn())
 
             
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGcc%s_TypeObj' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
                               tp_dealloc = 'gcc_python_wrapper_dealloc',
                               struct_name = 'PyGccGimple',
                               tp_new = 'PyType_GenericNew',
-                              tp_base = '&gcc_GimpleType',
+                              tp_base = '&PyGccGimple_TypeObj',
                               tp_getset = getsettable.identifier if getsettable else None,
                               tp_repr = tp_repr,
                               #tp_str = '(reprfunc)gcc_Gimple_str',
@@ -431,7 +431,7 @@ def generate_gimple_code_map():
     cu.add_defn('PyGccWrapperTypeObject *pytype_for_gimple_code[] = {\n')
     for gt in gimple_types:
         cc = gt.camel_cased_string()
-        cu.add_defn('    &gcc_%sType, /* %s */\n' % (cc, gt.gimple_symbol))
+        cu.add_defn('    &PyGcc%s_TypeObj, /* %s */\n' % (cc, gt.gimple_symbol))
     cu.add_defn('};\n\n')
 
     cu.add_defn("""
