@@ -48,7 +48,7 @@ make_args_for_attribute_callback(tree node, tree args)
     Py_ssize_t i;
 
     /* Walk "args" (a tree_list), converting to a python list of wrappers */
-    list_args = gcc_python_tree_make_list_from_tree_list_chain(args);
+    list_args = PyGcc_TreeMakeListFromTreeList(args);
     if (!list_args) {
         goto error;
     }
@@ -58,7 +58,7 @@ make_args_for_attribute_callback(tree node, tree args)
         goto error;
     }
 
-    py_node = gcc_python_make_wrapper_tree(gcc_private_make_tree(node));
+    py_node = PyGccTree_New(gcc_private_make_tree(node));
     if (!py_node) {
         goto error;
     }
@@ -149,7 +149,7 @@ handle_python_attribute(tree *node, tree name, tree args,
 }
 
 PyObject*
-gcc_python_register_attribute(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_RegisterAttribute(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     const char *name;
     int min_length;
@@ -209,7 +209,7 @@ gcc_python_register_attribute(PyObject *self, PyObject *args, PyObject *kwargs)
        struct attribute_spec, so we have to cast away the constness, leading
        to the following deeply ugly code:
     */
-    *(char**)&attr->name = gcc_python_strdup(name);
+    *(char**)&attr->name = PyGcc_strdup(name);
     if (!attr->name) {
         PyMem_Free(attr);
         return PyErr_NoMemory();

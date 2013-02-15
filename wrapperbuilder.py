@@ -39,7 +39,7 @@ class PyGccWrapperTypeObject(PyTypeObject):
                                          '{\n        .ht_type = {\n%s}' % indent(indent(self.c_initializer())))
         result += '    },\n'
         result += self.c_src_field_value('wrtp_mark',
-                                         'wrtp_mark_for_%s' % self.struct_name,
+                                         'PyGcc_WrtpMarkFor%s' % self.struct_name,
                                          cast='wrtp_marker')
         result += '};\n'
         result +='\n'

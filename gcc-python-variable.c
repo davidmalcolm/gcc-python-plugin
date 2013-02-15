@@ -23,7 +23,7 @@
 #include "gcc-c-api/gcc-variable.h"
 
 PyObject *
-gcc_python_make_wrapper_variable(gcc_variable var)
+PyGccVariable_New(gcc_variable var)
 {
     struct PyGccVariable *var_obj = NULL;
 
@@ -31,7 +31,7 @@ gcc_python_make_wrapper_variable(gcc_variable var)
 	Py_RETURN_NONE;
     }
   
-    var_obj = PyGccWrapper_New(struct PyGccVariable, &gcc_VariableType);
+    var_obj = PyGccWrapper_New(struct PyGccVariable, &PyGccVariable_TypeObj);
     if (!var_obj) {
         goto error;
     }
@@ -45,7 +45,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccVariable(PyGccVariable *wrapper)
+PyGcc_WrtpMarkForPyGccVariable(PyGccVariable *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
     gcc_variable_mark_in_use(wrapper->var);

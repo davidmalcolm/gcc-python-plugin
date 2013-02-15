@@ -37,32 +37,32 @@ def generate_callgraph_edge():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_CallgraphEdge_getset_table', [],
-                                   identifier_prefix='gcc_CallgraphEdge',
+    getsettable = PyGetSetDefTable('PyGccCallgraphEdge_getset_table', [],
+                                   identifier_prefix='PyGccCallgraphEdge',
                                    typename='PyGccCallgraphEdge')
     getsettable.add_simple_getter(cu,
                                   'caller',
-                                  'gcc_python_make_wrapper_cgraph_node(gcc_cgraph_edge_get_caller(self->edge))',
+                                  'PyGccCallgraphNode_New(gcc_cgraph_edge_get_caller(self->edge))',
                                   'The function that makes this call, as a gcc.CallgraphNode')
     getsettable.add_simple_getter(cu,
                                   'callee',
-                                  'gcc_python_make_wrapper_cgraph_node(gcc_cgraph_edge_get_callee(self->edge))',
+                                  'PyGccCallgraphNode_New(gcc_cgraph_edge_get_callee(self->edge))',
                                   'The function that is called here, as a gcc.CallgraphNode')
     getsettable.add_simple_getter(cu,
                                   'call_stmt',
-                                  'gcc_python_make_wrapper_gimple(gcc_gimple_call_as_gcc_gimple(gcc_cgraph_edge_get_call_stmt(self->edge)))',
+                                  'PyGccGimple_New(gcc_gimple_call_as_gcc_gimple(gcc_cgraph_edge_get_call_stmt(self->edge)))',
                                   'The gcc.GimpleCall statememt for the function call')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphEdge_TypeObj',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccCallgraphEdge_TypeObj',
                           localname = 'CallgraphEdge',
                           tp_name = 'gcc.CallgraphEdge',
                           struct_name = 'PyGccCallgraphEdge',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_CallgraphEdge_repr',
-                          tp_str = '(reprfunc)gcc_CallgraphEdge_str',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_repr = '(reprfunc)PyGccCallgraphEdge_repr',
+                          tp_str = '(reprfunc)PyGccCallgraphEdge_str',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
@@ -77,35 +77,35 @@ def generate_callgraph_node():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_CallgraphNode_getset_table', [],
-                                   identifier_prefix='gcc_CallgraphNode',
+    getsettable = PyGetSetDefTable('PyGccCallgraphNode_getset_table', [],
+                                   identifier_prefix='PyGccCallgraphNode',
                                    typename='PyGccCallgraphNode')
     # FIXME: add getters
     getsettable.add_simple_getter(cu,
                                   'decl',
-                                  'gcc_python_make_wrapper_tree(gcc_function_decl_as_gcc_tree(gcc_cgraph_node_get_decl(self->node)))',
+                                  'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_cgraph_node_get_decl(self->node)))',
                                   'The gcc.FunctionDecl for this node')
     getsettable.add_gsdef('callees',
-                          'gcc_CallgraphNode_get_callees',
+                          'PyGccCallgraphNode_get_callees',
                           None,
                           'The function calls made by this function, as a list of gcc.CallgraphEdge')
     getsettable.add_gsdef('callers',
-                          'gcc_CallgraphNode_get_callers',
+                          'PyGccCallgraphNode_get_callers',
                           None,
                           'The places that call this function, as a list of gcc.CallgraphEdge')
     cu.add_defn(getsettable.c_defn())
 
     # see gcc/cgraph.c: dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CallgraphNode_TypeObj',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccCallgraphNode_TypeObj',
                           localname = 'CallgraphNode',
                           tp_name = 'gcc.CallgraphNode',
                           struct_name = 'PyGccCallgraphNode',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_CallgraphNode_repr',
-                          tp_str = '(reprfunc)gcc_CallgraphNode_str',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_repr = '(reprfunc)PyGccCallgraphNode_repr',
+                          tp_str = '(reprfunc)PyGccCallgraphNode_str',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

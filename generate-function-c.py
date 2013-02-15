@@ -38,20 +38,20 @@ def generate_function():
     global modinit_postinit
     cu.add_defn("\n"
                 "static PyObject *\n"
-                "gcc_Function_get_cfg(struct PyGccFunction *self, void *closure)\n"
+                "PyGccFunction_get_cfg(struct PyGccFunction *self, void *closure)\n"
                 "{\n"
-                "    return gcc_python_make_wrapper_cfg(gcc_function_get_cfg(self->fun));\n"
+                "    return PyGccCfg_New(gcc_function_get_cfg(self->fun));\n"
                 "}\n"
                 "\n")
-    getsettable = PyGetSetDefTable('gcc_Function_getset_table',
-                                   [PyGetSetDef('cfg', 'gcc_Function_get_cfg', None,
+    getsettable = PyGetSetDefTable('PyGccFunction_getset_table',
+                                   [PyGetSetDef('cfg', 'PyGccFunction_get_cfg', None,
                                                 'Instance of gcc.Cfg for this function (or None for early passes)'),
                                     ],
-                                   identifier_prefix='gcc_Function',
+                                   identifier_prefix='PyGccFunction',
                                    typename='PyGccFunction')
     getsettable.add_simple_getter(cu,
                                   'decl', 
-                                  'gcc_python_make_wrapper_tree(gcc_function_decl_as_gcc_tree(gcc_function_get_decl(self->fun)))',
+                                  'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_function_get_decl(self->fun)))',
                                   'The declaration of this function, as a gcc.FunctionDecl instance')
     getsettable.add_simple_getter(cu,
                                   'local_decls',
@@ -59,28 +59,28 @@ def generate_function():
                                   "List of gcc.VarDecl for the function's local variables")
     getsettable.add_simple_getter(cu,
                                   'funcdef_no',
-                                  'gcc_python_int_from_long(gcc_function_get_index(self->fun))',
+                                  'PyGccInt_FromLong(gcc_function_get_index(self->fun))',
                                   'Function sequence number for profiling, debugging, etc.')
     getsettable.add_simple_getter(cu,
                                   'start',
-                                  'gcc_python_make_wrapper_location(gcc_function_get_start(self->fun))',
+                                  'PyGccLocation_New(gcc_function_get_start(self->fun))',
                                   'Location of the start of the function')
     getsettable.add_simple_getter(cu,
                                   'end',
-                                  'gcc_python_make_wrapper_location(gcc_function_get_end(self->fun))',
+                                  'PyGccLocation_New(gcc_function_get_end(self->fun))',
                                   'Location of the end of the function')
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_Function_TypeObj',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccFunction_TypeObj',
                           localname = 'Function',
                           tp_name = 'gcc.Function',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccFunction',
                           tp_new = 'PyType_GenericNew',
-                          tp_repr = '(reprfunc)gcc_Function_repr',
-                          tp_str = '(reprfunc)gcc_Function_repr',
-                          tp_hash = '(hashfunc)gcc_Function_hash',
-                          tp_richcompare = 'gcc_Function_richcompare',
+                          tp_repr = '(reprfunc)PyGccFunction_repr',
+                          tp_str = '(reprfunc)PyGccFunction_repr',
+                          tp_hash = '(hashfunc)PyGccFunction_hash',
+                          tp_richcompare = 'PyGccFunction_richcompare',
                           tp_getset = getsettable.identifier,
                                     )
     cu.add_defn(pytype.c_defn())

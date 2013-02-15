@@ -29,39 +29,39 @@
 */
 
 PyObject *
-gcc_CallgraphEdge_repr(struct PyGccCallgraphEdge * self)
+PyGccCallgraphEdge_repr(struct PyGccCallgraphEdge * self)
 {
-    return gcc_python_string_from_format("%s()",
+    return PyGccString_FromFormat("%s()",
                                          Py_TYPE(self)->tp_name);
 }
 
 PyObject *
-gcc_CallgraphEdge_str(struct PyGccCallgraphEdge * self)
+PyGccCallgraphEdge_str(struct PyGccCallgraphEdge * self)
 {
-    return gcc_python_string_from_format("%s()",
+    return PyGccString_FromFormat("%s()",
                                          Py_TYPE(self)->tp_name);
 }
 
 PyObject *
-gcc_CallgraphNode_repr(struct PyGccCallgraphNode * self)
+PyGccCallgraphNode_repr(struct PyGccCallgraphNode * self)
 {
-    return gcc_python_string_from_format("%s()",
+    return PyGccString_FromFormat("%s()",
                                          Py_TYPE(self)->tp_name);
 }
 
 PyObject *
-gcc_CallgraphNode_str(struct PyGccCallgraphNode * self)
+PyGccCallgraphNode_str(struct PyGccCallgraphNode * self)
 {
-    return gcc_python_string_from_format("%s()",
+    return PyGccString_FromFormat("%s()",
                                          Py_TYPE(self)->tp_name);
 }
 
 IMPL_APPENDER(add_cgraph_edge_to_list,
               gcc_cgraph_edge,
-              gcc_python_make_wrapper_cgraph_edge)
+              PyGccCallgraphEdge_New)
 
 PyObject *
-gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self)
+PyGccCallgraphNode_get_callees(struct PyGccCallgraphNode * self)
 {
     IMPL_LIST_MAKER(gcc_cgraph_node_for_each_callee,
                     self->node,
@@ -69,7 +69,7 @@ gcc_CallgraphNode_get_callees(struct PyGccCallgraphNode * self)
 }
 
 PyObject *
-gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self)
+PyGccCallgraphNode_get_callers(struct PyGccCallgraphNode * self)
 {
     IMPL_LIST_MAKER(gcc_cgraph_node_for_each_caller,
                     self->node,
@@ -77,11 +77,11 @@ gcc_CallgraphNode_get_callers(struct PyGccCallgraphNode * self)
 }
 
 PyObject *
-gcc_python_make_wrapper_cgraph_edge(gcc_cgraph_edge edge)
+PyGccCallgraphEdge_New(gcc_cgraph_edge edge)
 {
     struct PyGccCallgraphEdge *obj = NULL;
 
-    obj = PyGccWrapper_New(struct PyGccCallgraphEdge, &gcc_CallgraphEdgeType);
+    obj = PyGccWrapper_New(struct PyGccCallgraphEdge, &PyGccCallgraphEdge_TypeObj);
     if (!obj) {
         goto error;
     }
@@ -95,7 +95,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccCallgraphEdge(PyGccCallgraphEdge *wrapper)
+PyGcc_WrtpMarkForPyGccCallgraphEdge(PyGccCallgraphEdge *wrapper)
 {
     gcc_cgraph_edge_mark_in_use(wrapper->edge);
 }
@@ -114,7 +114,7 @@ real_make_cgraph_node_wrapper(void *ptr)
     u.ptr = ptr;
 
     obj = PyGccWrapper_New(struct PyGccCallgraphNode,
-                           &gcc_CallgraphNodeType);
+                           &PyGccCallgraphNode_TypeObj);
     if (!obj) {
         goto error;
     }
@@ -128,7 +128,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccCallgraphNode(PyGccCallgraphNode *wrapper)
+PyGcc_WrtpMarkForPyGccCallgraphNode(PyGccCallgraphNode *wrapper)
 {
     gcc_cgraph_node_mark_in_use(wrapper->node);
 }
@@ -136,21 +136,21 @@ wrtp_mark_for_PyGccCallgraphNode(PyGccCallgraphNode *wrapper)
 
 static PyObject *cgraph_node_wrapper_cache = NULL;
 PyObject *
-gcc_python_make_wrapper_cgraph_node(gcc_cgraph_node node)
+PyGccCallgraphNode_New(gcc_cgraph_node node)
 {
     union gcc_cgraph_node_as_ptr u;
     u.node = node;
-    return gcc_python_lazily_create_wrapper(&cgraph_node_wrapper_cache,
+    return PyGcc_LazilyCreateWrapper(&cgraph_node_wrapper_cache,
 					    u.ptr,
 					    real_make_cgraph_node_wrapper);
 }
 
 IMPL_APPENDER(add_cgraph_node_to_list,
               gcc_cgraph_node,
-              gcc_python_make_wrapper_cgraph_node)
+              PyGccCallgraphNode_New)
 
 PyObject *
-gcc_python_get_callgraph_nodes(PyObject *self, PyObject *args)
+PyGcc_get_callgraph_nodes(PyObject *self, PyObject *args)
 {
     /* For debugging, see GCC's dump of things: */
     if (0) {

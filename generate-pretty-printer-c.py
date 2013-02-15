@@ -29,12 +29,12 @@ def generate_pretty_printer():
     global modinit_preinit
     global modinit_postinit
     
-    pytype = PyTypeObject(identifier = 'gcc_PrettyPrinterType',
+    pytype = PyTypeObject(identifier = 'PyGccPrettyPrinter_TypeObj',
                           localname = 'PrettyPrinter',
                           tp_name = 'gcc.PrettyPrinter',
                           struct_name = 'struct PyGccPrettyPrinter',
                           tp_new = 'PyType_GenericNew',
-                          tp_dealloc = 'gcc_PrettyPrinter_dealloc',
+                          tp_dealloc = 'PyGccPrettyPrinter_dealloc',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

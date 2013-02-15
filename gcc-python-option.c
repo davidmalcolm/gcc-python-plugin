@@ -40,7 +40,7 @@
 */
 
 int
-gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
+PyGccOption_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
 {
     const char *text;
     static const char *kwlist[] = {"text", NULL};
@@ -49,7 +49,7 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     /*
       We need to call _track manually as we're not using PyGccWrapper_New():
     */
-    gcc_python_wrapper_track(&self->head);
+    PyGccWrapper_Track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist,
                                       &text)) {
@@ -72,10 +72,10 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *
-gcc_Option_repr(PyGccOption * self)
+PyGccOption_repr(PyGccOption * self)
 {
-    return gcc_python_string_from_format("gcc.Option('%s')",
-                                         gcc_python_option_to_cl_option(self)->opt_text);
+    return PyGccString_FromFormat("gcc.Option('%s')",
+                                         PyGcc_option_to_cl_option(self)->opt_text);
 }
 
 /*
@@ -84,7 +84,7 @@ gcc_Option_repr(PyGccOption * self)
 */
 __typeof__ (warn_format) warn_format __attribute__ ((weak));
 
-int gcc_python_option_is_enabled(enum opt_code opt_code)
+int PyGcc_option_is_enabled(enum opt_code opt_code)
 {
     /* Returns 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
        or -1 if it isn't a simple on-off switch.  */
@@ -131,9 +131,9 @@ int gcc_python_option_is_enabled(enum opt_code opt_code)
 }
 
 PyObject *
-gcc_Option_is_enabled(PyGccOption * self, void *closure)
+PyGccOption_is_enabled(PyGccOption * self, void *closure)
 {
-    int i = gcc_python_option_is_enabled(self->opt_code);
+    int i = PyGcc_option_is_enabled(self->opt_code);
 
     if (i == 1) {
         return PyBool_FromLong(1);
@@ -144,12 +144,12 @@ gcc_Option_is_enabled(PyGccOption * self, void *closure)
 
     PyErr_Format(PyExc_NotImplementedError,
                  "The plugin does not know how to determine if gcc.Format('%s') is implemented",
-                 gcc_python_option_to_cl_option(self)->opt_text);
+                 PyGcc_option_to_cl_option(self)->opt_text);
     return NULL;
 }
 
 const struct cl_option*
-gcc_python_option_to_cl_option(PyGccOption * self)
+PyGcc_option_to_cl_option(PyGccOption * self)
 {
     assert(self);
     assert(self->opt_code >= 0);
@@ -159,11 +159,11 @@ gcc_python_option_to_cl_option(PyGccOption * self)
 }
 
 PyObject *
-gcc_python_make_wrapper_opt_code(enum opt_code opt_code)
+PyGccOption_New(enum opt_code opt_code)
 {
     struct PyGccOption *opt_obj = NULL;
 
-    opt_obj = PyGccWrapper_New(struct PyGccOption, &gcc_OptionType);
+    opt_obj = PyGccWrapper_New(struct PyGccOption, &PyGccOption_TypeObj);
     if (!opt_obj) {
         goto error;
     }
@@ -177,7 +177,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccOption(PyGccOption *wrapper)
+PyGcc_WrtpMarkForPyGccOption(PyGccOption *wrapper)
 {
     /* empty */
 }

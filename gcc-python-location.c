@@ -34,23 +34,23 @@
 */
 
 PyObject *
-gcc_Location_repr(struct PyGccLocation * self)
+PyGccLocation_repr(struct PyGccLocation * self)
 {
-     return gcc_python_string_from_format("gcc.Location(file='%s', line=%i)",
+     return PyGccString_FromFormat("gcc.Location(file='%s', line=%i)",
                                           gcc_location_get_filename(self->loc),
                                           gcc_location_get_line(self->loc));
 }
 
 PyObject *
-gcc_Location_str(struct PyGccLocation * self)
+PyGccLocation_str(struct PyGccLocation * self)
 {
-     return gcc_python_string_from_format("%s:%i",
+     return PyGccString_FromFormat("%s:%i",
                                           gcc_location_get_filename(self->loc),
                                           gcc_location_get_line(self->loc));
 }
 
 PyObject *
-gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
+PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op)
 {
     struct PyGccLocation *locobj1;
     struct PyGccLocation *locobj2;
@@ -59,9 +59,9 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     const char *file1;
     const char *file2;
 
-    assert(Py_TYPE(o1) == (PyTypeObject*)&gcc_LocationType);
+    assert(Py_TYPE(o1) == (PyTypeObject*)&PyGccLocation_TypeObj);
     
-    if (Py_TYPE(o1) != (PyTypeObject*)&gcc_LocationType) {
+    if (Py_TYPE(o1) != (PyTypeObject*)&PyGccLocation_TypeObj) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
@@ -156,7 +156,7 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
 }
 
 PyObject *
-gcc_python_make_wrapper_location(gcc_location loc)
+PyGccLocation_New(gcc_location loc)
 {
     struct PyGccLocation *location_obj = NULL;
 
@@ -164,7 +164,7 @@ gcc_python_make_wrapper_location(gcc_location loc)
 	Py_RETURN_NONE;
     }
   
-    location_obj = PyGccWrapper_New(struct PyGccLocation, &gcc_LocationType);
+    location_obj = PyGccWrapper_New(struct PyGccLocation, &PyGccLocation_TypeObj);
     if (!location_obj) {
         goto error;
     }
@@ -178,7 +178,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccLocation(PyGccLocation *wrapper)
+PyGcc_WrtpMarkForPyGccLocation(PyGccLocation *wrapper)
 {
     /* empty */
 }

@@ -55,7 +55,7 @@ real_make_edge(void * ptr)
 	Py_RETURN_NONE;
     }
 
-    obj = PyGccWrapper_New(struct PyGccEdge, &gcc_EdgeType);
+    obj = PyGccWrapper_New(struct PyGccEdge, &PyGccEdge_TypeObj);
     if (!obj) {
         goto error;
     }
@@ -71,17 +71,17 @@ error:
 static PyObject *edge_wrapper_cache = NULL;
 
 PyObject *
-gcc_python_make_wrapper_edge(gcc_cfg_edge e)
+PyGccEdge_New(gcc_cfg_edge e)
 {
     union cfg_edge_or_ptr u;
     u.edge = e;
-    return gcc_python_lazily_create_wrapper(&edge_wrapper_cache,
+    return PyGcc_LazilyCreateWrapper(&edge_wrapper_cache,
 					    u.ptr,
 					    real_make_edge);
 }
 
 void
-wrtp_mark_for_PyGccEdge(PyGccEdge *wrapper)
+PyGcc_WrtpMarkForPyGccEdge(PyGccEdge *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
     gcc_cfg_edge_mark_in_use(wrapper->e);
@@ -89,18 +89,18 @@ wrtp_mark_for_PyGccEdge(PyGccEdge *wrapper)
 
 IMPL_APPENDER(add_edge_to_list,
               gcc_cfg_edge,
-              gcc_python_make_wrapper_edge)
+              PyGccEdge_New)
 
 PyObject *
-gcc_BasicBlock_repr(struct PyGccBasicBlock * self)
+PyGccBasicBlock_repr(struct PyGccBasicBlock * self)
 {
-    return gcc_python_string_from_format("%s(index=%i)",
+    return PyGccString_FromFormat("%s(index=%i)",
                                          Py_TYPE(self)->tp_name,
                                          gcc_cfg_block_get_index(self->bb));
 }
 
 PyObject *
-gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
+PyGccBasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 {
     IMPL_LIST_MAKER(gcc_cfg_block_for_each_pred_edge,
                     self->bb,
@@ -108,7 +108,7 @@ gcc_BasicBlock_get_preds(PyGccBasicBlock *self, void *closure)
 }
 
 PyObject *
-gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
+PyGccBasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
 {
     IMPL_LIST_MAKER(gcc_cfg_block_for_each_succ_edge,
                     self->bb,
@@ -117,10 +117,10 @@ gcc_BasicBlock_get_succs(PyGccBasicBlock *self, void *closure)
 
 IMPL_APPENDER(append_gimple_to_list,
               gcc_gimple,
-              gcc_python_make_wrapper_gimple)
+              PyGccGimple_New)
 
 PyObject *
-gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
+PyGccBasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 {
     assert(self);
     assert(self->bb.inner);
@@ -131,17 +131,17 @@ gcc_BasicBlock_get_gimple(PyGccBasicBlock *self, void *closure)
 }
 
 static PyObject*
-gcc_python_make_wrapper_gimple_phi(gcc_gimple_phi phi)
+PyGccGimple_New_phi(gcc_gimple_phi phi)
 {
-    return gcc_python_make_wrapper_gimple(gcc_gimple_phi_as_gcc_gimple(phi));
+    return PyGccGimple_New(gcc_gimple_phi_as_gcc_gimple(phi));
 }
 
 IMPL_APPENDER(append_gimple_phi_to_list,
               gcc_gimple_phi,
-              gcc_python_make_wrapper_gimple_phi)
+              PyGccGimple_New_phi)
 
 PyObject *
-gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
+PyGccBasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 {
     assert(self);
     assert(self->bb.inner);
@@ -153,10 +153,10 @@ gcc_BasicBlock_get_phi_nodes(PyGccBasicBlock *self, void *closure)
 
 IMPL_APPENDER(append_rtl_to_list,
               gcc_rtl_insn,
-              gcc_python_make_wrapper_rtl)
+              PyGccRtl_New)
 
 PyObject *
-gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
+PyGccBasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
 {
     assert(self);
     assert(self->bb.inner);
@@ -171,7 +171,7 @@ gcc_BasicBlock_get_rtl(PyGccBasicBlock *self, void *closure)
   Force a 1-1 mapping between pointer values and wrapper objects
  */
 PyObject *
-gcc_python_lazily_create_wrapper(PyObject **cache,
+PyGcc_LazilyCreateWrapper(PyObject **cache,
 				 void *ptr,
 				 PyObject *(*ctor)(void *ptr))
 {
@@ -179,7 +179,7 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
     PyObject *oldobj = NULL;
     PyObject *newobj = NULL;
 
-    /* printf("gcc_python_lazily_create_wrapper(&%p, %p, %p)\n", *cache, ptr, ctor); */
+    /* printf("PyGcc_LazilyCreateWrapper(&%p, %p, %p)\n", *cache, ptr, ctor); */
 
     assert(cache);
     /* ptr is allowed to be NULL */
@@ -236,7 +236,7 @@ gcc_python_lazily_create_wrapper(PyObject **cache,
 }
 
 int
-gcc_python_insert_new_wrapper_into_cache(PyObject **cache,
+PyGcc_insert_new_wrapper_into_cache(PyObject **cache,
                                          void *ptr,
                                          PyObject *obj)
 {
@@ -284,7 +284,7 @@ real_make_basic_block_wrapper(void *ptr)
 	Py_RETURN_NONE;
     }
 
-    obj = PyGccWrapper_New(struct PyGccBasicBlock, &gcc_BasicBlockType);
+    obj = PyGccWrapper_New(struct PyGccBasicBlock, &PyGccBasicBlock_TypeObj);
     if (!obj) {
         goto error;
     }
@@ -359,7 +359,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccBasicBlock(PyGccBasicBlock *wrapper)
+PyGcc_WrtpMarkForPyGccBasicBlock(PyGccBasicBlock *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
     gcc_cfg_block_mark_in_use(wrapper->bb);
@@ -368,9 +368,9 @@ wrtp_mark_for_PyGccBasicBlock(PyGccBasicBlock *wrapper)
 
 static PyObject *basic_block_wrapper_cache = NULL;
 PyObject *
-gcc_python_make_wrapper_basic_block(gcc_cfg_block bb)
+PyGccBasicBlock_New(gcc_cfg_block bb)
 {
-    return gcc_python_lazily_create_wrapper(&basic_block_wrapper_cache,
+    return PyGcc_LazilyCreateWrapper(&basic_block_wrapper_cache,
 					    bb.inner,
 					    real_make_basic_block_wrapper);
 }
@@ -380,7 +380,7 @@ add_block_to_list(gcc_cfg_block bb, void *user_data)
 {
     PyObject *result = (PyObject*)user_data;
     PyObject *obj_var;
-    obj_var = gcc_python_make_wrapper_basic_block(bb);
+    obj_var = PyGccBasicBlock_New(bb);
     if (!obj_var) {
         return true;
     }
@@ -401,17 +401,17 @@ add_block_to_list(gcc_cfg_block bb, void *user_data)
 }
 
 PyObject *
-gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
+PyGccCfg_get_basic_blocks(PyGccCfg *self, void *closure)
 {
     IMPL_LIST_MAKER(gcc_cfg_for_each_block,
                     self->cfg,
                     add_block_to_list)
 }
 
-extern PyTypeObject gcc_LabelDeclType;
+extern PyTypeObject PyGccLabelDecl_TypeObj;
 
 PyObject *
-gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
+PyGccCfg_get_block_for_label(PyObject *s, PyObject *args)
 {
     struct PyGccCfg *self = (struct PyGccCfg *)s;
     struct PyGccTree *label_decl;
@@ -420,7 +420,7 @@ gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
 
     if (!PyArg_ParseTuple(args,
                           "O!:get_block_for_label",
-                          &gcc_LabelDeclType, &label_decl)) {
+                          &PyGccLabelDecl_TypeObj, &label_decl)) {
         return NULL;
     }
 
@@ -438,11 +438,11 @@ gcc_Cfg_get_block_for_label(PyObject *s, PyObject *args)
 
     bb = VEC_index(basic_block, self->cfg.inner->x_label_to_block_map, uid);
 
-    return gcc_python_make_wrapper_basic_block(gcc_private_make_cfg_block(bb));
+    return PyGccBasicBlock_New(gcc_private_make_cfg_block(bb));
 }
 
 PyObject *
-gcc_python_make_wrapper_cfg(gcc_cfg cfg)
+PyGccCfg_New(gcc_cfg cfg)
 {
     struct PyGccCfg *obj;
 
@@ -450,7 +450,7 @@ gcc_python_make_wrapper_cfg(gcc_cfg cfg)
 	Py_RETURN_NONE;
     }
 
-    obj = PyGccWrapper_New(struct PyGccCfg, &gcc_CfgType);
+    obj = PyGccWrapper_New(struct PyGccCfg, &PyGccCfg_TypeObj);
     if (!obj) {
         goto error;
     }
@@ -464,7 +464,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccCfg(PyGccCfg *wrapper)
+PyGcc_WrtpMarkForPyGccCfg(PyGccCfg *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
     gcc_cfg_mark_in_use(wrapper->cfg);

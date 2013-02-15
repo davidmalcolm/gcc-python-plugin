@@ -27,11 +27,11 @@
   and use this to get at the associated "param_info" struct
 */
 PyObject *
-gcc_python_make_wrapper_param_num(compiler_param param_num)
+PyGccParameter_New(compiler_param param_num)
 {
     struct PyGccParameter *param_obj = NULL;
 
-    param_obj = PyGccWrapper_New(struct PyGccParameter, &gcc_ParameterType);
+    param_obj = PyGccWrapper_New(struct PyGccParameter, &PyGccParameter_TypeObj);
     if (!param_obj) {
         goto error;
     }
@@ -45,7 +45,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccParameter(PyGccParameter *wrapper)
+PyGcc_WrtpMarkForPyGccParameter(PyGccParameter *wrapper)
 {
     /* empty */
 }

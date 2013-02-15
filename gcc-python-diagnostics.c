@@ -40,7 +40,7 @@
 */
 
 PyObject*
-gcc_python_permerror(PyObject *self, PyObject *args)
+PyGcc_permerror(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj = NULL;
     const char *msgid = NULL;
@@ -51,7 +51,7 @@ gcc_python_permerror(PyObject *self, PyObject *args)
 			  "O!"
 			  "s"
 			  ":permerror",
-			  &gcc_LocationType, &loc_obj,
+			  &PyGccLocation_TypeObj, &loc_obj,
 			  &msgid)) {
         return NULL;
     }
@@ -65,7 +65,7 @@ gcc_python_permerror(PyObject *self, PyObject *args)
 }
 
 PyObject *
-gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_error(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -75,7 +75,7 @@ gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "O!s:error", (char**)keywords,
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      &msg)) {
         return NULL;
     }
@@ -86,7 +86,7 @@ gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *
-gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -102,7 +102,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
                                      "O!s|O:warning", (char**)keywords,
 
                                      /* code "O!": */
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      /* code: "s": */
                                      &msg,
 
@@ -115,11 +115,11 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
     assert(opt_obj);
 
     /* If a gcc.Option was given, extract the code: */
-    if (Py_TYPE(opt_obj) == (PyTypeObject*)&gcc_OptionType) {
+    if (Py_TYPE(opt_obj) == (PyTypeObject*)&PyGccOption_TypeObj) {
         opt_code = ((PyGccOption*)opt_obj)->opt_code;
 
         /* Ugly workaround; see this function: */
-        if (0 == gcc_python_option_is_enabled((enum opt_code)opt_code)) {
+        if (0 == PyGcc_option_is_enabled((enum opt_code)opt_code)) {
             return PyBool_FromLong(0);
         }
 
@@ -141,7 +141,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *
-gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -151,7 +151,7 @@ gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "O!s:inform", (char**)keywords,
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      &msg)) {
         return NULL;
     }
