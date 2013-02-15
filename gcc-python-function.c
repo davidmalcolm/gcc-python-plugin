@@ -57,6 +57,52 @@ error:
      return NULL;
 }
 
+long
+gcc_Function_hash(struct PyGccFunction * self)
+{
+    return (long)self->fun;
+}
+
+PyObject *
+gcc_Function_richcompare(PyObject *o1, PyObject *o2, int op)
+{
+    struct PyGccFunction *functionobj1;
+    struct PyGccFunction *functionobj2;
+    int cond;
+    PyObject *result_obj;
+
+    if (!PyObject_TypeCheck(o1, (PyTypeObject*)&gcc_FunctionType)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+    if (!PyObject_TypeCheck(o2, (PyTypeObject*)&gcc_FunctionType)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    functionobj1 = (struct PyGccFunction *)o1;
+    functionobj2 = (struct PyGccFunction *)o2;
+
+    switch (op) {
+    case Py_EQ:
+	cond = (functionobj1->fun == functionobj2->fun);
+	break;
+
+    case Py_NE:
+	cond = (functionobj1->fun != functionobj2->fun);
+	break;
+
+    default:
+        result_obj = Py_NotImplemented;
+        goto out;
+    }
+    result_obj = cond ? Py_True : Py_False;
+
+ out:
+    Py_INCREF(result_obj);
+    return result_obj;
+}
+
 PyObject *
 gcc_python_make_wrapper_function(struct function *fun)
 {
