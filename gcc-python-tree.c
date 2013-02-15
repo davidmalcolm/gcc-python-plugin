@@ -280,27 +280,17 @@ gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
-gcc_ArrayRef_repr(struct PyGccTree * self)
+gcc_ArrayRef_repr(PyObject *self)
 {
-    PyObject *array = NULL;
-    PyObject *index = NULL;
     PyObject *array_repr = NULL;
     PyObject *index_repr = NULL;
     PyObject *result = NULL;
 
-    array = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0));
-    if (!array) {
-        goto error;
-    }
-    index = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1));
-    if (!index) {
-        goto error;
-    }
-    array_repr = PyObject_Repr(array);
+    array_repr = PyGcc_GetReprOfAttribute(self, "array");
     if (!array_repr) {
         goto error;
     }
-    index_repr = PyObject_Repr(index);
+    index_repr =PyGcc_GetReprOfAttribute(self, "index");
     if (!index_repr) {
         goto error;
     }
@@ -311,8 +301,6 @@ gcc_ArrayRef_repr(struct PyGccTree * self)
                                            gcc_python_string_as_string(index_repr));
 
  error:
-    Py_XDECREF(array);
-    Py_XDECREF(index);
     Py_XDECREF(array_repr);
     Py_XDECREF(index_repr);
 
@@ -320,27 +308,17 @@ gcc_ArrayRef_repr(struct PyGccTree * self)
 }
 
 PyObject *
-gcc_ComponentRef_repr(struct PyGccTree * self)
+gcc_ComponentRef_repr(PyObject *self)
 {
-    PyObject *target = NULL;
-    PyObject *field = NULL;
     PyObject *target_repr = NULL;
     PyObject *field_repr = NULL;
     PyObject *result = NULL;
 
-    target = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 0));
-    if (!target) {
-        goto error;
-    }
-    field = gcc_python_make_wrapper_tree(TREE_OPERAND(self->t, 1));
-    if (!field) {
-        goto error;
-    }
-    target_repr = PyObject_Repr(target);
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
     if (!target_repr) {
         goto error;
     }
-    field_repr = PyObject_Repr(field);
+    field_repr = PyGcc_GetReprOfAttribute(self, "field");
     if (!field_repr) {
         goto error;
     }
@@ -351,8 +329,6 @@ gcc_ComponentRef_repr(struct PyGccTree * self)
                                            gcc_python_string_as_string(field_repr));
 
  error:
-    Py_XDECREF(target);
-    Py_XDECREF(field);
     Py_XDECREF(target_repr);
     Py_XDECREF(field_repr);
 
@@ -706,17 +682,12 @@ gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 PyObject *
 gcc_SsaName_repr(struct PyGccTree * self)
 {
-    PyObject *var = NULL;
     int version;
     PyObject *repr_var = NULL;
     PyObject *result = NULL;
 
-    var = gcc_python_make_wrapper_tree(SSA_NAME_VAR(self->t));
-    if (!var) {
-        goto error;
-    }
     version = SSA_NAME_VERSION(self->t);
-    repr_var = PyObject_Repr(var);
+    repr_var = PyGcc_GetReprOfAttribute((PyObject*)self, "var");
     if (!repr_var) {
         goto error;
     }
@@ -727,7 +698,6 @@ gcc_SsaName_repr(struct PyGccTree * self)
                                            version);
 
  error:
-    Py_XDECREF(var);
     Py_XDECREF(repr_var);
 
     return result;
