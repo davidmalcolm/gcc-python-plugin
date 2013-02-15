@@ -44,6 +44,9 @@ PyObject *
 gcc_python_closure_make_args(struct callback_closure * closure,
                              int add_cfun, PyObject *wrapped_gcc_data);
 
+void
+gcc_python_closure_free(struct callback_closure *closure);
+
 /*
   PEP-7
 Local variables:
