@@ -1,5 +1,6 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+/*
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -14,20 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
+*/
 
-Miscellanea
-===========
-
-The following odds and ends cover the more esoteric aspects of GCC, and are
-documented here for completeness.  They may or may not be useful when writing
-scripts.
-
-.. toctree::
-
-   callgraph.rst
-   lto.rst
-   options.rst
-   parameters.rst
-   preprocessor.rst
-   versions.rst
-   rtl.rst
+extern void *f(int a);
+extern void g(int b, void *q);
+extern void h(int c);
