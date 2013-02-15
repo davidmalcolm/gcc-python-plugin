@@ -114,6 +114,10 @@ gcc_Tree_str(struct PyGccTree * self)
 long
 gcc_Tree_hash(struct PyGccTree * self)
 {
+    if (Py_TYPE(self) == (PyTypeObject*)&gcc_ComponentRefType) {
+        return (long)TREE_OPERAND(self->t, 0) ^ (long)TREE_OPERAND(self->t, 1);
+    }
+
     /* Use the ptr as the hash value: */
     return (long)self->t;
 }
@@ -154,6 +158,28 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
 
     treeobj1 = (struct PyGccTree *)o1;
     treeobj2 = (struct PyGccTree *)o2;
+
+    if (Py_TYPE(o1) == (PyTypeObject*)&gcc_ComponentRefType) {
+        if (Py_TYPE(o2) == (PyTypeObject*)&gcc_ComponentRefType) {
+            switch (op) {
+            case Py_EQ:
+                cond = ((TREE_OPERAND(treeobj1->t, 0) == TREE_OPERAND(treeobj2->t, 0)) &&
+                        (TREE_OPERAND(treeobj1->t, 1) == TREE_OPERAND(treeobj2->t, 1)));
+                break;
+
+            case Py_NE:
+                cond = !((TREE_OPERAND(treeobj1->t, 0) == TREE_OPERAND(treeobj2->t, 0)) &&
+                         (TREE_OPERAND(treeobj1->t, 1) == TREE_OPERAND(treeobj2->t, 1)));
+                break;
+
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+            result_obj = cond ? Py_True : Py_False;
+            goto out;
+        }
+    }
 
     switch (op) {
     case Py_EQ:
