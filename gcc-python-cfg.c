@@ -469,7 +469,7 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
     PyObject *result = NULL;
     int i;
     
-    result = PyList_New(self->cfg->x_n_basic_blocks);
+    result = PyList_New(0);
     if (!result) {
 	goto error;
     }
@@ -480,7 +480,16 @@ gcc_Cfg_get_basic_blocks(PyGccCfg *self, void *closure)
 	if (!item) {
 	    goto error;
 	}
-	PyList_SetItem(result, i, item);
+        /* It appears that with optimization there can be occasional NULLs,
+           which get turned into None.  Skip them:
+        */
+        if (item != Py_None) {
+            if (-1 == PyList_Append(result, item)) {
+                Py_DECREF(item);
+                goto error;
+            }
+        }
+        Py_DECREF(item);
     }
 
     return result;
