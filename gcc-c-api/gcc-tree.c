@@ -187,6 +187,12 @@ gcc_unary_get_location(gcc_unary node)
   return gcc_private_make_location (EXPR_LOCATION (node.inner));
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_unary_get_operand(gcc_unary node)
+{
+  return gcc_private_make_tree (TREE_OPERAND (node.inner, 0));
+}
+
 /***************************************************************************
  gcc_vlexp
  **************************************************************************/

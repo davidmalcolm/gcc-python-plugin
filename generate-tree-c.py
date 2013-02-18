@@ -281,7 +281,7 @@ PyObject*
 
         if localname == 'Unary':
             add_simple_getter('operand',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND (self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_unary_get_operand(PyGccTree_as_gcc_unary(self)))',
                               'The operand of this expression, as a gcc.Tree')
 
         # Corresponds to this gcc/tree.h macro:
