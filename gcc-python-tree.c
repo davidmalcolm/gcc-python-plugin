@@ -107,54 +107,6 @@ do_pretty_print(struct PyGccTree * self, int spc, int flags)
     return NULL;
 }
 
-gcc_decl
-PyGccTree_as_gcc_decl(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_decl(self->t);
-}
-
-gcc_type
-PyGccTree_as_gcc_type(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_type(self->t);
-}
-
-gcc_fixed_point_type
-PyGccTree_as_gcc_fixed_point_type(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_fixed_point_type(self->t);
-}
-
-gcc_integer_type
-PyGccTree_as_gcc_integer_type(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_integer_type(self->t);
-}
-
-gcc_real_type
-PyGccTree_as_gcc_real_type(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_real_type(self->t);
-}
-
-gcc_translation_unit_decl
-PyGccTree_as_gcc_translation_unit_decl(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_translation_unit_decl(self->t);
-}
-
-gcc_ssa_name
-PyGccTree_as_gcc_ssa_name(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_ssa_name(self->t);
-}
-
-gcc_case_label_expr
-PyGccTree_as_gcc_case_label_expr(struct PyGccTree * self)
-{
-    return gcc_tree_as_gcc_case_label_expr(self->t);
-}
-
 PyObject *
 PyGccBlock_New(gcc_block t)
 {
