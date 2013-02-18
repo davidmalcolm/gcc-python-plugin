@@ -174,6 +174,12 @@ gcc_integer_type_get_precision (gcc_integer_type node)
   return TYPE_PRECISION (node.inner);
 }
 
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_integer_type_is_unsigned(gcc_integer_type node)
+{
+  return TYPE_UNSIGNED (node.inner);
+}
+
 IMPLEMENT_CAST (gcc_integer_type, gcc_type)
 /* gcc_integer_type */
   GCC_IMPLEMENT_PRIVATE_API (gcc_integer_constant)

@@ -388,7 +388,7 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'INTEGER_TYPE':
             add_simple_getter('unsigned',
-                              'PyBool_FromLong(TYPE_UNSIGNED(self->t.inner))',
+                              'PyBool_FromLong(gcc_integer_type_is_unsigned(PyGccTree_as_gcc_integer_type(self)))',
                               "Boolean: True for 'unsigned', False for 'signed'")
             add_complex_getter('signed_equivalent',
                               'The gcc.IntegerType for the signed version of this type')

@@ -71,6 +71,8 @@
     <attribute name="precision" kind="int">
       <doc>The precision of this type in bits (e.g. 32)</doc>
     </attribute>
+    <attribute name="is_unsigned" kind="bool"/>
+
   </type>
 
   <type name="lang_type" base="type">
