@@ -290,7 +290,9 @@ PyObject*
         if localname in ('Reference', 'Comparison', 'Unary', 'Binary',
                          'Statement' 'VlExp', 'Expression'):
             add_simple_getter('location',
-                              'PyGccLocation_New(gcc_private_make_location(EXPR_LOCATION(self->t.inner)))',
+                              ('PyGccLocation_New(gcc_%s_get_location(PyGccTree_as_gcc_%s(self)))'
+                               % (localname.lower(),
+                                  localname.lower())),
                               "The source location of this expression")
 
             methods.add_method('get_symbol',

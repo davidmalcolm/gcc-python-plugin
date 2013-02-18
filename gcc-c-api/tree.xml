@@ -25,7 +25,8 @@
   </type>
 
   <type name="binary" base="tree">
-  </type>
+     <attribute name="location" kind="location"/>
+   </type>
 
   <type name="bitwise_and_expr" base="binary">
   </type>
@@ -79,8 +80,10 @@
   <type name="block" base="tree">
   </type>
 
-<!--
-  ..        Comparison
+  <type name="comparison" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+  <!--
   ..            EqExpr
   ..            GeExpr
   ..            GtExpr
@@ -99,7 +102,12 @@
   ..        Constructor
   ..        DefaultArg
   ..        ErrorMark
-  ..        Expression
+  -->
+
+  <type name="expression" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+  <!--
   ..            AddrExpr
   ..            AlignofExpr
   ..            ArrowExpr
@@ -174,7 +182,13 @@
   ..        OptimizationNode
   ..        Overload
   ..        PlaceholderExpr
-  ..        Reference
+-->
+
+  <type name="reference" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+
+<!--
   ..            ArrayRangeRef
   ..            ArrayRef
   ..            AttrAddrExpr
@@ -199,6 +213,7 @@
   </type>
 
   <type name="statement" base="tree">
+    <attribute name="location" kind="location"/>
   </type>
 <!--
   ..        Statement
@@ -258,7 +273,12 @@
   ..        TreeBinfo
   ..        TreeList
   ..        TreeVec
-  ..        Unary
+-->
+
+  <type name="unary" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+  <!--
   ..            AbsExpr
   ..            AddrSpaceConvertExpr
   ..            BitNotExpr
@@ -285,7 +305,11 @@
   ..            VecUnpackFloatLoExpr
   ..            VecUnpackHiExpr
   ..            VecUnpackLoExpr
-  ..        VlExp
+-->
+  <type name="vlexp" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+<!--
   ..            AggrInitExpr
   ..            CallExpr
 -->
