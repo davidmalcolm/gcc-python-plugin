@@ -52,19 +52,6 @@ gcc_private_make_block (tree inner)
   return result;
 }
 
-IMPLEMENT_CAST (gcc_tree, gcc_constant)
-IMPLEMENT_CAST (gcc_tree, gcc_decl)
-IMPLEMENT_CAST (gcc_tree, gcc_label_decl)
-IMPLEMENT_CAST (gcc_tree, gcc_binary)
-IMPLEMENT_CAST (gcc_tree, gcc_block)
-IMPLEMENT_CAST (gcc_tree, gcc_ssa_name)
-IMPLEMENT_CAST (gcc_tree, gcc_statement)
-IMPLEMENT_CAST (gcc_tree, gcc_case_label_expr)
-IMPLEMENT_CAST (gcc_tree, gcc_type)
-IMPLEMENT_CAST (gcc_tree, gcc_fixed_point_type)
-IMPLEMENT_CAST (gcc_tree, gcc_integer_type)
-IMPLEMENT_CAST (gcc_tree, gcc_real_type)
-IMPLEMENT_CAST (gcc_tree, gcc_translation_unit_decl)
 /* gcc_binary */
   GCC_IMPLEMENT_PUBLIC_API (void) gcc_binary_mark_in_use (gcc_binary node);
 
@@ -94,7 +81,6 @@ gcc_bitwise_xor_expr_mark_in_use (gcc_bitwise_xor_expr node);
 GCC_IMPLEMENT_PUBLIC_API (void)
 gcc_block_mark_in_use (gcc_block node);
 
-IMPLEMENT_CAST (gcc_block, gcc_tree)
 /***************************************************************************
  gcc_ssa_name
  **************************************************************************/
@@ -114,14 +100,9 @@ GCC_IMPLEMENT_PUBLIC_API (int) gcc_ssa_name_get_version (gcc_ssa_name node)
   return SSA_NAME_VERSION (node.inner);
 }
 
-IMPLEMENT_CAST (gcc_ssa_name, gcc_tree)
 /* gcc_statement */
   GCC_IMPLEMENT_PUBLIC_API (void)
 gcc_statement_mark_in_use (gcc_statement node);
-
-GCC_IMPLEMENT_PUBLIC_API (gcc_case_label_expr)
-gcc_statement_as_gcc_case_label_expr (gcc_statement node);
-
 
 /***************************************************************************
  gcc_case_label_expr
@@ -155,7 +136,6 @@ gcc_case_label_expr_get_target (gcc_case_label_expr node)
 				(CASE_LABEL (node.inner)));
 }
 
-IMPLEMENT_CAST (gcc_case_label_expr, gcc_tree)
 /*
 Local variables:
 c-basic-offset: 2

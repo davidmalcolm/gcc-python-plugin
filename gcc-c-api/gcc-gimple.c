@@ -89,13 +89,6 @@ GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_gimple_get_expr_type (gcc_gimple stmt)
   return gcc_private_make_tree (gimple_expr_type (stmt.inner));
 }
 
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_asm)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_assign)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_call)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_return)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_cond)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_phi)
-IMPLEMENT_CAST (gcc_gimple, gcc_gimple_switch)
 /***************************************************************************
  gcc_gimple_asm
  **************************************************************************/
@@ -105,7 +98,6 @@ gcc_gimple_asm_get_string (gcc_gimple_asm stmt)
   return gimple_asm_string (stmt.inner);
 }
 
-IMPLEMENT_CAST (gcc_gimple_asm, gcc_gimple)
 /***************************************************************************
  gcc_gimple_assign
  **************************************************************************/
@@ -115,7 +107,6 @@ gcc_gimple_assign_get_lhs (gcc_gimple_assign stmt)
   return gcc_private_make_tree (gimple_assign_lhs (stmt.inner));
 }
 
-IMPLEMENT_CAST (gcc_gimple_assign, gcc_gimple)
 /***************************************************************************
  gcc_gimple_call
  **************************************************************************/
@@ -162,7 +153,6 @@ gcc_gimple_call_for_each_arg (gcc_gimple_call stmt,
   return false;
 }
 
-IMPLEMENT_CAST (gcc_gimple_call, gcc_gimple)
 /***************************************************************************
  gcc_gimple_return
  **************************************************************************/
@@ -172,7 +162,6 @@ gcc_gimple_return_get_retval (gcc_gimple_return stmt)
   return gcc_private_make_tree (gimple_return_retval (stmt.inner));
 }
 
-IMPLEMENT_CAST (gcc_gimple_return, gcc_gimple)
 /***************************************************************************
  gcc_gimple_cond
  **************************************************************************/
@@ -200,7 +189,6 @@ gcc_gimple_cond_get_false_label (gcc_gimple_cond stmt)
   return gcc_private_make_tree (gimple_cond_false_label (stmt.inner));
 }
 
-IMPLEMENT_CAST (gcc_gimple_cond, gcc_gimple)
 /***************************************************************************
  gcc_gimple_phi
  **************************************************************************/
@@ -234,7 +222,6 @@ gcc_gimple_phi_for_each_edges (gcc_gimple_phi phi,
 			       bool (*cb) (gcc_cfg_edge edge,
 					   void *user_data), void *user_data);
 
-IMPLEMENT_CAST (gcc_gimple_phi, gcc_gimple)
 /***************************************************************************
  gcc_gimple_switch
  **************************************************************************/
@@ -265,7 +252,6 @@ gcc_gimple_switch_for_each_label (gcc_gimple_switch stmt,
   return false;
 }
 
-IMPLEMENT_CAST (gcc_gimple_switch, gcc_gimple)
 /*
 Local variables:
 c-basic-offset: 2
