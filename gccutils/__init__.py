@@ -364,15 +364,16 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             for stmtidx, stmt in enumerate(bb.gimple):
                 if curloc != stmt.loc:
                     curloc = stmt.loc
-                    code = get_src_for_loc(stmt.loc).rstrip()
-                    pseudohtml = self.code_to_html(code)
-                    # print('pseudohtml: %r' % pseudohtml)
-                    result += ('<tr><td align="left">'
-                               + self.to_html('%4i ' % stmt.loc.line)
-                               + pseudohtml
-                               + '<br/>'
-                               + (' ' * (5 + stmt.loc.column-1)) + '^'
-                               + '</td></tr>')
+                    if curloc is not None:
+                        code = get_src_for_loc(stmt.loc).rstrip()
+                        pseudohtml = self.code_to_html(code)
+                        # print('pseudohtml: %r' % pseudohtml)
+                        result += ('<tr><td align="left">'
+                                   + self.to_html('%4i ' % stmt.loc.line)
+                                   + pseudohtml
+                                   + '<br/>'
+                                   + (' ' * (5 + stmt.loc.column-1)) + '^'
+                                   + '</td></tr>')
                     
                 result += '<tr><td></td>' + self.stmt_to_html(stmt, stmtidx) + '</tr>\n'
         else:
