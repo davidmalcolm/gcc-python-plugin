@@ -196,9 +196,15 @@
     <attribute name="location" kind="location"/>
   </type>
 
-<!--
+<!-- Subclasses of "reference":
   ..            ArrayRangeRef
-  ..            ArrayRef
+-->
+
+  <type name="array_ref" base="reference">
+    <attribute name="array" kind="tree"/>
+    <attribute name="index" kind="tree"/>
+  </type>
+<!--
   ..            AttrAddrExpr
   ..            BitFieldRef
   ..            ComponentRef

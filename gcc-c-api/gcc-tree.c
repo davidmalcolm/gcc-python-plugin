@@ -123,6 +123,20 @@ gcc_reference_get_location(gcc_reference node)
   return gcc_private_make_location (EXPR_LOCATION (node.inner));
 }
 
+/***************************************************************************
+ gcc_array_ref
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_array_ref_get_array(gcc_array_ref node)
+{
+  return gcc_private_make_tree(TREE_OPERAND(node.inner, 0));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_array_ref_get_index(gcc_array_ref node)
+{
+  return gcc_private_make_tree(TREE_OPERAND(node.inner, 1));
+}
 
 /***************************************************************************
  gcc_ssa_name

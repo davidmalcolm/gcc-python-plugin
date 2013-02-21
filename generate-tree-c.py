@@ -422,10 +422,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'ARRAY_REF':
             add_simple_getter('array',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_array_ref_get_array(PyGccTree_as_gcc_array_ref(self)))',
                               "The gcc.Tree for the array being referenced'")
             add_simple_getter('index',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
+                              'PyGccTree_New(gcc_array_ref_get_index(PyGccTree_as_gcc_array_ref(self)))',
                               "The gcc.Tree for index being referenced'")
             tp_repr = '(reprfunc)PyGccArrayRef_repr'
 
