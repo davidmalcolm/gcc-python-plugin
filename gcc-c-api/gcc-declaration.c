@@ -22,6 +22,7 @@
 #include "gcc-declaration.h"
 #include "tree.h"
 #include "gcc-internal.h"
+#include "gcc-tree.h"
 
 /***************************************************************************
  gcc_decl
@@ -181,6 +182,18 @@ gcc_translation_unit_decl_get_language (gcc_translation_unit_decl node)
 /***************************************************************************
  gcc_var_decl
  **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_constructor)
+gcc_var_decl_get_initial(gcc_var_decl node)
+{
+  return gcc_tree_as_gcc_constructor (gcc_private_make_tree (DECL_INITIAL (node.inner)));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(bool)
+gcc_var_decl_is_static(gcc_var_decl node)
+{
+  return TREE_STATIC(node.inner);
+}
+
 /***************************************************************************
  Other things:
  **************************************************************************/

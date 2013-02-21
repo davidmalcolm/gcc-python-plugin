@@ -81,6 +81,8 @@
   </type>
 
   <type name="var_decl" base="decl">
+    <attribute name="initial" kind="constructor"/>
+    <attribute name="is_static" kind="bool"/>
   </type>
 
   <iterator name="translation_unit_decl" kind="translation_unit_decl"/>

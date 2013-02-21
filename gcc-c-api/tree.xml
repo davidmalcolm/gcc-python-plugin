@@ -98,8 +98,12 @@
   ..            UnleExpr
   ..            UnltExpr
   ..            UnorderedExpr
+  -->
 
-  ..        Constructor
+  <type name="constructor" base="tree">
+  </type>
+
+  <!--
   ..        DefaultArg
   ..        ErrorMark
   -->

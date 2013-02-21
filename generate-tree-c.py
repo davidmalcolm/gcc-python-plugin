@@ -467,10 +467,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'VAR_DECL':
             add_simple_getter('initial',
-                              'PyGccTree_New(gcc_private_make_tree(DECL_INITIAL(self->t.inner)))',
+                              'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))',
                               "The initial value for this variable as a gcc.Constructor, or None")
             add_simple_getter('static',
-                              'PyBool_FromLong(TREE_STATIC(self->t.inner))',
+                              'PyBool_FromLong(gcc_var_decl_is_static(PyGccTree_as_gcc_var_decl(self)))',
                               "Boolean: is this variable to be allocated with static storage")
 
         if tree_type.SYM == 'CONSTRUCTOR':
