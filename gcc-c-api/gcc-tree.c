@@ -138,6 +138,22 @@ gcc_array_ref_get_index(gcc_array_ref node)
   return gcc_private_make_tree(TREE_OPERAND(node.inner, 1));
 }
 
+
+/***************************************************************************
+ gcc_component_ref
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_component_ref_get_target(gcc_component_ref node)
+{
+  return gcc_private_make_tree (TREE_OPERAND (node.inner, 0));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_component_ref_get_field(gcc_component_ref node)
+{
+  return gcc_private_make_tree (TREE_OPERAND (node.inner, 1));
+}
+
 /***************************************************************************
  gcc_ssa_name
  **************************************************************************/

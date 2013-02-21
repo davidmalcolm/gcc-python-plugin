@@ -431,10 +431,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'COMPONENT_REF':
             add_simple_getter('target',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_component_ref_get_target(PyGccTree_as_gcc_component_ref(self)))',
                               "The gcc.Tree that for the container of the field'")
             add_simple_getter('field',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 1)))',
+                              'PyGccTree_New(gcc_component_ref_get_field(PyGccTree_as_gcc_component_ref(self)))',
                               "The gcc.FieldDecl for the field within the target'")
             tp_repr = '(reprfunc)PyGccComponentRef_repr'
 

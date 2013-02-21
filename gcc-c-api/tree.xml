@@ -204,10 +204,15 @@
     <attribute name="array" kind="tree"/>
     <attribute name="index" kind="tree"/>
   </type>
-<!--
+  <!--
   ..            AttrAddrExpr
   ..            BitFieldRef
-  ..            ComponentRef
+  -->
+  <type name="component_ref" base="reference">
+    <attribute name="target" kind="tree"/>
+    <attribute name="field" kind="tree"/>
+  </type>
+  <!--
   ..            ImagpartExpr
   ..            IndirectRef
   ..            MemRef
