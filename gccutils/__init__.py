@@ -99,7 +99,7 @@ def get_nonnull_arguments(funtype):
         # No "nonnull" attribute was given:
         return frozenset()
 
-def invoke_dot(dot):
+def invoke_dot(dot, name='test'):
     from subprocess import Popen, PIPE
 
     if 1:
@@ -114,12 +114,12 @@ def invoke_dot(dot):
         #
         # Presumably a font selection/font metrics issue
         fmt = 'svg'
-
-    p = Popen(['dot', '-T%s' % fmt, '-o', 'test.%s' % fmt],
+    filename = '%s.%s' % (name, fmt)
+    p = Popen(['dot', '-T%s' % fmt, '-o', filename],
               stdin=PIPE)
     p.communicate(dot.encode('ascii'))
 
-    p = Popen(['xdg-open', 'test.%s' % fmt])
+    p = Popen(['xdg-open', filename])
     p.communicate()
 
 def pprint(obj):
