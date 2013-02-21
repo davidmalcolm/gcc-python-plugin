@@ -47,6 +47,8 @@
     <attribute name="dest" kind="cfg_block"/>
     <attribute name="is_true_value" kind="bool"/>
     <attribute name="is_false_value" kind="bool"/>
+    <attribute name="is_loop_exit" kind="bool"/>
+    <attribute name="can_fallthru" kind="bool"/>
   </type>
 
 </api>

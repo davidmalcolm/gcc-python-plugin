@@ -265,6 +265,19 @@ GCC_PUBLIC_API (bool) gcc_cfg_edge_is_false_value (gcc_cfg_edge edge)
   return (edge.inner->flags & EDGE_FALSE_VALUE) == EDGE_FALSE_VALUE;
 }
 
+GCC_PUBLIC_API(bool)
+gcc_cfg_edge_is_loop_exit(gcc_cfg_edge edge)
+{
+  return (edge.inner->flags & EDGE_LOOP_EXIT) == EDGE_LOOP_EXIT;
+}
+
+GCC_PUBLIC_API(bool)
+gcc_cfg_edge_get_can_fallthru(gcc_cfg_edge edge)
+{
+  return (edge.inner->flags & EDGE_CAN_FALLTHRU) == EDGE_CAN_FALLTHRU;
+}
+
+
 /*
 Local variables:
 c-basic-offset: 2
