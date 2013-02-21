@@ -51,14 +51,16 @@ def generate_edge():
                                    identifier_prefix = 'PyGccEdge',
                                    typename = 'PyGccEdge')
 
-    # We only expose the subset of the flags exposed by the plugin API:
-    for flag in ('EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE'):
-        assert flag.startswith('EDGE_')
-        flagname = flag[5:].lower()
+    # We only expose the subset of the flags exposed by gcc-c-api
+    for attrname, flaggetter in [('true_value', 'is_true_value'),
+                                 ('false_value', 'is_false_value'),
+                                 ('loop_exit', 'is_loop_exit'),
+                                 ('can_fallthru', 'get_can_fallthru'),
+                                 ]:
         getsettable.add_simple_getter(cu,
-                                      flagname,
-                                      'PyBool_FromLong(gcc_cfg_edge_is_%s(self->e))' % flagname,
-                                      'Boolean, corresponding to flag %s' % flag)
+                                      attrname,
+                                      'PyBool_FromLong(gcc_cfg_edge_%s(self->e))' % flaggetter,
+                                      None)
 
     cu.add_defn(getsettable.c_defn())
 

@@ -426,10 +426,8 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             attrliststr = '[label = false]'
         elif e.loop_exit:
             attrliststr = '[label = loop_exit]'
-        elif e.fallthru:
+        elif e.can_fallthru:
             attrliststr = '[label = fallthru]'
-        elif e.dfs_back:
-            attrliststr = '[label = dfs_back]'
         else:
             attrliststr = ''
         return ('   %s -> %s %s;\n'
