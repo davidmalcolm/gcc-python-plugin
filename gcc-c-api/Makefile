@@ -68,7 +68,7 @@ GENERATED_HEADERS:= \
 
 GCCPLUGINS_DIR:= $(shell $(CC) --print-file-name=plugin)
 
-GCC_C_API_SO	:= gcc-c-api.so
+LIBGCCCAPI_SO	:= libgcccapi.so
 
 CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I$(GCCPLUGINS_DIR)/include/c-family -I.
 # Allow user to pick optimization, choose whether warnings are fatal,
@@ -77,9 +77,9 @@ CFLAGS?=-O2 -Werror -g
 # Force these settings
 CFLAGS+= -fPIC -fno-strict-aliasing -Wall
 
-all: $(GCC_C_API_SO)
+all: $(LIBGCCCAPI_SO)
 
-$(GCC_C_API_SO): $(OBJECT_FILES)
+$(LIBGCCCAPI_SO): $(OBJECT_FILES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -shared $^ -o $@ $(LIBS)
 
 # This is the standard .c->.o recipe, but it needs to be stated
