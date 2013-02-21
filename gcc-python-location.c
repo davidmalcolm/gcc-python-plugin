@@ -37,16 +37,16 @@ PyObject *
 PyGccLocation_repr(struct PyGccLocation * self)
 {
      return PyGccString_FromFormat("gcc.Location(file='%s', line=%i)",
-                                          gcc_location_get_filename(self->loc),
-                                          gcc_location_get_line(self->loc));
+                                   gcc_location_get_filename(self->loc),
+                                   gcc_location_get_line(self->loc));
 }
 
 PyObject *
 PyGccLocation_str(struct PyGccLocation * self)
 {
      return PyGccString_FromFormat("%s:%i",
-                                          gcc_location_get_filename(self->loc),
-                                          gcc_location_get_line(self->loc));
+                                   gcc_location_get_filename(self->loc),
+                                   gcc_location_get_line(self->loc));
 }
 
 PyObject *
@@ -167,7 +167,8 @@ PyGccLocation_New(gcc_location loc)
 	Py_RETURN_NONE;
     }
   
-    location_obj = PyGccWrapper_New(struct PyGccLocation, &PyGccLocation_TypeObj);
+    location_obj = PyGccWrapper_New(struct PyGccLocation,
+                                    &PyGccLocation_TypeObj);
     if (!location_obj) {
         goto error;
     }
