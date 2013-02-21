@@ -1,7 +1,33 @@
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
+#
+#   This is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see
+#   <http://www.gnu.org/licenses/>.
+#
 # Autogenerate a header file from a .h description
 import sys
 import unittest
 import xml.etree.ElementTree as ET
+
+def get_c_type(xml_kind):
+    if xml_kind in ('int', 'bool'):
+        return xml_kind
+    if xml_kind == 'string':
+        return 'const char*'
+    if xml_kind == 'void':
+        return 'void'
+    return 'gcc_%s' % xml_kind
 
 class TypeNotFound(Exception):
     def __init__(self, xmlname):
@@ -122,11 +148,7 @@ class Attribute(XmlWrapper, HasDocsMixin):
 
     def get_c_type(self):
         xml_kind = self.get_xml_kind()
-        if xml_kind in ('int', 'bool'):
-            return xml_kind
-        if xml_kind == 'string':
-            return 'const char*'
-        return 'gcc_%s' % xml_kind
+        return get_c_type(xml_kind)
 
     def get_varname(self):
         xml_kind = self.get_xml_kind()
@@ -163,6 +185,36 @@ class Iterator(XmlWrapper, HasDocsMixin):
     def get_type(self):
         xmlkind = self.node.get('kind')
         return self.api.registry.lookup_type(xmlkind)
+
+class Function(XmlWrapper, HasDocsMixin):
+    def get_xml_name(self):
+        return self.node.get('name')
+
+    def get_c_name(self):
+        return self.get_xml_name()
+
+    def get_return_type(self):
+        xmlkind = self.node.get('returntype')
+        return xmlkind
+
+    def get_c_return_type(self):
+        xml_kind = self.get_return_type()
+        return get_c_type(xml_kind);
+
+    def iter_params(self):
+        for node in self.node.iter(tag='parameter'):
+            yield Parameter(self.api, node)
+
+class Parameter(XmlWrapper, HasDocsMixin):
+    def get_xml_name(self):
+        return self.node.get('name')
+
+    def get_xml_type(self):
+        return self.node.get('type')
+
+    def get_c_type(self):
+        xmltype = self.get_xml_type()
+        return get_c_type(xmltype)
 
 class Doc(XmlWrapper):
     def as_text(self):
@@ -205,6 +257,10 @@ class Api:
     def iter_iters(self):
         for node in self.api.findall('iterator'):
             yield Iterator(self, node)
+
+    def iter_functions(self):
+        for node in self.api.findall('function'):
+            yield Function(self, node)
 
 class Tests(unittest.TestCase):
     def test_loading_all(self):

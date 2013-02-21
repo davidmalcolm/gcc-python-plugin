@@ -23,6 +23,7 @@
 #include "gcc-python-wrappers.h"
 
 #include "diagnostic.h"
+#include "gcc-c-api/gcc-diagnostics.h"
 
 /*
   I initially attempted to directly wrap gcc's:
@@ -43,7 +44,7 @@ PyObject*
 PyGcc_permerror(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj = NULL;
-    const char *msgid = NULL;
+    const char *msg = NULL;
     PyObject *result_obj = NULL;
     bool result_b;
 
@@ -52,12 +53,12 @@ PyGcc_permerror(PyObject *self, PyObject *args)
 			  "s"
 			  ":permerror",
 			  &PyGccLocation_TypeObj, &loc_obj,
-			  &msgid)) {
+			  &msg)) {
         return NULL;
     }
 
     /* Invoke the GCC function: */
-    result_b = permerror(loc_obj->loc.inner, "%s", msgid);
+    result_b = gcc_permerror(loc_obj->loc, msg);
 
     result_obj = PyBool_FromLong(result_b);
 
@@ -80,7 +81,7 @@ PyGcc_error(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    error_at(loc_obj->loc.inner, "%s", msg);
+    gcc_error_at(loc_obj->loc, msg);
 
     Py_RETURN_NONE;
 }
@@ -156,7 +157,7 @@ PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    inform(loc_obj->loc.inner, "%s", msg);
+    gcc_inform(loc_obj->loc, msg);
 
     Py_RETURN_NONE;
 }

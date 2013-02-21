@@ -22,6 +22,7 @@ HANDWRITTEN_C_FILES = \
   gcc-cfg.c \
   gcc-constant.c \
   gcc-declaration.c \
+  gcc-diagnostics.c \
   gcc-function.c \
   gcc-gimple.c \
   gcc-location.c \

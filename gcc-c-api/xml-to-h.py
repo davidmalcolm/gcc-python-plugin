@@ -203,6 +203,17 @@ def write_api(api, out):
         writer.writeln('    void *user_data);')
         writer.writeln()
 
+    # add functions
+    for fun in api.iter_functions():
+        writer.writeln('GCC_PUBLIC_API(%s)' % fun.get_c_return_type())
+        paramstrs = []
+        for param in fun.iter_params():
+            paramstrs.append('%s %s' % (param.get_c_type(),
+                                        param.get_xml_name()))
+        writer.writeln('gcc_%s(%s);'
+                       % (fun.get_c_name(),
+                          ', '.join(paramstrs)))
+
     writer.write_end_extern_c()
     write_footer(out)
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-Copyright 2012 Red Hat, Inc.
+Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+Copyright 2012, 2013 Red Hat, Inc.
 
 This is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by
@@ -67,6 +67,11 @@ RelaxNG schema for the api format
       <zeroOrMore>
         <ref name="iterator"/>
       </zeroOrMore>
+
+      <!-- global functions -->
+      <zeroOrMore>
+        <ref name="function"/>
+      </zeroOrMore>
     </element>
   </start>
 
@@ -97,6 +102,25 @@ RelaxNG schema for the api format
     <element name="iterator">
       <attribute name="name"> <text/> </attribute>
       <attribute name="kind"> <text/> </attribute>
+      <optional>
+        <element name="doc">
+          <text/>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+  <!-- <function> is shared by both <type> and by <api> -->
+  <define name="function">
+    <element name="function">
+      <attribute name="name"> <text/> </attribute>
+      <attribute name="returntype"> <text/> </attribute>
+      <zeroOrMore>
+        <element name="parameter">
+          <attribute name="name"> <text/> </attribute>
+          <attribute name="type"> <text/> </attribute>
+        </element>
+      </zeroOrMore>
       <optional>
         <element name="doc">
           <text/>
