@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ PyGcc_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 
     /* If a gcc.Option was given, extract the code: */
     if (Py_TYPE(opt_obj) == (PyTypeObject*)&PyGccOption_TypeObj) {
-        opt_code = ((PyGccOption*)opt_obj)->opt_code;
+        opt_code = ((PyGccOption*)opt_obj)->opt.inner;
 
         /* Ugly workaround; see this function: */
         if (0 == PyGcc_option_is_enabled((enum opt_code)opt_code)) {

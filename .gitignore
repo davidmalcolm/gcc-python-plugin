@@ -20,6 +20,7 @@ gcc-c-api/gcc-declaration.h
 gcc-c-api/gcc-function.h
 gcc-c-api/gcc-gimple.h
 gcc-c-api/gcc-location.h
+gcc-c-api/gcc-option.h
 gcc-c-api/gcc-rtl.h
 gcc-c-api/gcc-tree.h
 gcc-c-api/gcc-type.h

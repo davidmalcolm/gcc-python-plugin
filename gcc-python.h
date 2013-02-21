@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -201,8 +201,8 @@ DECLARE_SIMPLE_WRAPPER(PyGccFunction,
 
 DECLARE_SIMPLE_WRAPPER(PyGccOption,
 		       PyGccOption_TypeObj,
-                       opt_code,
-                       enum opt_code, opt_code)
+                       option,
+                       gcc_option, opt)
 
 DECLARE_SIMPLE_WRAPPER(PyGccParameter,
 		       PyGccParameter_TypeObj,

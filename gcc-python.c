@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "gcc-c-api/gcc-location.h"
 #include "gcc-c-api/gcc-variable.h"
 #include "gcc-c-api/gcc-declaration.h"
+#include "gcc-c-api/gcc-option.h"
 
 int plugin_is_GPL_compatible;
 
@@ -38,7 +39,7 @@ int plugin_is_GPL_compatible;
 #include "function.h"
 #include "diagnostic.h"
 #include "cgraph.h"
-#include "opts.h"
+//#include "opts.h"
 
 /*
  * Use an unqualified name here and rely on dual search paths to let the
@@ -139,66 +140,81 @@ PyGcc_set_location(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static bool add_option_to_list(gcc_option opt, void *user_data)
+{
+    PyObject *result = (PyObject*)user_data;
+    PyObject *obj_opt;
+
+    obj_opt = PyGccOption_New(opt);
+    if (!obj_opt) {
+        return true;
+    }
+    if (-1 == PyList_Append(result, obj_opt)) {
+        Py_DECREF(obj_opt);
+        return true;
+    }
+    /* Success: */
+    Py_DECREF(obj_opt);
+    return false;
+}
+
 static PyObject *
 PyGcc_get_option_list(PyObject *self, PyObject *args)
 {
     PyObject *result;
-    unsigned int i;
 
     result = PyList_New(0);
     if (!result) {
-	goto error;
+        return NULL;
     }
 
-    for (i = 0; i < cl_options_count; i++) {
-	PyObject *opt_obj = PyGccOption_New((enum opt_code)i);
-	if (!opt_obj) {
-	    goto error;
-	}
-	if (-1 == PyList_Append(result, opt_obj)) {
-	    Py_DECREF(opt_obj);
-	    goto error;
-	}
-        Py_DECREF(opt_obj);
+    if (gcc_for_each_option(add_option_to_list, result)) {
+        Py_DECREF(result);
+        return NULL;
     }
 
+    /* Success: */
     return result;
+}
 
- error:
-    Py_XDECREF(result);
-    return NULL;
+static bool add_option_to_dict(gcc_option opt, void *user_data)
+{
+    PyObject *dict = (PyObject*)user_data;
+    PyObject *opt_obj;
+
+    opt_obj = PyGccOption_New(opt);
+    if (!opt_obj) {
+        return true;
+    }
+
+    if (-1 == PyDict_SetItemString(dict,
+                                   gcc_option_get_text(opt),
+                                   opt_obj)) {
+        Py_DECREF(opt_obj);
+        return true;
+    }
+
+    Py_DECREF(opt_obj);
+    return false;
 }
 
 static PyObject *
 PyGcc_get_option_dict(PyObject *self, PyObject *args)
 {
     PyObject *dict;
-    size_t i;
 
     dict = PyDict_New();
     if (!dict) {
-	goto error;
+        return NULL;
     }
 
-    for (i = 0; i < cl_options_count; i++) {
-	PyObject *opt_obj = PyGccOption_New((enum opt_code)i);
-        if (!opt_obj) {
-	    goto error;
-        }
-        if (-1 == PyDict_SetItemString(dict,
-                                       cl_options[i].opt_text,
-                                       opt_obj)) {
-	    Py_DECREF(opt_obj);
-	    goto error;
-	}
-        Py_DECREF(opt_obj);
+    if (gcc_for_each_option(add_option_to_dict, dict)) {
+        Py_DECREF(dict);
+        return NULL;
     }
 
+    /* Success: */
     return dict;
-
- error:
-    Py_XDECREF(dict);
-    return NULL;
 }
 
 static PyObject *

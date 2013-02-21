@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ PyGccOption_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     /* Search for text within cl_options */
     for (i = 0; i < cl_options_count; i++) {
         if (0 == strcmp(cl_options[i].opt_text, text)) {
-            self->opt_code = (enum opt_code)i;
+            self->opt = gcc_private_make_option((enum opt_code)i);
             return 0; /* success */
         }
     }
@@ -133,7 +133,7 @@ int PyGcc_option_is_enabled(enum opt_code opt_code)
 PyObject *
 PyGccOption_is_enabled(PyGccOption * self, void *closure)
 {
-    int i = PyGcc_option_is_enabled(self->opt_code);
+    int i = PyGcc_option_is_enabled(self->opt.inner);
 
     if (i == 1) {
         return PyBool_FromLong(1);
@@ -152,14 +152,14 @@ const struct cl_option*
 PyGcc_option_to_cl_option(PyGccOption * self)
 {
     assert(self);
-    assert(self->opt_code >= 0);
-    assert(self->opt_code < cl_options_count);
+    assert(self->opt.inner >= 0);
+    assert(self->opt.inner < cl_options_count);
 
-    return &cl_options[self->opt_code];
+    return &cl_options[self->opt.inner];
 }
 
 PyObject *
-PyGccOption_New(enum opt_code opt_code)
+PyGccOption_New(gcc_option opt)
 {
     struct PyGccOption *opt_obj = NULL;
 
@@ -168,7 +168,7 @@ PyGccOption_New(enum opt_code opt_code)
         goto error;
     }
 
-    opt_obj->opt_code = opt_code;
+    opt_obj->opt = opt;
 
     return (PyObject*)opt_obj;
 

@@ -3,8 +3,8 @@ import sys
 from xmltypes import ApiRegistry, Api
 
 COPYRIGHT_HEADER = '''
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -234,6 +234,7 @@ def write_semiprivate_types(registry, out):
 
     out.write('\n')
     out.write('#include "input.h" /* for location_t */\n')
+    out.write('#include "options.h" /* for enum opt_code */\n')
     out.write('\n')
     writer.write_begin_extern_c()
     out.write('/*\n')

@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ HANDWRITTEN_C_FILES = \
   gcc-function.c \
   gcc-gimple.c \
   gcc-location.c \
+  gcc-option.c \
   gcc-rtl.c \
   gcc-tree.c \
   gcc-type.c \
@@ -46,6 +47,7 @@ SOURCE_XML:= \
   function.xml \
   gimple.xml \
   location.xml \
+  option.xml \
   rtl.xml \
   tree.xml \
   type.xml \
@@ -61,6 +63,7 @@ GENERATED_HEADERS:= \
   gcc-function.h \
   gcc-gimple.h \
   gcc-location.h \
+  gcc-option.h \
   gcc-rtl.h \
   gcc-tree.h \
   gcc-type.h \
