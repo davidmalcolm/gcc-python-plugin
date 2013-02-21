@@ -20,9 +20,21 @@
 #include "gcc-common.h"
 #include "gcc-constant.h"
 #include "gcc-internal.h"
+#include "tree.h"
 
 /* gcc_constant */
 /* gcc_integer_constant */
+
+/***************************************************************************
+ gcc_string_constant
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(const char*)
+gcc_string_constant_get_char_ptr(gcc_string_constant node)
+{
+  return TREE_STRING_POINTER (node.inner);
+}
+
+
 /*
 Local variables:
 c-basic-offset: 2

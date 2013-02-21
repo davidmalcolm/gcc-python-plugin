@@ -355,7 +355,7 @@ def generate_tree_code_classes():
 
         if cc == 'StringCst':
             add_simple_getter('constant',
-                              'PyGccString_FromString(TREE_STRING_POINTER(self->t.inner))',
+                              'PyGccString_FromString(gcc_string_constant_get_char_ptr(PyGccTree_as_gcc_string_constant(self)))',
                               'The actual value of this constant, as a str')
             tp_repr = '(reprfunc)PyGccStringConstant_repr'
 

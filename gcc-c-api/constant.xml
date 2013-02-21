@@ -36,6 +36,7 @@
   <type name="real_constant" base="constant">
   </type>
   <type name="string_constant" base="constant">
+    <attribute name="char_ptr" kind="string"/>
   </type>
   <type name="vector_constant" base="constant">
   </type>
