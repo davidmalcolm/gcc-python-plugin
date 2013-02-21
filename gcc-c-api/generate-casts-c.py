@@ -70,6 +70,11 @@ def main(c_filename):
         c_out.write('#include <assert.h>\n')
         c_out.write('#include "tree.h"\n')
 
+        # Ensure that we use the headers, so that the generated
+        # casts pick up on the 'extern "C"' and don't get name-mangled:
+        for api in registry.apis:
+            c_out.write('#include "%s"\n' % api.get_header_filename())
+
         for type_ in registry.iter_types():
             for subclass in type_.get_subclasses(recursive=True):
                 c_out.write('IMPLEMENT_CAST(%s, %s)\n'

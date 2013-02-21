@@ -269,7 +269,7 @@ registry = ApiRegistry()
 for xmlfile in sorted(glob.glob('*.xml')):
     api = Api(registry, xmlfile)
 for api in registry.apis:
-    with open('gcc-%s.h' % api.get_xml_name(), 'w') as f:
+    with open(api.get_header_filename(), 'w') as f:
         # write(api, sys.stdout)
         write_api(api, f)
     with open('gcc-public-types.h', 'w') as f:

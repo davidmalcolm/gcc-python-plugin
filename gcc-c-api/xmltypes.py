@@ -179,6 +179,9 @@ class Api:
     def get_xml_name(self):
         return self.api.get('name')
 
+    def get_header_filename(self):
+        return 'gcc-%s.h' % self.get_xml_name()
+
     def get_doc(self):
         xml_doc = self.api.find('doc')
         if xml_doc is not None:
