@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@
   </type>
 
   <type name="gimple_cond" base="gimple">
-    <attribute name="lhs" kind="tree"/>`
+    <attribute name="lhs" kind="tree"/>
     <attribute name="rhs" kind="tree"/>
     <attribute name="true_label" kind="tree"/>
     <attribute name="false_label" kind="tree"/>
