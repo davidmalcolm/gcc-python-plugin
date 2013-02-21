@@ -350,7 +350,7 @@ def generate_tree_code_classes():
 
         if cc == 'AddrExpr':
             add_simple_getter('operand',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND (self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_addr_expr_get_operand(PyGccTree_as_gcc_addr_expr(self)))',
                               'The operand of this expression, as a gcc.Tree')
 
         if cc == 'StringCst':

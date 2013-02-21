@@ -111,8 +111,12 @@
   <type name="expression" base="tree">
     <attribute name="location" kind="location"/>
   </type>
+
+  <type name="addr_expr" base="expression">
+    <attribute name="operand" kind="tree"/>
+  </type>
+
   <!--
-  ..            AddrExpr
   ..            AlignofExpr
   ..            ArrowExpr
   ..            AssertExpr

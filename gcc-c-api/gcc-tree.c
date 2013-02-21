@@ -106,6 +106,15 @@ gcc_expression_get_location(gcc_expression node)
 }
 
 /***************************************************************************
+ gcc_addr_expr
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_addr_expr_get_operand(gcc_addr_expr node)
+{
+  return gcc_private_make_tree (TREE_OPERAND (node.inner, 0));
+}
+
+/***************************************************************************
  gcc_reference
  **************************************************************************/
 GCC_IMPLEMENT_PUBLIC_API(gcc_location)
