@@ -59,9 +59,12 @@ PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op)
     const char *file1;
     const char *file2;
 
-    assert(Py_TYPE(o1) == (PyTypeObject*)&PyGccLocation_TypeObj);
-    
     if (Py_TYPE(o1) != (PyTypeObject*)&PyGccLocation_TypeObj) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    if (Py_TYPE(o2) != (PyTypeObject*)&PyGccLocation_TypeObj) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
