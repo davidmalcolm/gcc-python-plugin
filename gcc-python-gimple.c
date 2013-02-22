@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -78,9 +78,19 @@ do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 	return NULL;
     }
 
+    /*
+      gcc 4.8 renamed "dump_gimple_stmt" to "pp_gimple_stmt_1"
+      (in r191884).  Declaration is in gimple-pretty-print.h
+    */
+#if (GCC_VERSION >= 4008)
+    pp_gimple_stmt_1(PyGccPrettyPrinter_as_pp(ppobj),
+                     self->stmt.inner,
+                     spc, flags);
+#else
     dump_gimple_stmt(PyGccPrettyPrinter_as_pp(ppobj),
                      self->stmt.inner,
                      spc, flags);
+#endif
 
     result = PyGccPrettyPrinter_as_string(ppobj);
     if (!result) {

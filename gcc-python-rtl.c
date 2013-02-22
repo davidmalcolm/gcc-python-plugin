@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -29,12 +29,16 @@
 PyObject *
 PyGccRtl_get_location(struct PyGccRtl *self, void *closure)
 {
+    /* In gcc 4.8, INSN_LOCATOR was replaced by INSN_LOCATION (in r191494) */
+#if (GCC_VERSION >= 4008)
+    return PyGccLocation_New(gcc_private_make_location(INSN_LOCATION(self->insn.inner)));
+#else
     int locator = INSN_LOCATOR (self->insn.inner);
     if (locator && insn_file (self->insn.inner)) {
         return PyGccLocation_New(gcc_private_make_location(locator_location(locator)));
     }
-
     Py_RETURN_NONE;
+#endif
 }
 
 PyObject *

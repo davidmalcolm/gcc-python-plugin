@@ -567,7 +567,11 @@ PyGcc_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_lcf);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_leh);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_cfg);
+#if (GCC_VERSION >= 4008)
+    /* PROP_referenced_vars went away in GCC 4.8 (in r190067) */
+#else
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_referenced_vars);
+#endif
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_ssa);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_no_crit_edges);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_rtl);

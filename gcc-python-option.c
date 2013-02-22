@@ -79,10 +79,20 @@ PyGccOption_repr(PyGccOption * self)
 }
 
 /*
+  In GCC 4.6 and 4.7, "warn_format" is a global, declared in
+  c-family/c-common.h
+
+  In GCC 4.8, it became a macro in options.h to:
+      #define warn_format global_options.x_warn_format
+*/
+
+#if (GCC_VERSION < 4008)
+/*
   Weakly import warn_format; it's not available in lto1
   (during link-time optimization)
 */
 __typeof__ (warn_format) warn_format __attribute__ ((weak));
+#endif
 
 int PyGcc_option_is_enabled(enum opt_code opt_code)
 {
@@ -125,7 +135,11 @@ int PyGcc_option_is_enabled(enum opt_code opt_code)
         /*  We don't know: */
         return -1;
 
+#if (GCC_VERSION >= 4008)
+    case OPT_Wformat_:
+#else
     case OPT_Wformat:
+#endif
         return warn_format;
     }
 }

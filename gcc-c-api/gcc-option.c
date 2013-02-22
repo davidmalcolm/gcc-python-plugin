@@ -51,7 +51,7 @@ GCC_IMPLEMENT_PUBLIC_API (bool)
 gcc_for_each_option (bool (*cb)(gcc_option opt, void *user_data),
     void *user_data)
 {
-  int i;
+  unsigned int i;
   for (i = 0; i < cl_options_count; i++)
     {
       gcc_option opt = gcc_private_make_option ((enum opt_code)i);

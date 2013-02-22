@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -267,11 +267,22 @@ PyGccPass_repr(struct PyGccPass *self)
                                           self->pass->name);
 }
 
+/* In GCC 4.8, dump_enabled_p changed from acting on one pass to the current phase
+   (as of r192773) */
+#if (GCC_VERSION < 4008)
 PyObject *
 PyGccPass_get_dump_enabled(struct PyGccPass *self, void *closure)
 {
     return PyBool_FromLong(dump_enabled_p(self->pass->static_pass_number));
 }
+#endif
+
+/* In GCC 4.8, this field became "pstate" */
+#if (GCC_VERSION >= 4008)
+  #define DFI_STATE(dfi) (dfi)->pstate
+#else
+  #define DFI_STATE(dfi) (dfi)->state
+#endif
 
 int
 PyGccPass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure)
@@ -284,29 +295,29 @@ PyGccPass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closur
         return -1;
     }
 
-    if (dfi->state == 0) {
+    if (DFI_STATE (dfi) == 0) {
         /* Dumping was disabled: */
         if (newbool) {
             /* Enabling: */
-            dfi->state = -1;
+            DFI_STATE (dfi) = -1;
             return 0;
         } else {
             /* No change: */
             return 0;
         }
     } else {
-        if (dfi->state < 0) {
+        if (DFI_STATE (dfi) < 0) {
             /* Dumping was enabled but has not yet started */
             if (newbool) {
                 /* No change: */
                 return 0;
             } else {
                 /* Disabling: */
-                dfi->state = 0;
+                DFI_STATE (dfi) = 0;
                 return 0;
             }
         } else {
-            assert(dfi->state > 0);
+            assert(DFI_STATE (dfi) > 0);
             /* Dumping was enabled and has already started */
             if (newbool) {
                 /* No change: */

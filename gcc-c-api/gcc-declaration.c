@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "tree.h"
 #include "gcc-internal.h"
 #include "gcc-tree.h"
+#include "gcc-private-compat.h"
 
 /***************************************************************************
  gcc_decl
@@ -210,7 +211,7 @@ gcc_for_each_translation_unit_decl (bool (*cb)
      http://gcc.gnu.org/ml/gcc-cvs/2010-09/msg00625.html
      http://gcc.gnu.org/viewcvs?view=revision&revision=164331
    */
-  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+  GCC_COMPAT_FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
   {
     if (cb (gcc_private_make_translation_unit_decl (t), user_data))
       {

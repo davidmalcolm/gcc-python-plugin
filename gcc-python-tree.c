@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -30,8 +30,12 @@
 
 #include "gcc-c-api/gcc-tree.h"
 #include "gcc-c-api/gcc-type.h"
+#include "gcc-c-api/gcc-private-compat.h" /* for now */
 
 extern PyGccWrapperTypeObject PyGccIntegerCst_TypeObj;
+
+__typeof__ (lang_check_failed) lang_check_failed __attribute__ ((weak));
+
 
 /*
   Unfortunately, decl_as_string() is only available from the C++
@@ -548,8 +552,9 @@ PyGccConstructor_get_elements(PyObject *self, void *closure)
 
     self_as_tree = (struct PyGccTree *)self; /* FIXME */
     node = self_as_tree->t.inner;
-    
-    result = PyList_New(VEC_length(constructor_elt, CONSTRUCTOR_ELTS (node)));
+
+    result = PyList_New(GCC_COMPAT_VEC_LENGTH(constructor_elt,
+                                              CONSTRUCTOR_ELTS (node)));
     if (!result) {
 	goto error;
     }
@@ -1092,18 +1097,24 @@ gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
 }
 
 PyObject *
-VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes)
+VEC_tree_as_PyList(
+#if (GCC_VERSION >= 4008)
+    vec<tree, va_gc> *vec_nodes
+#else
+    VEC(tree,gc) *vec_nodes
+#endif
+)
 {
     PyObject *result = NULL;
     int i;
     tree t;
 
-    result = PyList_New(VEC_length(tree, vec_nodes));
+    result = PyList_New(GCC_COMPAT_VEC_LENGTH(tree, vec_nodes));
     if (!result) {
 	goto error;
     }
 
-    FOR_EACH_VEC_ELT(tree, vec_nodes, i, t) {
+    GCC_COMPAT_FOR_EACH_VEC_ELT(tree, vec_nodes, i, t) {
 	PyObject *item;
 	item = PyGccTree_New(gcc_private_make_tree(t));
 	if (!item) {

@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -35,12 +35,31 @@ gcc_private_make_variable (struct varpool_node *inner)
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_variable_mark_in_use (gcc_variable var)
 {
   /* Mark the underlying object (recursing into its fields): */
+
+  /* In GCC 4.8, struct varpool_node became part of union symtab_node_def */
+#if (GCC_VERSION >= 4008)
+  gt_ggc_mx_symtab_node_def (var.inner);
+#else
   gt_ggc_mx_varpool_node (var.inner);
+#endif
 }
 
 GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_variable_get_decl (gcc_variable var)
 {
-  return gcc_private_make_tree (var.inner->decl);
+  /* gcc 4.8 eliminated the
+       tree decl;
+     field of varpool_node in favor of
+       struct symtab_node_base symbol;
+  */
+  tree decl;
+
+#if (GCC_VERSION >= 4008)
+  decl = var.inner->symbol.decl;
+#else
+  decl = var.inner->decl;
+#endif
+
+  return gcc_private_make_tree (decl);
 }
 
 GCC_IMPLEMENT_PUBLIC_API (bool)
@@ -49,7 +68,11 @@ gcc_for_each_variable (bool (*cb) (gcc_variable var, void *user_data),
 {
   struct varpool_node *n;
 
+#ifdef FOR_EACH_VARIABLE /* added in gcc 4.8 */
+  FOR_EACH_VARIABLE(n)
+#else
   for (n = varpool_nodes; n; n = n->next)
+#endif
     {
       if (cb (gcc_private_make_variable (n), user_data))
 	{

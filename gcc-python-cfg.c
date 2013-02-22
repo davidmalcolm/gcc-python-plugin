@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "gcc-python-wrappers.h"
 #include "gcc-c-api/gcc-cfg.h"
 #include "gcc-c-api/gcc-gimple.h"
+
+#include "gcc-c-api/gcc-private-compat.h" /* for now */
 
 #if 1
 /* Ideally we wouldn't have these includes here: */
@@ -428,7 +430,14 @@ PyGccCfg_get_block_for_label(PyObject *s, PyObject *args)
     uid = LABEL_DECL_UID(label_decl->t.inner);
 
     if (uid < 0 ||
-        (VEC_length (basic_block, self->cfg.inner->x_label_to_block_map)
+        (
+         (
+#if (GCC_VERSION >= 4008)
+          vec_safe_length(self->cfg.inner->x_label_to_block_map)
+#else
+          VEC_length (basic_block, self->cfg.inner->x_label_to_block_map)
+#endif
+         )
          <=
          (unsigned int) uid)
         ) {
@@ -436,7 +445,9 @@ PyGccCfg_get_block_for_label(PyObject *s, PyObject *args)
                             "uid %i not found", uid);
     }
 
-    bb = VEC_index(basic_block, self->cfg.inner->x_label_to_block_map, uid);
+    bb = GCC_COMPAT_VEC_INDEX(basic_block,
+                              self->cfg.inner->x_label_to_block_map,
+                              uid);
 
     return PyGccBasicBlock_New(gcc_private_make_cfg_block(bb));
 }

@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -40,7 +40,20 @@ GCC_PUBLIC_API (void) gcc_cgraph_node_mark_in_use (gcc_cgraph_node node)
 GCC_PUBLIC_API (gcc_function_decl)
 gcc_cgraph_node_get_decl (gcc_cgraph_node node)
 {
-  return gcc_private_make_function_decl (node.inner->decl);
+  /* gcc 4.8 eliminated the
+       tree decl;
+     field of cgraph_node in favor of
+       struct symtab_node_base symbol;
+  */
+  tree decl;
+
+#if (GCC_VERSION >= 4008)
+  decl = node.inner->symbol.decl;
+#else
+  decl = node.inner->decl;
+#endif
+
+  return gcc_private_make_function_decl (decl);
 }
 
 GCC_PUBLIC_API (bool)
@@ -119,7 +132,16 @@ gcc_for_each_cgraph_node (bool (*cb) (gcc_cgraph_node node, void *user_data),
 {
   struct cgraph_node *node;
 
+  /*
+    gcc 4.7 introduced FOR_EACH_DEFINED_FUNCTION
+    gcc 4.8 eliminated: extern GTY(()) struct cgraph_node *cgraph_nodes;
+    FIXME: does this only visit *defined* functions then?
+  */
+#if (GCC_VERSION >= 4008)
+  FOR_EACH_DEFINED_FUNCTION(node)
+#else
   for (node = cgraph_nodes; node; node = node->next)
+#endif
     {
       if (cb (gcc_private_make_cgraph_node (node), user_data))
 	{

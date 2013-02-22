@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@
 #include "c-family/c-pragma.h"	/* for parse_in */
 #include "basic-block.h"
 #include "rtl.h"
+
+#include "gcc-private-compat.h"
 
 /***********************************************************
    gcc_cfg
@@ -67,10 +69,10 @@ gcc_cfg_for_each_block (gcc_cfg cfg,
 
   for (i = 0; i < cfg.inner->x_n_basic_blocks; i++)
     {
-      if (cb (gcc_private_make_cfg_block (VEC_index (basic_block,
-						     cfg.inner->
-						     x_basic_block_info, i)),
-	      user_data))
+      basic_block bb = GCC_COMPAT_VEC_INDEX (basic_block,
+                                             cfg.inner->x_basic_block_info,
+                                             i);
+      if (cb (gcc_private_make_cfg_block (bb), user_data))
 	{
 	  return true;
 	}
@@ -103,14 +105,19 @@ gcc_cfg_block_get_index (gcc_cfg_block block)
 }
 
 static bool
-for_each_edge (VEC (edge, gc) * vec_edges,
+for_each_edge (
+#if (GCC_VERSION >= 4008)
+               vec<edge, va_gc> *vec_edges,
+#else
+               VEC (edge, gc) * vec_edges,
+#endif
 	       bool (*cb) (gcc_cfg_edge edge, void *user_data),
 	       void *user_data)
 {
   int i;
   edge e;
 
-  FOR_EACH_VEC_ELT (edge, vec_edges, i, e)
+  GCC_COMPAT_FOR_EACH_VEC_ELT (edge, vec_edges, i, e)
   {
     if (cb (gcc_private_make_cfg_edge (e), user_data))
       {
@@ -139,6 +146,29 @@ gcc_cfg_block_for_each_succ_edge (gcc_cfg_block block,
   return for_each_edge (block.inner->succs, cb, user_data);
 }
 
+/* In GCC 4.7, struct basic_block_def had a
+     struct gimple_bb_info * gimple;
+   within its il union.
+
+   In GCC 4.8, this became:
+     struct gimple_bb_info gimple
+   i.e. it is no longer dereferenced
+*/
+static struct gimple_bb_info *
+checked_get_gimple_info(gcc_cfg_block block)
+{
+  if (block.inner->flags & BB_RTL)
+    {
+      return NULL;
+    }
+
+#if (GCC_VERSION >= 4008)
+  return &block.inner->il.gimple;
+#else
+  return block.inner->il.gimple;
+#endif
+}
+
 
 GCC_IMPLEMENT_PUBLIC_API (bool)
 gcc_cfg_block_for_each_gimple_phi (gcc_cfg_block block,
@@ -147,18 +177,16 @@ gcc_cfg_block_for_each_gimple_phi (gcc_cfg_block block,
 				   void *user_data)
 {
   gimple_stmt_iterator gsi;
+  struct gimple_bb_info *info;
 
-  if (block.inner->flags & BB_RTL)
+  info = checked_get_gimple_info(block);
+
+  if (NULL == info)
     {
       return false;
     }
 
-  if (NULL == block.inner->il.gimple)
-    {
-      return false;
-    }
-
-  for (gsi = gsi_start (block.inner->il.gimple->seq);
+  for (gsi = gsi_start (info->seq);
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
 
@@ -178,18 +206,16 @@ gcc_cfg_block_for_each_gimple (gcc_cfg_block block,
 			       void *user_data)
 {
   gimple_stmt_iterator gsi;
+  struct gimple_bb_info *info;
 
-  if (block.inner->flags & BB_RTL)
+  info = checked_get_gimple_info(block);
+
+  if (NULL == info)
     {
       return false;
     }
 
-  if (NULL == block.inner->il.gimple)
-    {
-      return false;
-    }
-
-  for (gsi = gsi_start (block.inner->il.gimple->seq);
+  for (gsi = gsi_start (info->seq);
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
 
