@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 */
 
 int
-gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
+PyGccOption_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
 {
     const char *text;
     static const char *kwlist[] = {"text", NULL};
@@ -49,7 +49,7 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     /*
       We need to call _track manually as we're not using PyGccWrapper_New():
     */
-    gcc_python_wrapper_track(&self->head);
+    PyGccWrapper_Track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist,
                                       &text)) {
@@ -59,7 +59,7 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     /* Search for text within cl_options */
     for (i = 0; i < cl_options_count; i++) {
         if (0 == strcmp(cl_options[i].opt_text, text)) {
-            self->opt_code = (enum opt_code)i;
+            self->opt = gcc_private_make_option((enum opt_code)i);
             return 0; /* success */
         }
     }
@@ -72,13 +72,29 @@ gcc_Option_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *
-gcc_Option_repr(PyGccOption * self)
+PyGccOption_repr(PyGccOption * self)
 {
-    return gcc_python_string_from_format("gcc.Option('%s')",
-                                         gcc_python_option_to_cl_option(self)->opt_text);
+    return PyGccString_FromFormat("gcc.Option('%s')",
+                                         PyGcc_option_to_cl_option(self)->opt_text);
 }
 
-int gcc_python_option_is_enabled(enum opt_code opt_code)
+/*
+  In GCC 4.6 and 4.7, "warn_format" is a global, declared in
+  c-family/c-common.h
+
+  In GCC 4.8, it became a macro in options.h to:
+      #define warn_format global_options.x_warn_format
+*/
+
+#if (GCC_VERSION < 4008)
+/*
+  Weakly import warn_format; it's not available in lto1
+  (during link-time optimization)
+*/
+__typeof__ (warn_format) warn_format __attribute__ ((weak));
+#endif
+
+int PyGcc_option_is_enabled(enum opt_code opt_code)
 {
     /* Returns 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
        or -1 if it isn't a simple on-off switch.  */
@@ -119,15 +135,19 @@ int gcc_python_option_is_enabled(enum opt_code opt_code)
         /*  We don't know: */
         return -1;
 
+#if (GCC_VERSION >= 4008)
+    case OPT_Wformat_:
+#else
     case OPT_Wformat:
+#endif
         return warn_format;
     }
 }
 
 PyObject *
-gcc_Option_is_enabled(PyGccOption * self, void *closure)
+PyGccOption_is_enabled(PyGccOption * self, void *closure)
 {
-    int i = gcc_python_option_is_enabled(self->opt_code);
+    int i = PyGcc_option_is_enabled(self->opt.inner);
 
     if (i == 1) {
         return PyBool_FromLong(1);
@@ -138,31 +158,31 @@ gcc_Option_is_enabled(PyGccOption * self, void *closure)
 
     PyErr_Format(PyExc_NotImplementedError,
                  "The plugin does not know how to determine if gcc.Format('%s') is implemented",
-                 gcc_python_option_to_cl_option(self)->opt_text);
+                 PyGcc_option_to_cl_option(self)->opt_text);
     return NULL;
 }
 
 const struct cl_option*
-gcc_python_option_to_cl_option(PyGccOption * self)
+PyGcc_option_to_cl_option(PyGccOption * self)
 {
     assert(self);
-    assert(self->opt_code >= 0);
-    assert(self->opt_code < cl_options_count);
+    assert(self->opt.inner >= 0);
+    assert(self->opt.inner < cl_options_count);
 
-    return &cl_options[self->opt_code];
+    return &cl_options[self->opt.inner];
 }
 
 PyObject *
-gcc_python_make_wrapper_opt_code(enum opt_code opt_code)
+PyGccOption_New(gcc_option opt)
 {
     struct PyGccOption *opt_obj = NULL;
 
-    opt_obj = PyGccWrapper_New(struct PyGccOption, &gcc_OptionType);
+    opt_obj = PyGccWrapper_New(struct PyGccOption, &PyGccOption_TypeObj);
     if (!opt_obj) {
         goto error;
     }
 
-    opt_obj->opt_code = opt_code;
+    opt_obj->opt = opt;
 
     return (PyObject*)opt_obj;
 
@@ -171,7 +191,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccOption(PyGccOption *wrapper)
+PyGcc_WrtpMarkForPyGccOption(PyGccOption *wrapper)
 {
     /* empty */
 }

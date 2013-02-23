@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "diagnostic.h"
+#include "gcc-c-api/gcc-function.h"
+#include "gcc-c-api/gcc-location.h"
 
 /*
   Wrapper for GCC's (opt_pass *)
@@ -42,10 +44,22 @@ static bool impl_gate(void)
     PyObject *cfun_obj = NULL;
     PyObject* result_obj;
     int result;
-    location_t saved_loc = input_location;
+    gcc_location saved_loc = gcc_get_input_location();
+
+    /*
+       It appears that current_pass is not set by when gcc (4.7 at least) when
+       it invokes gate for an IPA_PASS within execute_ipa_summary_passes
+       (in gcc/passes.c), so we don't have a way of figuring out which pass
+       we were called on.
+
+       Reported as http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54959
+    */
+    if (NULL == current_pass) {
+        return true;
+    }
 
     assert(current_pass);
-    pass_obj = gcc_python_make_wrapper_pass(current_pass);
+    pass_obj = PyGccPass_New(current_pass);
     assert(pass_obj); /* we own a ref at this point */
 
     if (!PyObject_HasAttrString(pass_obj, "gate")) {
@@ -56,13 +70,15 @@ static bool impl_gate(void)
 
     /* Supply the current function, if any */
     if (cfun) {
+        gcc_function cf = gcc_get_current_function();
+
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
-        cfun_obj = gcc_python_make_wrapper_function(cfun);
+        gcc_set_input_location(gcc_function_get_start(cf));
+        cfun_obj = PyGccFunction_New(cf);
         if (!cfun_obj) {
-            gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
+            PyGcc_PrintException("Unhandled Python exception raised calling 'gate' method");
             Py_DECREF(pass_obj);
-            input_location = saved_loc;
+            gcc_set_input_location(saved_loc);
             return false;
         }
         result_obj = PyObject_CallMethod(pass_obj, (char*)"gate", (char*)"O",
@@ -75,14 +91,14 @@ static bool impl_gate(void)
     Py_DECREF(pass_obj);
 
     if (!result_obj) {
-        gcc_python_print_exception("Unhandled Python exception raised calling 'gate' method");
-        input_location = saved_loc;
+        PyGcc_PrintException("Unhandled Python exception raised calling 'gate' method");
+        gcc_set_input_location(saved_loc);
         return false;
     }
 
     result = PyObject_IsTrue(result_obj);
     Py_DECREF(result_obj);
-    input_location = saved_loc;
+    gcc_set_input_location(saved_loc);
     return result;
 }
 
@@ -91,21 +107,23 @@ static unsigned int impl_execute(void)
     PyObject *pass_obj;
     PyObject *cfun_obj = NULL;
     PyObject* result_obj;
-    location_t saved_loc = input_location;
+    gcc_location saved_loc = gcc_get_input_location();
 
     assert(current_pass);
-    pass_obj = gcc_python_make_wrapper_pass(current_pass);
+    pass_obj = PyGccPass_New(current_pass);
     assert(pass_obj); /* we own a ref at this point */
 
     /* Supply the current function, if any */
     if (cfun) {
+        gcc_function cf = gcc_get_current_function();
+
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
-        cfun_obj = gcc_python_make_wrapper_function(cfun);
+        gcc_set_input_location(gcc_function_get_start(cf));
+        cfun_obj = PyGccFunction_New(cf);
         if (!cfun_obj) {
-            gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
+            PyGcc_PrintException("Unhandled Python exception raised calling 'execute' method");
             Py_DECREF(pass_obj);
-            input_location = saved_loc;
+            gcc_set_input_location(saved_loc);
             return false;
         }
         result_obj = PyObject_CallMethod(pass_obj, (char*)"execute",
@@ -118,14 +136,14 @@ static unsigned int impl_execute(void)
     Py_DECREF(pass_obj);
 
     if (!result_obj) {
-        gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
-        input_location = saved_loc;
+        PyGcc_PrintException("Unhandled Python exception raised calling 'execute' method");
+        gcc_set_input_location(saved_loc);
         return 0;
     }
 
     if (result_obj == Py_None) {
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        gcc_set_input_location(saved_loc);
         return 0;
     }
 
@@ -133,7 +151,7 @@ static unsigned int impl_execute(void)
     if (PyInt_Check(result_obj)) {
         long result = PyInt_AS_LONG(result_obj);
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        gcc_set_input_location(saved_loc);
         return result;
     }
 #endif
@@ -141,7 +159,7 @@ static unsigned int impl_execute(void)
     if (PyLong_Check(result_obj)) {
         long result = PyLong_AsLong(result_obj);
         Py_DECREF(result_obj);
-        input_location = saved_loc;
+        gcc_set_input_location(saved_loc);
         return result;
     }
 
@@ -150,8 +168,8 @@ static unsigned int impl_execute(void)
                  "(type %.200s)",
                  Py_TYPE(result_obj)->tp_name);
     Py_DECREF(result_obj);
-    gcc_python_print_exception("Unhandled Python exception raised calling 'execute' method");
-    input_location = saved_loc;
+    PyGcc_PrintException("Unhandled Python exception raised calling 'execute' method");
+    gcc_set_input_location(saved_loc);
     return 0;
 }
 
@@ -169,7 +187,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     /*
       We need to call _track manually as we're not using PyGccWrapper_New():
     */
-    gcc_python_wrapper_track(&self->head);
+    PyGccWrapper_Track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "s:gcc.Pass.__init__", (char**)keywords,
@@ -184,7 +202,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     memset(pass, 0, sizeof_pass);
     pass->type = pass_type;
 
-    pass->name = gcc_python_strdup(name);
+    pass->name = PyGcc_strdup(name);
     /* does the name need to be unique?
        mapping from opt_pass ptr to callable?
        (the ID (as a long) is unique)
@@ -197,7 +215,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     pass->gate = impl_gate;
     pass->execute = impl_execute;
 
-    if (gcc_python_insert_new_wrapper_into_cache(&pass_wrapper_cache,
+    if (PyGcc_insert_new_wrapper_into_cache(&pass_wrapper_cache,
                                                  pass,
                                                  s)) {
         return -1;
@@ -208,7 +226,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
 }
 
 int
-gcc_GimplePass_init(PyObject *self, PyObject *args, PyObject *kwds)
+PyGccGimplePass_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return do_pass_init(self, args, kwds,
                         GIMPLE_PASS,
@@ -216,7 +234,7 @@ gcc_GimplePass_init(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 int
-gcc_RtlPass_init(PyObject *self, PyObject *args, PyObject *kwds)
+PyGccRtlPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return do_pass_init(self, args, kwds,
                         RTL_PASS,
@@ -224,7 +242,7 @@ gcc_RtlPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 int
-gcc_SimpleIpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
+PyGccSimpleIpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return do_pass_init(self, args, kwds,
                         SIMPLE_IPA_PASS,
@@ -232,7 +250,7 @@ gcc_SimpleIpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 int
-gcc_IpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
+PyGccIpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return do_pass_init(self, args, kwds,
                         IPA_PASS,
@@ -242,21 +260,32 @@ gcc_IpaPass_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 
 PyObject *
-gcc_Pass_repr(struct PyGccPass *self)
+PyGccPass_repr(struct PyGccPass *self)
 {
-     return gcc_python_string_from_format("%s(name='%s')",
+     return PyGccString_FromFormat("%s(name='%s')",
                                           Py_TYPE(self)->tp_name,
                                           self->pass->name);
 }
 
+/* In GCC 4.8, dump_enabled_p changed from acting on one pass to the current phase
+   (as of r192773) */
+#if (GCC_VERSION < 4008)
 PyObject *
-gcc_Pass_get_dump_enabled(struct PyGccPass *self, void *closure)
+PyGccPass_get_dump_enabled(struct PyGccPass *self, void *closure)
 {
     return PyBool_FromLong(dump_enabled_p(self->pass->static_pass_number));
 }
+#endif
+
+/* In GCC 4.8, this field became "pstate" */
+#if (GCC_VERSION >= 4008)
+  #define DFI_STATE(dfi) (dfi)->pstate
+#else
+  #define DFI_STATE(dfi) (dfi)->state
+#endif
 
 int
-gcc_Pass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure)
+PyGccPass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure)
 {
     struct dump_file_info *dfi = get_dump_file_info (self->pass->static_pass_number);
     assert(dfi);
@@ -266,29 +295,29 @@ gcc_Pass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure
         return -1;
     }
 
-    if (dfi->state == 0) {
+    if (DFI_STATE (dfi) == 0) {
         /* Dumping was disabled: */
         if (newbool) {
             /* Enabling: */
-            dfi->state = -1;
+            DFI_STATE (dfi) = -1;
             return 0;
         } else {
             /* No change: */
             return 0;
         }
     } else {
-        if (dfi->state < 0) {
+        if (DFI_STATE (dfi) < 0) {
             /* Dumping was enabled but has not yet started */
             if (newbool) {
                 /* No change: */
                 return 0;
             } else {
                 /* Disabling: */
-                dfi->state = 0;
+                DFI_STATE (dfi) = 0;
                 return 0;
             }
         } else {
-            assert(dfi->state > 0);
+            assert(DFI_STATE (dfi) > 0);
             /* Dumping was enabled and has already started */
             if (newbool) {
                 /* No change: */
@@ -304,7 +333,7 @@ gcc_Pass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closure
 }
 
 PyObject *
-gcc_Pass_get_roots(PyObject *cls, PyObject *noargs)
+PyGccPass_get_roots(PyObject *cls, PyObject *noargs)
 {
     /*
       There are 5 "roots" for the pass tree; see gcc/passes.c
@@ -318,7 +347,7 @@ gcc_Pass_get_roots(PyObject *cls, PyObject *noargs)
     }
 
 #define SET_PASS(IDX, P) \
-    passobj = gcc_python_make_wrapper_pass(P); \
+    passobj = PyGccPass_New(P); \
     if (!passobj) goto error;                  \
     PyTuple_SET_ITEM(result, IDX, passobj);    \
     (void)0;
@@ -364,7 +393,7 @@ find_pass_by_name(const char *name, struct opt_pass *pass_list)
 
 
 PyObject *
-gcc_Pass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
+PyGccPass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
 {
     const char *name;
     const char *keywords[] = {"name",
@@ -380,7 +409,7 @@ gcc_Pass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
 #define SEARCH_WITHIN_LIST(PASS_LIST) \
     result = find_pass_by_name(name, (PASS_LIST));   \
     if (result) {                                    \
-        return gcc_python_make_wrapper_pass(result); \
+        return PyGccPass_New(result); \
     }
 
     SEARCH_WITHIN_LIST(all_lowering_passes);
@@ -421,7 +450,7 @@ impl_register(struct PyGccPass *self, PyObject *args, PyObject *kwargs,
 }
 
 PyObject *
-gcc_Pass_register_before(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
+PyGccPass_register_before(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
 {
     return impl_register(self, args, kwargs,
                          PASS_POS_INSERT_BEFORE,
@@ -429,7 +458,7 @@ gcc_Pass_register_before(struct PyGccPass *self, PyObject *args, PyObject *kwarg
 }
 
 PyObject *
-gcc_Pass_register_after(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
+PyGccPass_register_after(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
 {
     return impl_register(self, args, kwargs,
                          PASS_POS_INSERT_AFTER,
@@ -437,7 +466,7 @@ gcc_Pass_register_after(struct PyGccPass *self, PyObject *args, PyObject *kwargs
 }
 
 PyObject *
-gcc_Pass_replace(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
+PyGccPass_replace(struct PyGccPass *self, PyObject *args, PyObject *kwargs)
 {
     return impl_register(self, args, kwargs,
                          PASS_POS_REPLACE,
@@ -451,16 +480,16 @@ get_type_for_pass_type(enum opt_pass_type pt)
     default: assert(0);
 
     case GIMPLE_PASS:
-	return &gcc_GimplePassType;
+	return &PyGccGimplePass_TypeObj;
 
     case RTL_PASS:
-	return &gcc_RtlPassType;
+	return &PyGccRtlPass_TypeObj;
 
     case SIMPLE_IPA_PASS:
-	return &gcc_SimpleIpaPassType;
+	return &PyGccSimpleIpaPass_TypeObj;
 
     case IPA_PASS:
-	return &gcc_IpaPassType;
+	return &PyGccIpaPass_TypeObj;
     }
 };
 
@@ -493,7 +522,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccPass(PyGccPass *wrapper)
+PyGcc_WrtpMarkForPyGccPass(PyGccPass *wrapper)
 {
     /*
       This function is empty: struct opt_pass does not have a GTY()
@@ -503,9 +532,9 @@ wrtp_mark_for_PyGccPass(PyGccPass *wrapper)
 }
 
 PyObject *
-gcc_python_make_wrapper_pass(struct opt_pass *pass)
+PyGccPass_New(struct opt_pass *pass)
 {
-    return gcc_python_lazily_create_wrapper(&pass_wrapper_cache,
+    return PyGcc_LazilyCreateWrapper(&pass_wrapper_cache,
 					    pass,
 					    real_make_pass_wrapper);
 }

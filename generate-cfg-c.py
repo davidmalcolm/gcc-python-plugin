@@ -22,7 +22,8 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("basic-block.h")
+cu.add_include('gcc-c-api/gcc-cfg.h')
+#cu.add_include("basic-block.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -34,42 +35,44 @@ def generate_edge():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Edge_getset_table',
+    getsettable = PyGetSetDefTable('PyGccEdge_getset_table',
                                    [PyGetSetDef('src',
-                                                cu.add_simple_getter('gcc_Edge_get_src',
+                                                cu.add_simple_getter('PyGccEdge_get_src',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(self->e->src)'),
+                                                                     'PyGccBasicBlock_New(gcc_cfg_edge_get_src(self->e))'),
                                                 None,
                                                 'The source gcc.BasicBlock of this edge'),
                                     PyGetSetDef('dest',
-                                                cu.add_simple_getter('gcc_Edge_get_dest',
+                                                cu.add_simple_getter('PyGccEdge_get_dest',
                                                                      'PyGccEdge',
-                                                                     'gcc_python_make_wrapper_basic_block(self->e->dest)'),
+                                                                     'PyGccBasicBlock_New(gcc_cfg_edge_get_dest(self->e))'),
                                                 None,
                                                 'The destination gcc.BasicBlock of this edge')],
-                                   identifier_prefix = 'gcc_Edge',
+                                   identifier_prefix = 'PyGccEdge',
                                    typename = 'PyGccEdge')
-    for flag in ('EDGE_FALLTHRU', 'EDGE_ABNORMAL', 'EDGE_ABNORMAL_CALL',
-                 'EDGE_EH', 'EDGE_FAKE', 'EDGE_DFS_BACK', 'EDGE_CAN_FALLTHRU',
-                 'EDGE_IRREDUCIBLE_LOOP', 'EDGE_SIBCALL', 'EDGE_LOOP_EXIT',
-                 'EDGE_TRUE_VALUE', 'EDGE_FALSE_VALUE', 'EDGE_EXECUTABLE',
-                 'EDGE_CROSSING'):
-        assert flag.startswith('EDGE_')
-        flagname = flag[5:].lower()
+
+    # We only expose the subset of the flags exposed by gcc-c-api
+    for attrname, flaggetter in [('true_value', 'is_true_value'),
+                                 ('false_value', 'is_false_value'),
+                                 ('loop_exit', 'is_loop_exit'),
+                                 ('can_fallthru', 'get_can_fallthru'),
+                                 ('eh', 'is_eh'),
+                                 ]:
         getsettable.add_simple_getter(cu,
-                                      flagname,
-                                      'PyBool_FromLong(self->e->flags & %s)' % flag,
-                                      'Boolean, corresponding to flag %s' % flag)
+                                      attrname,
+                                      'PyBool_FromLong(gcc_cfg_edge_%s(self->e))' % flaggetter,
+                                      None)
+
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_EdgeType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccEdge_TypeObj',
                           localname = 'Edge',
                           tp_name = 'gcc.Edge',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccEdge',
                           tp_new = 'PyType_GenericNew',
-                          #tp_repr = '(reprfunc)gcc_Edge_repr',
-                          #tp_str = '(reprfunc)gcc_Edge_repr',
+                          #tp_repr = '(reprfunc)PyGccEdge_repr',
+                          #tp_str = '(reprfunc)PyGccEdge_repr',
                           tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
@@ -85,44 +88,44 @@ def generate_basic_block():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_BasicBlock_getset_table',
+    getsettable = PyGetSetDefTable('PyGccBasicBlock_getset_table',
                                    [PyGetSetDef('preds',
-                                                'gcc_BasicBlock_get_preds',
+                                                'PyGccBasicBlock_get_preds',
                                                 None,
                                                 'The list of predecessor gcc.Edge instances leading into this block'),
                                     PyGetSetDef('succs',
-                                                'gcc_BasicBlock_get_succs',
+                                                'PyGccBasicBlock_get_succs',
                                                 None,
                                                 'The list of successor gcc.Edge instances leading out of this block'),
                                     PyGetSetDef('gimple',
-                                                'gcc_BasicBlock_get_gimple',
+                                                'PyGccBasicBlock_get_gimple',
                                                 None,
                                                 'The list of gcc.Gimple instructions, if appropriate for this pass, or None'),
                                     PyGetSetDef('phi_nodes',
-                                                'gcc_BasicBlock_get_phi_nodes',
+                                                'PyGccBasicBlock_get_phi_nodes',
                                                 None,
                                                 'The list of gcc.GimplePhi phoney functions, if appropriate for this pass, or None'),
                                     PyGetSetDef('rtl',
-                                                'gcc_BasicBlock_get_rtl',
+                                                'PyGccBasicBlock_get_rtl',
                                                 None,
                                                 'The list of gcc.Rtl instructions, if appropriate for this pass, or None'),
                                     ],
-                                   identifier_prefix='gcc_BasicBlock',
+                                   identifier_prefix='PyGccBasicBlock',
                                    typename='PyGccBasicBlock')
     getsettable.add_simple_getter(cu,
                                   'index',
-                                  'gcc_python_int_from_long(self->bb->index)',
+                                  'PyGccInt_FromLong(gcc_cfg_block_get_index(self->bb))',
                                   None)
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_BasicBlockType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccBasicBlock_TypeObj',
                           localname = 'BasicBlock',
                           tp_name = 'gcc.BasicBlock',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccBasicBlock',
                           tp_new = 'PyType_GenericNew',
-                          #tp_repr = '(reprfunc)gcc_BasicBlock_repr',
-                          #tp_str = '(reprfunc)gcc_BasicBlock_repr',
+                          tp_repr = '(reprfunc)PyGccBasicBlock_repr',
+                          #tp_str = '(reprfunc)PyGccBasicBlock_repr',
                           tp_getset = getsettable.identifier,
                           )
     cu.add_defn(pytype.c_defn())
@@ -138,38 +141,38 @@ def generate_cfg():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Cfg_getset_table',
+    getsettable = PyGetSetDefTable('PyGccCfg_getset_table',
                                    [PyGetSetDef('basic_blocks',
-                                                'gcc_Cfg_get_basic_blocks',
+                                                'PyGccCfg_get_basic_blocks',
                                                 None,
                                                 'The list of gcc.BasicBlock instances in this graph'),
                                     PyGetSetDef('entry',
-                                                cu.add_simple_getter('gcc_Cfg_get_entry',
+                                                cu.add_simple_getter('PyGccCfg_get_entry',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_entry_block_ptr)'),
+                                                                     'PyGccBasicBlock_New(gcc_cfg_get_entry(self->cfg))'),
                                                 None,
                                                 'The initial gcc.BasicBlock in this graph'),
                                     PyGetSetDef('exit', 
-                                                cu.add_simple_getter('gcc_Cfg_get_exit',
+                                                cu.add_simple_getter('PyGccCfg_get_exit',
                                                                      'PyGccCfg',
-                                                                     'gcc_python_make_wrapper_basic_block(self->cfg->x_exit_block_ptr)'),
+                                                                     'PyGccBasicBlock_New(gcc_cfg_get_exit(self->cfg))'),
                                                 None,
                                                 'The final gcc.BasicBlock in this graph'),
                                     ])
     cu.add_defn(getsettable.c_defn())
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_CfgType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccCfg_TypeObj',
                           localname = 'Cfg',
                           tp_name = 'gcc.Cfg',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccCfg',
                           tp_new = 'PyType_GenericNew',
-                          #tp_repr = '(reprfunc)gcc_Cfg_repr',
-                          #tp_str = '(reprfunc)gcc_Cfg_repr',
+                          #tp_repr = '(reprfunc)PyGccCfg_repr',
+                          #tp_str = '(reprfunc)PyGccCfg_repr',
                           tp_getset = getsettable.identifier,
                           )
-    methods = PyMethodTable('gcc_Cfg_methods', [])
+    methods = PyMethodTable('PyGccCfg_methods', [])
     methods.add_method('get_block_for_label',
-                       'gcc_Cfg_get_block_for_label',
+                       'PyGccCfg_get_block_for_label',
                        'METH_VARARGS',
                        "Given a gcc.LabelDecl, get the corresponding gcc.BasicBlock")
     cu.add_defn(methods.c_defn())

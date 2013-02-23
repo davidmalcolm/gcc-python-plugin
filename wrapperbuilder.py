@@ -26,11 +26,11 @@ def indent(lines):
 class PyGccWrapperTypeObject(PyTypeObject):
     """
     A PyTypeObject that's also a PyGccWrapperTypeObject
-    (with metaclass PyGccWrapperMetaType)
+    (with metaclass PyGccWrapperMeta_TypeObj)
     """
     def __init__(self, *args, **kwargs):
         PyTypeObject.__init__(self, *args, **kwargs)
-        self.ob_type = '&PyGccWrapperMetaType'
+        self.ob_type = '&PyGccWrapperMeta_TypeObj'
 
     def c_defn(self):
         result = '\n'
@@ -39,7 +39,7 @@ class PyGccWrapperTypeObject(PyTypeObject):
                                          '{\n        .ht_type = {\n%s}' % indent(indent(self.c_initializer())))
         result += '    },\n'
         result += self.c_src_field_value('wrtp_mark',
-                                         'wrtp_mark_for_%s' % self.struct_name,
+                                         'PyGcc_WrtpMarkFor%s' % self.struct_name,
                                          cast='wrtp_marker')
         result += '};\n'
         result +='\n'

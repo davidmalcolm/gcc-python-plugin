@@ -1,5 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+.. Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ There are actually five "roots" to this tree:
          gcc.PROP_cfg                Does the gcc.Function have a non-None "cfg"?   `"cfg"`                     `"*free_cfg"`
          gcc.PROP_referenced_vars    Do we have data on which functions reference   `"\*referenced_vars"`       (none)
 	                             which variables? (Dataflow analysis, aka
-				     DFA)
+				     DFA).  This flag was removed in GCC 4.8
          gcc.PROP_ssa                Is the GIMPLE in SSA form?                     `"ssa"`                     `"expand"`
          gcc.PROP_no_crit_edges      Have all critical edges within the CFG been    `"crited"`                  (none)
                                      split?
@@ -121,7 +121,7 @@ There are actually five "roots" to this tree:
    .. py:attribute:: dump_enabled
 
       (boolean) Is dumping enabled for this pass?  Set this attribute to `True`
-      to enable dumping.
+      to enable dumping.  Not available from GCC 4.8 onwards
 
 There are four subclasses of :py:class:`gcc.Pass`:
 
@@ -178,7 +178,7 @@ Here's an example::
    # ...and wire it up, after the "cfg" pass:
    my_pass.register_after('cfg')
 
-For :py:class:`gcc.GimplePass` and :py:class:`gcc.IpaPass`, the signatures of
+For :py:class:`gcc.GimplePass` and :py:class:`gcc.RtlPass`, the signatures of
 `gate` and `execute` are:
 
    .. method:: gate(self, fun)
@@ -191,6 +191,12 @@ of `gate` and `execute` are:
 
    .. method:: gate(self)
    .. method:: execute(self)
+
+.. warning::
+
+   Unfortunately it doesn't appear to be possible to implement `gate()` for
+   `gcc.IpaPass` yet; for now, the `gate()` method on such passes will not be
+   called.  See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54959
 
 If an unhandled exception is raised within `gate` or `execute`, it will lead
 to a GCC error:

@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -24,9 +24,17 @@
 #include "cp/cp-tree.h"
 #include "gimple.h"
 
-#include "cp/cp-tree.h" /* for TFF_* for use by gcc_FunctionDecl_get_fullname */
+#include "cp/cp-tree.h" /* for TFF_* for use by PyGccFunctionDecl_get_fullname */
 
 #include "tree-flow.h" /* for op_symbol_code */
+
+#include "gcc-c-api/gcc-tree.h"
+#include "gcc-c-api/gcc-type.h"
+#include "gcc-c-api/gcc-private-compat.h" /* for now */
+
+extern PyGccWrapperTypeObject PyGccIntegerCst_TypeObj;
+
+__typeof__ (lang_check_failed) lang_check_failed __attribute__ ((weak));
 
 
 /*
@@ -55,6 +63,14 @@ raise_cplusplus_only(const char *what)
                         what);
 }
 
+static PyObject *
+raise_not_during_lto(const char *what)
+{
+    return PyErr_Format(PyExc_RuntimeError,
+                        "%s is not available during link-time optimization",
+                        what);
+}
+
 //#include "rtl.h"
 /*
   "struct rtx_def" is declarted within rtl.h, c.f:
@@ -74,15 +90,15 @@ raise_cplusplus_only(const char *what)
 static PyObject *
 do_pretty_print(struct PyGccTree * self, int spc, int flags)
 {
-    PyObject *ppobj = gcc_python_pretty_printer_new();
+    PyObject *ppobj = PyGccPrettyPrinter_New();
     PyObject *result = NULL;
     if (!ppobj) {
 	return NULL;
     }
 
-    dump_generic_node (gcc_python_pretty_printer_as_pp(ppobj),
-		       self->t, spc, flags, 0);
-    result = gcc_python_pretty_printer_as_string(ppobj);
+    dump_generic_node (PyGccPrettyPrinter_as_pp(ppobj),
+		       self->t.inner, spc, flags, 0);
+    result = PyGccPrettyPrinter_as_string(ppobj);
     if (!result) {
 	goto error;
     }
@@ -95,34 +111,83 @@ do_pretty_print(struct PyGccTree * self, int spc, int flags)
     return NULL;
 }
 
+PyObject *
+PyGccBlock_New(gcc_block t)
+{
+    return PyGccTree_New(gcc_block_as_gcc_tree(t));
+}
 
 PyObject *
-gcc_Tree_str(struct PyGccTree * self)
+PyGccPointerType_New(gcc_pointer_type t)
+{
+    return PyGccTree_New(gcc_pointer_type_as_gcc_tree(t));
+}
+
+PyObject *
+PyGccCaseLabelExpr_New(gcc_case_label_expr t)
+{
+    return PyGccTree_New(gcc_case_label_expr_as_gcc_tree(t));
+}
+
+PyObject *
+PyGccTree_str(struct PyGccTree * self)
 {
     return do_pretty_print(self, 0, 0);
 }
 
 long
-gcc_Tree_hash(struct PyGccTree * self)
+PyGccTree_hash(struct PyGccTree * self)
 {
+    if (Py_TYPE(self) == (PyTypeObject*)&PyGccComponentRef_TypeObj) {
+        return (long)TREE_OPERAND(self->t.inner, 0) ^ (long)TREE_OPERAND(self->t.inner, 1);
+    }
+
+    if (Py_TYPE(self) == (PyTypeObject*)&PyGccIntegerCst_TypeObj) {
+        /* Ensure that hash(cst) == hash(int(cst)) */
+        PyObject *constant = PyGccIntegerConstant_get_constant(self, NULL);
+        long result;
+        if (!constant) {
+            return -1;
+        }
+        result = PyObject_Hash(constant);
+        Py_DECREF(constant);
+        return result;
+    }
+
     /* Use the ptr as the hash value: */
-    return (long)self->t;
+    return (long)self->t.inner;
 }
 
 
 PyObject *
-gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
+PyGccTree_richcompare(PyObject *o1, PyObject *o2, int op)
 {
     struct PyGccTree *treeobj1;
     struct PyGccTree *treeobj2;
     int cond;
     PyObject *result_obj;
 
-    if (!PyObject_TypeCheck(o1, (PyTypeObject*)&gcc_TreeType)) {
+    /* Specialcases: */
+    if (Py_TYPE(o1) == (PyTypeObject*)&PyGccIntegerCst_TypeObj) {
+        o1 = PyGccIntegerConstant_get_constant((struct PyGccTree *)o1, NULL);
+        if (!o1) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o1);
+        return result_obj;
+    }
+    if (Py_TYPE(o2) == (PyTypeObject*)&PyGccIntegerCst_TypeObj) {
+        o2 = PyGccIntegerConstant_get_constant((struct PyGccTree *)o2, NULL);
+        if (!o2) { return NULL; }
+        result_obj = PyObject_RichCompare(o1, o2, op);
+        Py_DECREF(o2);
+        return result_obj;
+    }
+
+    if (!PyObject_TypeCheck(o1, (PyTypeObject*)&PyGccTree_TypeObj)) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
-    if (!PyObject_TypeCheck(o2, (PyTypeObject*)&gcc_TreeType)) {
+    if (!PyObject_TypeCheck(o2, (PyTypeObject*)&PyGccTree_TypeObj)) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
@@ -130,13 +195,35 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
     treeobj1 = (struct PyGccTree *)o1;
     treeobj2 = (struct PyGccTree *)o2;
 
+    if (Py_TYPE(o1) == (PyTypeObject*)&PyGccComponentRef_TypeObj) {
+        if (Py_TYPE(o2) == (PyTypeObject*)&PyGccComponentRef_TypeObj) {
+            switch (op) {
+            case Py_EQ:
+                cond = ((TREE_OPERAND(treeobj1->t.inner, 0) == TREE_OPERAND(treeobj2->t.inner, 0)) &&
+                        (TREE_OPERAND(treeobj1->t.inner, 1) == TREE_OPERAND(treeobj2->t.inner, 1)));
+                break;
+
+            case Py_NE:
+                cond = !((TREE_OPERAND(treeobj1->t.inner, 0) == TREE_OPERAND(treeobj2->t.inner, 0)) &&
+                         (TREE_OPERAND(treeobj1->t.inner, 1) == TREE_OPERAND(treeobj2->t.inner, 1)));
+                break;
+
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+            result_obj = cond ? Py_True : Py_False;
+            goto out;
+        }
+    }
+
     switch (op) {
     case Py_EQ:
-	cond = (treeobj1->t == treeobj2->t);
+	cond = (treeobj1->t.inner == treeobj2->t.inner);
 	break;
 
     case Py_NE:
-	cond = (treeobj1->t != treeobj2->t);
+	cond = (treeobj1->t.inner != treeobj2->t.inner);
 	break;
 
     default:
@@ -151,45 +238,45 @@ gcc_Tree_richcompare(PyObject *o1, PyObject *o2, int op)
 }
 
 PyObject *
-gcc_Tree_get_str_no_uid(struct PyGccTree *self, void *closure)
+PyGccTree_get_str_no_uid(struct PyGccTree *self, void *closure)
 {
     return do_pretty_print(self, 0, TDF_NOUID);
 }
 
 PyObject *
-gcc_Tree_get_symbol(PyObject *cls, PyObject *args)
+PyGccTree_get_symbol(PyObject *cls, PyObject *args)
 {
     enum tree_code code;
 
-    if (-1 == gcc_python_tree_type_object_as_tree_code(cls, &code)) {
+    if (-1 == PyGcc_tree_type_object_as_tree_code(cls, &code)) {
         PyErr_SetString(PyExc_TypeError,
                         "no symbol associated with this type");
         return NULL;
     }
 
-    return gcc_python_string_from_string(op_symbol_code(code));
+    return PyGccString_FromString(op_symbol_code(code));
 }
 
 PyObject *
-gcc_Declaration_repr(struct PyGccTree * self)
+PyGccDeclaration_repr(struct PyGccTree * self)
 {
     PyObject *name = NULL;
     PyObject *result = NULL;
 
-    if (DECL_NAME(self->t)) {
-	name = gcc_Declaration_get_name(self, NULL);
+    if (DECL_NAME(self->t.inner)) {
+	name = PyGccDeclaration_get_name(self, NULL);
 	if (!name) {
 	    goto error;
 	}
 
-        result = gcc_python_string_from_format("%s('%s')",
+        result = PyGccString_FromFormat("%s('%s')",
                                                Py_TYPE(self)->tp_name,
-                                               gcc_python_string_as_string(name));
+                                               PyGccString_AsString(name));
 	Py_DECREF(name);
     } else {
-        result = gcc_python_string_from_format("%s(%u)",
+        result = PyGccString_FromFormat("%s(%u)",
 				     Py_TYPE(self)->tp_name,
-				     DECL_UID (self->t));
+				     DECL_UID (self->t.inner));
     }
 
     return result;
@@ -200,7 +287,7 @@ error:
 }
 
 PyObject *
-gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
+PyGccFunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
 {
     const char *str;
 
@@ -208,29 +295,85 @@ gcc_FunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
         return raise_cplusplus_only("attribute 'fullname'");
     }
 
-    str = decl_as_string(self->t,
+    str = decl_as_string(self->t.inner,
                          TFF_DECL_SPECIFIERS
                          |TFF_RETURN_TYPE
                          |TFF_FUNCTION_DEFAULT_ARGUMENTS
                          |TFF_EXCEPTION_SPECIFICATION);
-    return gcc_python_string_from_string(str);
+    return PyGccString_FromString(str);
 }
 
 PyObject *
-gcc_IdentifierNode_repr(struct PyGccTree * self)
+PyGccArrayRef_repr(PyObject *self)
 {
-    if (IDENTIFIER_POINTER(self->t)) {
-        return gcc_python_string_from_format("%s(name='%s')",
+    PyObject *array_repr = NULL;
+    PyObject *index_repr = NULL;
+    PyObject *result = NULL;
+
+    array_repr = PyGcc_GetReprOfAttribute(self, "array");
+    if (!array_repr) {
+        goto error;
+    }
+    index_repr =PyGcc_GetReprOfAttribute(self, "index");
+    if (!index_repr) {
+        goto error;
+    }
+
+    result = PyGccString_FromFormat("%s(array=%s, index=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           PyGccString_AsString(array_repr),
+                                           PyGccString_AsString(index_repr));
+
+ error:
+    Py_XDECREF(array_repr);
+    Py_XDECREF(index_repr);
+
+    return result;
+}
+
+PyObject *
+PyGccComponentRef_repr(PyObject *self)
+{
+    PyObject *target_repr = NULL;
+    PyObject *field_repr = NULL;
+    PyObject *result = NULL;
+
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
+    if (!target_repr) {
+        goto error;
+    }
+    field_repr = PyGcc_GetReprOfAttribute(self, "field");
+    if (!field_repr) {
+        goto error;
+    }
+
+    result = PyGccString_FromFormat("%s(target=%s, field=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           PyGccString_AsString(target_repr),
+                                           PyGccString_AsString(field_repr));
+
+ error:
+    Py_XDECREF(target_repr);
+    Py_XDECREF(field_repr);
+
+    return result;
+}
+
+PyObject *
+PyGccIdentifierNode_repr(struct PyGccTree * self)
+{
+    if (IDENTIFIER_POINTER(self->t.inner)) {
+        return PyGccString_FromFormat("%s(name='%s')",
                                              Py_TYPE(self)->tp_name,
-                                             IDENTIFIER_POINTER(self->t));
+                                             IDENTIFIER_POINTER(self->t.inner));
     } else {
-        return gcc_python_string_from_format("%s(name=None)",
+        return PyGccString_FromFormat("%s(name=None)",
                                              Py_TYPE(self)->tp_name);
     }
 }
 
 PyObject *
-gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
+PyGccType_get_attributes(struct PyGccTree *self, void *closure)
 {
     /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
        "A TREE_LIST of IDENTIFIER nodes of the attributes that apply
@@ -257,10 +400,10 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
     if (!result) {
         return NULL;
     }
-    for (attr = TYPE_ATTRIBUTES(self->t); attr; attr = TREE_CHAIN(attr)) {
+    for (attr = TYPE_ATTRIBUTES(self->t.inner); attr; attr = TREE_CHAIN(attr)) {
         const char *attrname = IDENTIFIER_POINTER(TREE_PURPOSE(attr));
         PyObject *values;
-        values = gcc_python_tree_make_list_from_tree_list_chain(TREE_VALUE(attr));
+        values = PyGcc_TreeMakeListFromTreeList(TREE_VALUE(attr));
         if (!values) {
             goto error;
         }
@@ -279,27 +422,37 @@ gcc_Type_get_attributes(struct PyGccTree *self, void *closure)
     return NULL;
 }
 
+/*
+  Weakly import c_sizeof_or_alignof_type; it's not available in lto1
+  (link-time optimization)
+*/
+__typeof__ (c_sizeof_or_alignof_type) c_sizeof_or_alignof_type __attribute__ ((weak));
+
 PyObject *
-gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
+PyGccType_get_sizeof(struct PyGccTree *self, void *closure)
 {
+    if (NULL == c_sizeof_or_alignof_type) {
+        return raise_not_during_lto("Type.sizeof");
+    }
+
     /*
       c_sizeof_or_alignof_type wants a location; we use a fake one
     */
-    tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t, true, 0);
+    tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t.inner, true, 0);
     PyObject *str;
 
     /* This gives us either an INTEGER_CST or the dummy error type: */
     if (INTEGER_CST == TREE_CODE(t_sizeof)) {
-        return gcc_python_int_from_double_int(TREE_INT_CST(t_sizeof),
+        return PyGcc_int_from_double_int(TREE_INT_CST(t_sizeof),
                                               1);
     }
 
     /* Error handling: */
-    str = gcc_Tree_str(self);
+    str = PyGccTree_str(self);
     if (str) {
         PyErr_Format(PyExc_TypeError,
                      "type \"%s\" does not have a \"sizeof\"",
-                     gcc_python_string_as_string(str));
+                     PyGccString_AsString(str));
         Py_DECREF(str);
     } else {
         PyErr_Format(PyExc_TypeError,
@@ -308,14 +461,36 @@ gcc_Type_get_sizeof(struct PyGccTree *self, void *closure)
     return NULL;
 }
 
+__typeof__ (c_common_signed_type) c_common_signed_type __attribute__ ((weak));
+
 PyObject *
-gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
+PyGccIntegerType_get_signed_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_signed_type)
+        return raise_not_during_lto("gcc.IntegerType.signed_equivalent");
+
+    return PyGccTree_New(gcc_private_make_tree(c_common_signed_type(self->t.inner)));
+}
+
+__typeof__ (c_common_unsigned_type) c_common_unsigned_type __attribute__ ((weak));
+
+PyObject *
+PyGccIntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure)
+{
+    if (NULL == c_common_unsigned_type)
+        return raise_not_during_lto("gcc.IntegerType.unsigned_equivalent");
+
+    return PyGccTree_New(gcc_private_make_tree(c_common_unsigned_type(self->t.inner)));
+}
+
+PyObject *
+PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;
     PyObject *item;
     int i, size;
     tree iter;
-    tree head = TYPE_ARG_TYPES(self->t);
+    tree head = TYPE_ARG_TYPES(self->t.inner);
 
     /* Get length of chain */
     for (size = 0, iter = head;
@@ -343,7 +518,7 @@ gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 
         assert(i<size);
 
-	item = gcc_python_make_wrapper_tree(TREE_VALUE(iter));
+	item = PyGccTree_New(gcc_private_make_tree(TREE_VALUE(iter)));
 	if (!item) {
 	    goto error;
 	}
@@ -361,13 +536,13 @@ gcc_FunctionType_get_argument_types(struct PyGccTree * self, void *closure)
 }
 
 PyObject *
-gcc_MethodType_get_argument_types(struct PyGccTree * self,void *closure)
+PyGccMethodType_get_argument_types(struct PyGccTree * self,void *closure)
 {
-    return gcc_FunctionType_get_argument_types(self, closure);
+    return PyGccFunction_TypeObj_get_argument_types(self, closure);
 }
 
 PyObject *
-gcc_Constructor_get_elements(PyObject *self, void *closure)
+PyGccConstructor_get_elements(PyObject *self, void *closure)
 {
     struct PyGccTree * self_as_tree;
     PyObject *result = NULL;
@@ -376,9 +551,10 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
     tree index, value;
 
     self_as_tree = (struct PyGccTree *)self; /* FIXME */
-    node = self_as_tree->t;
-    
-    result = PyList_New(VEC_length(constructor_elt, CONSTRUCTOR_ELTS (node)));
+    node = self_as_tree->t.inner;
+
+    result = PyList_New(GCC_COMPAT_VEC_LENGTH(constructor_elt,
+                                              CONSTRUCTOR_ELTS (node)));
     if (!result) {
 	goto error;
     }
@@ -388,11 +564,11 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
 	PyObject *obj_index = NULL;
 	PyObject *obj_value = NULL;
 	PyObject *obj_pair = NULL;
-	obj_index = gcc_python_make_wrapper_tree(index);
+	obj_index = PyGccTree_New(gcc_private_make_tree(index));
 	if (!obj_index) {
 	    goto error;
 	}
-	obj_value = gcc_python_make_wrapper_tree(value);
+	obj_value = PyGccTree_New(gcc_private_make_tree(value));
 	if (!obj_value) {
 	    Py_DECREF(obj_index);
 	    goto error;
@@ -420,29 +596,29 @@ gcc_Constructor_get_elements(PyObject *self, void *closure)
 }
 
 PyObject *
-gcc_IntegerConstant_get_constant(struct PyGccTree * self, void *closure)
+PyGccIntegerConstant_get_constant(struct PyGccTree * self, void *closure)
 {
-    tree type = TREE_TYPE(self->t);
-    return gcc_python_int_from_double_int(TREE_INT_CST(self->t),
+    tree type = TREE_TYPE(self->t.inner);
+    return PyGcc_int_from_double_int(TREE_INT_CST(self->t.inner),
                                           TYPE_UNSIGNED(type));
 }
 
 PyObject *
-gcc_IntegerConstant_repr(struct PyGccTree * self)
+PyGccIntegerConstant_repr(struct PyGccTree * self)
 {
-    tree type = TREE_TYPE(self->t);
+    tree type = TREE_TYPE(self->t.inner);
     char buf[512];
 
-    gcc_python_double_int_as_text(TREE_INT_CST(self->t),
+    PyGcc_DoubleIntAsText(TREE_INT_CST(self->t.inner),
                                   TYPE_UNSIGNED(type),
                                   buf, sizeof(buf));
-    return gcc_python_string_from_format("%s(%s)",
+    return PyGccString_FromFormat("%s(%s)",
                                          Py_TYPE(self)->tp_name,
                                          buf);
 }
 
 PyObject *
-gcc_RealCst_get_constant(struct PyGccTree * self, void *closure)
+PyGccRealCst_get_constant(struct PyGccTree * self, void *closure)
 {
     /* "cheat" and go through the string representation: */
     REAL_VALUE_TYPE *d;
@@ -450,10 +626,10 @@ gcc_RealCst_get_constant(struct PyGccTree * self, void *closure)
     PyObject *str;
     PyObject *result;
 
-    d = TREE_REAL_CST_PTR(self->t);
+    d = TREE_REAL_CST_PTR(self->t.inner);
     real_to_decimal (buf, d, sizeof (buf), 0, 1);
 
-    str = gcc_python_string_from_string(buf);
+    str = PyGccString_FromString(buf);
     if (!str) {
         return NULL;
     }
@@ -473,30 +649,30 @@ gcc_RealCst_get_constant(struct PyGccTree * self, void *closure)
 }
 
 PyObject *
-gcc_RealCst_repr(struct PyGccTree * self)
+PyGccRealCst_repr(struct PyGccTree * self)
 {
     REAL_VALUE_TYPE *d;
     char buf[60];
 
-    d = TREE_REAL_CST_PTR(self->t);
+    d = TREE_REAL_CST_PTR(self->t.inner);
     real_to_decimal (buf, d, sizeof (buf), 0, 1);
-    return gcc_python_string_from_format("%s(%s)",
+    return PyGccString_FromFormat("%s(%s)",
                                          Py_TYPE(self)->tp_name,
                                          buf);
 }
 
 PyObject *
-gcc_StringConstant_repr(struct PyGccTree * self)
+PyGccStringConstant_repr(struct PyGccTree * self)
 {
     PyObject *str_obj;
     PyObject *result = NULL;
 
-    str_obj = gcc_python_string_or_none(TREE_STRING_POINTER(self->t));
+    str_obj = PyGccStringOrNone(TREE_STRING_POINTER(self->t.inner));
     if (!str_obj) {
         return NULL;
     }
 #if PY_MAJOR_VERSION >= 3
-    result = gcc_python_string_from_format("%s(%R)",
+    result = PyGccString_FromFormat("%s(%R)",
                                            Py_TYPE(self)->tp_name,
                                            str_obj);
 #else
@@ -507,7 +683,7 @@ gcc_StringConstant_repr(struct PyGccTree * self)
             Py_DECREF(str_obj);
             return NULL;
         }
-        result = gcc_python_string_from_format("%s(%s)",
+        result = PyGccString_FromFormat("%s(%s)",
                                                Py_TYPE(self)->tp_name,
                                                PyString_AsString(str_repr));
         Py_DECREF(str_repr);
@@ -518,18 +694,42 @@ gcc_StringConstant_repr(struct PyGccTree * self)
 }
 
 PyObject *
-gcc_TypeDecl_get_pointer(struct PyGccTree *self, void *closure)
+PyGccTypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 {
-    tree decl_type = TREE_TYPE(self->t);
+    tree decl_type = TREE_TYPE(self->t.inner);
     if (!decl_type) {
         PyErr_SetString(PyExc_ValueError, "gcc.TypeDecl has no associated type");
         return NULL;
     }
-    return gcc_python_make_wrapper_tree(build_pointer_type(decl_type));
+    return PyGccTree_New(gcc_private_make_tree(build_pointer_type(decl_type)));
 }
 
 PyObject *
-gcc_TreeList_repr(struct PyGccTree * self)
+PyGccSsaName_repr(struct PyGccTree * self)
+{
+    int version;
+    PyObject *repr_var = NULL;
+    PyObject *result = NULL;
+
+    version = SSA_NAME_VERSION(self->t.inner);
+    repr_var = PyGcc_GetReprOfAttribute((PyObject*)self, "var");
+    if (!repr_var) {
+        goto error;
+    }
+
+    result = PyGccString_FromFormat("%s(var=%s, version=%i)",
+                                           Py_TYPE(self)->tp_name,
+                                           PyGccString_AsString(repr_var),
+                                           version);
+
+ error:
+    Py_XDECREF(repr_var);
+
+    return result;
+}
+
+PyObject *
+PyGccTreeList_repr(struct PyGccTree * self)
 {
     PyObject *purpose = NULL;
     PyObject *value = NULL;
@@ -539,15 +739,15 @@ gcc_TreeList_repr(struct PyGccTree * self)
     PyObject *repr_chain = NULL;
     PyObject *result = NULL;
 
-    purpose = gcc_python_make_wrapper_tree(TREE_PURPOSE(self->t));
+    purpose = PyGccTree_New(gcc_private_make_tree(TREE_PURPOSE(self->t.inner)));
     if (!purpose) {
         goto error;
     }
-    value = gcc_python_make_wrapper_tree(TREE_VALUE(self->t));
+    value = PyGccTree_New(gcc_private_make_tree(TREE_VALUE(self->t.inner)));
     if (!value) {
         goto error;
     }
-    chain = gcc_python_make_wrapper_tree(TREE_CHAIN(self->t));
+    chain = PyGccTree_New(gcc_private_make_tree(TREE_CHAIN(self->t.inner)));
     if (!chain) {
         goto error;
     }
@@ -565,11 +765,11 @@ gcc_TreeList_repr(struct PyGccTree * self)
         goto error;
     }
 
-    result = gcc_python_string_from_format("%s(purpose=%s, value=%s, chain=%s)",
+    result = PyGccString_FromFormat("%s(purpose=%s, value=%s, chain=%s)",
                                            Py_TYPE(self)->tp_name,
-                                           gcc_python_string_as_string(repr_purpose),
-                                           gcc_python_string_as_string(repr_value),
-                                           gcc_python_string_as_string(repr_chain));
+                                           PyGccString_AsString(repr_purpose),
+                                           PyGccString_AsString(repr_value),
+                                           PyGccString_AsString(repr_chain));
  error:
     Py_XDECREF(purpose);
     Py_XDECREF(value);
@@ -581,9 +781,42 @@ gcc_TreeList_repr(struct PyGccTree * self)
     return result;
 }
 
+PyObject *
+PyGccCaseLabelExpr_repr(PyObject * self)
+{
+    PyObject *low_repr = NULL;
+    PyObject *high_repr = NULL;
+    PyObject *target_repr = NULL;
+    PyObject *result = NULL;
+
+    low_repr = PyGcc_GetReprOfAttribute(self, "low");
+    if (!low_repr) {
+        goto cleanup;
+    }
+    high_repr = PyGcc_GetReprOfAttribute(self, "high");
+    if (!high_repr) {
+        goto cleanup;
+    }
+    target_repr = PyGcc_GetReprOfAttribute(self, "target");
+    if (!target_repr) {
+        goto cleanup;
+    }
+
+    result = PyGccString_FromFormat("%s(low=%s, high=%s, target=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           PyGccString_AsString(low_repr),
+                                           PyGccString_AsString(high_repr),
+                                           PyGccString_AsString(target_repr));
+
+ cleanup:
+    Py_XDECREF(low_repr);
+    Py_XDECREF(high_repr);
+    Py_XDECREF(target_repr);
+    return result;
+}
 
 PyObject *
-gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+PyGccNamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
 {
     tree t_result;
     tree t_name;
@@ -605,14 +838,14 @@ gcc_NamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwar
 
     t_name = get_identifier(name);
 
-    t_result = namespace_binding(t_name, self->t);
-    return gcc_python_make_wrapper_tree(t_result);
+    t_result = namespace_binding(t_name, self->t.inner);
+    return PyGccTree_New(gcc_private_make_tree(t_result));
 }
 
 PyObject *
-gcc_NamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+PyGccNamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
 {
-  tree t = self->t;
+  tree t = self->t.inner;
 
   if (NULL == DECL_NAMESPACE_ALIAS(t)) {
     Py_INCREF(self);
@@ -623,7 +856,7 @@ gcc_NamespaceDecl_unalias(struct PyGccTree * self, PyObject *args, PyObject *kwa
     t = DECL_NAMESPACE_ALIAS(t);
   }
 
-  return gcc_python_make_wrapper_tree(t);
+  return PyGccTree_New(gcc_private_make_tree(t));
 }
 
 static PyObject *
@@ -635,7 +868,7 @@ raise_namespace_alias(const char *what)
 }
 
 PyObject *
-gcc_python_namespace_decl_declarations(tree t)
+PyGccNamespaceDecl_declarations(tree t)
 {
   if (NULL == cp_namespace_decls)
     return raise_cplusplus_only("gcc.NamespaceDecl.declarations");
@@ -645,11 +878,11 @@ gcc_python_namespace_decl_declarations(tree t)
   if (DECL_NAMESPACE_ALIAS(t))
     return raise_namespace_alias("gcc.NamespaceDecl.declarations");
 
-  return gcc_tree_list_from_chain(cp_namespace_decls(t));
+  return PyGcc_TreeListFromChain(cp_namespace_decls(t));
 }
 
 PyObject *
-gcc_python_namespace_decl_namespaces(tree t)
+PyGccNamespaceDecl_namespaces(tree t)
 {
   /* We don't actually call cp_namespace_decls, but we only actually call
      c++ specific macros, not sure what happens.  */
@@ -661,7 +894,7 @@ gcc_python_namespace_decl_namespaces(tree t)
   if (DECL_NAMESPACE_ALIAS(t))
     return raise_namespace_alias("gcc.NamespaceDecl.namespaces");
 
-  return gcc_tree_list_from_chain(NAMESPACE_LEVEL(t)->namespaces);
+  return PyGcc_TreeListFromChain(NAMESPACE_LEVEL(t)->namespaces);
 }
 
 /* 
@@ -674,18 +907,26 @@ gcc_python_namespace_decl_namespaces(tree t)
 
    dump_generic_node is defined around line 580 of tree-pretty-print.c
 */
+
+union tree_or_ptr {
+    gcc_tree tree;
+    void *ptr;
+};
+
 static PyObject *
-real_make_tree_wrapper(void *t)
+real_make_tree_wrapper(void *ptr)
 {
 
     struct PyGccTree *tree_obj = NULL;
     PyGccWrapperTypeObject* tp;
+    union tree_or_ptr u;
+    u.ptr = ptr;
 
-    if (NULL == t) {
+    if (NULL == ptr) {
 	Py_RETURN_NONE;
     }
   
-    tp = gcc_python_autogenerated_tree_type_for_tree((tree)t, 1);
+    tp = PyGcc_autogenerated_tree_type_for_tree(u.tree, 1);
     assert(tp);
     
     tree_obj = PyGccWrapper_New(struct PyGccTree, tp);
@@ -693,7 +934,7 @@ real_make_tree_wrapper(void *t)
         goto error;
     }
 
-    tree_obj->t = (tree)t;
+    tree_obj->t = u.tree;
 
     return (PyObject*)tree_obj;
       
@@ -702,10 +943,9 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccTree(PyGccTree *wrapper)
+PyGcc_WrtpMarkForPyGccTree(PyGccTree *wrapper)
 {
-    /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_tree_node(wrapper->t);
+    gcc_tree_mark_in_use(wrapper->t);
 }
 
 /*
@@ -715,23 +955,27 @@ wrtp_mark_for_PyGccTree(PyGccTree *wrapper)
 static PyObject *tree_wrapper_cache = NULL;
 
 PyObject *
-gcc_python_make_wrapper_tree(tree t)
+PyGccTree_New(gcc_tree t)
 {
-    return gcc_python_lazily_create_wrapper(&tree_wrapper_cache,
-					    t,
+    union tree_or_ptr u;
+    u.tree = t;
+    return PyGcc_LazilyCreateWrapper(&tree_wrapper_cache,
+					    u.ptr,
 					    real_make_tree_wrapper);
 }
 
 PyObject *
-gcc_python_make_wrapper_tree_unique(tree t)
+PyGccTree_NewUnique(gcc_tree t)
 {
-    return real_make_tree_wrapper(t);
+    union tree_or_ptr u;
+    u.tree = t;
+    return real_make_tree_wrapper(u.ptr);
 }
 
 /* Walk the chain of a tree, building a python list of wrapper gcc.Tree
    instances */
 PyObject *
-gcc_tree_list_from_chain(tree t)
+PyGcc_TreeListFromChain(tree t)
 {
     PyObject *result = NULL;
     
@@ -742,7 +986,7 @@ gcc_tree_list_from_chain(tree t)
 
     while (t) {
 	PyObject *item;
-	item = gcc_python_make_wrapper_tree(t);
+	item = PyGccTree_New(gcc_private_make_tree(t));
 	if (!item) {
 	    goto error;
 	}
@@ -770,7 +1014,7 @@ gcc_tree_list_from_chain(tree t)
   Extract a list of objects for the values
  */
 PyObject *
-gcc_python_tree_make_list_from_tree_list_chain(tree t)
+PyGcc_TreeMakeListFromTreeList(tree t)
 {
     PyObject *result = NULL;
 
@@ -781,7 +1025,7 @@ gcc_python_tree_make_list_from_tree_list_chain(tree t)
 
     while (t) {
        PyObject *item;
-       item = gcc_python_make_wrapper_tree(TREE_VALUE(t));
+       item = PyGccTree_New(gcc_private_make_tree(TREE_VALUE(t)));
        if (!item) {
            goto error;
        }
@@ -822,11 +1066,11 @@ gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
        PyObject *purpose;
        PyObject *value;
        PyObject *pair;
-       purpose = gcc_python_make_wrapper_tree(TREE_PURPOSE(t));
+       purpose = PyGccTree_New(gcc_private_make_tree(TREE_PURPOSE(t)));
        if (!purpose) {
            goto error;
        }
-       value = gcc_python_make_wrapper_tree(TREE_VALUE(t));
+       value = PyGccTree_New(gcc_private_make_tree(TREE_VALUE(t)));
        if (!value) {
            Py_DECREF(purpose);
            goto error;
@@ -853,20 +1097,26 @@ gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
 }
 
 PyObject *
-VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes)
+VEC_tree_as_PyList(
+#if (GCC_VERSION >= 4008)
+    vec<tree, va_gc> *vec_nodes
+#else
+    VEC(tree,gc) *vec_nodes
+#endif
+)
 {
     PyObject *result = NULL;
     int i;
     tree t;
 
-    result = PyList_New(VEC_length(tree, vec_nodes));
+    result = PyList_New(GCC_COMPAT_VEC_LENGTH(tree, vec_nodes));
     if (!result) {
 	goto error;
     }
 
-    FOR_EACH_VEC_ELT(tree, vec_nodes, i, t) {
+    GCC_COMPAT_FOR_EACH_VEC_ELT(tree, vec_nodes, i, t) {
 	PyObject *item;
-	item = gcc_python_make_wrapper_tree(t);
+	item = PyGccTree_New(gcc_private_make_tree(t));
 	if (!item) {
 	    goto error;
 	}

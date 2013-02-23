@@ -30,7 +30,7 @@ class ShowGimple(gcc.GimplePass):
         if fun and fun.cfg:
             dot = cfg_to_dot(fun.cfg, fun.decl.name)
             # print dot
-            invoke_dot(dot)
+            invoke_dot(dot, name=fun.decl.name)
 
 ps = ShowGimple(name='show-gimple')
 ps.register_after('cfg')

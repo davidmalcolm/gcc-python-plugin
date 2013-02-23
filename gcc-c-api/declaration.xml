@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+-->
+<api name="declaration">
+
+  <doc>Declarations</doc>
+
+  <type name="decl" base="tree">
+    <attribute name="location" kind="location"/>
+    <attribute name="is_artificial" kind="bool"/>
+    <attribute name="is_builtin" kind="bool"/>
+  </type>
+
+  <type name="class_method_decl" base="decl">
+  </type>
+
+  <type name="const_decl" base="decl">
+  </type>
+
+  <type name="debug_expr_decl" base="decl">
+  </type>
+
+  <type name="field_decl" base="decl">
+  </type>
+
+  <type name="function_decl" base="decl">
+  </type>
+
+  <type name="imported_decl" base="decl">
+  </type>
+
+  <type name="instance_method_decl" base="decl">
+  </type>
+
+  <type name="keyword_decl" base="decl">
+  </type>
+
+  <type name="label_decl" base="decl">
+  </type>
+
+  <type name="namespace_decl" base="decl">
+  </type>
+
+  <type name="parm_decl" base="decl">
+  </type>
+
+  <type name="property_decl" base="decl">
+  </type>
+
+  <type name="result_decl" base="decl">
+  </type>
+
+  <type name="template_decl" base="decl">
+  </type>
+
+  <type name="translation_unit_decl" base="decl">
+    <attribute name="block" kind="block"/>
+    <attribute name="language" kind="string"/>
+  </type>
+
+  <type name="type_decl" base="decl">
+  </type>
+
+  <type name="using_decl" base="decl">
+  </type>
+
+  <type name="var_decl" base="decl">
+    <attribute name="initial" kind="constructor"/>
+    <attribute name="is_static" kind="bool"/>
+  </type>
+
+  <iterator name="translation_unit_decl" kind="translation_unit_decl"/>
+
+</api>

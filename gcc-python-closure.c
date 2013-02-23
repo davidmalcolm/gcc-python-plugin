@@ -24,8 +24,10 @@
 #include "gcc-python.h"
 #include "function.h"
 
+#include "gcc-c-api/gcc-function.h"
+
 struct callback_closure *
-gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject *kwargs)
+PyGcc_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject *kwargs)
 {
     struct callback_closure *closure;
 
@@ -66,10 +68,10 @@ gcc_python_closure_new_generic(PyObject *callback, PyObject *extraargs, PyObject
 }
 
 struct callback_closure *
-gcc_python_closure_new_for_plugin_event(PyObject *callback, PyObject *extraargs, PyObject *kwargs,
+PyGcc_Closure_NewForPluginEvent(PyObject *callback, PyObject *extraargs, PyObject *kwargs,
                                         enum plugin_event event)
 {
-    struct callback_closure *closure = gcc_python_closure_new_generic(callback, extraargs, kwargs);
+    struct callback_closure *closure = PyGcc_closure_new_generic(callback, extraargs, kwargs);
     if (closure) {
         closure->event = event;
     }
@@ -77,7 +79,7 @@ gcc_python_closure_new_for_plugin_event(PyObject *callback, PyObject *extraargs,
 }
 
 PyObject *
-gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, PyObject *wrapped_gcc_data)
+PyGcc_Closure_MakeArgs(struct callback_closure * closure, int add_cfun, PyObject *wrapped_gcc_data)
 {
     PyObject *args = NULL;
     PyObject *cfun_obj = NULL;
@@ -102,7 +104,7 @@ gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, Py
 	}
 
         if (add_cfun) {
-            cfun_obj = gcc_python_make_wrapper_function(cfun);
+            cfun_obj = PyGccFunction_New(gcc_get_current_function());
             if (!cfun_obj) {
                 goto error;
             }
@@ -131,6 +133,19 @@ gcc_python_closure_make_args(struct callback_closure * closure, int add_cfun, Py
     Py_XDECREF(args);
     Py_XDECREF(cfun_obj);
     return NULL;
+}
+
+
+void
+PyGcc_closure_free(struct callback_closure *closure)
+{
+    assert(closure);
+
+    Py_XDECREF(closure->callback);
+    Py_XDECREF(closure->extraargs);
+    Py_XDECREF(closure->kwargs);
+
+    PyMem_Free(closure);
 }
 
 /*

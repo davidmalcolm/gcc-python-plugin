@@ -20,6 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#include "gcc-c-api/gcc-location.h"
 
 /*
   Wrapper for GCC's "location_t"
@@ -33,32 +34,37 @@
 */
 
 PyObject *
-gcc_Location_repr(struct PyGccLocation * self)
+PyGccLocation_repr(struct PyGccLocation * self)
 {
-     return gcc_python_string_from_format("gcc.Location(file='%s', line=%i)",
-                                          LOCATION_FILE(self->loc),
-                                          LOCATION_LINE(self->loc));
+     return PyGccString_FromFormat("gcc.Location(file='%s', line=%i)",
+                                   gcc_location_get_filename(self->loc),
+                                   gcc_location_get_line(self->loc));
 }
 
 PyObject *
-gcc_Location_str(struct PyGccLocation * self)
+PyGccLocation_str(struct PyGccLocation * self)
 {
-     return gcc_python_string_from_format("%s:%i",
-                                          LOCATION_FILE(self->loc),
-                                          LOCATION_LINE(self->loc));
+     return PyGccString_FromFormat("%s:%i",
+                                   gcc_location_get_filename(self->loc),
+                                   gcc_location_get_line(self->loc));
 }
 
 PyObject *
-gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
+PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op)
 {
     struct PyGccLocation *locobj1;
     struct PyGccLocation *locobj2;
     int cond;
     PyObject *result_obj;
+    const char *file1;
+    const char *file2;
 
-    assert(Py_TYPE(o1) == (PyTypeObject*)&gcc_LocationType);
-    
-    if (Py_TYPE(o1) != (PyTypeObject*)&gcc_LocationType) {
+    if (Py_TYPE(o1) != (PyTypeObject*)&PyGccLocation_TypeObj) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    if (Py_TYPE(o2) != (PyTypeObject*)&PyGccLocation_TypeObj) {
 	result_obj = Py_NotImplemented;
 	goto out;
     }
@@ -66,19 +72,85 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
     locobj1 = (struct PyGccLocation *)o1;
     locobj2 = (struct PyGccLocation *)o2;
 
-    switch (op) {
-    case Py_EQ:
-	cond = (locobj1->loc == locobj2->loc);
-	break;
+    /* First compare by filename, then by line, then by column */
+    file1 = gcc_location_get_filename(locobj1->loc);
+    file2 = gcc_location_get_filename(locobj2->loc);
 
-    case Py_NE:
-	cond = (locobj1->loc != locobj2->loc);
-	break;
+    if (file1 != file2) {
+        /* Compare by file: */
+        switch (op) {
+        case Py_LT:
+        case Py_LE:
+            /* we merge the LT and LE cases since we've already
+               established that the values are not equal */
+            cond = (strcmp(file1, file2) < 0);
+            break;
+        case Py_GT:
+        case Py_GE:
+            cond = (strcmp(file1, file2) > 0);
+            break;
+        case Py_EQ:
+            cond = 0;
+            break;
+        case Py_NE:
+            cond = 1;
+            break;
+        default:
+            result_obj = Py_NotImplemented;
+            goto out;
+        }
+    } else {
+        /* File equality; compare by line: */
+        int line1 = gcc_location_get_line(locobj1->loc);
+        int line2 = gcc_location_get_line(locobj2->loc);
 
-    default:
-        result_obj = Py_NotImplemented;
-        goto out;
+        if (line1 != line2) {
+            switch (op) {
+            case Py_LT:
+            case Py_LE:
+                cond = (line1 < line2);
+                break;
+            case Py_GT:
+            case Py_GE:
+                cond = (line1 > line2);
+                break;
+            case Py_EQ:
+                cond = 0;
+                break;
+            case Py_NE:
+                cond = 1;
+                break;
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+        } else {
+            /* File and line equality; compare by column: */
+            int col1 = gcc_location_get_column(locobj1->loc);
+            int col2 = gcc_location_get_column(locobj2->loc);
+
+            switch (op) {
+            case Py_LT:
+            case Py_LE:
+                cond = (col1 < col2);
+                break;
+            case Py_GT:
+            case Py_GE:
+                cond = (col1 > col2);
+                break;
+            case Py_EQ:
+                cond = (col1 == col2);
+                break;
+            case Py_NE:
+                cond = (col1 != col2);
+                break;
+            default:
+                result_obj = Py_NotImplemented;
+                goto out;
+            }
+        }
     }
+
     result_obj = cond ? Py_True : Py_False;
 
  out:
@@ -87,15 +159,16 @@ gcc_Location_richcompare(PyObject *o1, PyObject *o2, int op)
 }
 
 PyObject *
-gcc_python_make_wrapper_location(location_t loc)
+PyGccLocation_New(gcc_location loc)
 {
     struct PyGccLocation *location_obj = NULL;
 
-    if (UNKNOWN_LOCATION == loc) {
+    if (gcc_location_is_unknown(loc)) {
 	Py_RETURN_NONE;
     }
   
-    location_obj = PyGccWrapper_New(struct PyGccLocation, &gcc_LocationType);
+    location_obj = PyGccWrapper_New(struct PyGccLocation,
+                                    &PyGccLocation_TypeObj);
     if (!location_obj) {
         goto error;
     }
@@ -109,7 +182,7 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccLocation(PyGccLocation *wrapper)
+PyGcc_WrtpMarkForPyGccLocation(PyGccLocation *wrapper)
 {
     /* empty */
 }

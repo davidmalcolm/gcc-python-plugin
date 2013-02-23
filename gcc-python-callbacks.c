@@ -23,6 +23,8 @@
 #include "gcc-python-closure.h"
 #include "gcc-python-wrappers.h"
 
+#include "gcc-c-api/gcc-location.h"
+
 /*
   Notes on the passes
 
@@ -101,7 +103,7 @@
 
 static enum plugin_event current_event = (enum plugin_event)GCC_PYTHON_PLUGIN_BAD_EVENT;
 
-int gcc_python_is_within_event(enum plugin_event *out_event)
+int PyGcc_IsWithinEvent(enum plugin_event *out_event)
 {
     if (current_event != GCC_PYTHON_PLUGIN_BAD_EVENT) {
         if (out_event) {
@@ -115,20 +117,20 @@ int gcc_python_is_within_event(enum plugin_event *out_event)
 
 
 static void
-gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
+PyGcc_FinishInvokingCallback(PyGILState_STATE gstate,
                                     int expect_wrapped_data, PyObject *wrapped_gcc_data,
                                     void *user_data)
     CPYCHECKER_STEALS_REFERENCE_TO_ARG(3) /* wrapped_gcc_data */ ;
 
 static void
-gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
+PyGcc_FinishInvokingCallback(PyGILState_STATE gstate,
                                     int expect_wrapped_data, PyObject *wrapped_gcc_data,
                                     void *user_data)
 {
     struct callback_closure *closure = (struct callback_closure *)user_data;
     PyObject *args = NULL;
     PyObject *result = NULL;
-    location_t saved_loc = input_location;
+    gcc_location saved_loc = gcc_get_input_location();
     enum plugin_event saved_event;
 
     assert(closure);
@@ -141,10 +143,10 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
 
     if (cfun) {
         /* Temporarily override input_location to the top of the function: */
-        input_location = cfun->function_start_locus;
+        gcc_set_input_location(gcc_private_make_location(cfun->function_start_locus));
     }
 
-    args = gcc_python_closure_make_args(closure, 1, wrapped_gcc_data);
+    args = PyGcc_Closure_MakeArgs(closure, 1, wrapped_gcc_data);
     if (!args) {
         goto cleanup;
     }
@@ -158,7 +160,7 @@ gcc_python_finish_invoking_callback(PyGILState_STATE gstate,
 
     if (!result) {
         /* Treat an unhandled Python error as a compilation error: */
-        gcc_python_print_exception("Unhandled Python exception raised within callback");
+        PyGcc_PrintException("Unhandled Python exception raised within callback");
     }
 
     // FIXME: the result is ignored
@@ -168,8 +170,10 @@ cleanup:
     Py_XDECREF(args);
     Py_XDECREF(result);
 
+    /* We never cleanup "closure"; we don't know if we'll be called again */
+
     PyGILState_Release(gstate);
-    input_location = saved_loc;
+    gcc_set_input_location(saved_loc);
 }
 
 /*
@@ -181,21 +185,21 @@ cleanup:
  */
 
 static void
-gcc_python_callback_for_tree(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_tree(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
     tree t = (tree)gcc_data;
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate, 
-					1, gcc_python_make_wrapper_tree(t),
+    PyGcc_FinishInvokingCallback(gstate, 
+					1, PyGccTree_New(gcc_private_make_tree(t)),
 					user_data);
 }
 
 
 static void
-gcc_python_callback_for_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
@@ -203,13 +207,13 @@ gcc_python_callback_for_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
                                         0, NULL,
                                         user_data);
 }
 
 static void
-gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
     struct opt_pass *pass = (struct opt_pass *)gcc_data;
@@ -219,13 +223,13 @@ gcc_python_callback_for_PLUGIN_PASS_EXECUTION(void *gcc_data, void *user_data)
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate, 
-					1, gcc_python_make_wrapper_pass(pass),
+    PyGcc_FinishInvokingCallback(gstate, 
+					1, PyGccPass_New(pass),
 					user_data);
 }
 
 static void
-gcc_python_callback_for_FINISH(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_FINISH(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
@@ -236,62 +240,62 @@ gcc_python_callback_for_FINISH(void *gcc_data, void *user_data)
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
                                         0, NULL,
                                         user_data);
 }
 
 static void
-gcc_python_callback_for_FINISH_UNIT(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_FINISH_UNIT(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
 					0, NULL,
 					user_data);
 }
 
 static void
-gcc_python_callback_for_GGC_START(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_GGC_START(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
 					0, NULL,
 					user_data);
 }
 
 static void
-gcc_python_callback_for_GGC_MARKING(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_GGC_MARKING(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
 					0, NULL,
 					user_data);
 }
 
 static void
-gcc_python_callback_for_GGC_END(void *gcc_data, void *user_data)
+PyGcc_CallbackFor_GGC_END(void *gcc_data, void *user_data)
 {
     PyGILState_STATE gstate;
 
     gstate = PyGILState_Ensure();
 
-    gcc_python_finish_invoking_callback(gstate,
+    PyGcc_FinishInvokingCallback(gstate,
 					0, NULL,
 					user_data);
 }
 
 
 PyObject*
-gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_RegisterCallback(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int event;
     PyObject *callback = NULL;
@@ -302,9 +306,9 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    //printf("%s:%i:gcc_python_register_callback\n", __FILE__, __LINE__);
+    //printf("%s:%i:PyGcc_RegisterCallback\n", __FILE__, __LINE__);
 
-    closure = gcc_python_closure_new_for_plugin_event(callback, extraargs, kwargs,
+    closure = PyGcc_Closure_NewForPluginEvent(callback, extraargs, kwargs,
                                                       (enum plugin_event)event);
     if (!closure) {
         return PyErr_NoMemory();
@@ -314,61 +318,61 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
     case PLUGIN_ATTRIBUTES:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_PLUGIN_ATTRIBUTES,
+			  PyGcc_CallbackFor_PLUGIN_ATTRIBUTES,
 			  closure);
 	break;
 
     case PLUGIN_PRE_GENERICIZE:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_tree,
+			  PyGcc_CallbackFor_tree,
 			  closure);
 	break;
 	
     case PLUGIN_PASS_EXECUTION:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_PLUGIN_PASS_EXECUTION,
+			  PyGcc_CallbackFor_PLUGIN_PASS_EXECUTION,
 			  closure);
 	break;
 
     case PLUGIN_FINISH:
         register_callback("python", // FIXME
                           (enum plugin_event)event,
-                          gcc_python_callback_for_FINISH,
+                          PyGcc_CallbackFor_FINISH,
                           closure);
 	break;
 
     case PLUGIN_FINISH_UNIT:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_FINISH_UNIT,
+			  PyGcc_CallbackFor_FINISH_UNIT,
 			  closure);
 	break;
 
     case PLUGIN_FINISH_TYPE:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_tree,
+			  PyGcc_CallbackFor_tree,
 			  closure);
 	break;
 
     case PLUGIN_GGC_START:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_GGC_START,
+			  PyGcc_CallbackFor_GGC_START,
 			  closure);
         break;
     case PLUGIN_GGC_MARKING:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_GGC_MARKING,
+			  PyGcc_CallbackFor_GGC_MARKING,
 			  closure);
         break;
     case PLUGIN_GGC_END:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-			  gcc_python_callback_for_GGC_END,
+			  PyGcc_CallbackFor_GGC_END,
 			  closure);
         break;
 
@@ -377,7 +381,7 @@ gcc_python_register_callback(PyObject *self, PyObject *args, PyObject *kwargs)
     case PLUGIN_FINISH_DECL:
         register_callback("python", // FIXME
 			  (enum plugin_event)event,
-                          gcc_python_callback_for_tree,
+                          PyGcc_CallbackFor_tree,
 			  closure);
 	break;
 #endif /* GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL */

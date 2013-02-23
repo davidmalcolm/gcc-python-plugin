@@ -28,7 +28,7 @@ class ShowSsa(gcc.GimplePass):
         if fun and fun.cfg:
             dot = cfg_to_dot(fun.cfg, fun.decl.name)
             # print(dot)
-            invoke_dot(dot)
+            invoke_dot(dot, name=fun.decl.name)
 
 ps = ShowSsa(name='show-ssa')
 ps.register_after('ssa')

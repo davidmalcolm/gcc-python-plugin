@@ -240,7 +240,7 @@ class Outcome:
 
     def returns(self, value):
         check_isinstance(value, numeric_types)
-        self._returns(ConcreteValue(self.get_stmt().lhs.type,
+        self._returns(ConcreteValue(self.get_return_type(),
                                     self.get_stmt().loc,
                                     value))
     def returns_ptr(self, region):
@@ -416,21 +416,28 @@ class GenericTpDealloc(AbstractValue):
 
         # Mark the arg as being deallocated:
         value = state.eval_rvalue(stmt.args[0], stmt.loc)
-        check_isinstance(value, PointerToRegion)
-        region = value.region
-        check_isinstance(region, Region)
-        log('generic tp_dealloc called for %s', region)
 
-        # Get the description of the region before trashing it:
-        desc = 'calling tp_dealloc on %s' % region
+        if value.is_null_ptr():
+            # Freeing NULL has no effect:
+            desc = 'calling tp_dealloc on NULL'
+            region = None
+        else:
+            check_isinstance(value, PointerToRegion)
+            region = value.region
+            check_isinstance(region, Region)
+            log('generic tp_dealloc called for %s', region)
+
+            # Get the description of the region before trashing it:
+            desc = 'calling tp_dealloc on %s' % region
         result = state.mktrans_assignment(stmt.lhs,
                                        UnknownValue.make(returntype, stmt.loc),
-                                       'calling tp_dealloc on %s' % region)
+                                          desc)
         s_new = state.copy()
         s_new.loc = state.loc.next_loc()
 
-        # Mark the region as deallocated:
-        s_new.deallocate_region(stmt, region)
+        if region is not None:
+            # Mark the region as deallocated:
+            s_new.deallocate_region(stmt, region)
 
         return [Transition(state, s_new, desc)]
 

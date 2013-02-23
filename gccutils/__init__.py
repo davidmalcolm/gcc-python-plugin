@@ -17,8 +17,6 @@
 
 import gcc
 
-from six.moves import xrange
-
 def sorted_dict_repr(d):
     return '{' + ', '.join(['%r: %r' % (k, d[k])
                             for k in sorted(d.keys())]) + '}'
@@ -101,7 +99,7 @@ def get_nonnull_arguments(funtype):
         # No "nonnull" attribute was given:
         return frozenset()
 
-def invoke_dot(dot):
+def invoke_dot(dot, name='test'):
     from subprocess import Popen, PIPE
 
     if 1:
@@ -116,12 +114,12 @@ def invoke_dot(dot):
         #
         # Presumably a font selection/font metrics issue
         fmt = 'svg'
-
-    p = Popen(['dot', '-T%s' % fmt, '-o', 'test.%s' % fmt],
+    filename = '%s.%s' % (name, fmt)
+    p = Popen(['dot', '-T%s' % fmt, '-o', filename],
               stdin=PIPE)
     p.communicate(dot.encode('ascii'))
 
-    p = Popen(['xdg-open', 'test.%s' % fmt])
+    p = Popen(['xdg-open', filename])
     p.communicate()
 
 def pprint(obj):
@@ -366,15 +364,16 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             for stmtidx, stmt in enumerate(bb.gimple):
                 if curloc != stmt.loc:
                     curloc = stmt.loc
-                    code = get_src_for_loc(stmt.loc).rstrip()
-                    pseudohtml = self.code_to_html(code)
-                    # print('pseudohtml: %r' % pseudohtml)
-                    result += ('<tr><td align="left">'
-                               + self.to_html('%4i ' % stmt.loc.line)
-                               + pseudohtml
-                               + '<br/>'
-                               + (' ' * (5 + stmt.loc.column-1)) + '^'
-                               + '</td></tr>')
+                    if curloc is not None:
+                        code = get_src_for_loc(stmt.loc).rstrip()
+                        pseudohtml = self.code_to_html(code)
+                        # print('pseudohtml: %r' % pseudohtml)
+                        result += ('<tr><td align="left">'
+                                   + self.to_html('%4i ' % stmt.loc.line)
+                                   + pseudohtml
+                                   + '<br/>'
+                                   + (' ' * (5 + stmt.loc.column-1)) + '^'
+                                   + '</td></tr>')
                     
                 result += '<tr><td></td>' + self.stmt_to_html(stmt, stmtidx) + '</tr>\n'
         else:
@@ -428,10 +427,8 @@ class CfgPrettyPrinter(DotPrettyPrinter):
             attrliststr = '[label = false]'
         elif e.loop_exit:
             attrliststr = '[label = loop_exit]'
-        elif e.fallthru:
+        elif e.can_fallthru:
             attrliststr = '[label = fallthru]'
-        elif e.dfs_back:
-            attrliststr = '[label = dfs_back]'
         elif e.eh:
             attrliststr = '[label = eh]'
         else:
@@ -577,7 +574,7 @@ class Table(object):
 
     def _calc_col_widths(self):
         result = []
-        for colIndex in xrange(self.numcolumns):
+        for colIndex in range(self.numcolumns):
             result.append(self._calc_col_width(colIndex))
         return result
 

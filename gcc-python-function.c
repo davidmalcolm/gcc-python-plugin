@@ -29,16 +29,17 @@
 */
 
 #include "function.h"
+#include "gcc-c-api/gcc-function.h"
 
 PyObject *
-gcc_Function_repr(struct PyGccFunction * self)
+PyGccFunction_repr(struct PyGccFunction * self)
 {
      const char *name = NULL;
      PyObject *result = NULL;
      tree decl;
 
-     assert(self->fun);
-     decl = self->fun->decl;
+     assert(self->fun.inner);
+     decl = self->fun.inner->decl;
      if (DECL_NAME(decl)) {
          name = IDENTIFIER_POINTER (DECL_NAME(decl));
      } else {
@@ -49,7 +50,7 @@ gcc_Function_repr(struct PyGccFunction * self)
          goto error;
      }
 
-     result = gcc_python_string_from_format("gcc.Function('%s')",
+     result = PyGccString_FromFormat("gcc.Function('%s')",
                                             name);
      return result;
 error:
@@ -57,17 +58,63 @@ error:
      return NULL;
 }
 
+long
+PyGccFunction_hash(struct PyGccFunction * self)
+{
+    return (long)self->fun.inner;
+}
+
 PyObject *
-gcc_python_make_wrapper_function(struct function *fun)
+PyGccFunction_richcompare(PyObject *o1, PyObject *o2, int op)
+{
+    struct PyGccFunction *functionobj1;
+    struct PyGccFunction *functionobj2;
+    int cond;
+    PyObject *result_obj;
+
+    if (!PyObject_TypeCheck(o1, (PyTypeObject*)&PyGccFunction_TypeObj)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+    if (!PyObject_TypeCheck(o2, (PyTypeObject*)&PyGccFunction_TypeObj)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    functionobj1 = (struct PyGccFunction *)o1;
+    functionobj2 = (struct PyGccFunction *)o2;
+
+    switch (op) {
+    case Py_EQ:
+	cond = (functionobj1->fun.inner == functionobj2->fun.inner);
+	break;
+
+    case Py_NE:
+	cond = (functionobj1->fun.inner != functionobj2->fun.inner);
+	break;
+
+    default:
+        result_obj = Py_NotImplemented;
+        goto out;
+    }
+    result_obj = cond ? Py_True : Py_False;
+
+ out:
+    Py_INCREF(result_obj);
+    return result_obj;
+}
+
+PyObject *
+PyGccFunction_New(gcc_function func)
 {
     struct PyGccFunction *obj;
 
-    if (!fun) {
+    if (!func.inner) {
 	Py_RETURN_NONE;
     }
 
 #if 0
-    printf("gcc_python_make_wrapper_function(%p)\n", fun);
+    printf("PyGccFunction_New(%p)\n", fun);
     
     printf("struct eh_status *eh: %p\n", fun->eh);
     printf("struct control_flow_graph *cfg: %p\n", fun->cfg);
@@ -112,12 +159,12 @@ gcc_python_make_wrapper_function(struct function *fun)
  #endif
 #endif
 
-    obj = PyGccWrapper_New(struct PyGccFunction, &gcc_FunctionType);
+    obj = PyGccWrapper_New(struct PyGccFunction, &PyGccFunction_TypeObj);
     if (!obj) {
         goto error;
     }
 
-    obj->fun = fun;
+    obj->fun = func;
 
     return (PyObject*)obj;
       
@@ -126,10 +173,10 @@ error:
 }
 
 void
-wrtp_mark_for_PyGccFunction(PyGccFunction *wrapper)
+PyGcc_WrtpMarkForPyGccFunction(PyGccFunction *wrapper)
 {
     /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_function(wrapper->fun);
+    gcc_function_mark_in_use(wrapper->fun);
 }
 
 

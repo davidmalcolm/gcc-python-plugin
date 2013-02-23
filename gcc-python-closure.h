@@ -30,19 +30,22 @@ struct callback_closure
 };
 
 struct callback_closure *
-gcc_python_closure_new_generic(PyObject *callback,
+PyGcc_closure_new_generic(PyObject *callback,
                                PyObject *extraargs,
                                PyObject *kwargs);
 
 struct callback_closure *
-gcc_python_closure_new_for_plugin_event(PyObject *callback,
+PyGcc_Closure_NewForPluginEvent(PyObject *callback,
                                         PyObject *extraargs,
                                         PyObject *kwargs,
                                         enum plugin_event event);
 
 PyObject *
-gcc_python_closure_make_args(struct callback_closure * closure,
+PyGcc_Closure_MakeArgs(struct callback_closure * closure,
                              int add_cfun, PyObject *wrapped_gcc_data);
+
+void
+PyGcc_closure_free(struct callback_closure *closure);
 
 /*
   PEP-7

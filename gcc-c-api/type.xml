@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+-->
+<api name="type">
+
+  <doc>Types</doc>
+
+  <type name="type" base="tree">
+    <attribute name="name" kind="tree"/>
+    <attribute name="pointer" kind="pointer_type"/>
+  </type>
+
+  <type name="array_type" base="type">
+  </type>
+
+  <type name="boolean_type" base="type">
+  </type>
+
+  <type name="bound_template_template_parm" base="type">
+  </type>
+
+  <type name="category_implementation_type" base="type">
+  </type>
+
+  <type name="category_interface_type" base="type">
+  </type>
+
+  <type name="class_implementation_type" base="type">
+  </type>
+
+  <type name="class_interface_type" base="type">
+  </type>
+
+  <type name="complex_type" base="type">
+  </type>
+
+  <type name="decl_type_type" base="type">
+  </type>
+
+  <type name="enumeral_type" base="type">
+  </type>
+
+  <type name="fixed_point_type" base="type">
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
+  </type>
+
+  <type name="function_type" base="type">
+  </type>
+
+  <type name="integer_type" base="type">
+    <attribute name="max_value" kind="integer_constant"/>
+    <attribute name="min_value" kind="integer_constant"/>
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
+    <attribute name="is_unsigned" kind="bool"/>
+
+  </type>
+
+  <type name="lang_type" base="type">
+  </type>
+
+  <type name="method_type" base="type">
+  </type>
+
+  <type name="null_ptr_type" base="type">
+  </type>
+
+  <type name="offset_type" base="type">
+  </type>
+
+  <type name="pointer_type" base="type">
+  </type>
+
+  <type name="protocol_interface_type" base="type">
+  </type>
+
+  <type name="qual_union_type" base="type">
+  </type>
+
+  <type name="real_type" base="type">
+    <attribute name="precision" kind="int">
+      <doc>The precision of this type in bits (e.g. 32)</doc>
+    </attribute>
+  </type>
+
+  <type name="record_type" base="type">
+  </type>
+
+  <type name="reference_type" base="type">
+  </type>
+
+  <type name="template_template_parm" base="type">
+  </type>
+
+  <type name="template_type_parm" base="type">
+  </type>
+
+  <type name="type_argument_pack" base="type">
+  </type>
+
+  <type name="type_pack_expansion" base="type">
+  </type>
+
+  <type name="typename_type" base="type">
+  </type>
+
+  <type name="typeof_type" base="type">
+  </type>
+
+  <type name="unbound_class_template" base="type">
+  </type>
+
+  <type name="unconstrained_array_type" base="type">
+  </type>
+
+  <type name="union_type" base="type">
+  </type>
+
+  <type name="vector_type" base="type">
+  </type>
+
+  <type name="void_type" base="type">
+  </type>
+
+</api>

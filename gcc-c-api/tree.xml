@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+-->
+<api name="tree">
+
+  <doc>Trees</doc>
+
+  <type name="tree" varname="node" inner="tree">
+  </type>
+
+  <type name="binary" base="tree">
+     <attribute name="location" kind="location"/>
+   </type>
+
+  <type name="bitwise_and_expr" base="binary">
+  </type>
+  <type name="bitwise_ior_expr" base="binary">
+  </type>
+  <type name="bitwise_xor_expr" base="binary">
+  </type>
+<!--
+  ..            CeilDivExpr
+  ..            CeilModExpr
+  ..            CompareExpr
+  ..            CompareGExpr
+  ..            CompareLExpr
+  ..            ComplexExpr
+  ..            ExactDivExpr
+  ..            FloorDivExpr
+  ..            FloorModExpr
+  ..            LrotateExpr
+  ..            LshiftExpr
+  ..            MaxExpr
+  ..            MinExpr
+  ..            MinusExpr
+  ..            MinusNomodExpr
+  ..            MultExpr
+  ..            PlusExpr
+  ..            PlusNomodExpr
+  ..            PointerPlusExpr
+  ..            RangeExpr
+  ..            RdivExpr
+  ..            RoundDivExpr
+  ..            RoundModExpr
+  ..            RrotateExpr
+  ..            RshiftExpr
+  ..            TruncDivExpr
+  ..            TruncModExpr
+  ..            UrshiftExpr
+  ..            VecExtractevenExpr
+  ..            VecExtractoddExpr
+  ..            VecInterleavehighExpr
+  ..            VecInterleavelowExpr
+  ..            VecLshiftExpr
+  ..            VecPackFixTruncExpr
+  ..            VecPackSatExpr
+  ..            VecPackTruncExpr
+  ..            VecRshiftExpr
+  ..            WidenMultExpr
+  ..            WidenMultHiExpr
+  ..            WidenMultLoExpr
+  ..            WidenSumExpr
+-->
+  <type name="block" base="tree">
+  </type>
+
+  <type name="comparison" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+  <!--
+  ..            EqExpr
+  ..            GeExpr
+  ..            GtExpr
+  ..            LeExpr
+  ..            LtExpr
+  ..            LtgtExpr
+  ..            NeExpr
+  ..            OrderedExpr
+  ..            UneqExpr
+  ..            UngeExpr
+  ..            UngtExpr
+  ..            UnleExpr
+  ..            UnltExpr
+  ..            UnorderedExpr
+  -->
+
+  <type name="constructor" base="tree">
+  </type>
+
+  <!--
+  ..        DefaultArg
+  ..        ErrorMark
+  -->
+
+  <type name="expression" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+
+  <type name="addr_expr" base="expression">
+    <attribute name="operand" kind="tree"/>
+  </type>
+
+  <!--
+  ..            AlignofExpr
+  ..            ArrowExpr
+  ..            AssertExpr
+  ..            AtEncodeExpr
+  ..            BindExpr
+  ..            CMaybeConstExpr
+  ..            ClassReferenceExpr
+  ..            CleanupPointExpr
+  ..            CompoundExpr
+  ..            CompoundLiteralExpr
+  ..            CondExpr
+  ..            CtorInitializer
+  ..            DlExpr
+  ..            DotProdExpr
+  ..            DotstarExpr
+  ..            EmptyClassExpr
+  ..            ExcessPrecisionExpr
+  ..            ExprPackExpansion
+  ..            ExprStmt
+  ..            FdescExpr
+  ..            FmaExpr
+  ..            InitExpr
+  ..            MessageSendExpr
+  ..            ModifyExpr
+  ..            ModopExpr
+  ..            MustNotThrowExpr
+  ..            NonDependentExpr
+  ..            NontypeArgumentPack
+  ..            NullExpr
+  ..            NwExpr
+  ..            ObjTypeRef
+  ..            OffsetofExpr
+  ..            PolynomialChrec
+  ..            PostdecrementExpr
+  ..            PostincrementExpr
+  ..            PredecrementExpr
+  ..            PredictExpr
+  ..            PreincrementExpr
+  ..            PropertyRef
+  ..            PseudoDtorExpr
+  ..            RealignLoad
+  ..            SaveExpr
+  ..            ScevKnown
+  ..            ScevNotKnown
+  ..            SizeofExpr
+  ..            StmtExpr
+  ..            TagDefn
+  ..            TargetExpr
+  ..            TemplateIdExpr
+  ..            ThrowExpr
+  ..            TruthAndExpr
+  ..            TruthAndifExpr
+  ..            TruthNotExpr
+  ..            TruthOrExpr
+  ..            TruthOrifExpr
+  ..            TruthXorExpr
+  ..            TypeExpr
+  ..            TypeidExpr
+  ..            VaArgExpr
+  ..            VecCondExpr
+  ..            VecDlExpr
+  ..            VecInitExpr
+  ..            VecNwExpr
+  ..            WidenMultMinusExpr
+  ..            WidenMultPlusExpr
+  ..            WithCleanupExpr
+  ..            WithSizeExpr
+  ..        IdentifierNode
+  ..        LambdaExpr
+  ..        OmpClause
+  ..        OptimizationNode
+  ..        Overload
+  ..        PlaceholderExpr
+-->
+
+  <type name="reference" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+
+<!-- Subclasses of "reference":
+  ..            ArrayRangeRef
+-->
+
+  <type name="array_ref" base="reference">
+    <attribute name="array" kind="tree"/>
+    <attribute name="index" kind="tree"/>
+  </type>
+  <!--
+  ..            AttrAddrExpr
+  ..            BitFieldRef
+  -->
+  <type name="component_ref" base="reference">
+    <attribute name="target" kind="tree"/>
+    <attribute name="field" kind="tree"/>
+  </type>
+  <!--
+  ..            ImagpartExpr
+  ..            IndirectRef
+  ..            MemRef
+  ..            MemberRef
+  ..            OffsetRef
+  ..            RealpartExpr
+  ..            ScopeRef
+  ..            TargetMemRef
+  ..            UnconstrainedArrayRef
+  ..            ViewConvertExpr
+-->
+
+  <type name="ssa_name" base="tree">
+    <attribute name="var" kind="tree"/>
+    <attribute name="def_stmt" kind="gimple"/>
+    <attribute name="version" kind="int"/>
+  </type>
+
+  <type name="statement" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+<!--
+  ..        Statement
+  ..            AsmExpr
+  ..            BreakStmt
+-->
+
+  <type name="case_label_expr" base="statement">
+    <attribute name="low" kind="tree"/>
+    <attribute name="high" kind="tree"/>
+    <attribute name="target" kind="label_decl"/>
+  </type>
+
+<!--
+  ..            CatchExpr
+  ..            CleanupStmt
+  ..            ContinueStmt
+  ..            DeclExpr
+  ..            DoStmt
+  ..            EhFilterExpr
+  ..            EhSpecBlock
+  ..            ExitExpr
+  ..            ExitStmt
+  ..            ForStmt
+  ..            GotoExpr
+  ..            Handler
+  ..            IfStmt
+  ..            LabelExpr
+  ..            LoopExpr
+  ..            LoopStmt
+  ..            OmpAtomic
+  ..            OmpCritical
+  ..            OmpFor
+  ..            OmpMaster
+  ..            OmpOrdered
+  ..            OmpParallel
+  ..            OmpSection
+  ..            OmpSections
+  ..            OmpSingle
+  ..            OmpTask
+  ..            RangeForStmt
+  ..            ReturnExpr
+  ..            StmtStmt
+  ..            SwitchExpr
+  ..            SwitchStmt
+  ..            TryBlock
+  ..            TryCatchExpr
+  ..            TryFinally
+  ..            UsingDirective
+  ..            WhileStmt
+  ..        StatementList
+  ..        StaticAssert
+  ..        TargetOptionNode
+  ..        TemplateInfo
+  ..        TemplateParmIndex
+  ..        TraitExpr
+  ..        TreeBinfo
+  ..        TreeList
+  ..        TreeVec
+-->
+
+  <type name="unary" base="tree">
+    <attribute name="location" kind="location"/>
+    <attribute name="operand" kind="tree"/>
+  </type>
+  <!--
+  ..            AbsExpr
+  ..            AddrSpaceConvertExpr
+  ..            BitNotExpr
+  ..            CastExpr
+  ..            ConjExpr
+  ..            ConstCastExpr
+  ..            ConvertExpr
+  ..            DynamicCastExpr
+  ..            FixTruncExpr
+  ..            FixedConvertExpr
+  ..            FloatExpr
+  ..            NegateExpr
+  ..            NoexceptExpr
+  ..            NonLvalueExpr
+  ..            NopExpr
+  ..            ParenExpr
+  ..            ReducMaxExpr
+  ..            ReducMinExpr
+  ..            ReducPlusExpr
+  ..            ReinterpretCastExpr
+  ..            StaticCastExpr
+  ..            UnaryPlusExpr
+  ..            VecUnpackFloatHiExpr
+  ..            VecUnpackFloatLoExpr
+  ..            VecUnpackHiExpr
+  ..            VecUnpackLoExpr
+-->
+  <type name="vlexp" base="tree">
+    <attribute name="location" kind="location"/>
+  </type>
+<!--
+  ..            AggrInitExpr
+  ..            CallExpr
+-->
+  
+</api>

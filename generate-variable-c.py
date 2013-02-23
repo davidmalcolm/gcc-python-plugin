@@ -22,10 +22,7 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("tree.h")
-cu.add_include("function.h")
-cu.add_include("basic-block.h")
-cu.add_include("cgraph.h")
+cu.add_include("gcc-c-api/gcc-variable.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -34,30 +31,30 @@ def generate_variable():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Variable_getset_table', [])
+    getsettable = PyGetSetDefTable('PyGccVariable_getset_table', [])
     def add_simple_getter(name, c_expression, doc):
         getsettable.add_gsdef(name,
-                              cu.add_simple_getter('gcc_Variable_get_%s' % name,
+                              cu.add_simple_getter('PyGccVariable_get_%s' % name,
                                                    'PyGccVariable',
                                                    c_expression),
                               None,
                               doc)
 
     add_simple_getter('decl',
-                      'gcc_python_make_wrapper_tree(self->var->decl)',
+                      'PyGccTree_New(gcc_variable_get_decl(self->var))',
                       'The declaration of this variable, as a gcc.Tree')
 
     cu.add_defn(getsettable.c_defn())
     
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_VariableType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccVariable_TypeObj',
                           localname = 'Variable',
                           tp_name = 'gcc.Variable',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccVariable',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          #tp_repr = '(reprfunc)gcc_Variable_repr',
-                          #tp_str = '(reprfunc)gcc_Variable_repr',
+                          #tp_repr = '(reprfunc)PyGccVariable_repr',
+                          #tp_str = '(reprfunc)PyGccVariable_repr',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

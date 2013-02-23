@@ -22,16 +22,16 @@
 #include "gcc-python-wrappers.h"
 
 PyObject*
-gcc_python_pretty_printer_new(void)
+PyGccPrettyPrinter_New(void)
 {
     struct PyGccPrettyPrinter *obj;
 
-    obj = PyObject_New(struct PyGccPrettyPrinter, &gcc_PrettyPrinterType);
+    obj = PyObject_New(struct PyGccPrettyPrinter, &PyGccPrettyPrinter_TypeObj);
     if (!obj) {
 	return NULL;
     }
     
-    //printf("gcc_python_pretty_printer_new\n");
+    //printf("PyGccPrettyPrinter_New\n");
 
     /* Gross hack for getting at a FILE* ; rewrite using fopencookie? */
     obj->buf[0] = '\0';
@@ -44,31 +44,31 @@ gcc_python_pretty_printer_new(void)
     /* Connect the pp to the (FILE*): */
     obj->pp.buffer->stream = obj->file_ptr;
 
-    //printf("gcc_python_pretty_printer_new returning: %p\n", obj);
+    //printf("PyGccPrettyPrinter_New returning: %p\n", obj);
     
     return (PyObject*)obj;
 }
 
 pretty_printer*
-gcc_python_pretty_printer_as_pp(PyObject *obj)
+PyGccPrettyPrinter_as_pp(PyObject *obj)
 {
     struct PyGccPrettyPrinter *ppobj;
 
     /* FIXME: */
-    assert(Py_TYPE(obj) == &gcc_PrettyPrinterType);
+    assert(Py_TYPE(obj) == &PyGccPrettyPrinter_TypeObj);
     ppobj = (struct PyGccPrettyPrinter *)obj;
 
     return &ppobj->pp;
 }
 
 PyObject*
-gcc_python_pretty_printer_as_string(PyObject *obj)
+PyGccPrettyPrinter_as_string(PyObject *obj)
 {
     struct PyGccPrettyPrinter *ppobj;
     int len;
 
     /* FIXME: */
-    assert(Py_TYPE(obj) == &gcc_PrettyPrinterType);
+    assert(Py_TYPE(obj) == &PyGccPrettyPrinter_TypeObj);
     ppobj = (struct PyGccPrettyPrinter *)obj;
 
     /* Flush the pp first.  This forcibly adds a trailing newline: */
@@ -78,20 +78,20 @@ gcc_python_pretty_printer_as_string(PyObject *obj)
     len = strlen(ppobj->buf);
     assert(len > 0);
     if ('\n' == ppobj->buf[len - 1]) {
-	return gcc_python_string_from_string_and_size(ppobj->buf,
+	return PyGccString_FromString_and_size(ppobj->buf,
 						      len - 1);
     } else {
-	return gcc_python_string_from_string(ppobj->buf);
+	return PyGccString_FromString(ppobj->buf);
     }
 }
 
 void
-gcc_PrettyPrinter_dealloc(PyObject *obj)
+PyGccPrettyPrinter_dealloc(PyObject *obj)
 {
     struct PyGccPrettyPrinter *ppobj;
 
     /* FIXME: */
-    assert(Py_TYPE(obj) == &gcc_PrettyPrinterType);
+    assert(Py_TYPE(obj) == &PyGccPrettyPrinter_TypeObj);
     ppobj = (struct PyGccPrettyPrinter *)obj;
 
     /* Close the (FILE*), if open: */

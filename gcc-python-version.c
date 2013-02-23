@@ -43,26 +43,26 @@ static struct PyStructSequence_Desc gcc_version_desc = {
     5
 };
 
-PyTypeObject GccVersionType;
+PyTypeObject GccVersion_TypeObj;
 
 void
-gcc_python_version_init(struct plugin_gcc_version *version)
+PyGcc_version_init(struct plugin_gcc_version *version)
 {
     actual_gcc_version = version;
-    PyStructSequence_InitType(&GccVersionType, &gcc_version_desc);
+    PyStructSequence_InitType(&GccVersion_TypeObj, &gcc_version_desc);
 }
 
 
 static PyObject *
 gcc_version_to_object(struct plugin_gcc_version *version)
 {
-    PyObject *obj = PyStructSequence_New(&GccVersionType);
+    PyObject *obj = PyStructSequence_New(&GccVersion_TypeObj);
     if (!obj) {
         return NULL;
     }
 
 #define SET_ITEM(IDX, FIELD) \
-    PyStructSequence_SET_ITEM(obj, (IDX), gcc_python_string_or_none(version->FIELD));
+    PyStructSequence_SET_ITEM(obj, (IDX), PyGccStringOrNone(version->FIELD));
 
     SET_ITEM(0, basever);
     SET_ITEM(1, datestamp);
@@ -76,7 +76,7 @@ gcc_version_to_object(struct plugin_gcc_version *version)
 }
 
 PyObject *
-gcc_python_get_plugin_gcc_version(PyObject *self, PyObject *args)
+PyGcc_get_plugin_gcc_version(PyObject *self, PyObject *args)
 {
     /*
        "gcc_version" is compiled in to the plugin, as part of
@@ -86,7 +86,7 @@ gcc_python_get_plugin_gcc_version(PyObject *self, PyObject *args)
 }
 
 PyObject *
-gcc_python_get_gcc_version(PyObject *self, PyObject *args)
+PyGcc_get_gcc_version(PyObject *self, PyObject *args)
 {
     /*
        "actual_gcc_version" is passed in when the plugin is initialized

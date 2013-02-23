@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "gcc-python-wrappers.h"
 
 #include "diagnostic.h"
+#include "gcc-c-api/gcc-diagnostics.h"
 
 /*
   I initially attempted to directly wrap gcc's:
@@ -40,10 +41,10 @@
 */
 
 PyObject*
-gcc_python_permerror(PyObject *self, PyObject *args)
+PyGcc_permerror(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj = NULL;
-    const char *msgid = NULL;
+    const char *msg = NULL;
     PyObject *result_obj = NULL;
     bool result_b;
 
@@ -51,13 +52,13 @@ gcc_python_permerror(PyObject *self, PyObject *args)
 			  "O!"
 			  "s"
 			  ":permerror",
-			  &gcc_LocationType, &loc_obj,
-			  &msgid)) {
+			  &PyGccLocation_TypeObj, &loc_obj,
+			  &msg)) {
         return NULL;
     }
 
     /* Invoke the GCC function: */
-    result_b = permerror(loc_obj->loc, "%s", msgid);
+    result_b = gcc_permerror(loc_obj->loc, msg);
 
     result_obj = PyBool_FromLong(result_b);
 
@@ -65,7 +66,7 @@ gcc_python_permerror(PyObject *self, PyObject *args)
 }
 
 PyObject *
-gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_error(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -75,18 +76,18 @@ gcc_python_error(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "O!s:error", (char**)keywords,
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      &msg)) {
         return NULL;
     }
 
-    error_at(loc_obj->loc, "%s", msg);
+    gcc_error_at(loc_obj->loc, msg);
 
     Py_RETURN_NONE;
 }
 
 PyObject *
-gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -102,7 +103,7 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
                                      "O!s|O:warning", (char**)keywords,
 
                                      /* code "O!": */
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      /* code: "s": */
                                      &msg,
 
@@ -115,11 +116,11 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
     assert(opt_obj);
 
     /* If a gcc.Option was given, extract the code: */
-    if (Py_TYPE(opt_obj) == (PyTypeObject*)&gcc_OptionType) {
-        opt_code = ((PyGccOption*)opt_obj)->opt_code;
+    if (Py_TYPE(opt_obj) == (PyTypeObject*)&PyGccOption_TypeObj) {
+        opt_code = ((PyGccOption*)opt_obj)->opt.inner;
 
         /* Ugly workaround; see this function: */
-        if (0 == gcc_python_option_is_enabled((enum opt_code)opt_code)) {
+        if (0 == PyGcc_option_is_enabled((enum opt_code)opt_code)) {
             return PyBool_FromLong(0);
         }
 
@@ -135,13 +136,13 @@ gcc_python_warning(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-    was_reported = warning_at(loc_obj->loc, opt_code, "%s", msg);
+    was_reported = warning_at(loc_obj->loc.inner, opt_code, "%s", msg);
 
     return PyBool_FromLong(was_reported);
 }
 
 PyObject *
-gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
+PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyGccLocation *loc_obj;
     const char *msg;
@@ -151,12 +152,12 @@ gcc_python_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "O!s:inform", (char**)keywords,
-                                     &gcc_LocationType, &loc_obj,
+                                     &PyGccLocation_TypeObj, &loc_obj,
                                      &msg)) {
         return NULL;
     }
 
-    inform(loc_obj->loc, "%s", msg);
+    gcc_inform(loc_obj->loc, msg);
 
     Py_RETURN_NONE;
 }

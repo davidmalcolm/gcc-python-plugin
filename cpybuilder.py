@@ -458,7 +458,7 @@ class CompilationUnit:
         by a PyGetSetDef
         """
         return self.add_simple_setter(identifier, typename, attrname,
-                                      'gcc_python_int_check',
+                                      'PyGccInt_Check',
                                       c_assignment)
 
 class SimpleModule:

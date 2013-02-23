@@ -37,17 +37,17 @@ def generate_option():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Option_getset_table', [],
-                                   identifier_prefix='gcc_Option',
+    getsettable = PyGetSetDefTable('PyGccOption_getset_table', [],
+                                   identifier_prefix='PyGccOption',
                                    typename='PyGccOption')
     def add_simple_getter(name, c_expression, doc):
         getsettable.add_simple_getter(cu, name, c_expression, doc)
 
     add_simple_getter('text',
-      'gcc_python_string_or_none(gcc_python_option_to_cl_option(self)->opt_text)',
+      'PyGccStringOrNone(PyGcc_option_to_cl_option(self)->opt_text)',
       '(string) The command-line text used to set this option')
     add_simple_getter('help',
-      'gcc_python_string_or_none(gcc_python_option_to_cl_option(self)->help)',
+      'PyGccStringOrNone(PyGcc_option_to_cl_option(self)->help)',
       '(string) The help text shown for this option')
 
     for flag, helptext in (
@@ -57,27 +57,27 @@ def generate_option():
         ('CL_TARGET', '(bool) Is this a target-specific option?'),
       ):
         add_simple_getter('is_%s' % flag[3:].lower(),
-                          'PyBool_FromLong(gcc_python_option_to_cl_option(self)->flags & %s)' % flag,
+                          'PyBool_FromLong(PyGcc_option_to_cl_option(self)->flags & %s)' % flag,
                           helptext)
 
     getsettable.add_gsdef('is_enabled',
-                          'gcc_Option_is_enabled',
+                          'PyGccOption_is_enabled',
                           None,
                           'True/False for whether or not this option is enabled, raising a '
                           'NotImplementedError for options for which the plugin cannot tell')
 
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_OptionType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccOption_TypeObj',
                           localname = 'Option',
                           tp_name = 'gcc.Option',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccOption',
-                          tp_init = 'gcc_Option_init',
+                          tp_init = 'PyGccOption_init',
                           tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_Option_repr',
-                          #tp_str = '(reprfunc)gcc_Option_str',
-                          #tp_richcompare = 'gcc_Option_richcompare'
+                          tp_repr = '(reprfunc)PyGccOption_repr',
+                          #tp_str = '(reprfunc)PyGccOption_str',
+                          #tp_richcompare = 'PyGccOption_richcompare'
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

@@ -33,70 +33,70 @@ def generate_pass():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Pass_getset_table', [],
-                                   identifier_prefix='gcc_Pass',
+    getsettable = PyGetSetDefTable('PyGccPass_getset_table', [],
+                                   identifier_prefix='PyGccPass',
                                    typename='PyGccPass')
     getsettable.add_simple_getter(cu,
                                   'name',
-                                  'gcc_python_string_from_string(self->pass->name)',
+                                  'PyGccString_FromString(self->pass->name)',
                                   'Name of the pass')
     getsettable.add_simple_getter(cu,
                                   'next',
-                                  'gcc_python_make_wrapper_pass(self->pass->next)',
+                                  'PyGccPass_New(self->pass->next)',
                                   'The next gcc.Pass after this one, or None')
     getsettable.add_simple_getter(cu,
                                   'sub',
-                                  'gcc_python_make_wrapper_pass(self->pass->sub)',
+                                  'PyGccPass_New(self->pass->sub)',
                                   "The first sub-pass (gated by this pass' predicate, if any)")
 
     for field in ('properties_required', 'properties_provided', 'properties_destroyed'):
         getsettable.add_simple_getter(cu,
                                       field,
-                                      'gcc_python_int_from_long(self->pass->%s)' % field,
+                                      'PyGccInt_FromLong(self->pass->%s)' % field,
                                       None)
     getsettable.add_simple_getter(cu,
                                   'static_pass_number',
-                                  'gcc_python_int_from_long(self->pass->static_pass_number)',
+                                  'PyGccInt_FromLong(self->pass->static_pass_number)',
                                   'Number of this pass, used as a fragment of the dump file name')
     getsettable.add_gsdef('dump_enabled',
-                          'gcc_Pass_get_dump_enabled',
-                          'gcc_Pass_set_dump_enabled',
+                          'PyGccPass_get_dump_enabled',
+                          'PyGccPass_set_dump_enabled',
                           '(boolean) Is dumping enabled for this pass?')
     cu.add_defn(getsettable.c_defn())
 
-    methods = PyMethodTable('gcc_Pass_methods', [])
+    methods = PyMethodTable('PyGccPass_methods', [])
     methods.add_method('get_roots',
-                       'gcc_Pass_get_roots',
+                       'PyGccPass_get_roots',
                        'METH_CLASS | METH_VARARGS',
                        "Get a tuple of gcc.Pass instances, the roots of the compilation pass tree")
     methods.add_method('get_by_name',
-                       '(PyCFunction)gcc_Pass_get_by_name',
+                       '(PyCFunction)PyGccPass_get_by_name',
                        'METH_CLASS | METH_VARARGS | METH_KEYWORDS',
                        "Get the gcc.Pass instance for the pass with the given name, raising ValueError if it isn't found")
     methods.add_method('register_after',
-                       '(PyCFunction)gcc_Pass_register_after',
+                       '(PyCFunction)PyGccPass_register_after',
                        'METH_VARARGS | METH_KEYWORDS',
                        "Given the name of another pass, register this gcc.Pass to occur immediately after that other pass")
     methods.add_method('register_before',
-                       '(PyCFunction)gcc_Pass_register_before',
+                       '(PyCFunction)PyGccPass_register_before',
                        'METH_VARARGS | METH_KEYWORDS',
                        "Given the name of another pass, register this gcc.Pass to occur immediately before that other pass")
     methods.add_method('replace',
-                       '(PyCFunction)gcc_Pass_replace',
+                       '(PyCFunction)PyGccPass_replace',
                        'METH_VARARGS | METH_KEYWORDS',
                        "Given the name of another pass, replace that pass with this gcc.Pass")
 
     cu.add_defn(methods.c_defn())
     
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_PassType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccPass_TypeObj',
                           localname = 'Pass',
                           tp_name = 'gcc.Pass',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccPass',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_Pass_repr',
-                          tp_str = '(reprfunc)gcc_Pass_repr',
+                          tp_repr = '(reprfunc)PyGccPass_repr',
+                          tp_str = '(reprfunc)PyGccPass_repr',
                           tp_methods = methods.identifier,
                           tp_flags = '(Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE)',
                           )
@@ -113,14 +113,14 @@ def generate_pass_subclasses():
     for opt_pass_type in ('GIMPLE_PASS', 'RTL_PASS',
                           'SIMPLE_IPA_PASS', 'IPA_PASS'):
         cc = camel_case(opt_pass_type)
-        pytype = PyGccWrapperTypeObject(identifier = 'gcc_%sType' % cc,
+        pytype = PyGccWrapperTypeObject(identifier = 'PyGcc%s_TypeObj' % cc,
                               localname = cc,
                               tp_name = 'gcc.%s' % cc,
-                              tp_dealloc = 'gcc_python_wrapper_dealloc',
+                              tp_dealloc = 'PyGccWrapper_Dealloc',
                               struct_name = 'PyGccPass',
                               tp_new = 'PyType_GenericNew',
-                              tp_init = 'gcc_%s_init' % cc,
-                              tp_base = '&gcc_PassType',
+                              tp_init = 'PyGcc%s_init' % cc,
+                              tp_base = '&PyGccPass_TypeObj',
                               tp_flags = '(Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE)'
                               )
         cu.add_defn(pytype.c_defn())

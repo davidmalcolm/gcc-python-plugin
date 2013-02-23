@@ -42,50 +42,50 @@ def generate_param():
     global modinit_preinit
     global modinit_postinit
 
-    getsettable = PyGetSetDefTable('gcc_Parameter_getset_table', [],
-                                   identifier_prefix='gcc_Parameter',
+    getsettable = PyGetSetDefTable('PyGccParameter_getset_table', [],
+                                   identifier_prefix='PyGccParameter',
                                    typename='PyGccParameter')
     def add_simple_getter(name, c_expression, doc):
         getsettable.add_simple_getter(cu, name, c_expression, doc)
     add_simple_getter('option',
-                      'gcc_python_string_or_none(PARAM_INFO(self).option)',
+                      'PyGccStringOrNone(PARAM_INFO(self).option)',
                       "(string) The name used with the `--param <name>=<value>' switch to set this value")
     add_simple_getter('default_value',
-                      'gcc_python_int_from_long(PARAM_INFO(self).default_value)',
+                      'PyGccInt_FromLong(PARAM_INFO(self).default_value)',
                       "(int/long)")
     add_simple_getter('min_value',
-                      'gcc_python_int_from_long(PARAM_INFO(self).min_value)',
+                      'PyGccInt_FromLong(PARAM_INFO(self).min_value)',
                       "(int/long) The minimum acceptable value")
     add_simple_getter('max_value',
-                      'gcc_python_int_from_long(PARAM_INFO(self).max_value)',
+                      'PyGccInt_FromLong(PARAM_INFO(self).max_value)',
                       "(int/long) The maximum acceptable value, if greater than min_value")
     add_simple_getter('help',
-                      'gcc_python_string_or_none(PARAM_INFO(self).help)',
+                      'PyGccStringOrNone(PARAM_INFO(self).help)',
                       "(string) A short description of the option.")
 
     # "current_value":
-    getter = cu.add_simple_getter('gcc_Parameter_get_current_value',
+    getter = cu.add_simple_getter('PyGccParameter_get_current_value',
                                   'PyGccParameter',
-                                  'gcc_python_int_from_long(PARAM_VALUE(self->param_num))')
-    setter = cu.add_simple_int_setter('gcc_Parameter_set_current_value',
+                                  'PyGccInt_FromLong(PARAM_VALUE(self->param_num))')
+    setter = cu.add_simple_int_setter('PyGccParameter_set_current_value',
                                       'PyGccParameter',
                                       'current_value',
-                                      'global_options.x_param_values[self->param_num] = gcc_python_int_as_long(value)') #FIXME
+                                      'global_options.x_param_values[self->param_num] = PyGccInt_AsLong(value)') #FIXME
     getsettable.add_gsdef('current_value',
                           getter, setter,
                           "(int/long)")
 
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_ParameterType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccParameter_TypeObj',
                           localname = 'Parameter',
                           tp_name = 'gcc.Parameter',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc',
+                          tp_dealloc = 'PyGccWrapper_Dealloc',
                           struct_name = 'PyGccParameter',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          #tp_repr = '(reprfunc)gcc_Parameter_repr',
-                          #tp_str = '(reprfunc)gcc_Parameter_str',
+                          #tp_repr = '(reprfunc)PyGccParameter_repr',
+                          #tp_str = '(reprfunc)PyGccParameter_str',
                           )
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()

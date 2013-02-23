@@ -22,7 +22,7 @@ cu = CompilationUnit()
 cu.add_include('gcc-python.h')
 cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
-cu.add_include("tree.h")
+cu.add_include("gcc-c-api/gcc-location.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -36,47 +36,45 @@ def generate_location():
 
     cu.add_defn("""
 static PyObject *
-gcc_Location_get_file(struct PyGccLocation *self, void *closure)
+PyGccLocation_get_file(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_string_from_string(LOCATION_FILE(self->loc));
+    return PyGccString_FromString(gcc_location_get_filename(self->loc));
 }
 """)
 
     cu.add_defn("""
 static PyObject *
-gcc_Location_get_line(struct PyGccLocation *self, void *closure)
+PyGccLocation_get_line(struct PyGccLocation *self, void *closure)
 {
-    return gcc_python_int_from_long(LOCATION_LINE(self->loc));
+    return PyGccInt_FromLong(gcc_location_get_line(self->loc));
 }
 """)
 
     cu.add_defn("""
 static PyObject *
-gcc_Location_get_column(struct PyGccLocation *self, void *closure)
+PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
 {
-    expanded_location exploc = expand_location(self->loc);
-
-    return gcc_python_int_from_long(exploc.column);
+    return PyGccInt_FromLong(gcc_location_get_column(self->loc));
 }
 """)
 
-    getsettable = PyGetSetDefTable('gcc_Location_getset_table',
-                                   [PyGetSetDef('file', 'gcc_Location_get_file', None, 'Name of the source file'),
-                                    PyGetSetDef('line', 'gcc_Location_get_line', None, 'Line number within source file'),
-                                    PyGetSetDef('column', 'gcc_Location_get_column', None, 'Column number within source file'),
+    getsettable = PyGetSetDefTable('PyGccLocation_getset_table',
+                                   [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
+                                    PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
+                                    PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
                                     ])
     cu.add_defn(getsettable.c_defn())
 
-    pytype = PyGccWrapperTypeObject(identifier = 'gcc_LocationType',
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',
                           localname = 'Location',
                           tp_name = 'gcc.Location',
                           struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
-                          tp_repr = '(reprfunc)gcc_Location_repr',
-                          tp_str = '(reprfunc)gcc_Location_str',
-                          tp_richcompare = 'gcc_Location_richcompare',
-                          tp_dealloc = 'gcc_python_wrapper_dealloc')
+                          tp_repr = '(reprfunc)PyGccLocation_repr',
+                          tp_str = '(reprfunc)PyGccLocation_str',
+                          tp_richcompare = 'PyGccLocation_richcompare',
+                          tp_dealloc = 'PyGccWrapper_Dealloc')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()

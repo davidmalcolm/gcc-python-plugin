@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -25,20 +25,74 @@
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
+#include "gcc-c-api/gcc-gimple.h"
+
+gcc_gimple_asm
+PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_asm(self->stmt);
+}
+
+gcc_gimple_assign
+PyGccGimple_as_gcc_gimple_assign(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_assign(self->stmt);
+}
+
+gcc_gimple_call
+PyGccGimple_as_gcc_gimple_call(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_call(self->stmt);
+}
+
+gcc_gimple_return
+PyGccGimple_as_gcc_gimple_return(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_return(self->stmt);
+}
+
+gcc_gimple_cond
+PyGccGimple_as_gcc_gimple_cond(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_cond(self->stmt);
+}
+
+gcc_gimple_phi
+PyGccGimple_as_gcc_gimple_phi(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_phi(self->stmt);
+}
+
+gcc_gimple_switch
+PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_switch(self->stmt);
+}
 
 static PyObject *
 do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 {
-    PyObject *ppobj = gcc_python_pretty_printer_new();
+    PyObject *ppobj = PyGccPrettyPrinter_New();
     PyObject *result = NULL;
     if (!ppobj) {
 	return NULL;
     }
 
-    dump_gimple_stmt(gcc_python_pretty_printer_as_pp(ppobj),
-		     self->stmt,
-		     spc, flags);
-    result = gcc_python_pretty_printer_as_string(ppobj);
+    /*
+      gcc 4.8 renamed "dump_gimple_stmt" to "pp_gimple_stmt_1"
+      (in r191884).  Declaration is in gimple-pretty-print.h
+    */
+#if (GCC_VERSION >= 4008)
+    pp_gimple_stmt_1(PyGccPrettyPrinter_as_pp(ppobj),
+                     self->stmt.inner,
+                     spc, flags);
+#else
+    dump_gimple_stmt(PyGccPrettyPrinter_as_pp(ppobj),
+                     self->stmt.inner,
+                     spc, flags);
+#endif
+
+    result = PyGccPrettyPrinter_as_string(ppobj);
     if (!result) {
 	goto error;
     }
@@ -52,15 +106,61 @@ do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 }
 
 PyObject *
-gcc_Gimple_repr(struct PyGccGimple * self)
+PyGccGimple_repr(struct PyGccGimple * self)
 {
-    return gcc_python_string_from_format("%s()", Py_TYPE(self)->tp_name);
+    return PyGccString_FromFormat("%s()", Py_TYPE(self)->tp_name);
 }
 
 PyObject *
-gcc_Gimple_str(struct PyGccGimple * self)
+PyGccGimple_str(struct PyGccGimple * self)
 {
     return do_pretty_print(self, 0, 0);
+}
+
+long
+PyGccGimple_hash(struct PyGccGimple * self)
+{
+    return (long)self->stmt.inner;
+}
+
+PyObject *
+PyGccGimple_richcompare(PyObject *o1, PyObject *o2, int op)
+{
+    struct PyGccGimple *gimpleobj1;
+    struct PyGccGimple *gimpleobj2;
+    int cond;
+    PyObject *result_obj;
+
+    if (!PyObject_TypeCheck(o1, (PyTypeObject*)&PyGccGimple_TypeObj)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+    if (!PyObject_TypeCheck(o2, (PyTypeObject*)&PyGccGimple_TypeObj)) {
+	result_obj = Py_NotImplemented;
+	goto out;
+    }
+
+    gimpleobj1 = (struct PyGccGimple *)o1;
+    gimpleobj2 = (struct PyGccGimple *)o2;
+
+    switch (op) {
+    case Py_EQ:
+	cond = (gimpleobj1->stmt.inner == gimpleobj2->stmt.inner);
+	break;
+
+    case Py_NE:
+	cond = (gimpleobj1->stmt.inner != gimpleobj2->stmt.inner);
+	break;
+
+    default:
+        result_obj = Py_NotImplemented;
+        goto out;
+    }
+    result_obj = cond ? Py_True : Py_False;
+
+ out:
+    Py_INCREF(result_obj);
+    return result_obj;
 }
 
 static tree
@@ -74,12 +174,12 @@ gimple_walk_tree_callback(tree *tree_ptr, int *walk_subtrees, void *data)
 
     assert(closure);
     assert(*tree_ptr);
-    tree_obj = gcc_python_make_wrapper_tree(*tree_ptr);
+    tree_obj = PyGccTree_New(gcc_private_make_tree(*tree_ptr));
     if (!tree_obj) {
         goto error;
     }
 
-    args = gcc_python_closure_make_args(closure, 0, tree_obj);
+    args = PyGcc_Closure_MakeArgs(closure, 0, tree_obj);
     if (!args) {
         goto error;
     }
@@ -111,7 +211,7 @@ gimple_walk_tree_callback(tree *tree_ptr, int *walk_subtrees, void *data)
 }
 
 PyObject *
-gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs)
+PyGccGimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs)
 {
     PyObject *callback;
     PyObject *extraargs = NULL;
@@ -122,7 +222,7 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
     callback = PyTuple_GetItem(args, 0);
     extraargs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
 
-    closure = gcc_python_closure_new_generic(callback, extraargs, kwargs);
+    closure = PyGcc_closure_new_generic(callback, extraargs, kwargs);
     if (!closure) {
         Py_DECREF(callback);
         Py_DECREF(extraargs);
@@ -132,38 +232,37 @@ gcc_Gimple_walk_tree(struct PyGccGimple * self, PyObject *args, PyObject *kwargs
     memset(&wi, 0, sizeof(wi));
     wi.info = closure;
 
-    result = walk_gimple_op (self->stmt,
+    result = walk_gimple_op (self->stmt.inner,
                              gimple_walk_tree_callback,
                              &wi);
-    Py_XDECREF(closure->callback);
-    Py_XDECREF(closure->extraargs);
-    Py_XDECREF(closure->kwargs);
+
+    PyGcc_closure_free(closure);
 
     /* Propagate exceptions: */
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    return gcc_python_make_wrapper_tree(result);
+    return PyGccTree_New(gcc_private_make_tree(result));
 }
 
 PyObject *
-gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
+PyGccGimple_get_rhs(struct PyGccGimple *self, void *closure)
 {
     PyObject * result = NULL;
     unsigned int i;
 
-    assert(gimple_has_ops(self->stmt));
+    assert(gimple_has_ops(self->stmt.inner));
 
-    assert(gimple_num_ops(self->stmt) > 0);
-    result = PyList_New(gimple_num_ops (self->stmt) - 1);
+    assert(gimple_num_ops(self->stmt.inner) > 0);
+    result = PyList_New(gimple_num_ops (self->stmt.inner) - 1);
     if (!result) {
 	goto error;
     }
     
-    for (i = 1 ; i < gimple_num_ops(self->stmt); i++) {
-	tree t = gimple_op(self->stmt, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
+    for (i = 1 ; i < gimple_num_ops(self->stmt.inner); i++) {
+	tree t = gimple_op(self->stmt.inner, i);
+	PyObject *obj = PyGccTree_New(gcc_private_make_tree(t));
 	if (!obj) {
 	    goto error;
 	}
@@ -178,45 +277,51 @@ gcc_Gimple_get_rhs(struct PyGccGimple *self, void *closure)
 }
 
 PyObject *
-gcc_Gimple_get_str_no_uid(struct PyGccGimple *self, void *closure)
+PyGccGimple_get_str_no_uid(struct PyGccGimple *self, void *closure)
 {
     return do_pretty_print(self, 0, TDF_NOUID);
 }
 
+IMPL_APPENDER(add_tree_to_list,
+              gcc_tree,
+              PyGccTree_New)
+
 PyObject *
-gcc_GimpleCall_get_args(struct PyGccGimple *self, void *closure)
+PyGccGimpleCall_get_args(struct PyGccGimple *self, void *closure)
 {
-    PyObject * result = NULL;
-    int num_args = gimple_call_num_args (self->stmt);
-    int i;
-
-    result = PyList_New(num_args);
-    if (!result) {
-	goto error;
-    }
-    
-    for (i = 0 ; i < num_args; i++) {
-	tree t = gimple_call_arg(self->stmt, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
-	if (!obj) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, obj);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    IMPL_LIST_MAKER(gcc_gimple_call_for_each_arg,
+                    PyGccGimple_as_gcc_gimple_call(self),
+                    add_tree_to_list)
 }
 
 PyObject *
-gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
+PyGccGimpleLabel_repr(PyObject *self)
+{
+    PyObject *label_repr = NULL;
+    PyObject *result = NULL;
+
+    label_repr = PyGcc_GetReprOfAttribute(self, "label");
+    if (!label_repr) {
+        goto cleanup;
+    }
+
+    result = PyGccString_FromFormat("%s(label=%s)",
+                                           Py_TYPE(self)->tp_name,
+                                           PyGccString_AsString(label_repr));
+
+ cleanup:
+    Py_XDECREF(label_repr);
+
+    return result;
+}
+
+
+PyObject *
+PyGccGimplePhi_get_args(struct PyGccGimple *self, void *closure)
 {
     /* See e.g. gimple-pretty-print.c:dump_gimple_phi */
     PyObject * result = NULL;
-    int num_args = gimple_phi_num_args (self->stmt);
+    int num_args = gimple_phi_num_args (self->stmt.inner);
     int i;
 
     result = PyList_New(num_args);
@@ -225,13 +330,13 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
     }
 
     for (i = 0 ; i < num_args; i++) {
-        tree arg_def = gimple_phi_arg_def(self->stmt, i);
-        edge arg_edge = gimple_phi_arg_edge(self->stmt, i);
+        tree arg_def = gimple_phi_arg_def(self->stmt.inner, i);
+        edge arg_edge = gimple_phi_arg_edge(self->stmt.inner, i);
         /* fwiw, there's also gimple_phi_arg_has_location and gimple_phi_arg_location */
         PyObject *tuple_obj;
         tuple_obj = Py_BuildValue("O&O&",
-                                  gcc_python_make_wrapper_tree, arg_def,
-                                  gcc_python_make_wrapper_edge, arg_edge);
+                                  PyGccTree_New, arg_def,
+                                  PyGccEdge_New, arg_edge);
         if (!tuple_obj) {
             goto error;
         }
@@ -245,42 +350,38 @@ gcc_GimplePhi_get_args(struct PyGccGimple *self, void *closure)
     return NULL;
 }
 
+IMPL_APPENDER(add_case_label_expr_to_list,
+              gcc_case_label_expr,
+              PyGccCaseLabelExpr_New)
+
 PyObject *
-gcc_GimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
+PyGccGimpleSwitch_get_labels(struct PyGccGimple *self, void *closure)
 {
-    PyObject * result = NULL;
-    unsigned num_labels = gimple_switch_num_labels(self->stmt);
-    unsigned int i;
-
-    result = PyList_New(num_labels);
-    if (!result) {
-	goto error;
-    }
-
-    for (i = 0 ; i < num_labels; i++) {
-	tree t = gimple_switch_label(self->stmt, i);
-	PyObject *obj = gcc_python_make_wrapper_tree(t);
-	if (!obj) {
-	    goto error;
-	}
-	PyList_SetItem(result, i, obj);
-    }
-
-    return result;
-
- error:
-    Py_XDECREF(result);
-    return NULL;
+    IMPL_LIST_MAKER(gcc_gimple_switch_for_each_label,
+                    PyGccGimple_as_gcc_gimple_switch(self),
+                    add_case_label_expr_to_list)
 }
 
 
-PyObject*
-gcc_python_make_wrapper_gimple(gimple stmt)
+/*
+   Ensure we have a unique PyGccGimple per gimple address (by maintaining a dict):
+*/
+static PyObject *gimple_wrapper_cache = NULL;
+
+union gcc_gimple_or_ptr {
+    gcc_gimple stmt;
+    void *ptr;
+};
+
+static PyObject *
+real_make_gimple_wrapper(void *ptr)
 {
+    union gcc_gimple_or_ptr u;
+    u.ptr = ptr;
     struct PyGccGimple *gimple_obj = NULL;
     PyGccWrapperTypeObject* tp;
   
-    tp = gcc_python_autogenerated_gimple_type_for_stmt(stmt);
+    tp = PyGcc_autogenerated_gimple_type_for_stmt(u.stmt);
     assert(tp);
     //printf("tp:%p\n", tp);
   
@@ -289,7 +390,7 @@ gcc_python_make_wrapper_gimple(gimple stmt)
         goto error;
     }
 
-    gimple_obj->stmt = stmt;
+    gimple_obj->stmt = u.stmt;
 
     return (PyObject*)gimple_obj;
       
@@ -297,11 +398,20 @@ error:
     return NULL;
 }
 
-void
-wrtp_mark_for_PyGccGimple(PyGccGimple *wrapper)
+PyObject*
+PyGccGimple_New(gcc_gimple stmt)
 {
-    /* Mark the underlying object (recursing into its fields): */
-    gt_ggc_mx_gimple_statement_d(wrapper->stmt);
+    union gcc_gimple_or_ptr u;
+    u.stmt = stmt;
+    return PyGcc_LazilyCreateWrapper(&gimple_wrapper_cache,
+					    u.ptr,
+					    real_make_gimple_wrapper);
+}
+
+void
+PyGcc_WrtpMarkForPyGccGimple(PyGccGimple *wrapper)
+{
+    gcc_gimple_mark_in_use(wrapper->stmt);
 }
 
 /*
