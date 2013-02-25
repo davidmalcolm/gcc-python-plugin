@@ -161,6 +161,11 @@ class TestStream:
             # to narrow/wide implementations ("UCS2"/"UCS4")
             line = re.sub('PyUnicodeUCS4_AsUTF8String', 'PyUnicode_AsUTF8String', line)
 
+            # Avoid hardcoding timings from unittest's output:
+            line = re.sub(r'Ran ([0-9]+ tests?) in ([0-9]+\.[0-9]+s)',
+                          r'Ran \1 in #s',
+                          line)
+
             result += line + '\n'
 
         return result
