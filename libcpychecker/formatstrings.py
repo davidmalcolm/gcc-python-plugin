@@ -17,6 +17,8 @@
 
 import sys
 
+from firehose.report import CustomFields
+
 from gccutils import get_src_for_loc, get_global_typedef
 
 from libcpychecker.diagnostics import emit_warning
@@ -199,6 +201,17 @@ class MismatchingType(ParsedFormatStringWarning):
                 '  for format code "%s"\n'
                 % (self.arg_num, self.vararg, describe_type(self.vararg.type),
                    describe_type(self.exp_type), self.arg_fmt_string))
+
+    def make_custom_fields(self):
+        cf = CustomFields()
+        cf['function'] = self.funcname
+        cf['format-code'] = self.arg_fmt_string
+        cf['full-format-string'] = self.fmt.fmt_string
+        cf['expected-type'] = describe_type(self.exp_type)
+        cf['actual-type'] = describe_type(self.vararg.type)
+        cf['expression'] = str(self.vararg)
+        cf['argument-num'] = self.arg_num
+        return cf
 
     def __str__(self):
         return ('Mismatching type in call to %s with format code "%s"'
@@ -452,7 +465,8 @@ def check_pyargs(fun, ctxt):
                                      fun.decl.name,
                                      testid='mismatching-type-in-format-string',
                                      cwe=None,
-                                     notes=err.extra_info())
+                                     notes=err.extra_info(),
+                                     customfields=err.make_custom_fields())
 
     def maybe_check_callsite(stmt):
         if stmt.fndecl:

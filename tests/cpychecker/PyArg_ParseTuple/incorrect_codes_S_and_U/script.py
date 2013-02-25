@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -16,4 +16,25 @@
 #   <http://www.gnu.org/licenses/>.
 
 from libcpychecker import main
-main()
+
+def assertEqual(lhs, rhs):
+    if lhs != rhs:
+        raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
+
+def selftest(ctxt, fun):
+    assertEqual(len(ctxt.analysis.results), 2)
+
+    issue0 = ctxt.analysis.results[0]
+    assertEqual(issue0.testid, 'mismatching-type-in-format-string')
+
+    # Verify that the issue contains meaningful custom fields:
+    assertEqual(issue0.customfields['function'], 'PyArg_ParseTuple')
+    assertEqual(issue0.customfields['format-code'], 'S')
+    assertEqual(issue0.customfields['full-format-string'], 'SU')
+    assertEqual(issue0.customfields['expected-type'],
+                'one of "struct PyStringObject * *" or "struct PyObject * *"')
+    assertEqual(issue0.customfields['actual-type'], '"int *" (pointing to 32 bits)')
+    assertEqual(issue0.customfields['expression'], '&val1')
+    assertEqual(issue0.customfields['argument-num'], 3)
+
+main(selftest=selftest)

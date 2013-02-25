@@ -52,7 +52,8 @@ class Options:
                  show_possible_null_derefs=False,
                  only_on_python_code=True,
                  maxtrans=256,
-                 outputxmlpath=None):
+                 outputxmlpath=None,
+                 selftest=None):
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.show_timings = show_timings
@@ -62,6 +63,7 @@ class Options:
         self.only_on_python_code = only_on_python_code
         self.maxtrans = maxtrans
         self.outputxmlpath = outputxmlpath
+        self.selftest = selftest
 
 class Context:
     def __init__(self, options):
@@ -123,6 +125,9 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                 else:
                     # Normal mode (without profiler):
                     self._check_refcounts(fun)
+
+            if self.options.selftest:
+                self.options.selftest(self.ctxt, fun)
 
     def _check_refcounts(self, fun):
         try:

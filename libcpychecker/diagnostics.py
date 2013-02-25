@@ -281,7 +281,8 @@ class Reporter:
         for r in self.reports:
             emit_report(self.ctxt, r)
 
-def emit_warning(ctxt, loc, msg, funcname, testid, cwe, notes):
+def emit_warning(ctxt, loc, msg, funcname, testid, cwe, notes,
+                 customfields=None):
     #gcc.warning(loc, msg)
 
     if notes is not None:
@@ -289,6 +290,7 @@ def emit_warning(ctxt, loc, msg, funcname, testid, cwe, notes):
         notes = Notes(text)
     r = make_issue(funcname, loc, msg, testid, cwe)
     r.notes = notes
+    r.customfields = customfields
 
     emit_report(ctxt, r)
 
