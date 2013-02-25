@@ -53,7 +53,8 @@ class Options:
                  only_on_python_code=True,
                  maxtrans=256,
                  outputxmlpath=None,
-                 selftest=None):
+                 selftest=None,
+                 reportstats=False):
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.show_timings = show_timings
@@ -64,6 +65,7 @@ class Options:
         self.maxtrans = maxtrans
         self.outputxmlpath = outputxmlpath
         self.selftest = selftest
+        self.reportstats = reportstats
 
 class Context:
     def __init__(self, options):

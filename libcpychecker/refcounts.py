@@ -22,7 +22,7 @@
 
 import sys
 
-from firehose.report import Notes, Failure, Message, CustomFields
+from firehose.report import Notes, Failure, Message, CustomFields, Info
 
 import gcc
 
@@ -4226,6 +4226,18 @@ def impl_check_refcounts(ctxt, fun, options):
     # Walk the CFG, gathering the information we're interested in
 
     check_isinstance(fun, gcc.Function)
+
+    if options.reportstats:
+        # Optionally, dump information about each function to the firehose
+        # results:
+        customfields = CustomFields()
+        gather_stats_on_function(fun, customfields)
+
+        info = Info(infoid='stats',
+                    location=WrappedGccLocation(fun.start, fun.decl.name),
+                    message=None,
+                    customfields=customfields)
+        ctxt.analysis.results.append(info)
 
     # Generate a mapping from facet names to facet classes, so that we know
     # what additional attributes each State instance will have.
