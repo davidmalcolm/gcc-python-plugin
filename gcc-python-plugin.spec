@@ -112,11 +112,12 @@ BuildPlugin() {
     rm -f *.o
     make \
        %{?_smp_mflags} \
+       PLUGIN_NAME=$PluginName \
+       PLUGIN_DSO=$PluginDso \
        PYTHON=$PythonExe \
        PYTHON_CONFIG=$PythonConfig \
        PLUGIN_PYTHONPATH=%{gcc_plugins_dir}/$PluginName \
        plugin
-    mv python.so $PluginDso
 }
 
 BuildPlugin \
@@ -164,44 +165,10 @@ InstallPlugin() {
     PluginDso=$3
     PluginName=$4
 
-    cp $PluginDso $RPM_BUILD_ROOT/%{gcc_plugins_dir}
-
-    # Install support files into the correct location:
-    PluginDir=$PluginName
-    mkdir $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-    cp -a gccutils $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-    cp -a libcpychecker $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-
-    # Create "gcc-with-" support script:
-    install -m 755 gcc-with-python $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-    # Fixup the reference to the plugin in that script, from being expressed as
-    # a DSO filename with a path (for a working copy) to a name of an installed
-    # plugin within GCC's search directory:
-    sed \
-       -i \
-       -e"s|-fplugin=[^ ]*|-fplugin=$PluginName|" \
-       $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-
-    # Fixup the plugin name within -fplugin-arg-PLUGIN_NAME-script to match the
-    # name for this specific build:
-    sed \
-       -i \
-       -e"s|-fplugin-arg-python-script|-fplugin-arg-$PluginName-script|" \
-       $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-
-    # Fixup the generic manpage for this build:
-    cp docs/_build/man/gcc-with-python.1 gcc-with-$PluginName.1
-    sed \
-        -i \
-        -e"s|gcc-with-python|gcc-with-$PluginName|g" \
-        gcc-with-$PluginName.1
-    UpperPluginName=$(python -c"print('$PluginName'.upper())")
-    sed \
-        -i \
-        -e"s|GCC-WITH-PYTHON|GCC-WITH-$UpperPluginName|g" \
-        gcc-with-$PluginName.1
-    gzip gcc-with-$PluginName.1
-    cp gcc-with-$PluginName.1.gz  $RPM_BUILD_ROOT/%{_mandir}/man1
+    make install \
+        DESTDIR=$RPM_BUILD_ROOT \
+        PLUGIN_NAME=$PluginName \
+        PLUGIN_DSO=$PluginDso
 }
 
 # Install the gcc-c-api once (it's shared by all the python plugins):
