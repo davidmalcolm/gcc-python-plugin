@@ -169,7 +169,7 @@ InstallPlugin() {
     # Install support files into the correct location:
     PluginDir=$PluginName
     mkdir $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-    cp -a gccutils.py $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
+    cp -a gccutils $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
     cp -a libcpychecker $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
 
     # Create "gcc-with-" support script:
