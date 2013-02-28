@@ -40,11 +40,19 @@ BuildRequires: python3-pygments
 %description
 Plugins for embedding various versions of Python within GCC
 
+%package -n gcc-python-plugin-c-api
+Summary: Shared library to make it easier to write GCC plugins
+Group:   Development/Languages
+
+%description -n gcc-python-plugin-c-api
+Shared library to make it easier to write GCC plugins
+
 %package -n gcc-python2-plugin
 Summary: GCC plugin embedding Python 2
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-plugin
 GCC plugin embedding Python 2
@@ -54,6 +62,7 @@ Summary: GCC plugin embedding Python 3
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-plugin
 GCC plugin embedding Python 3
@@ -63,6 +72,7 @@ Summary: GCC plugin embedding Python 2 debug build
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-debug-plugin
 GCC plugin embedding debug build of Python 2
@@ -72,6 +82,7 @@ Summary: GCC plugin embedding Python 3 debug build
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-debug-plugin
 GCC plugin embedding debug build of Python 3
@@ -193,6 +204,9 @@ InstallPlugin() {
     cp gcc-with-$PluginName.1.gz  $RPM_BUILD_ROOT/%{_mandir}/man1
 }
 
+# Install the gcc-c-api once (it's shared by all the python plugins):
+cp gcc-c-api/libgcccapi.so $RPM_BUILD_ROOT/%{gcc_plugins_dir}
+
 InstallPlugin \
   python \
   python-config \
@@ -292,6 +306,9 @@ CheckPlugin \
   python3.2dmu-config \
   python3-debug.so \
   "-x tests/cpychecker"
+
+%files -n gcc-python-plugin-c-api
+%{gcc_plugins_dir}/libgcccapi.so
 
 %files -n gcc-python2-plugin
 %defattr(-,root,root,-)
