@@ -54,6 +54,8 @@ from six.moves import configparser
 
 from cpybuilder import CommandError
 
+PLUGIN_NAME = os.environ.get('PLUGIN_NAME', 'python')
+
 class CompilationError(CommandError):
     def __init__(self, out, err, p, args):
         CommandError.__init__(self, out, err, p)
@@ -275,8 +277,8 @@ def run_test(testdir):
         # Force LTO when there's more than one source file:
         args += ['-flto', '-flto-partition=none']
     args += ['-o', outfile]
-    args += ['-fplugin=%s' % os.path.abspath('python.so'),
-             '-fplugin-arg-python-script=%s' % script_py]
+    args += ['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
+             '-fplugin-arg-%s-script=%s' % (PLUGIN_NAME, script_py)]
 
     # Special-case: add the python include dir (for this runtime) if the C code
     # uses Python.h:

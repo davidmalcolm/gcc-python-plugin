@@ -26,6 +26,8 @@ import six
 from testcpybuilder import BuiltModule, SimpleModule, CompilationError
 from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
 
+PLUGIN_NAME = os.environ.get('PLUGIN_NAME', 'python')
+
 class ExpectedErrorNotFound(CompilationError):
     def __init__(self, expected_err, actual_err, bm):
         CompilationError.__init__(self, bm)
@@ -52,8 +54,8 @@ class ExpectedErrorNotFound(CompilationError):
 
 class AnalyzerTests(unittest.TestCase):
     def compile_src(self, bm):
-        bm.compile_src(extra_cflags=['-fplugin=%s' % os.path.abspath('python.so'),
-                                     '-fplugin-arg-python-script=cpychecker.py'])
+        bm.compile_src(extra_cflags=['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
+                                     '-fplugin-arg-%s-script=cpychecker.py' % PLUGIN_NAME])
 
     def build_module(self, bm):
         bm.write_src('example')
