@@ -146,7 +146,27 @@ class GraphView(GtkClutter.Embed):
         self.ga = GraphActor(self)
         stage.add_actor(self.ga)
 
-        self.ga.set_scale(0.5, 0.5)
+        self.set_scale(0.5)
+
+        #print(dir(Gdk.EventMask))
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
+                        Gdk.EventMask.SCROLL_MASK)
+        def on_button_press(*args):
+            print('on_button_press: %r' % (args, ))
+        self.connect("button-press-event", on_button_press)
+        def on_key_press(*args):
+            print('on_key_press: %r' % (args, ))
+        self.connect("key-press-event", on_key_press)
+        def on_scroll_event(view, scrollevent):
+            # print('on_scroll_event: %r %r' % (view, scrollevent))
+            direction = scrollevent.direction
+            if direction == Gdk.ScrollDirection.UP:
+                self.zoom_in()
+                return True
+            elif direction == Gdk.ScrollDirection.DOWN:
+                self.zoom_out()
+                return True
+        self.connect("scroll-event", on_scroll_event)
 
     def _make_actor_for_node(self, node):
         raise NotImplementedError
@@ -185,6 +205,16 @@ class GraphView(GtkClutter.Embed):
         actor.is_selected = True
         actor.set_background_color(self.SELECTED)
 
+    def set_scale(self, scale):
+        self.scale = scale
+        self.ga.set_scale(self.scale, self.scale)
+
+    def zoom_in(self):
+        self.set_scale(self.scale * 1.1)
+
+    def zoom_out(self):
+        self.set_scale(self.scale * 0.9)
+
 class GraphActor(Clutter.Actor):
     """
     Setting the scale on the "stage" doesn't seem to zoom things, so
@@ -217,6 +247,10 @@ class GraphActor(Clutter.Actor):
                 self.actor_for_edge[outedge] = edgeactor
 
         self._generate_layout()
+
+        # Allow dragging this around:
+        self.add_action(Clutter.DragAction.new())
+        self.set_reactive(True)
 
     def _make_dot(self):
         result = 'digraph %s {\n' % 'test'
