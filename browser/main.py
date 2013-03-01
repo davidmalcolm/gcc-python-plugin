@@ -326,8 +326,47 @@ class NodeActor(Clutter.Actor):
         self.node = node
         self.is_selected = False
 
+    def get_top_middle(self):
+        x, y = self.get_position()
+        w, h = self.get_size()
+        return (x + w/2., y)
+
+    def get_bottom_middle(self):
+        x, y = self.get_position()
+        w, h = self.get_size()
+        return (x + w/2., y + h)
+
+class EdgeActor(Clutter.Actor):
+    def __init__(self, gv, edge):
+        Clutter.Actor.__init__(self)
+        self.gv = gv
+        self.edge = edge
+        self._coords = None
+
+    def do_paint(self):
+        #print('do_paint: %s' % self.edge)
+        # Get edge locations
+        actor_for_src = self.gv.actor_for_node[self.edge.srcnode]
+        actor_for_dest = self.gv.actor_for_node[self.edge.dstnode]
+
+        #Cogl.Color.set()
+        Cogl.path_new()
+        if 0:
+            print(self._coords)
+            Cogl.path_move_to(*self._coords[0])
+            for coord in self._coords[1:]:
+                Cogl.path_line_to(*coord)
+            Cogl.path_stroke()
+        else:
+            Cogl.path_move_to(*actor_for_src.get_bottom_middle())
+            Cogl.path_line_to(*actor_for_dest.get_top_middle())
+            Cogl.path_stroke()
+
+    def set_coords(self, coords):
+        self._coords = coords
+
 ############################################################################
-# Graph-viewing subclasses specific to CFG
+# Graph-viewing subclasses specific to CFGs:
 ############################################################################
 
 class CFGView(GraphView):
@@ -407,54 +446,37 @@ class BBActor(NodeActor):
         #print('self.get_size(): %s' % (self.get_size(), ))
         #print('self.allocation: %s' % (self.allocation, ))
 
-    def get_top_middle(self):
-        x, y = self.get_position()
-        w, h = self.get_size()
-        return (x + w/2., y)
+############################################################################
+# Graph-viewing subclasses specific to callgraphs:
+############################################################################
 
-    def get_bottom_middle(self):
-        x, y = self.get_position()
-        w, h = self.get_size()
-        return (x + w/2., y + h)
+class CallgraphView(GraphView):
+    def _make_actor_for_node(self, node):
+        return CallgraphNodeActor(self, node)
 
-class EdgeActor(Clutter.Actor):
-    def __init__(self, gv, edge):
-        Clutter.Actor.__init__(self)
-        self.gv = gv
-        self.edge = edge
-        self._coords = None
+class CallgraphNodeActor(NodeActor):
+    def __init__(self, gv, node):
+        NodeActor.__init__(self, gv, node)
 
-    def do_paint(self):
-        #print('do_paint: %s' % self.edge)
-        # Get edge locations
-        actor_for_src = self.gv.actor_for_node[self.edge.srcnode]
-        actor_for_dest = self.gv.actor_for_node[self.edge.dstnode]
+        layout = Clutter.TableLayout()
+        self.set_layout_manager(layout)
 
-        #Cogl.Color.set()
-        Cogl.path_new()
-        if 0:
-            print(self._coords)
-            Cogl.path_move_to(*self._coords[0])
-            for coord in self._coords[1:]:
-                Cogl.path_line_to(*coord)
-            Cogl.path_stroke()
-        else:
-            Cogl.path_move_to(*actor_for_src.get_bottom_middle())
-            Cogl.path_line_to(*actor_for_dest.get_top_middle())
-            Cogl.path_stroke()
+        label = self.node.innernode.decl.name
+        layout.pack(make_text(label),
+                    column=0, row=0)
 
-    def set_coords(self, coords):
-        self._coords = coords
+        if DEBUG_LAYOUT:
+            self.set_background_color(random_color())
 
 ############################################################################
 
 class MainWindow(Gtk.Window):
-    def __init__(self, fun):
+    def __init__(self, gv):
         Gtk.Window.__init__(self)
 
         self.connect('destroy', lambda w: Gtk.main_quit())
         self.set_default_size(1024, 768)
-        self.set_title(fun.decl.name)
+        #self.set_title(fun.decl.name)
 
         display = Gdk.Display.get_default()
         screen = display.get_default_screen()
@@ -463,10 +485,6 @@ class MainWindow(Gtk.Window):
         #props = css_provider.get_style(None)
         #print(dir(props))
 
-        from gccutils.graph.cfg import CFG
-        graph = CFG(fun)
-
-        gv = CFGView(graph)
         self.add(gv)
 
         def RGBA_to_clutter(rgba):
@@ -502,19 +520,42 @@ class MainWindow(Gtk.Window):
         self.show_all()
 
 
-# We'll implement this as a custom pass, to be called directly after the
-# builtin "cfg" pass, which generates the CFG:
+if 1:
+    # CFG viewing for each function:
 
-class ShowGimple(gcc.GimplePass):
-    def execute(self, fun):
-        # (the CFG should be set up by this point, and the GIMPLE is not yet
-        # in SSA form)
-        if fun and fun.cfg:
-            mw = MainWindow(fun)
-            print(dir(Gtk.StyleProvider))
+    # We'll implement this as a custom pass, to be called directly after the
+    # builtin "cfg" pass, which generates the CFG:
+
+    class ShowGimple(gcc.GimplePass):
+        def execute(self, fun):
+            # (the CFG should be set up by this point, and the GIMPLE is not yet
+            # in SSA form)
+            if fun and fun.cfg:
+                from gccutils.graph.cfg import CFG
+                graph = CFG(fun)
+                gv = CFGView(graph)
+                mw = MainWindow(gv)
+                Gtk.main()
+
+    ps = ShowGimple(name='show-gimple')
+    ps.register_after('cfg')
+
+else:
+    # Callgraph viewer:
+
+    def on_pass_execution(p, fn):
+        if p.name == '*free_lang_data':
+            # The '*free_lang_data' pass is called once, rather than per-function,
+            # and occurs immediately after "*build_cgraph_edges", which is the
+            # pass that initially builds the callgraph
+            #
+            # So at this point we're likely to get a good view of the callgraph
+            # before further optimization passes manipulate it
+            from gccutils.graph.callgraph import Callgraph
+            graph = Callgraph()
+            gv = CallgraphView(graph)
+            mw = MainWindow(gv)
             Gtk.main()
 
-#print(dir(Gtk.StateFlags))
-
-ps = ShowGimple(name='show-gimple')
-ps.register_after('cfg')
+    gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
+                          on_pass_execution)
