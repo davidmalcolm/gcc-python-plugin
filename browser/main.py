@@ -111,8 +111,11 @@ def iter_edge_attrs(dot):
             pass
 
 class GraphView(GtkClutter.Embed):
-    def __init__(self, fun):
+    def __init__(self, fun, graph):
         GtkClutter.Embed.__init__(self)
+
+        self.fun = fun
+        self.graph = graph
 
         stage = self.get_stage()
 
@@ -138,26 +141,24 @@ class GraphView(GtkClutter.Embed):
         transition.start()
         """
 
-        self.fun = fun
         self.stage = stage
         self.actor_for_node = {}
         self.actor_for_edge = {}
-        self.actors_for_nodes = []
-        self.nodes = []
         self.edge_by_node_pair = {}
+
+        self.nodes_by_id = {}
 
         self.selected_nodes = set()
 
-        for bb in fun.cfg.basic_blocks:
-            self.nodes.append(bb)
-            bbactor = BBActor(self, fun, bb)
-            self.actor_for_node[bb] = bbactor
+        for node in graph.nodes:
+            self.nodes_by_id[id(node)] = node
+            bbactor = self._make_actor_for_node(fun, node)
+            self.actor_for_node[node] = bbactor
             stage.add_actor(bbactor)
-            bbactor.set_position(bb.index * 150, bb.index * 75)
-            self.actors_for_nodes.append(bbactor)
 
-            for outedge in bb.succs:
-                self.edge_by_node_pair[(outedge.src, outedge.dest)] = outedge
+            for outedge in node.succs:
+                self.edge_by_node_pair[(outedge.srcnode,
+                                        outedge.dstnode)] = outedge
                 edgeactor = EdgeActor(self, outedge)
                 stage.add_actor(edgeactor)
                 self.actor_for_edge[outedge] = edgeactor
@@ -167,17 +168,20 @@ class GraphView(GtkClutter.Embed):
         stage.set_scale(100, 5)
         # ^^ doesn't seem to do anything
 
+    def _make_actor_for_node(self, fun, node):
+        raise NotImplementedError
+
     def _make_dot(self):
         result = 'digraph %s {\n' % 'test'
         result += '  node [shape=box];\n'
-        for bbactor in self.actors_for_nodes:
-            w, h = bbactor.get_size()
+        for node, actor in self.actor_for_node.iteritems():
+            w, h = actor.get_size()
             # Express width and height in graphviz "inches", which we'll 
             result += ('  n%i [width=%f, height=%f, fixedsize=true];\n'
-                       % (bbactor.bb.index, w * INCHES_PER_PIXEL, h * INCHES_PER_PIXEL))
-            for outedge in bbactor.bb.succs:
+                       % (id(node), w * INCHES_PER_PIXEL, h * INCHES_PER_PIXEL))
+            for outedge in node.succs:
                 result += ('  n%i -> n%i;\n'
-                           % (outedge.src.index, outedge.dest.index))
+                           % (id(outedge.srcnode), id(outedge.dstnode)))
         #result += self._edges_to_dot(ctxt)
         result += '}\n'
         return result
@@ -213,7 +217,7 @@ class GraphView(GtkClutter.Embed):
         for nodename, attrdict in iter_node_attrs(out):
             print(nodename, attrdict)
             assert nodename.startswith('n')
-            index = int(nodename[1:])
+            node_id = int(nodename[1:])
             # http://www.graphviz.org/doc/info/attrs.html#a:pos
             # "pos" is the center of the node, in points
             pos = attrdict['pos'][1:-1] # strip off quotes
@@ -229,8 +233,8 @@ class GraphView(GtkClutter.Embed):
             # Flip y axis:
             y = bb_h - y
 
-            actor = self.actors_for_nodes[index]
-            assert actor.bb.index == index
+            node = self.nodes_by_id[node_id]
+            actor = self.actor_for_node[node]
 
             # Clutter uses top-left for position
             # Adjust from center to TL:
@@ -255,15 +259,15 @@ class GraphView(GtkClutter.Embed):
             print(srcnodename, destnodename, attrdict)
 
             assert srcnodename.startswith('n')
-            srcindex = int(srcnodename[1])
+            src_node_id = int(srcnodename[1:])
 
             assert destnodename.startswith('n')
-            destindex = int(destnodename[1:])
+            dst_node_id = int(destnodename[1:])
 
-            srcnode = self.nodes[srcindex]
-            destnode = self.nodes[destindex]
+            srcnode = self.nodes_by_id[src_node_id]
+            dstnode = self.nodes_by_id[dst_node_id]
 
-            edge = self.edge_by_node_pair[(srcnode, destnode)]
+            edge = self.edge_by_node_pair[(srcnode, dstnode)]
             edgeactor = self.actor_for_edge[edge]
 
             if 'pos' in attrdict:
@@ -316,14 +320,25 @@ class GraphView(GtkClutter.Embed):
         actor.is_selected = True
         actor.set_background_color(self.SELECTED)
 
-class BBActor(Clutter.Actor):
-    def __init__(self, gv, fun, bb):
-
+class NodeActor(Clutter.Actor):
+    def __init__(self, gv, node):
         Clutter.Actor.__init__(self)
         self.gv = gv
-        self.fun = fun
-        self.bb = bb
+        self.node = node
         self.is_selected = False
+
+############################################################################
+# Graph-viewing subclasses specific to CFG
+############################################################################
+
+class CFGView(GraphView):
+    def _make_actor_for_node(self, fun, node):
+        return BBActor(self, fun, node)
+
+class BBActor(NodeActor):
+    def __init__(self, gv, fun, bb):
+        NodeActor.__init__(self, gv, bb)
+        self.fun = fun
 
         #print(dir(Clutter))
         #self.add_actor(
@@ -370,16 +385,16 @@ class BBActor(Clutter.Actor):
         action = Clutter.ClickAction.new()
         self.add_action(action)
         def foo(*args):
-            print('clicked on %s, args: %s' % (self.bb, args))
+            print('clicked on %s, args: %s' % (self.node, args))
             event = Clutter.get_current_event()
             state = event.get_state()
             if state & Clutter.ModifierType.CONTROL_MASK:
-                self.gv.toggle_node_selection(self.bb)
+                self.gv.toggle_node_selection(self.node)
                 return
             if state & Clutter.ModifierType.SHIFT_MASK:
-                self.gv.add_node_to_selection(self.bb)
+                self.gv.add_node_to_selection(self.node)
                 return
-            self.gv.select_one_node(self.bb)
+            self.gv.select_one_node(self.node)
             #self.set_background_color(random_color())
         action.connect('clicked', foo)
         self.set_reactive(True)
@@ -414,8 +429,8 @@ class EdgeActor(Clutter.Actor):
     def do_paint(self):
         #print('do_paint: %s' % self.edge)
         # Get edge locations
-        actor_for_src = self.gv.actor_for_node[self.edge.src]
-        actor_for_dest = self.gv.actor_for_node[self.edge.dest]
+        actor_for_src = self.gv.actor_for_node[self.edge.srcnode]
+        actor_for_dest = self.gv.actor_for_node[self.edge.dstnode]
 
         #Cogl.Color.set()
         Cogl.path_new()
@@ -433,6 +448,8 @@ class EdgeActor(Clutter.Actor):
     def set_coords(self, coords):
         self._coords = coords
 
+############################################################################
+
 class MainWindow(Gtk.Window):
     def __init__(self, fun):
         Gtk.Window.__init__(self)
@@ -448,7 +465,10 @@ class MainWindow(Gtk.Window):
         #props = css_provider.get_style(None)
         #print(dir(props))
 
-        gv = GraphView(fun)
+        from gccutils.graph.cfg import CFG
+        graph = CFG(fun)
+
+        gv = CFGView(fun, graph)
         self.add(gv)
 
         def RGBA_to_clutter(rgba):
