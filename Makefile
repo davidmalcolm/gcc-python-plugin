@@ -194,6 +194,9 @@ debug: plugin
 demo: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
 
+browser-demo: plugin
+	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-python browser/main.py -c $(PYTHON_INCLUDES) demo.c
+
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker/html/test/example1/bug.c
 
