@@ -111,10 +111,9 @@ def iter_edge_attrs(dot):
             pass
 
 class GraphView(GtkClutter.Embed):
-    def __init__(self, fun, graph):
+    def __init__(self,  graph):
         GtkClutter.Embed.__init__(self)
 
-        self.fun = fun
         self.graph = graph
 
         stage = self.get_stage()
@@ -152,7 +151,7 @@ class GraphView(GtkClutter.Embed):
 
         for node in graph.nodes:
             self.nodes_by_id[id(node)] = node
-            bbactor = self._make_actor_for_node(fun, node)
+            bbactor = self._make_actor_for_node(node)
             self.actor_for_node[node] = bbactor
             stage.add_actor(bbactor)
 
@@ -168,7 +167,7 @@ class GraphView(GtkClutter.Embed):
         stage.set_scale(100, 5)
         # ^^ doesn't seem to do anything
 
-    def _make_actor_for_node(self, fun, node):
+    def _make_actor_for_node(self, node):
         raise NotImplementedError
 
     def _make_dot(self):
@@ -332,13 +331,12 @@ class NodeActor(Clutter.Actor):
 ############################################################################
 
 class CFGView(GraphView):
-    def _make_actor_for_node(self, fun, node):
-        return BBActor(self, fun, node)
+    def _make_actor_for_node(self, node):
+        return BBActor(self, node)
 
 class BBActor(NodeActor):
-    def __init__(self, gv, fun, bb):
+    def __init__(self, gv, bb):
         NodeActor.__init__(self, gv, bb)
-        self.fun = fun
 
         #print(dir(Clutter))
         #self.add_actor(
@@ -468,7 +466,7 @@ class MainWindow(Gtk.Window):
         from gccutils.graph.cfg import CFG
         graph = CFG(fun)
 
-        gv = CFGView(fun, graph)
+        gv = CFGView(graph)
         self.add(gv)
 
         def RGBA_to_clutter(rgba):
