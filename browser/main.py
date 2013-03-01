@@ -115,11 +115,14 @@ class GraphView(GtkClutter.Embed):
         GtkClutter.Embed.__init__(self)
 
         self.graph = graph
+        self.selected_nodes = set()
+
+        self.actor_for_node = {}
 
         stage = self.get_stage()
 
         if DEBUG_LAYOUT:
-            make_grid(stage, 1024, 768)
+            #make_grid(stage, 1024, 768)
 
             test = Clutter.Text.new()
             test.set_text('hello world')
@@ -140,40 +143,85 @@ class GraphView(GtkClutter.Embed):
         transition.start()
         """
 
-        self.stage = stage
-        self.actor_for_node = {}
+        self.ga = GraphActor(self)
+        stage.add_actor(self.ga)
+
+        self.ga.set_scale(0.5, 0.5)
+
+    def _make_actor_for_node(self, node):
+        raise NotImplementedError
+
+    def select_one_node(self, node):
+        print('select_one_node(%r)' % node)
+        # Deselect all:
+        for oldnode in self.selected_nodes:
+            actor = self.actor_for_node[oldnode]
+            actor.is_selected = False
+            actor.set_background_color(self.NORMAL)
+        self.selected_nodes = set()
+
+        # Select this node:
+        self.selected_nodes.add(node)
+        actor = self.actor_for_node[node]
+        actor.is_selected = True
+        actor.set_background_color(self.SELECTED)
+
+    def toggle_node_selection(self, node):
+        print('toggle_node_selection(%r)' % node)
+        actor = self.actor_for_node[node]
+        if actor.is_selected:
+            self.selected_nodes.remove(node)
+            actor.is_selected = False
+            actor.set_background_color(self.NORMAL)
+        else:
+            self.selected_nodes.add(node)
+            actor.is_selected = True
+            actor.set_background_color(self.SELECTED)
+
+    def add_node_to_selection(self, node):
+        print('add_node_to_selection(%r)' % node)
+        actor = self.actor_for_node[node]
+        self.selected_nodes.add(node)
+        actor.is_selected = True
+        actor.set_background_color(self.SELECTED)
+
+class GraphActor(Clutter.Actor):
+    """
+    Setting the scale on the "stage" doesn't seem to zoom things, so
+    we place all top-level actors for the graph (nodes and edges) as
+    children of a GraphActor, and scale the GraphActor
+    """
+    def __init__(self, gv):
+        Clutter.Actor.__init__(self)
+        self.gv = gv
+
         self.actor_for_edge = {}
         self.edge_by_node_pair = {}
 
         self.nodes_by_id = {}
 
-        self.selected_nodes = set()
+        if DEBUG_LAYOUT:
+            make_grid(self, 1024, 768)
 
-        for node in graph.nodes:
+        for node in gv.graph.nodes:
             self.nodes_by_id[id(node)] = node
-            bbactor = self._make_actor_for_node(node)
-            self.actor_for_node[node] = bbactor
-            stage.add_actor(bbactor)
+            bbactor = gv._make_actor_for_node(node)
+            gv.actor_for_node[node] = bbactor
+            self.add_actor(bbactor)
 
             for outedge in node.succs:
                 self.edge_by_node_pair[(outedge.srcnode,
                                         outedge.dstnode)] = outedge
-                edgeactor = EdgeActor(self, outedge)
-                stage.add_actor(edgeactor)
+                edgeactor = EdgeActor(gv, outedge)
+                self.add_actor(edgeactor)
                 self.actor_for_edge[outedge] = edgeactor
 
         self._generate_layout()
 
-        stage.set_scale(100, 5)
-        # ^^ doesn't seem to do anything
-
-    def _make_actor_for_node(self, node):
-        raise NotImplementedError
-
     def _make_dot(self):
         result = 'digraph %s {\n' % 'test'
         result += '  node [shape=box];\n'
-        for node, actor in self.actor_for_node.iteritems():
+        for node, actor in self.gv.actor_for_node.iteritems():
             w, h = actor.get_size()
             # Express width and height in graphviz "inches", which we'll 
             result += ('  n%i [width=%f, height=%f, fixedsize=true];\n'
@@ -211,7 +259,7 @@ class GraphView(GtkClutter.Embed):
         assert bb_w
         assert bb_h
 
-        self.stage.set_size(bb_w, bb_h)
+        self.set_size(bb_w, bb_h)
 
         for nodename, attrdict in iter_node_attrs(out):
             print(nodename, attrdict)
@@ -233,7 +281,7 @@ class GraphView(GtkClutter.Embed):
             y = bb_h - y
 
             node = self.nodes_by_id[node_id]
-            actor = self.actor_for_node[node]
+            actor = self.gv.actor_for_node[node]
 
             # Clutter uses top-left for position
             # Adjust from center to TL:
@@ -284,40 +332,6 @@ class GraphView(GtkClutter.Embed):
                     result.append( (x, y) )
                 #print(result)
                 edgeactor.set_coords(result)
-
-    def select_one_node(self, node):
-        print('select_one_node(%r)' % node)
-        # Deselect all:
-        for oldnode in self.selected_nodes:
-            actor = self.actor_for_node[oldnode]
-            actor.is_selected = False
-            actor.set_background_color(self.NORMAL)
-        self.selected_nodes = set()
-
-        # Select this node:
-        self.selected_nodes.add(node)
-        actor = self.actor_for_node[node]
-        actor.is_selected = True
-        actor.set_background_color(self.SELECTED)
-
-    def toggle_node_selection(self, node):
-        print('toggle_node_selection(%r)' % node)
-        actor = self.actor_for_node[node]
-        if actor.is_selected:
-            self.selected_nodes.remove(node)
-            actor.is_selected = False
-            actor.set_background_color(self.NORMAL)
-        else:
-            self.selected_nodes.add(node)
-            actor.is_selected = True
-            actor.set_background_color(self.SELECTED)
-
-    def add_node_to_selection(self, node):
-        print('add_node_to_selection(%r)' % node)
-        actor = self.actor_for_node[node]
-        self.selected_nodes.add(node)
-        actor.is_selected = True
-        actor.set_background_color(self.SELECTED)
 
 class NodeActor(Clutter.Actor):
     def __init__(self, gv, node):
@@ -502,7 +516,7 @@ class MainWindow(Gtk.Window):
         print(sctxt.get_color(Gtk.StateFlags.BACKDROP))
         gv.BACKDROP = sctxt.get_color(Gtk.StateFlags.BACKDROP)
         print(dir(gv.BACKDROP))
-        gv.stage.set_background_color(RGBA_to_clutter(gv.BACKDROP))
+        #gv.stage.set_background_color(RGBA_to_clutter(gv.BACKDROP))
 
         print(sctxt.get_color(Gtk.StateFlags.PRELIGHT))
         gv.PRELIGHT = sctxt.get_color(Gtk.StateFlags.PRELIGHT)
