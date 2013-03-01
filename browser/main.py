@@ -81,15 +81,14 @@ def iter_node_attrs(dot):
     """
     for line in dot.splitlines():
         # e.g.
-        #     bb1 [width="0.17361", height="0.069444", fixedsize=true, pos="206,3"];
+        #     n1 [width="0.17361", height="0.069444", fixedsize=true, pos="206,3"];
         # print line
-        m = re.match('\s*([a-z0-9]+) \[(.*)\];', line)
+        m = re.match('\s*(n[0-9]+) \[(.*)\];', line)
         if m:
             #print m.groups()
             nodename, attrs = m.groups()
-            if nodename.startswith('bb'): # FIXME
-                attrvals = split_attrs(attrs)
-                yield nodename, split_attrs(attrs)
+            attrvals = split_attrs(attrs)
+            yield nodename, split_attrs(attrs)
         else:
             # print 'unmatched'
             pass
@@ -100,9 +99,9 @@ def iter_edge_attrs(dot):
     """
     for line in dot.splitlines():
         # e.g.
-        #     bb2 -> bb3 [pos="e,241.6,387.23 396.72,521.99 380,511.51 361.13,498.86 345,486 308.97,457.28 271.58,419.24 248.55,394.69"];
+        #     n2 -> n3 [pos="e,241.6,387.23 396.72,521.99 380,511.51 361.13,498.86 345,486 308.97,457.28 271.58,419.24 248.55,394.69"];
         print line
-        m = re.match('\s*([a-z0-9]+) -> ([a-z0-9]+) \[(.*)\];', line)
+        m = re.match('\s*(n[0-9]+) -> (n[0-9]+) \[(.*)\];', line)
         if m:
             print m.groups()
             srcnodename, dstnodename, attrs = m.groups()
@@ -174,10 +173,10 @@ class GraphView(GtkClutter.Embed):
         for bbactor in self.actors_for_nodes:
             w, h = bbactor.get_size()
             # Express width and height in graphviz "inches", which we'll 
-            result += ('  bb%i [width=%f, height=%f, fixedsize=true];\n'
+            result += ('  n%i [width=%f, height=%f, fixedsize=true];\n'
                        % (bbactor.bb.index, w * INCHES_PER_PIXEL, h * INCHES_PER_PIXEL))
             for outedge in bbactor.bb.succs:
-                result += ('  bb%i -> bb%i;\n'
+                result += ('  n%i -> n%i;\n'
                            % (outedge.src.index, outedge.dest.index))
         #result += self._edges_to_dot(ctxt)
         result += '}\n'
@@ -213,8 +212,8 @@ class GraphView(GtkClutter.Embed):
 
         for nodename, attrdict in iter_node_attrs(out):
             print(nodename, attrdict)
-            assert nodename.startswith('bb')
-            index = int(nodename[2:])
+            assert nodename.startswith('n')
+            index = int(nodename[1:])
             # http://www.graphviz.org/doc/info/attrs.html#a:pos
             # "pos" is the center of the node, in points
             pos = attrdict['pos'][1:-1] # strip off quotes
@@ -255,11 +254,11 @@ class GraphView(GtkClutter.Embed):
         for srcnodename, destnodename, attrdict in iter_edge_attrs(out):
             print(srcnodename, destnodename, attrdict)
 
-            assert srcnodename.startswith('bb')
-            srcindex = int(srcnodename[2:])
+            assert srcnodename.startswith('n')
+            srcindex = int(srcnodename[1])
 
-            assert destnodename.startswith('bb')
-            destindex = int(destnodename[2:])
+            assert destnodename.startswith('n')
+            destindex = int(destnodename[1:])
 
             srcnode = self.nodes[srcindex]
             destnode = self.nodes[destindex]
