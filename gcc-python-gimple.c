@@ -25,6 +25,7 @@
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
+#include "gimple-pretty-print.h" /* for pp_gimple_stmt_1 */
 #include "gcc-c-api/gcc-gimple.h"
 
 gcc_gimple_asm
