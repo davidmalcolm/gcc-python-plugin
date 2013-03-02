@@ -22,13 +22,10 @@ import sys
 
 from firehose.report import Analysis, Failure
 
+from gccutils.selftests import assertEqual
 from libcpychecker import main, Options
 
 XML_OUTPUT_PATH = 'tests/cpychecker/refcounts/combinatorial-explosion/output.xml'
-
-def assertEqual(lhs, rhs):
-    if lhs != rhs:
-        raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
 
 def assertGreater(lhs, rhs):
     if not (lhs > rhs):

@@ -23,14 +23,11 @@ from firehose.report import Analysis
 
 import gcc
 
+from gccutils.selftests import assertEqual
 from libcpychecker import Context, Options
 from libcpychecker.refcounts import impl_check_refcounts
 
 XML_OUTPUT_PATH = 'tests/cpychecker/refcounts/xml/basic/output.xml'
-
-def assertEqual(lhs, rhs):
-    if lhs != rhs:
-        raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
 
 def verify_analysis(analysis):
     assertEqual(len(analysis.results), 1)

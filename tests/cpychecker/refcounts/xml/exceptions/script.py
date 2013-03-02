@@ -22,6 +22,7 @@ import sys
 
 from firehose.report import Analysis, Failure
 
+from gccutils.selftests import assertEqual
 from libcpychecker import main, Options
 from libcpychecker.refcounts import CPython
 

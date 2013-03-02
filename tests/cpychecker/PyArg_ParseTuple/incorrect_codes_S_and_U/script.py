@@ -15,11 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from gccutils.selftests import assertEqual
 from libcpychecker import main
-
-def assertEqual(lhs, rhs):
-    if lhs != rhs:
-        raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
 
 def selftest(ctxt, fun):
     assertEqual(len(ctxt.analysis.results), 2)
