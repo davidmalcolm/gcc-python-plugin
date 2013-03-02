@@ -26,10 +26,10 @@
  Vectors
  *************************************************************************/
 
-/* Getting the length of a vector: */
+/* Getting the length of a vector, returning 0 if it is NULL: */
 #if (GCC_VERSION >= 4008)
   #define GCC_COMPAT_VEC_LENGTH(KIND, V) \
-    ( (V)->length() )
+    ( (V) ? ( (V)->length() ) : 0 )
 #else
   #define GCC_COMPAT_VEC_LENGTH(KIND, V) \
     ( VEC_length(KIND, (V)) )
@@ -44,10 +44,12 @@
     ( VEC_index(KIND, (V), (IDX) ) )
 #endif
 
-/* Iterating over every element in a vector: */
+/* Iterating over every element in a vector, or not at all if it is
+   NULL: */
 #if (GCC_VERSION >= 4008)
   #define GCC_COMPAT_FOR_EACH_VEC_ELT(KIND, V, IDX_VAR, ITEM_VAR) \
-    FOR_EACH_VEC_ELT ( (*V), (IDX_VAR), (ITEM_VAR) )
+    if ( (V) != NULL ) \
+      FOR_EACH_VEC_ELT ( (*V), (IDX_VAR), (ITEM_VAR) )
 #else
   #define GCC_COMPAT_FOR_EACH_VEC_ELT(KIND, V, IDX_VAR, ITEM_VAR) \
     FOR_EACH_VEC_ELT(KIND, (V), (IDX_VAR), (ITEM_VAR) )
