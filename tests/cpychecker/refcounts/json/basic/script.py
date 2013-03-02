@@ -20,9 +20,7 @@
 import gcc
 from libcpychecker.refcounts import impl_check_refcounts
 
-def assertEqual(lhs, rhs):
-    if lhs != rhs:
-        raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
+from gccutils.selftests import assertEqual
 
 def verify_json(optpass, fun):
     # Only run in one pass
