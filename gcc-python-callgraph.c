@@ -76,22 +76,41 @@ PyGccCallgraphNode_get_callers(struct PyGccCallgraphNode * self)
                     add_cgraph_edge_to_list)
 }
 
+union gcc_cgraph_edge_as_ptr {
+    gcc_cgraph_edge edge;
+    void *ptr;
+};
+
 PyObject *
-PyGccCallgraphEdge_New(gcc_cgraph_edge edge)
+real_make_cgraph_edge_wrapper(void *ptr)
 {
     struct PyGccCallgraphEdge *obj = NULL;
+    union gcc_cgraph_edge_as_ptr u;
+    u.ptr = ptr;
 
-    obj = PyGccWrapper_New(struct PyGccCallgraphEdge, &PyGccCallgraphEdge_TypeObj);
+    obj = PyGccWrapper_New(struct PyGccCallgraphEdge,
+                           &PyGccCallgraphEdge_TypeObj);
     if (!obj) {
         goto error;
     }
 
-    obj->edge = edge;
+    obj->edge = u.edge;
 
     return (PyObject*)obj;
 
 error:
     return NULL;
+}
+
+static PyObject *cgraph_edge_wrapper_cache = NULL;
+PyObject *
+PyGccCallgraphEdge_New(gcc_cgraph_edge edge)
+{
+    union gcc_cgraph_edge_as_ptr u;
+    u.edge = edge;
+    return PyGcc_LazilyCreateWrapper(&cgraph_edge_wrapper_cache,
+                                     u.ptr,
+                                     real_make_cgraph_edge_wrapper);
 }
 
 void
