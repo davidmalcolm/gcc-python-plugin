@@ -49,14 +49,6 @@ gimple[2]:
   repr(stmt): 'gcc.GimpleAssign()'
   str(stmt.lhs): 'keywords[1]'
   [str(stmt.rhs)]: ['0B']
-gimple[3]:
-  str(stmt): 'd = 2.0e+0;'
-  repr(stmt): 'gcc.GimpleAssign()'
-  str(stmt.lhs): 'd'
-  [str(stmt.rhs)]: ['2.0e+0']
-gimple[4]:
-  str(stmt): 'return;'
-  repr(stmt): 'gcc.GimpleReturn()'
 fn.decl.arguments: [gcc.ParmDecl('a'), gcc.ParmDecl('b')]
   arg[0]:
     arg.name: 'a'
