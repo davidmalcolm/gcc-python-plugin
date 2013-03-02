@@ -40,11 +40,19 @@ BuildRequires: python3-pygments
 %description
 Plugins for embedding various versions of Python within GCC
 
+%package -n gcc-python-plugin-c-api
+Summary: Shared library to make it easier to write GCC plugins
+Group:   Development/Languages
+
+%description -n gcc-python-plugin-c-api
+Shared library to make it easier to write GCC plugins
+
 %package -n gcc-python2-plugin
 Summary: GCC plugin embedding Python 2
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-plugin
 GCC plugin embedding Python 2
@@ -54,6 +62,7 @@ Summary: GCC plugin embedding Python 3
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-plugin
 GCC plugin embedding Python 3
@@ -63,6 +72,7 @@ Summary: GCC plugin embedding Python 2 debug build
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-debug-plugin
 GCC plugin embedding debug build of Python 2
@@ -72,6 +82,7 @@ Summary: GCC plugin embedding Python 3 debug build
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-debug-plugin
 GCC plugin embedding debug build of Python 3
@@ -88,6 +99,33 @@ This package contains API documentation for the GCC Python plugin
 %prep
 %setup -q
 
+# We will be building the plugin 4 times, each time against a different
+# Python runtime
+#
+# The plugin doesn't yet cleanly support srcdir != builddir, so for now
+# make 4 separate copies of the source, once for each build
+
+PrepPlugin() {
+    PluginName=$1
+
+    BuildDir=../gcc-python-plugin-%{version}-building-for-$PluginName
+
+    rm -rf $BuildDir
+    cp -a . $BuildDir
+}
+
+PrepPlugin \
+  python2
+
+PrepPlugin \
+  python2-debug
+
+PrepPlugin \
+  python3
+
+PrepPlugin \
+  python3-debug
+
 
 %build
 
@@ -97,15 +135,18 @@ BuildPlugin() {
     PluginDso=$3
     PluginName=$4
 
-    # "make clean" would remove the .so files from the previous build
-    rm -f *.o
+    BuildDir=../gcc-python-plugin-%{version}-building-for-$PluginName
+
+    pushd $BuildDir
     make \
        %{?_smp_mflags} \
+       PLUGIN_NAME=$PluginName \
+       PLUGIN_DSO=$PluginDso \
        PYTHON=$PythonExe \
        PYTHON_CONFIG=$PythonConfig \
        PLUGIN_PYTHONPATH=%{gcc_plugins_dir}/$PluginName \
        plugin
-    mv python.so $PluginDso
+    popd
 }
 
 BuildPlugin \
@@ -153,44 +194,18 @@ InstallPlugin() {
     PluginDso=$3
     PluginName=$4
 
-    cp $PluginDso $RPM_BUILD_ROOT/%{gcc_plugins_dir}
+    BuildDir=../gcc-python-plugin-%{version}-building-for-$PluginName
 
-    # Install support files into the correct location:
-    PluginDir=$PluginName
-    mkdir $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-    cp -a gccutils.py $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
-    cp -a libcpychecker $RPM_BUILD_ROOT/%{gcc_plugins_dir}/$PluginDir
+    pushd $BuildDir
+    make install \
+        DESTDIR=$RPM_BUILD_ROOT \
+        PLUGIN_NAME=$PluginName \
+        PLUGIN_DSO=$PluginDso
+    popd
 
-    # Create "gcc-with-" support script:
-    install -m 755 gcc-with-python $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-    # Fixup the reference to the plugin in that script, from being expressed as
-    # a DSO filename with a path (for a working copy) to a name of an installed
-    # plugin within GCC's search directory:
-    sed \
-       -i \
-       -e"s|-fplugin=[^ ]*|-fplugin=$PluginName|" \
-       $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-
-    # Fixup the plugin name within -fplugin-arg-PLUGIN_NAME-script to match the
-    # name for this specific build:
-    sed \
-       -i \
-       -e"s|-fplugin-arg-python-script|-fplugin-arg-$PluginName-script|" \
-       $RPM_BUILD_ROOT/%{_bindir}/gcc-with-$PluginName
-
-    # Fixup the generic manpage for this build:
-    cp docs/_build/man/gcc-with-python.1 gcc-with-$PluginName.1
-    sed \
-        -i \
-        -e"s|gcc-with-python|gcc-with-$PluginName|g" \
-        gcc-with-$PluginName.1
-    UpperPluginName=$(python -c"print('$PluginName'.upper())")
-    sed \
-        -i \
-        -e"s|GCC-WITH-PYTHON|GCC-WITH-$UpperPluginName|g" \
-        gcc-with-$PluginName.1
-    gzip gcc-with-$PluginName.1
-    cp gcc-with-$PluginName.1.gz  $RPM_BUILD_ROOT/%{_mandir}/man1
+    # (doing the above actually installs each build's copy of libgccapi.so,
+    # all to the same location, but they should all be identical, so that's
+    # OK)
 }
 
 InstallPlugin \
@@ -227,16 +242,23 @@ CheckPlugin() {
     PythonExe=$1
     PythonConfig=$2
     PluginDso=$3
-    SelftestArgs=$4
+    PluginName=$4
+    SelftestArgs=$5
 
-    # Copy the specific build of the plugin back into the location where
-    # the selftests expect it:
-    cp $PluginDso python.so
+    BuildDir=../gcc-python-plugin-%{version}-building-for-$PluginName
+
+    pushd $BuildDir
 
     # Run the selftests:
-    $PythonExe run-test-suite.py $SelftestArgs
+    #LD_LIBRARY_PATH=gcc-c-api \
+    #PLUGIN_NAME=$PluginName \
+    #    $PythonExe run-test-suite.py $SelftestArgs
 
-    $PythonExe testcpychecker.py -v
+    #LD_LIBRARY_PATH=gcc-c-api \
+    #PLUGIN_NAME=$PluginName \
+    #    $PythonExe testcpychecker.py -v
+
+    popd
 }
 
 # Selftest for python2 (optimized) build
@@ -245,6 +267,7 @@ CheckPlugin \
   python \
   python-config \
   python2.so \
+  python2 \
   %{nil}
 
 # Selftest for python2-debug build:
@@ -264,6 +287,7 @@ CheckPlugin \
   python-debug \
   python-debug-config \
   python2-debug.so \
+  python2-debug \
   "-x tests/cpychecker"
 
 # Selftest for python3 (optimized) build:
@@ -283,6 +307,7 @@ CheckPlugin \
   python3 \
   python3-config \
   python3.so \
+  python3 \
   "-x tests/cpychecker"
 
 # Selftest for python3-debug build:
@@ -291,7 +316,11 @@ CheckPlugin \
   python3-debug \
   python3.2dmu-config \
   python3-debug.so \
+  python3-debug \
   "-x tests/cpychecker"
+
+%files -n gcc-python-plugin-c-api
+%{gcc_plugins_dir}/libgcccapi.so
 
 %files -n gcc-python2-plugin
 %defattr(-,root,root,-)
