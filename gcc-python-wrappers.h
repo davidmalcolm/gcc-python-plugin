@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -332,6 +332,9 @@ PyGccGimple_as_gcc_gimple_phi(struct PyGccGimple *self);
 
 extern gcc_gimple_switch
 PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self);
+
+extern gcc_gimple_label
+PyGccGimple_as_gcc_gimple_label(struct PyGccGimple *self);
 
 PyObject *
 PyGccGimple_repr(struct PyGccGimple * self);

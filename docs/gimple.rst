@@ -1,5 +1,5 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+.. Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -346,9 +346,10 @@ Subclass                                 Meaning
 
    Subclass of :py:class:`gcc.Gimple`, representing a "label" statement::
 
-      LABEL:
+   .. py:attribute:: labels
 
-   .. FIXME: Label is a gcc.LabelDecl representing a jump target.
+      The underlying :py:class:`gcc.LabelDecl` node representing this jump
+      target
 
 .. py:class:: gcc.GimpleAssign
 

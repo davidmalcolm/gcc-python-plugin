@@ -70,6 +70,12 @@ PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self)
     return gcc_gimple_as_gcc_gimple_switch(self->stmt);
 }
 
+gcc_gimple_label
+PyGccGimple_as_gcc_gimple_label(struct PyGccGimple *self)
+{
+    return gcc_gimple_as_gcc_gimple_label(self->stmt);
+}
+
 static PyObject *
 do_pretty_print(struct PyGccGimple * self, int spc, int flags)
 {

@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 */
 
 #include "gcc-gimple.h"
+#include "gcc-tree.h"
 #include "gcc-internal.h"
 
 //#include "tree.h"
@@ -250,6 +251,15 @@ gcc_gimple_switch_for_each_label (gcc_gimple_switch stmt,
 	}
     }
   return false;
+}
+
+/***************************************************************************
+ gcc_gimple_label
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_label_decl)
+gcc_gimple_label_get_label(gcc_gimple_label stmt)
+{
+  return gcc_tree_as_gcc_label_decl (gcc_private_make_tree (gimple_label_label (stmt.inner)));
 }
 
 /*
