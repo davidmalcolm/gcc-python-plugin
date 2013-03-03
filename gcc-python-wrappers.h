@@ -284,6 +284,9 @@ PyObject *
 PyGccIntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure);
 
 PyObject *
+PyGccIntegerType_repr(struct PyGccTree * self);
+
+PyObject *
 PyGccMethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *

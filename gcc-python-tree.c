@@ -484,6 +484,27 @@ PyGccIntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure)
 }
 
 PyObject *
+PyGccIntegerType_repr(struct PyGccTree * self)
+{
+    PyObject *repr_name = NULL;
+    PyObject *result = NULL;
+
+    repr_name = PyGcc_GetReprOfAttribute((PyObject*)self, "name");
+    if (!repr_name) {
+        goto error;
+    }
+
+    result = PyGccString_FromFormat("%s(name=%s)",
+                                    Py_TYPE(self)->tp_name,
+                                    PyGccString_AsString(repr_name));
+
+ error:
+    Py_XDECREF(repr_name);
+
+    return result;
+}
+
+PyObject *
 PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;

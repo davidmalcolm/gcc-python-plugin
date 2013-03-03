@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -403,6 +403,7 @@ def generate_tree_code_classes():
             add_simple_getter('min_value',
                               'PyGccTree_New(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_min_value(PyGccTree_as_gcc_integer_type(self))))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
+            tp_repr = '(reprfunc)PyGccIntegerType_repr'
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
             prefix = 'gcc_%s' % tree_type.SYM.lower()
