@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -71,6 +71,7 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
                           struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
                           tp_getset = getsettable.identifier,
+                          tp_hash = '(hashfunc)PyGccLocation_hash',
                           tp_repr = '(reprfunc)PyGccLocation_repr',
                           tp_str = '(reprfunc)PyGccLocation_str',
                           tp_richcompare = 'PyGccLocation_richcompare',

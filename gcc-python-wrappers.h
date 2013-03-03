@@ -141,6 +141,9 @@ PyGccLocation_str(struct PyGccLocation * self);
 PyObject *
 PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op);
 
+long
+PyGccLocation_hash(struct PyGccLocation * self);
+
 /* gcc-python-cfg.c: */
 PyObject *
 PyGccBasicBlock_repr(struct PyGccBasicBlock * self);
