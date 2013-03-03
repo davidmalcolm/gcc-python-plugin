@@ -208,6 +208,9 @@ PyGccBlock_New(gcc_block t);
 extern PyObject *
 PyGccPointerType_New(gcc_pointer_type t);
 
+PyObject *
+PyGccPointerType_repr(struct PyGccTree * self);
+
 extern PyObject *
 PyGccCaseLabelExpr_New(gcc_case_label_expr t);
 

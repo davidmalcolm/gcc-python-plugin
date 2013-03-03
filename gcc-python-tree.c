@@ -124,6 +124,28 @@ PyGccPointerType_New(gcc_pointer_type t)
 }
 
 PyObject *
+PyGccPointerType_repr(struct PyGccTree * self)
+{
+    PyObject *repr_name = NULL;
+    PyObject *result = NULL;
+
+    repr_name = PyGcc_GetReprOfAttribute((PyObject*)self, "dereference");
+    if (!repr_name) {
+        goto error;
+    }
+
+    result = PyGccString_FromFormat("%s(dereference=%s)",
+                                    Py_TYPE(self)->tp_name,
+                                    PyGccString_AsString(repr_name));
+
+ error:
+    Py_XDECREF(repr_name);
+
+    return result;
+}
+
+
+PyObject *
 PyGccCaseLabelExpr_New(gcc_case_label_expr t)
 {
     return PyGccTree_New(gcc_case_label_expr_as_gcc_tree(t));

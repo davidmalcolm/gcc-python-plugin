@@ -416,6 +416,9 @@ def generate_tree_code_classes():
                               'PyGccTree_New(gcc_private_make_tree(TREE_TYPE(self->t.inner)))',
                               "The gcc.Type that this type points to'")
 
+        if tree_type.SYM == 'POINTER_TYPE':
+            tp_repr = '(reprfunc)PyGccPointerType_repr'
+
         if tree_type.SYM == 'ARRAY_TYPE':
             add_simple_getter('range',
                               'PyGccTree_New(gcc_private_make_tree(TYPE_DOMAIN(self->t.inner)))',
