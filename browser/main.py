@@ -100,10 +100,10 @@ def iter_edge_attrs(dot):
     for line in dot.splitlines():
         # e.g.
         #     n2 -> n3 [pos="e,241.6,387.23 396.72,521.99 380,511.51 361.13,498.86 345,486 308.97,457.28 271.58,419.24 248.55,394.69"];
-        print line
+        #print line
         m = re.match('\s*(n[0-9]+) -> (n[0-9]+) \[(.*)\];', line)
         if m:
-            print m.groups()
+            #print m.groups()
             srcnodename, dstnodename, attrs = m.groups()
             yield srcnodename, dstnodename, split_attrs(attrs)
         else:
@@ -160,10 +160,12 @@ class GraphView(GtkClutter.Embed):
         self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
                         Gdk.EventMask.SCROLL_MASK)
         def on_button_press(*args):
-            print('on_button_press: %r' % (args, ))
+            #print('on_button_press: %r' % (args, ))
+            pass
         self.connect("button-press-event", on_button_press)
         def on_key_press(*args):
-            print('on_key_press: %r' % (args, ))
+            #print('on_key_press: %r' % (args, ))
+            pass
         self.connect("key-press-event", on_key_press)
         def on_scroll_event(view, scrollevent):
             # print('on_scroll_event: %r %r' % (view, scrollevent))
@@ -180,7 +182,7 @@ class GraphView(GtkClutter.Embed):
         raise NotImplementedError
 
     def select_one_node(self, node):
-        print('select_one_node(%r)' % node)
+        #print('select_one_node(%r)' % node)
         # Deselect all:
         for oldnode in self.selected_nodes:
             actor = self.actor_for_node[oldnode]
@@ -195,7 +197,7 @@ class GraphView(GtkClutter.Embed):
         actor.set_background_color(self.SELECTED)
 
     def toggle_node_selection(self, node):
-        print('toggle_node_selection(%r)' % node)
+        #print('toggle_node_selection(%r)' % node)
         actor = self.actor_for_node[node]
         if actor.is_selected:
             self.selected_nodes.remove(node)
@@ -207,7 +209,7 @@ class GraphView(GtkClutter.Embed):
             actor.set_background_color(self.SELECTED)
 
     def add_node_to_selection(self, node):
-        print('add_node_to_selection(%r)' % node)
+        #print('add_node_to_selection(%r)' % node)
         actor = self.actor_for_node[node]
         self.selected_nodes.add(node)
         actor.is_selected = True
@@ -277,7 +279,7 @@ class GraphActor(Clutter.Actor):
 
     def _generate_layout(self):
         dot = self._make_dot()
-        print(dot)
+        #print(dot)
         from gccutils import invoke_dot
         #invoke_dot(dot)
 
@@ -285,7 +287,7 @@ class GraphActor(Clutter.Actor):
         p = Popen(['dot', '-Tdot'],
                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate(dot.encode('ascii'))
-        print(out)
+        #print(out)
 
         # Locate bounding box
         bb_w = None
@@ -295,16 +297,16 @@ class GraphActor(Clutter.Actor):
             #    graph [bb="0,0,1328,630"];
             m = re.match('\s+graph \[bb="([0-9]+),([0-9]+),([0-9]+),([0-9]+)"\];', line)
             if m:
-                print m.groups()
+                #print m.groups()
                 bb_w = int(m.group(3))
                 bb_h = int(m.group(4))
-        assert bb_w
-        assert bb_h
+        assert bb_w is not None
+        assert bb_h is not None
 
         self.set_size(bb_w, bb_h)
 
         for nodename, attrdict in iter_node_attrs(out):
-            print(nodename, attrdict)
+            #print(nodename, attrdict)
             assert nodename.startswith('n')
             node_id = int(nodename[1:])
             # http://www.graphviz.org/doc/info/attrs.html#a:pos
@@ -345,7 +347,7 @@ class GraphActor(Clutter.Actor):
                     [x, y] )
 
         for srcnodename, destnodename, attrdict in iter_edge_attrs(out):
-            print(srcnodename, destnodename, attrdict)
+            #print(srcnodename, destnodename, attrdict)
 
             assert srcnodename.startswith('n')
             src_node_id = int(srcnodename[1:])
@@ -494,7 +496,7 @@ class BBActor(NodeActor):
         action = Clutter.ClickAction.new()
         self.add_action(action)
         def foo(*args):
-            print('clicked on %s, args: %s' % (self.node, args))
+            #print('clicked on %s, args: %s' % (self.node, args))
             event = Clutter.get_current_event()
             state = event.get_state()
             if state & Clutter.ModifierType.CONTROL_MASK:
