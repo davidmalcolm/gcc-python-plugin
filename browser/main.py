@@ -120,7 +120,11 @@ class GraphView(GtkClutter.Embed):
         self.actor_for_node = {}
 
         self.NORMAL = Clutter.Color().new(237, 236, 235, 255)
+        self.NORMAL_PRELIGHT = Clutter.Color().new(237 * 1.05, 236 * 1.05, 235 * 1.05, 255)
+
         self.SELECTED = Clutter.Color().new(0, 0, 237, 255)
+        self.SELECTED_PRELIGHT = Clutter.Color().new(0, 0, 237 * 1.05, 255)
+
         self.BACKDROP = Clutter.Color().new(0, 0, 0, 255)
 
         stage = self.get_stage()
@@ -377,6 +381,20 @@ class NodeActor(Clutter.Actor):
         self.gv = gv
         self.node = node
         self.is_selected = False
+        def on_enter(*args):
+            self.set_background_color(
+                gv.SELECTED_PRELIGHT
+                if self.is_selected
+                else
+                gv.NORMAL_PRELIGHT)
+        def on_leave(*args):
+            self.set_background_color(
+                gv.SELECTED
+                if self.is_selected
+                else
+                gv.NORMAL)
+        self.connect('enter-event', on_enter)
+        self.connect('leave-event', on_leave)
 
     def get_top_middle(self):
         x, y = self.get_position()
