@@ -28,6 +28,7 @@ from gi.repository import Clutter, GObject, Gtk, Gdk, Cogl
 
 import gcc
 from gccutils import get_src_for_loc, cfg_to_dot, invoke_dot
+from gccutils.pango import escape as pango_escape
 
 DEBUG_LAYOUT = 0
 
@@ -51,6 +52,15 @@ def make_text(txt):
         actor.set_background_color(random_color())
     return actor
 
+def make_markup(markup):
+    """
+    Build a Clutter.Text using Pango markup
+    """
+    actor = Clutter.Text.new()
+    actor.set_markup(markup)
+    actor.set_font_name('monospace')
+    return actor
+
 def make_grid(parent, width, height):
     color = Clutter.Color().new(0, 0, 0, 16)
     for x in range(0, width, 100):
@@ -59,6 +69,64 @@ def make_grid(parent, width, height):
             a.set_background_color(color)
             a.set_position(x, y)
             parent.add_actor(a)
+
+############################################################################
+
+class SourceWidget(GtkClutter.Embed):
+    def __init__(self, src):
+        GtkClutter.Embed.__init__(self)
+
+        self.src = src
+
+        stage = self.get_stage()
+
+        actor = SourceActor(self)
+        stage.add_actor(actor)
+        actor.set_scale(0.5, 0.5)
+
+        stage.set_size(*actor.get_size())
+
+class SourceActor(Clutter.Actor):
+    def __init__(self, tw):
+        Clutter.Actor.__init__(self)
+
+        layout = Clutter.TableLayout()
+        self.set_layout_manager(layout)
+
+        actors_for_line = {}
+
+        lines = []
+
+        from pygments.lexers import CLexer
+        from pygments.styles.default import DefaultStyle as styler
+
+        lexer = CLexer() # FIXME
+        markuplines = []
+        for token, value in CLexer().get_tokens(tw.src):
+            style = styler.style_for_token(token)
+
+            def make_markup_for_token(tok, style):
+                if style['color']:
+                    return '<span foreground="#%s">%s</span>' % (style['color'], pango_escape(tok))
+                else:
+                    return pango_escape(tok)
+
+            if value == '\n':
+                markuplines.append('')
+            elif '\n' in value:
+                markuplines += [make_markup_for_token(line, style)
+                                for line in value.splitlines()]
+            else:
+                markuplines[-1] = markuplines[-1] + make_markup_for_token(value, style)
+
+        for linenum, line in enumerate(markuplines, start=1):
+            lhs = make_text('%5i' % linenum)
+            rhs = make_markup(line)
+            layout.pack(lhs, column=0, row=linenum - 1)
+            layout.pack(rhs, column=1, row=linenum - 1)
+            actors_for_line[linenum] = (lhs, rhs)
+
+############################################################################
 
 #def get_layout(graph):
 
@@ -545,21 +613,20 @@ class CallgraphNodeActor(NodeActor):
 ############################################################################
 
 class MainWindow(Gtk.Window):
-    def __init__(self, gv):
+    def __init__(self, gv, src):
         Gtk.Window.__init__(self)
 
         self.connect('destroy', lambda w: Gtk.main_quit())
         self.set_default_size(1024, 768)
         #self.set_title(fun.decl.name)
 
-        display = Gdk.Display.get_default()
-        screen = display.get_default_screen()
-        #css_provider = Gtk.CssProvider()
-        #print(dir(css_provider))
-        #props = css_provider.get_style(None)
-        #print(dir(props))
+        hpaned = Gtk.HPaned.new()
+        self.add(hpaned)
 
-        self.add(gv)
+        tw = SourceWidget(src)
+        hpaned.add(tw)
+        hpaned.add(gv)
+        hpaned.set_position(300) # FIXME
 
         if 0:
             def RGBA_to_clutter(rgba):
@@ -608,7 +675,11 @@ if 1:
                 from gccutils.graph.cfg import CFG
                 graph = CFG(fun)
                 gv = CFGView(graph)
-                mw = MainWindow(gv)
+
+                with open(fun.start.file) as f:
+                    src = f.read()
+                mw = MainWindow(gv, src)
+                mw.set_title('%s CFG' % fun.decl.name)
                 Gtk.main()
 
     ps = ShowGimple(name='show-gimple')
@@ -629,6 +700,7 @@ else:
             graph = Callgraph()
             gv = CallgraphView(graph)
             mw = MainWindow(gv)
+            mw.set_title('Callgraph')
             Gtk.main()
 
     gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
