@@ -25,7 +25,15 @@
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
-#include "gimple-pretty-print.h" /* for pp_gimple_stmt_1 */
+
+/*
+   Needed for pp_gimple_stmt_1 for gcc 4.8+;
+   this header didn't exist in gcc 4.6:
+ */
+#if (GCC_VERSION >= 4008)
+#include "gimple-pretty-print.h"
+#endif
+
 #include "gcc-c-api/gcc-gimple.h"
 
 gcc_gimple_asm
