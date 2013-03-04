@@ -29,7 +29,7 @@ from gi.repository import Clutter, GObject, Gtk, Gdk, Cogl
 import gcc
 from gccutils import get_src_for_loc, cfg_to_dot, invoke_dot
 
-DEBUG_LAYOUT = 1
+DEBUG_LAYOUT = 0
 
 def random_color():
     from random import randint
@@ -118,6 +118,10 @@ class GraphView(GtkClutter.Embed):
         self.selected_nodes = set()
 
         self.actor_for_node = {}
+
+        self.NORMAL = Clutter.Color().new(237, 236, 235, 255)
+        self.SELECTED = Clutter.Color().new(0, 0, 237, 255)
+        self.BACKDROP = Clutter.Color().new(0, 0, 0, 255)
 
         stage = self.get_stage()
 
@@ -442,6 +446,8 @@ class BBActor(NodeActor):
 
         if DEBUG_LAYOUT:
             self.set_background_color(random_color())
+        else:
+            self.set_background_color(gv.NORMAL)
 
         # TODO: phi nodes
         if  bb.gimple:
@@ -535,35 +541,35 @@ class MainWindow(Gtk.Window):
 
         self.add(gv)
 
-        def RGBA_to_clutter(rgba):
-            return Clutter.Color().new(rgba.red * 255,
-                                       rgba.green * 255,
-                                       rgba.blue * 255,
-                                       rgba.alpha * 255)
+        if 0:
+            def RGBA_to_clutter(rgba):
+                return Clutter.Color().new(rgba.red * 255,
+                                           rgba.green * 255,
+                                           rgba.blue * 255,
+                                           rgba.alpha * 255)
 
-        sctxt = self.get_style_context()# Gtk.StyleContext()
-        print(sctxt)
-        #print(dir(sctxt))
-        print(sctxt.get_color(Gtk.StateFlags.NORMAL))
-        gv.NORMAL = RGBA_to_clutter(sctxt.get_color(Gtk.StateFlags.NORMAL))
+            sctxt = self.get_style_context()# Gtk.StyleContext()
+            print(sctxt)
+            #print(dir(sctxt))
+            print(sctxt.get_color(Gtk.StateFlags.NORMAL))
+            gv.NORMAL = RGBA_to_clutter(sctxt.get_color(Gtk.StateFlags.NORMAL))
 
-        print(sctxt.get_color(Gtk.StateFlags.BACKDROP))
-        gv.BACKDROP = sctxt.get_color(Gtk.StateFlags.BACKDROP)
-        print(dir(gv.BACKDROP))
-        #gv.stage.set_background_color(RGBA_to_clutter(gv.BACKDROP))
+            print(sctxt.get_color(Gtk.StateFlags.BACKDROP))
+            gv.BACKDROP = sctxt.get_color(Gtk.StateFlags.BACKDROP)
+            print(dir(gv.BACKDROP))
+            #gv.stage.set_background_color(RGBA_to_clutter(gv.BACKDROP))
 
-        print(sctxt.get_color(Gtk.StateFlags.PRELIGHT))
-        gv.PRELIGHT = sctxt.get_color(Gtk.StateFlags.PRELIGHT)
+            print(sctxt.get_color(Gtk.StateFlags.PRELIGHT))
+            gv.PRELIGHT = sctxt.get_color(Gtk.StateFlags.PRELIGHT)
 
-        print(sctxt.get_color(Gtk.StateFlags.NORMAL | Gtk.StateFlags.SELECTED))
-        gv.SELECTED = RGBA_to_clutter(sctxt.get_color(Gtk.StateFlags.SELECTED))
+            print(sctxt.get_color(Gtk.StateFlags.NORMAL | Gtk.StateFlags.SELECTED))
+            gv.SELECTED = RGBA_to_clutter(sctxt.get_color(Gtk.StateFlags.SELECTED))
 
-        print(sctxt.get_color(Gtk.StateFlags.FOCUSED))
-        gv.FOCUSED = sctxt.get_color(Gtk.StateFlags.FOCUSED)
+            print(sctxt.get_color(Gtk.StateFlags.FOCUSED))
+            gv.FOCUSED = sctxt.get_color(Gtk.StateFlags.FOCUSED)
 
-        print(sctxt.get_color(Gtk.StateFlags.INSENSITIVE))
-        gv.INSENSITIVE = sctxt.get_color(Gtk.StateFlags.INSENSITIVE)
-
+            print(sctxt.get_color(Gtk.StateFlags.INSENSITIVE))
+            gv.INSENSITIVE = sctxt.get_color(Gtk.StateFlags.INSENSITIVE)
 
         self.show_all()
 
