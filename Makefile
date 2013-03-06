@@ -15,7 +15,9 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-.PHONY: all clean debug dump_gimple plugin show-ssa tarball test-suite testcpychecker testcpybuilder
+.PHONY: all clean debug dump_gimple plugin show-ssa tarball \
+	test-suite testcpychecker testcpybuilder \
+	man
 
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
@@ -213,6 +215,8 @@ gcc-with-$(PLUGIN_NAME).1: docs/_build/man/gcc-with-python.1
 gcc-with-$(PLUGIN_NAME).1.gz: gcc-with-$(PLUGIN_NAME).1
 	rm -f gcc-with-$(PLUGIN_NAME).1.gz
 	gzip gcc-with-$(PLUGIN_NAME).1
+
+man: gcc-with-$(PLUGIN_NAME).1.gz
 
 install: $(PLUGIN_DSO) gcc-with-$(PLUGIN_NAME).1.gz
 	mkdir -p $(DESTDIR)$(GCCPLUGINS_DIR)
