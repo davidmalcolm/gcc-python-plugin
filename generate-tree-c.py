@@ -444,7 +444,7 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'MEM_REF':
             add_simple_getter('operand',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_mem_ref_get_operand(PyGccTree_as_gcc_mem_ref(self)))',
                               "The gcc.Tree that for the pointer expression'")
 
         if tree_type.SYM == 'BIT_FIELD_REF':
