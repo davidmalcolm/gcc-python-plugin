@@ -20,7 +20,7 @@ import atexit
 import os
 import sys
 
-from firehose.report import Analysis, Failure
+from firehose.model import Analysis, Failure
 
 from gccutils.selftests import assertEqual
 from libcpychecker import main, Options

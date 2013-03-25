@@ -19,7 +19,7 @@
 
 import os
 
-from firehose.report import Analysis
+from firehose.model import Analysis
 
 import gcc
 

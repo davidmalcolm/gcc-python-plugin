@@ -20,7 +20,7 @@
 
 import sys
 
-from firehose.report import Analysis, Failure
+from firehose.model import Analysis, Failure
 
 from libcpychecker import main, Options
 from libcpychecker.refcounts import CPython

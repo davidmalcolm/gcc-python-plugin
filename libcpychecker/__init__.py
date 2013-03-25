@@ -21,7 +21,7 @@ import traceback
 
 import gcc
 
-from firehose.report import Analysis, Metadata, Generator, Failure, \
+from firehose.model import Analysis, Metadata, Generator, Failure, \
     CustomFields
 
 from libcpychecker.diagnostics import WrappedGccLocation

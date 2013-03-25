@@ -25,7 +25,7 @@ flushed, allowing us to de-duplicate error reports.
 
 import sys
 
-from firehose.report import Issue, Location, File, Function, \
+from firehose.model import Issue, Location, File, Function, \
     Point, Message, Notes, Trace, State
 
 import gcc
@@ -37,7 +37,7 @@ from libcpychecker.utils import log
 # Firehose support
 class CpycheckerIssue(Issue):
     """
-    Subclass of firehose.report.Issue, which adds the concept
+    Subclass of firehose.model.Issue, which adds the concept
     of adding notes at the end of the trace in the gcc output,
     mostly for byte-for-byte compatibility with old stderr in the
     selftests
@@ -59,7 +59,7 @@ class CpycheckerIssue(Issue):
 
 class WrappedGccLocation(Location):
     """
-    A firehose.report.Location
+    A firehose.model.Location
     wrapping a gcc.Location
     """
     def __init__(self, gccloc, funcname):
@@ -85,7 +85,7 @@ class WrappedGccLocation(Location):
 
 class WrappedAbsinterpLocation(WrappedGccLocation):
     """
-    A firehose.report.Location that wraps a libcpychecker.absinterp.Location
+    A firehose.model.Location that wraps a libcpychecker.absinterp.Location
     """
     def __init__(self, loc, funcname):
         self.loc = loc
@@ -94,7 +94,7 @@ class WrappedAbsinterpLocation(WrappedGccLocation):
 
 class CustomState(State):
     '''
-    A firehose.report.State, but with hooks for byte-for-byte compat with
+    A firehose.model.State, but with hooks for byte-for-byte compat with
     old output
     '''
     def __init__(self, *args, **kwargs):
@@ -137,7 +137,7 @@ class Annotator:
 def make_firehose_trace(funcname, trace, annotator):
     """
     input is a libcpychecker.absinterp.Trace
-    output is a firehose.report.Trace (aka a Trace within this module)
+    output is a firehose.model.Trace (aka a Trace within this module)
     """
     result = Trace([])
     for t in trace.transitions:

@@ -21,7 +21,7 @@ import atexit
 import os
 import sys
 
-from firehose.report import Analysis
+from firehose.model import Analysis
 
 from libcpychecker import main, Options
 

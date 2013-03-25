@@ -22,7 +22,7 @@
 
 import sys
 
-from firehose.report import Notes, Failure, Message, CustomFields, Info
+from firehose.model import Notes, Failure, Message, CustomFields, Info
 
 import gcc
 

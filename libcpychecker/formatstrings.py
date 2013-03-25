@@ -17,7 +17,7 @@
 
 import sys
 
-from firehose.report import CustomFields
+from firehose.model import CustomFields
 
 from gccutils import get_src_for_loc, get_global_typedef
 
