@@ -281,7 +281,7 @@ is_dump_enabled(struct opt_pass *pass)
     struct dump_file_info *dfi = get_dump_file_info(pass->static_pass_number);
     return dfi->pstate || dfi->alt_state;
 #else
-    return dump_enabled_p(self->pass->static_pass_number);
+    return dump_enabled_p(pass->static_pass_number);
 #endif
 }
 
