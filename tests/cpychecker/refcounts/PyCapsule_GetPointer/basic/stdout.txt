@@ -3,7 +3,7 @@ Trace 0:
     'when PyCapsule_GetPointer() succeeds'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=29))
+    repr(): UnknownValue(gcctype=gcc.PointerType(dereference=<gcc.VoidType object at 0xdeadbeef>), loc=gcc.Location(file='tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c', line=29))
     str(): unknown void * from tests/cpychecker/refcounts/PyCapsule_GetPointer/basic/input.c:29
   region for gcc.ParmDecl('capsule') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('capsule')")
