@@ -159,6 +159,12 @@ class TestStream:
                           r'input.c:\1:nn:',
                           line)
 
+            # GCC 4.8's output sometimes omits the filename prefix for a
+            # diagnostic:
+            m = re.match(r"(.+): (In function '.+':)", line)
+            if m:
+                line = m.group(2)
+
             # Python 3.3's unicode reimplementation drops the macro redirection
             # to narrow/wide implementations ("UCS2"/"UCS4")
             line = re.sub('PyUnicodeUCS4_AsUTF8String', 'PyUnicode_AsUTF8String', line)
