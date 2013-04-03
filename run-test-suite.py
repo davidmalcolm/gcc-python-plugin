@@ -165,6 +165,13 @@ class TestStream:
             if m:
                 line = m.group(2)
 
+            # For some reason, some of the test cases emit (long int)
+            # refcounts, rather than (Py_ssize_t)
+            # I think this is to do with borrowed refs
+            line = re.sub(r'r->ob_refcnt: \(long int\)val',
+                          r'r->ob_refcnt: (Py_ssize_t)val',
+                          line)
+
             # Python 3.3's unicode reimplementation drops the macro redirection
             # to narrow/wide implementations ("UCS2"/"UCS4")
             line = re.sub('PyUnicodeUCS4_AsUTF8String', 'PyUnicode_AsUTF8String', line)
