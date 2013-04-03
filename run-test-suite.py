@@ -307,6 +307,10 @@ def run_test(testdir):
         # output, so turn it off for running tests:
         args += ['-fno-diagnostics-show-caret']
 
+        # Similarly, the macro expansion tracking is great for usability,
+        # but breaks the "gold" output, so we disable it during tests:
+        args += ['-ftrack-macro-expansion=0']
+
     args += ['-o', outfile]
     args += ['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
              '-fplugin-arg-%s-script=%s' % (PLUGIN_NAME, script_py)]
