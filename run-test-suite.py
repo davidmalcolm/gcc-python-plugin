@@ -616,6 +616,11 @@ if sys.version_info[:2] == (3, 3):
     exclude_test('tests/cpychecker/refcounts/combinatorial-explosion')
     exclude_test('tests/cpychecker/refcounts/combinatorial-explosion-with-error')
 
+# Tests failing with gcc 4.8:
+if GCC_VERSION >= 4008:
+    exclude_test('tests/cpychecker/refcounts/cplusplus/destructor')
+    exclude_test('tests/cpychecker/refcounts/cplusplus/empty-function')
+
 
 num_passes = 0
 skipped_tests = []
