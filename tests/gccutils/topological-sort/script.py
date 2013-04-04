@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -22,8 +22,21 @@ import gcc
 def on_pass_execution(p, fn):
     if p.name == '*free_lang_data':
         from gccutils import sorted_callgraph
-        for cgn in sorted_callgraph():
-            print(cgn.decl)
+        index = {}
+        for i, cgn in enumerate(sorted_callgraph()):
+            index[cgn.decl.name] = i
+        assert index['a'] < index['e']
+        assert index['a'] < index['c']
+
+        assert index['d'] < index['a']
+        assert index['d'] < index['b']
+        assert index['d'] < index['c']
+
+        assert index['g'] < index['c']
+
+        assert index['j'] < index['f']
+
+
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       on_pass_execution)
