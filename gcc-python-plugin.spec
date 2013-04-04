@@ -250,13 +250,13 @@ CheckPlugin() {
     pushd $BuildDir
 
     # Run the selftests:
-    #LD_LIBRARY_PATH=gcc-c-api \
-    #PLUGIN_NAME=$PluginName \
-    #    $PythonExe run-test-suite.py $SelftestArgs
+    LD_LIBRARY_PATH=gcc-c-api \
+    PLUGIN_NAME=$PluginName \
+        $PythonExe run-test-suite.py $SelftestArgs
 
-    #LD_LIBRARY_PATH=gcc-c-api \
-    #PLUGIN_NAME=$PluginName \
-    #    $PythonExe testcpychecker.py -v
+    LD_LIBRARY_PATH=gcc-c-api \
+    PLUGIN_NAME=$PluginName \
+        $PythonExe testcpychecker.py -v
 
     popd
 }
