@@ -1,0 +1,132 @@
+.. Copyright 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2013 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+.. this covers up to cfd1a892b8e47ea18b757611c83528b22d85f4ce
+
+0.12
+~~~~
+
+Changes to the GCC Python Plugin
+================================
+
+GCC 4.8 compatibility
+---------------------
+
+This release of the plugin adds support for gcc 4.8 (along with continued
+support for gcc 4.7 and gcc 4.6).
+
+
+gcc-c-api
+---------
+The source tree contains a new component: gcc-c-api.  This provides a
+wrapper library `libgcc-c-api.so` that hides much of the details of GCC's
+internals (such as the binary layout of structures, and the differences
+between GCC 4.6 through 4.8).
+
+I plan for this to eventually be its own project, aiming at providing
+a stable API and ABI for working with GCC, once it has proven itself in
+the context of the python plugin.
+
+The API provides an XML description of itself, which should greatly simplify
+the job of generating bindings for accessing GCC internals from other
+languages.
+
+
+Link-Time Optimization support
+------------------------------
+The plugin can now be used with GCC's Link-Time Optimization feature (LTO),
+allowing whole-program visualizations and analysis.
+
+For example, you can rendering a whole-program "supergraph" of control flow
+graphs using this invocation:
+
+.. code-block:: bash
+
+   $ ./gcc-with-python \
+     examples/show-lto-supergraph.py \
+     -flto \
+     -flto-partition=none \
+     tests/examples/lto/input-*.c
+
+which will render a bitmap of the supergraph like this:
+
+    .. figure:: sample-supergraph.png
+      :scale: 50 %
+      :alt: image of a supergraph
+
+
+API improvements
+----------------
+Sane repr() implementations have been added to the following classes:
+:py:class:`gcc.CaseLabelExpr`
+:py:class:`gcc.GimpleLabel`
+:py:class:`gcc.BasicBlock`
+:py:class:`gcc.SsaName`
+:py:class:`gcc.ArrayRef`
+:py:class:`gcc.ComponentRef`
+:py:class:`gcc.PointerType`
+:py:class:`gcc.IntegerType`
+:py:class:`gcc.Location`
+
+
+:py:class:`gcc.Location` instances can now be compared and sorted.  They
+are ordered alphabetically by file, then by line number, then by column)
+
+
+Other fixes
+-----------
+
+* the Makefile has a "make install" target (at last)
+
+* prevent forkbomb when running with CC=gcc-with-cpychecker
+
+* fixed memory leak within :py:meth:`gcc.Gimple.walk_tree`
+
+* ensure that the result of :py:attr:`gcc.Cfg.basic_blocks`
+  can't contain any `None` items (which used to sometimes happen when
+  certain optimizations had occurred).
+
+* run-test-suite.py now has a --show option, giving more verbose
+  information on what the test suite is doing
+
+* fix hashing and equality for :py:class:`gcc.Function` and
+  :py:class:`gcc.Gimple`
+
+* fix :py:meth:`gcc.IntegerCst.__hash__` and ensure it compares sanely
+  against `int`
+
+* ensure that equivalent :py:class:`gcc.ComponentRef` objects have the
+  same hash and are equal
+
+* ensure there is a unique gcc.CallgraphEdge for each underlying edge, and
+  a unique gcc.Cfg for each underlying control flow graph
+
+* add a "label" attribute to gcc.GimpleLabel
+
+* add :py:data:`gcc.GCC_VERSION`
+
+
+Internal improvements to :doc:`gcc-with-cpychecker </cpychecker>`
+=================================================================
+
+* fix exception on pointer comparisons
+* fix exception on int-to-float casts
+* fix traceback when analyzing a callsite that discards the LHS when an Outcome.returns() a value
+* fix two different exceptions when casting an integer value to a pointer
+* add example of refcounting bugs to "make demo"
+* fix a traceback seen on bogus uses of Py_XDECREF()
+
