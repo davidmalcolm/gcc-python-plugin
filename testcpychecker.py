@@ -28,6 +28,14 @@ from cpybuilder import PyMethodTable, PyMethodDef, METH_VARARGS
 
 PLUGIN_NAME = os.environ.get('PLUGIN_NAME', 'python')
 
+def get_gcc_version():
+    p = Popen(['./print-gcc-version'],
+              stdout=PIPE, stderr=PIPE)
+    out, err = p.communicate()
+    return(int(out))
+
+GCC_VERSION = get_gcc_version()
+
 class ExpectedErrorNotFound(CompilationError):
     def __init__(self, expected_err, actual_err, bm):
         CompilationError.__init__(self, bm)
@@ -54,8 +62,17 @@ class ExpectedErrorNotFound(CompilationError):
 
 class AnalyzerTests(unittest.TestCase):
     def compile_src(self, bm):
-        bm.compile_src(extra_cflags=['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
-                                     '-fplugin-arg-%s-script=cpychecker.py' % PLUGIN_NAME])
+        extra_cflags=['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
+                      '-fplugin-arg-%s-script=cpychecker.py' % PLUGIN_NAME]
+
+        # GCC 4.8 started showing the source line where the problem is,
+        # followed by another line showing a caret indicating column.
+        # This is a great usability feature, but totally breaks our "gold"
+        # output, so turn it off for running tests:
+        if GCC_VERSION >= 4008:
+            extra_cflags += ['-fno-diagnostics-show-caret']
+
+        bm.compile_src(extra_cflags)
 
     def build_module(self, bm):
         bm.write_src('example')
