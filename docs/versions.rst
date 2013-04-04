@@ -1,5 +1,5 @@
-.. Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+.. Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -69,3 +69,16 @@ On my machine, running this currently gives::
 
 
    Internally, this is a wrapper around a `struct plugin_gcc_version`
+
+.. py:data:: gcc.GCC_VERSION
+
+   (int) This corresponds to the value of GCC_VERSION within GCC's internal
+   code: (MAJOR * 1000) + MINOR:
+
+   ===========   ========================
+   GCC version   Value of gcc.GCC_VERSION
+   ===========   ========================
+   4.6           4006
+   4.7           4007
+   4.8           4008
+   ===========   ========================

@@ -579,6 +579,8 @@ PyGcc_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_cfglayout);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_lcx);
 
+    PyModule_AddIntMacro(PyGcc_globals.module, GCC_VERSION);
+
     /* Success: */
     return 1;
 }
