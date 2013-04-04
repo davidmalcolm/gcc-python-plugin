@@ -35,10 +35,13 @@ def on_pass_execution(p, fn):
                   # These should be passed through, without triggering errors:
                   'a warning with some embedded format strings %s and %i')
 
-        # Verify that -Wno-format was honored:
-        gcc.warning(fn.end,
-                    'this warning ought not to appear',
-                    gcc.Option('-Wformat'))
+        # Verify that -Wno-format was honored
+        # The behavior of these flags changed in 4.8, so skip this part
+        # on gcc 4.8 onwards:
+        if gcc.GCC_VERSION <= 4007:
+            gcc.warning(fn.end,
+                        'this warning ought not to appear',
+                        gcc.Option('-Wformat'))
 
         # Verify that we can issue an unconditional warning, with no option
         # (as per https://fedorahosted.org/gcc-python-plugin/ticket/8 ):
