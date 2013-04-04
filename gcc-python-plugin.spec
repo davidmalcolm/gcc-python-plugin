@@ -320,7 +320,7 @@ CheckPlugin \
   "-x tests/cpychecker"
 
 %files -n gcc-python-plugin-c-api
-%{gcc_plugins_dir}/libgcccapi.so
+%{gcc_plugins_dir}/libgcc-c-api.so
 
 %files -n gcc-python2-plugin
 %defattr(-,root,root,-)
