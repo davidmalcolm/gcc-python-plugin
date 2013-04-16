@@ -129,11 +129,11 @@ class Type(XmlWrapper, HasDocsMixin):
             raise NoInnerType(self)
 
     def iter_attrs(self):
-        for node in self.node.iter(tag='attribute'):
+        for node in self.node.iter('attribute'):
             yield Attribute(self.api, node)
 
     def iter_iters(self):
-        for node in self.node.iter(tag='iterator'):
+        for node in self.node.iter('iterator'):
             yield Iterator(self.api, node)
 
 class Attribute(XmlWrapper, HasDocsMixin):
@@ -202,7 +202,7 @@ class Function(XmlWrapper, HasDocsMixin):
         return get_c_type(xml_kind);
 
     def iter_params(self):
-        for node in self.node.iter(tag='parameter'):
+        for node in self.node.iter('parameter'):
             yield Parameter(self.api, node)
 
 class Parameter(XmlWrapper, HasDocsMixin):
@@ -242,7 +242,7 @@ class Api:
             return None
 
     def iter_types(self):
-        for node in self.api.iter(tag='type'):
+        for node in self.api.iter('type'):
             yield Type(self, node)
 
     def lookup_type(self, xmlname):
