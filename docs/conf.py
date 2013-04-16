@@ -1,4 +1,4 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
 #   Copyright 2011, 2012 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
@@ -232,4 +232,12 @@ man_pages = [
      [u'David Malcolm'], 1),
     ('gcc-with-python', 'gcc-with-python', u'Run GCC whilst invoking a Python script',
      [u'David Malcolm'], 1)
+]
+
+# -- Options for Texinfo output ------------------------------------------------
+
+texinfo_documents = [
+    (master_doc, 'gcc-python-plugin', 'gcc-python-plugin Documentation',
+     'David Malcolm', 'gcc-python-plugin', 'gcc-python-plugin Documentation',
+     'Software development', False)
 ]

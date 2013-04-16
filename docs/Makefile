@@ -29,6 +29,8 @@ help:
 	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
 	@echo "  text       to make text files"
 	@echo "  man        to make manual pages"
+	@echo "  texinfo    to make a Texinfo document"
+	@echo "  info       to make an info page"
 	@echo "  changes    to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
@@ -112,6 +114,16 @@ man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man
 	@echo
 	@echo "Build finished. The manual pages are in $(BUILDDIR)/man."
+
+texinfo:
+	$(SPHINXBUILD) -b texinfo $(ALLSPHINXOPTS) $(BUILDDIR)/texinfo
+	@echo
+	@echo "Build finished. The Texinfo pages are in $(BUILDDIR)/texinfo."
+
+info: texinfo
+	cd $(BUILDDIR)/texinfo && $(MAKE) info
+	@echo
+	@echo "Build finished. The info pages are in $(BUILDDIR)/texinfo."
 
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
