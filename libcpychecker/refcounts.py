@@ -3063,7 +3063,7 @@ class CPython(Facet):
         on_success.returns(0)
 
         on_failure = fncall.can_fail()
-        oc_failure.returns(-1)
+        on_failure.returns(-1)
         # (no way to get the exception on failure)
 
         return fncall.get_transitions()
