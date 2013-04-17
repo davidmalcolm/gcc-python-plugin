@@ -3088,6 +3088,27 @@ class CPython(Facet):
                                                          fnmeta,
                                                          'new ref from %s' % fnmeta.name)
 
+    def impl_PySequence_DelItem(self, stmt, v_o, v_i):
+        fnmeta = FnMeta(name='PySequence_DelItem',
+                        docurl='http://docs.python.org/c-api/sequence.html#PySequence_DelItem',
+                        declared_in='abstract.h',
+                        prototype='int PySequence_DelItem(PyObject *o, Py_ssize_t i);',
+                        defined_in='Objects/abstract.c')
+        # safely handles NULL via null_error():
+        t_err = self.handle_null_error(stmt, 0, v_o, rawreturnvalue=-1)
+        if t_err:
+            return [t_err]
+
+        # can fail with -1, setting an exception
+        s_failure = self.state.mkstate_concrete_return_of(stmt, -1)
+        s_failure.cpython.set_exception('PyExc_TypeError', stmt.loc)
+
+        # otherwise, expect zero
+        s_success = self.state.mkstate_concrete_return_of(stmt, 0)
+
+        return self.state.make_transitions_for_fncall(stmt, fnmeta,
+                                                      s_success, s_failure)
+
     def impl_PySequence_GetItem(self, stmt, v_o, v_i):
         fnmeta = FnMeta(name='PySequence_GetItem',
                         docurl='http://docs.python.org/c-api/sequence.html#PySequence_GetItem',
