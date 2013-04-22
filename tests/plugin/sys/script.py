@@ -23,7 +23,7 @@ assert hasattr(sys, 'plugin_full_name')
 assert os.path.exists(sys.plugin_full_name)
 
 assert hasattr(sys, 'plugin_base_name')
-assert sys.plugin_base_name == 'python' # for now
+assert sys.plugin_base_name.startswith('python') # for now
 
 # Verify that the plugin's directory is in sys.path, as an absolute path:
 plugin_dir = os.path.abspath(os.path.dirname(sys.plugin_full_name))
