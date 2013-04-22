@@ -1,0 +1,6 @@
+tests/examples/find-global-state/input.c:38:14: note: global state "int i" defined here
+tests/examples/find-global-state/input.c:24:3: note: global state "struct 
+{
+  int i;
+} bar" defined here
+tests/examples/find-global-state/input.c:20:12: note: global state "int a_global" defined here

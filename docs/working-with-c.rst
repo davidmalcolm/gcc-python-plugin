@@ -72,3 +72,31 @@ Given this sample C source file:
 these warnings are emitted on stderr:
 
   .. literalinclude:: ../tests/examples/spelling-checker/stderr.txt
+
+
+Finding global variables
+------------------------
+This example adds a pass that warns about global variables:
+
+   .. code-block:: bash
+
+     $ ./gcc-with-python \
+         tests/examples/find-global-state/script.py \
+         -c \
+         tests/examples/find-global-state/input.c
+
+The Python code for this is:
+
+   .. literalinclude:: ../tests/examples/find-global-state/script.py
+    :lines: 18-
+    :language: python
+
+Given this sample C source file:
+
+  .. literalinclude:: ../tests/examples/find-global-state/input.c
+    :lines: 19-
+    :language: c
+
+these warnings are emitted on stderr:
+
+  .. literalinclude:: ../tests/examples/find-global-state/stderr.txt
