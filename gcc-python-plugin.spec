@@ -145,7 +145,7 @@ BuildPlugin() {
        PYTHON=$PythonExe \
        PYTHON_CONFIG=$PythonConfig \
        PLUGIN_PYTHONPATH=%{gcc_plugins_dir}/$PluginName \
-       plugin
+       plugin print-gcc-version
     popd
 }
 
