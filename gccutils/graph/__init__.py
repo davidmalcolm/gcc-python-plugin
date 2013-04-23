@@ -279,6 +279,9 @@ class Node(object):
         # Return a tuple of Subgraph instances
         return ()
 
+    def __lt__(self, other):
+        return id(self) < id(other)
+
 class Edge(object):
     __slots__ = ('srcnode', 'dstnode')
 
@@ -323,3 +326,6 @@ class Subgraph(object):
 
     def __repr__(self):
         return 'Subgraph(%r, %r)' % (self.id, self.label)
+
+    def __lt__(self, other):
+        return self.id < other.id
