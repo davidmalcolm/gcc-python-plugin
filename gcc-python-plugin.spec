@@ -118,13 +118,13 @@ PrepPlugin \
   python2
 
 PrepPlugin \
-  python2-debug
+  python2_debug
 
 PrepPlugin \
   python3
 
 PrepPlugin \
-  python3-debug
+  python3_debug
 
 
 %build
@@ -158,8 +158,8 @@ BuildPlugin \
 BuildPlugin \
   python-debug \
   python-debug-config \
-  python2-debug.so \
-  python2-debug
+  python2_debug.so \
+  python2_debug
 
 BuildPlugin \
   python3 \
@@ -170,8 +170,8 @@ BuildPlugin \
 BuildPlugin \
   python3-debug \
   python3.2dmu-config \
-  python3-debug.so \
-  python3-debug
+  python3_debug.so \
+  python3_debug
 
 # Documentation:
 cd docs
@@ -217,8 +217,8 @@ InstallPlugin \
 InstallPlugin \
   python-debug \
   python-debug-config \
-  python2-debug.so \
-  python2-debug
+  python2_debug.so \
+  python2_debug
 
 InstallPlugin \
   python3 \
@@ -229,8 +229,8 @@ InstallPlugin \
 InstallPlugin \
   python3-debug \
   python3.2dmu-config \
-  python3-debug.so \
-  python3-debug
+  python3_debug.so \
+  python3_debug
 
 
 %clean
@@ -286,8 +286,8 @@ CheckPlugin \
 CheckPlugin \
   python-debug \
   python-debug-config \
-  python2-debug.so \
-  python2-debug \
+  python2_debug.so \
+  python2_debug \
   "-x tests/cpychecker"
 
 # Selftest for python3 (optimized) build:
@@ -315,8 +315,8 @@ CheckPlugin \
 CheckPlugin \
   python3-debug \
   python3.2dmu-config \
-  python3-debug.so \
-  python3-debug \
+  python3_debug.so \
+  python3_debug \
   "-x tests/cpychecker"
 
 %files -n gcc-python-plugin-c-api
@@ -341,18 +341,18 @@ CheckPlugin \
 %files -n gcc-python2-debug-plugin
 %defattr(-,root,root,-)
 %doc COPYING README.rst
-%{_bindir}/gcc-with-python2-debug
-%{gcc_plugins_dir}/python2-debug.so
-%{gcc_plugins_dir}/python2-debug
-%doc %{_mandir}/man1/gcc-with-python2-debug.1.gz
+%{_bindir}/gcc-with-python2_debug
+%{gcc_plugins_dir}/python2_debug.so
+%{gcc_plugins_dir}/python2_debug
+%doc %{_mandir}/man1/gcc-with-python2_debug.1.gz
 
 %files -n gcc-python3-debug-plugin
 %defattr(-,root,root,-)
 %doc COPYING README.rst
-%{_bindir}/gcc-with-python3-debug
-%{gcc_plugins_dir}/python3-debug.so
-%{gcc_plugins_dir}/python3-debug
-%doc %{_mandir}/man1/gcc-with-python3-debug.1.gz
+%{_bindir}/gcc-with-python3_debug
+%{gcc_plugins_dir}/python3_debug.so
+%{gcc_plugins_dir}/python3_debug
+%doc %{_mandir}/man1/gcc-with-python3_debug.1.gz
 
 %files docs
 %defattr(-,root,root,-)
