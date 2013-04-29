@@ -310,6 +310,10 @@ def run_test(testdir):
     args += ['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
              '-fplugin-arg-%s-script=%s' % (PLUGIN_NAME, script_py)]
 
+    # Force the signedness of char so that the tests have consistent
+    # behavior across all archs:
+    args += ['-fsigned-char']
+
     # Special-case: add the python include dir (for this runtime) if the C code
     # uses Python.h:
     def uses_python_headers():
