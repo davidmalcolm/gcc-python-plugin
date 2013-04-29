@@ -316,13 +316,16 @@ my_walker(void *arg ATTRIBUTE_UNUSED)
     }
 }
 
-static struct ggc_root_tab myroot = { (char*)"", 1, 1, my_walker, NULL };
+static struct ggc_root_tab myroottab[] = {
+    { (char*)"", 1, 1, my_walker, NULL },
+    { NULL, }
+};
 
 void
 PyGcc_wrapper_init(void)
 {
     /* Register our GC root-walking callback: */
-    ggc_register_root_tab(&myroot);
+    ggc_register_root_tab(myroottab);
 
     PyType_Ready(&PyGccWrapperMeta_TypeObj);
 }
