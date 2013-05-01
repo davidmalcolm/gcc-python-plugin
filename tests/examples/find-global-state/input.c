@@ -22,7 +22,7 @@
 static int a_global;
 
 struct {
-  int i;
+  int f;
 } bar;
 
 extern int foo;
@@ -35,11 +35,11 @@ int test(int j)
   return i + 1;
 }
 
-int test2(int j)
+int test2(int p)
 {
-  static int i = 0;
-  i += j;
-  return j * i;
+  static int q = 0;
+  q += p;
+  return p * q;
 }
 
 int test3(int k)
