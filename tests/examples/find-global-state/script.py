@@ -20,6 +20,22 @@ from gccutils import get_src_for_loc
 
 DEBUG=0
 
+def is_const(type_):
+    if DEBUG:
+        type_.debug()
+
+    if hasattr(type_, 'const'):
+        if type_.const:
+            return True
+
+    # Don't bother warning about an array of const e.g.
+    # const char []
+    if isinstance(type_, gcc.ArrayType):
+        item_type = type_.dereference
+        if is_const(item_type):
+            return True
+
+
 class StateFinder:
     def __init__(self):
         # Locate all declarations of variables holding "global" state:
@@ -28,13 +44,14 @@ class StateFinder:
         for var in gcc.get_variables():
             type_ = var.decl.type
 
-            # Don't bother warning about an array of const e.g.
-            # const char []
-            if isinstance(type_, gcc.ArrayType):
-                item_type = type_.dereference
-                if hasattr(item_type, 'const'):
-                    if item_type.const:
-                        continue
+            if DEBUG:
+                print('var.decl: %r' % var.decl)
+                print(type_)
+
+            # Don't bother warning about const data:
+            if is_const(type_):
+                continue
+
             self.global_decls.add(var.decl)
         if DEBUG:
             print('self.global_decls: %r' % self.global_decls)

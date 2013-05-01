@@ -57,3 +57,14 @@ int test6()
 {
   return bar.f;
 }
+
+struct banana {
+  int f;
+};
+
+const struct banana a_banana;
+
+int test7()
+{
+  return a_banana.f;
+}
