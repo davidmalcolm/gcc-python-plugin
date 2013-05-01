@@ -18,8 +18,13 @@
 import gcc
 from gccutils import get_src_for_loc
 
-def on_pass_execution(p, fn):
-    if p.name == '*free_lang_data':
+DEBUG=0
+
+class StateFinder:
+    def __init__(self):
+        # Locate all declarations of variables holding "global" state:
+        self.global_decls = set()
+
         for var in gcc.get_variables():
             type_ = var.decl.type
 
@@ -30,10 +35,48 @@ def on_pass_execution(p, fn):
                 if hasattr(item_type, 'const'):
                     if item_type.const:
                         continue
+            self.global_decls.add(var.decl)
+        if DEBUG:
+            print('self.global_decls: %r' % self.global_decls)
 
-            gcc.inform(var.decl.location,
-                       'global state "%s %s" defined here'
-                       % (type_, var.decl))
+        self.state_users = set()
+
+    def find_state_users(self, node, loc):
+        if isinstance(node, gcc.VarDecl):
+            if node in self.global_decls:
+                # store the state users for later replay, so that
+                # we can eliminate duplicates
+                #   e.g. two references to "q" in "q += p"
+                # and replay in source-location order:
+                self.state_users.add( (loc, node) )
+
+    def flush(self):
+        # Emit warnings, sorted by source location:
+        for loc, node in sorted(self.state_users,
+                                key=lambda pair:pair[0]):
+            gcc.inform(loc,
+                       'use of global state "%s %s" here'
+                       % (node.type, node))
+
+def on_pass_execution(p, fn):
+    if p.name == '*free_lang_data':
+        sf = StateFinder()
+
+        # Locate uses of such variables:
+        for node in gcc.get_callgraph_nodes():
+            fun = node.decl.function
+            if fun:
+                cfg = fun.cfg
+                if cfg:
+                    for bb in cfg.basic_blocks:
+                        stmts = bb.gimple
+                        if stmts:
+                            for stmt in stmts:
+                                stmt.walk_tree(sf.find_state_users,
+                                               stmt.loc)
+
+        # Flush the data that was found:
+        sf.flush()
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       on_pass_execution)

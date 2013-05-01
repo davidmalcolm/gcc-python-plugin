@@ -47,3 +47,13 @@ int test3(int k)
   /* We should *not* report about __FUNCTION__ here: */
   printf("%s:%i:%s\n", __FILE__, __LINE__, __FUNCTION__);
 }
+
+int test4()
+{
+  return foo;
+}
+
+int test6()
+{
+  return bar.f;
+}

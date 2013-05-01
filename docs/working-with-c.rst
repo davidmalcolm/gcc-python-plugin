@@ -76,7 +76,7 @@ these warnings are emitted on stderr:
 
 Finding global variables
 ------------------------
-This example adds a pass that warns about global variables:
+This example adds a pass that warns about uses of global variables:
 
    .. code-block:: bash
 
