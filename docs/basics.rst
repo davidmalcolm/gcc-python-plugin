@@ -442,6 +442,15 @@ Global data access
       Get all variables in this compilation unit as a list of
       :py:class:`gcc.Variable`
 
+.. py:class:: gcc.Variable
+
+   Wrapper around GCC's `struct varpool_node`, representing a variable in
+   the code being compiled.
+
+   .. py:attribute:: decl
+
+      The declaration of this variable, as a :py:class:`gcc.Tree`
+
 .. py:function:: gccutils.get_variables_as_dict()
 
       Get a dictionary of all variables, where the keys are the variable names
