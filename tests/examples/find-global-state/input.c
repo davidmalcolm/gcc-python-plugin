@@ -17,6 +17,8 @@
    <http://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+
 static int a_global;
 
 struct {
@@ -38,4 +40,10 @@ int test2(int j)
   static int i = 0;
   i += j;
   return j * i;
+}
+
+int test3(int k)
+{
+  /* We should *not* report about __FUNCTION__ here: */
+  printf("%s:%i:%s\n", __FILE__, __LINE__, __FUNCTION__);
 }

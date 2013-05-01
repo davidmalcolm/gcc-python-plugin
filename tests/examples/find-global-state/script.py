@@ -21,9 +21,19 @@ from gccutils import get_src_for_loc
 def on_pass_execution(p, fn):
     if p.name == '*free_lang_data':
         for var in gcc.get_variables():
+            type_ = var.decl.type
+
+            # Don't bother warning about an array of const e.g.
+            # const char []
+            if isinstance(type_, gcc.ArrayType):
+                item_type = type_.dereference
+                if hasattr(item_type, 'const'):
+                    if item_type.const:
+                        continue
+
             gcc.inform(var.decl.location,
                        'global state "%s %s" defined here'
-                       % (var.decl.type, var.decl))
+                       % (type_, var.decl))
 
 gcc.register_callback(gcc.PLUGIN_PASS_EXECUTION,
                       on_pass_execution)
