@@ -78,7 +78,7 @@ cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 # when setting CC=gcc-with-cpychecker)
 args = ['gcc',
         ('-fplugin=%s' % PLUGIN),
-	('-fplugin-arg-python-command=%s' % cmd)]
+        ('-fplugin-arg-python-command=%s' % cmd)]
 args += other_args # (the args we didn't consume)
 
 # Beware of quoting: if the command is quoted within the Popen call, then
