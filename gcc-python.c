@@ -26,6 +26,7 @@
 #include "gcc-c-api/gcc-location.h"
 #include "gcc-c-api/gcc-variable.h"
 #include "gcc-c-api/gcc-declaration.h"
+#include "gcc-c-api/gcc-diagnostics.h"
 #include "gcc-c-api/gcc-option.h"
 
 int plugin_is_GPL_compatible;
@@ -37,7 +38,6 @@ int plugin_is_GPL_compatible;
 #include "cp/name-lookup.h" /* for global_namespace */
 #include "tree.h"
 #include "function.h"
-#include "diagnostic.h"
 #include "cgraph.h"
 //#include "opts.h"
 
@@ -589,6 +589,8 @@ PyGcc_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_cfglayout);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_lcx);
 
+    PyModule_AddIntMacro(PyGcc_globals.module, GCC_VERSION);
+
     /* Success: */
     return 1;
 }
@@ -957,7 +959,7 @@ void PyGcc_PrintException(const char *msg)
        within passes is initialized to the top of the function; it can be
        temporarily overridden using gcc.set_location()
     */
-    error_at(gcc_get_input_location().inner, "%s", msg);
+    gcc_error_at(gcc_get_input_location(), msg);
 
     /* Print the traceback: */
     PyErr_PrintEx(1);

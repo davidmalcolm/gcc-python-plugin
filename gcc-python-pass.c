@@ -267,15 +267,29 @@ PyGccPass_repr(struct PyGccPass *self)
                                           self->pass->name);
 }
 
-/* In GCC 4.8, dump_enabled_p changed from acting on one pass to the current phase
-   (as of r192773) */
-#if (GCC_VERSION < 4008)
+/* In GCC 4.8, dump_enabled_p changed from acting on one pass to the
+   current phase (as of r192773), and dump_phase_enabled_p() was added (as
+   of r192692).
+
+   Unfortunately, dump_phase_enabled_p() is static within gcc/dumpfile.c,
+   so we use a copy of the 2 lines of relevant code:
+*/
+static bool
+is_dump_enabled(struct opt_pass *pass)
+{
+#if (GCC_VERSION >= 4008)
+    struct dump_file_info *dfi = get_dump_file_info(pass->static_pass_number);
+    return dfi->pstate || dfi->alt_state;
+#else
+    return dump_enabled_p(pass->static_pass_number);
+#endif
+}
+
 PyObject *
 PyGccPass_get_dump_enabled(struct PyGccPass *self, void *closure)
 {
-    return PyBool_FromLong(dump_enabled_p(self->pass->static_pass_number));
+    return PyBool_FromLong(is_dump_enabled(self->pass));
 }
-#endif
 
 /* In GCC 4.8, this field became "pstate" */
 #if (GCC_VERSION >= 4008)

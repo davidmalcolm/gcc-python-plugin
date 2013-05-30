@@ -2,7 +2,7 @@ Trace 0:
   Transitions:
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/arrays4/input.c', line=37))
+    repr(): UnknownValue(gcctype=gcc.PointerType(dereference=gcc.IntegerType(name=gcc.TypeDecl('char'))), loc=gcc.Location(file='tests/cpychecker/absinterp/arrays4/input.c', line=37))
     str(): unknown const char * from tests/cpychecker/absinterp/arrays4/input.c:37
   Exception:
     (struct PyObject *)0 from tests/cpychecker/absinterp/arrays4/input.c:36

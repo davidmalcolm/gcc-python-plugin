@@ -1,0 +1,7 @@
+tests/examples/find-global-state/input.c:41:nn: note: use of global state "int q" here
+tests/examples/find-global-state/input.c:42:nn: note: use of global state "int q" here
+tests/examples/find-global-state/input.c:53:nn: note: use of global state "int foo" here
+tests/examples/find-global-state/input.c:58:nn: note: use of global state "struct 
+{
+  int f;
+} bar" here

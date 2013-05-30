@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -388,6 +388,10 @@ def generate_tree_code_classes():
                 add_simple_getter('%s_equivalent' % qual,
                                   'PyGccTree_New(gcc_private_make_tree(build_qualified_type(self->t.inner, TYPE_QUAL_%s)))' % qual.upper(),
                                   'The gcc.Type for the %s version of this type' % qual)
+        if tree_type.SYM == 'RECORD_TYPE':
+            add_simple_getter('const',
+                              'PyBool_FromLong(TYPE_READONLY(self->t.inner))',
+                              "Boolean: does this type have the 'const' modifier?")
 
         if tree_type.SYM == 'INTEGER_TYPE':
             add_simple_getter('unsigned',
@@ -403,6 +407,7 @@ def generate_tree_code_classes():
             add_simple_getter('min_value',
                               'PyGccTree_New(gcc_integer_constant_as_gcc_tree(gcc_integer_type_get_min_value(PyGccTree_as_gcc_integer_type(self))))',
                               'The minimum possible value for this type, as a gcc.IntegerCst')
+            tp_repr = '(reprfunc)PyGccIntegerType_repr'
 
         if tree_type.SYM in ('INTEGER_TYPE', 'REAL_TYPE', 'FIXED_POINT_TYPE'):
             prefix = 'gcc_%s' % tree_type.SYM.lower()
@@ -414,6 +419,9 @@ def generate_tree_code_classes():
             add_simple_getter('dereference',
                               'PyGccTree_New(gcc_private_make_tree(TREE_TYPE(self->t.inner)))',
                               "The gcc.Type that this type points to'")
+
+        if tree_type.SYM == 'POINTER_TYPE':
+            tp_repr = '(reprfunc)PyGccPointerType_repr'
 
         if tree_type.SYM == 'ARRAY_TYPE':
             add_simple_getter('range',
@@ -440,7 +448,7 @@ def generate_tree_code_classes():
 
         if tree_type.SYM == 'MEM_REF':
             add_simple_getter('operand',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 0)))',
+                              'PyGccTree_New(gcc_mem_ref_get_operand(PyGccTree_as_gcc_mem_ref(self)))',
                               "The gcc.Tree that for the pointer expression'")
 
         if tree_type.SYM == 'BIT_FIELD_REF':

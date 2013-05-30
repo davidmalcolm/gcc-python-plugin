@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -33,3 +33,6 @@ test_version('gcc.get_gcc_version()',
 
 test_version('gcc.get_plugin_gcc_version()',
              gcc.get_plugin_gcc_version())
+
+assert isinstance(gcc.GCC_VERSION, int)
+assert gcc.GCC_VERSION >= 4006

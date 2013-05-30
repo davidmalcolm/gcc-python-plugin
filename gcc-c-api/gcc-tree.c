@@ -155,6 +155,15 @@ gcc_component_ref_get_field(gcc_component_ref node)
 }
 
 /***************************************************************************
+ gcc_mem_ref
+ **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_tree)
+gcc_mem_ref_get_operand(gcc_mem_ref node)
+{
+  return gcc_private_make_tree (TREE_OPERAND (node.inner, 0));
+}
+
+/***************************************************************************
  gcc_ssa_name
  **************************************************************************/
   GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_ssa_name_get_var (gcc_ssa_name node)

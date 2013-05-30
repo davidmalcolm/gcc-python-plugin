@@ -717,6 +717,7 @@ known to the checker are:
 `PyRun_SimpleFileExFlags <http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleFileExFlags>`_,
 `PyRun_SimpleStringFlags <http://docs.python.org/c-api/veryhigh.html#PyRun_SimpleStringFlags>`_,
 `PySequence_Concat <http://docs.python.org/c-api/sequence.html#PySequence_Concat>`_,
+`PySequence_DelItem <http://docs.python.org/c-api/sequence.html#PySequence_DelItem>`_,
 `PySequence_GetItem <http://docs.python.org/c-api/sequence.html#PySequence_GetItem>`_,
 `PySequence_GetSlice <http://docs.python.org/c-api/sequence.html#PySequence_GetSlice>`_,
 `PySequence_SetItem <http://docs.python.org/c-api/sequence.html#PySequence_SetItem>`_,

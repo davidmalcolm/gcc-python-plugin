@@ -35,6 +35,11 @@ abspath = os.path.abspath(os.path.dirname(sys.argv[0]))
 # When installed, this should be fixed up.
 PLUGIN = os.path.join(abspath, 'python.so')
 
+# Similarly, set the location to search for libgcc-c-api.so:
+LD_LIBRARY_PATH = os.path.join(abspath, 'gcc-c-api')
+if 'LD_LIBRARY_PATH' in os.environ:
+    LD_LIBRARY_PATH = '%s:%s' % (LD_LIBRARY_PATH, os.environ['LD_LIBRARY_PATH'])
+
 # Create arg parser:
 parser = argparse.ArgumentParser(usage='%(prog)s [options] gcc-options')
 DEFAULT_MAXTRANS=256
@@ -69,7 +74,9 @@ dictstr += ', "maxtrans":%i' % ns.maxtrans
 dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 
-args = [os.environ.get('CC', 'gcc'),
+# (Do not look up CC in the environment, to avoid forkbombing
+# when setting CC=gcc-with-cpychecker)
+args = ['gcc',
         ('-fplugin=%s' % PLUGIN),
 	('-fplugin-arg-python-command=%s' % cmd)]
 args += other_args # (the args we didn't consume)
@@ -82,9 +89,12 @@ args += other_args # (the args we didn't consume)
 # To add to the fun, "gcc -v" emits it in unquoted form,
 # which will need quotes added
 
+env = os.environ.copy()
+env['LD_LIBRARY_PATH'] = LD_LIBRARY_PATH
+
 if 0:
     print(' '.join(args))
-p = subprocess.Popen(args)
+p = subprocess.Popen(args, env=env)
 
 try:
     r = p.wait()

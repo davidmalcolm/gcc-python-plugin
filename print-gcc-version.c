@@ -1,5 +1,6 @@
-.. Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+/*
+   Copyright 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -14,15 +15,12 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
+*/
 
-Release Notes
-=============
+#include "plugin.h"
 
-.. toctree::
-   
-   0.12.rst
-   0.11.rst
-   0.10.rst
-   0.9.rst
-   0.8.rst
-   0.7.rst
+int main(int argc, const char *argv[])
+{
+  printf("%i\n", GCC_VERSION);
+  return 0;
+}

@@ -58,7 +58,15 @@ def on_pass_execution(p, fn):
         assert fn.cfg.basic_blocks[0] == fn.cfg.entry
         assert fn.cfg.basic_blocks[1] == fn.cfg.exit
         bb = fn.cfg.basic_blocks[2]
-        for i,stmt in enumerate(bb.gimple):
+        # We only show some of the gimple:
+        # later versions of GCC added this stmt:
+        #    gimple[4]:
+        #      str(stmt): 'keywords = {CLOBBER};'
+        #      repr(stmt): 'gcc.GimpleAssign()'
+        #      str(stmt.lhs): 'keywords'
+        #      [str(stmt.rhs)]: ['{CLOBBER}']
+        # so we avoid going too far into the statements
+        for i,stmt in enumerate(bb.gimple[:3]):
             print('gimple[%i]:' % i)
             print('  str(stmt): %r' % str(stmt))
             print('  repr(stmt): %r' % repr(stmt))

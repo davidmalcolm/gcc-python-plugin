@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ cu.add_include('gcc-python-wrappers.h')
 cu.add_include('gcc-plugin.h')
 cu.add_include("gimple.h")
 cu.add_include("gcc-c-api/gcc-gimple.h")
+cu.add_include("gcc-c-api/gcc-declaration.h")
 
 modinit_preinit = ''
 modinit_postinit = ''
@@ -383,6 +384,17 @@ def generate_gimple_subclasses():
                               'Get a list of labels, as a list of gcc.CaseLabelExpr   The initial label in the list is always the default.')
         return getsettable
 
+    def make_getset_Label():
+        getsettable = PyGetSetDefTable('gcc_%s_getset_table' % cc,
+                                       [exprcode_getter],
+                                       'PyGccGimpleLabel',
+                                       'PyGccGimple')
+        getsettable.add_simple_getter(cu,
+                                      'label',
+                                      'PyGccTree_New(gcc_label_decl_as_gcc_tree(gcc_gimple_label_get_label(PyGccGimple_as_gcc_gimple_label(self))))',
+                                      'Get the underlying gcc.LabelDecl for this statement')
+        return getsettable
+
     for gt in gimple_types:
         cc = gt.camel_cased_string()
 
@@ -403,6 +415,7 @@ def generate_gimple_subclasses():
         elif cc == 'GimpleSwitch':
             getsettable = make_getset_Switch()
         elif cc == 'GimpleLabel':
+            getsettable = make_getset_Label()
             tp_repr = '(reprfunc)PyGccGimpleLabel_repr'
 
         if getsettable:

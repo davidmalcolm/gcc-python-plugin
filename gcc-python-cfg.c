@@ -452,12 +452,19 @@ PyGccCfg_get_block_for_label(PyObject *s, PyObject *args)
     return PyGccBasicBlock_New(gcc_private_make_cfg_block(bb));
 }
 
+union gcc_cfg_as_ptr {
+    gcc_cfg cfg;
+    void *ptr;
+};
+
 PyObject *
-PyGccCfg_New(gcc_cfg cfg)
+real_make_cfg_wrapper(void *ptr)
 {
     struct PyGccCfg *obj;
+    union gcc_cfg_as_ptr u;
+    u.ptr = ptr;
 
-    if (!cfg.inner) {
+    if (!u.cfg.inner) {
 	Py_RETURN_NONE;
     }
 
@@ -466,12 +473,23 @@ PyGccCfg_New(gcc_cfg cfg)
         goto error;
     }
 
-    obj->cfg = cfg;
+    obj->cfg = u.cfg;
 
     return (PyObject*)obj;
       
 error:
     return NULL;
+}
+
+static PyObject *cfg_wrapper_cache = NULL;
+PyObject *
+PyGccCfg_New(gcc_cfg cfg)
+{
+    union gcc_cfg_as_ptr u;
+    u.cfg = cfg;
+    return PyGcc_LazilyCreateWrapper(&cfg_wrapper_cache,
+                                     u.ptr,
+                                     real_make_cfg_wrapper);
 }
 
 void

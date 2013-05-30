@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -141,6 +141,9 @@ PyGccLocation_str(struct PyGccLocation * self);
 PyObject *
 PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op);
 
+long
+PyGccLocation_hash(struct PyGccLocation * self);
+
 /* gcc-python-cfg.c: */
 PyObject *
 PyGccBasicBlock_repr(struct PyGccBasicBlock * self);
@@ -204,6 +207,9 @@ PyGccBlock_New(gcc_block t);
 
 extern PyObject *
 PyGccPointerType_New(gcc_pointer_type t);
+
+PyObject *
+PyGccPointerType_repr(struct PyGccTree * self);
 
 extern PyObject *
 PyGccCaseLabelExpr_New(gcc_case_label_expr t);
@@ -281,6 +287,9 @@ PyObject *
 PyGccIntegerType_get_unsigned_equivalent(struct PyGccTree * self, void *closure);
 
 PyObject *
+PyGccIntegerType_repr(struct PyGccTree * self);
+
+PyObject *
 PyGccMethodType_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
@@ -332,6 +341,9 @@ PyGccGimple_as_gcc_gimple_phi(struct PyGccGimple *self);
 
 extern gcc_gimple_switch
 PyGccGimple_as_gcc_gimple_switch(struct PyGccGimple *self);
+
+extern gcc_gimple_label
+PyGccGimple_as_gcc_gimple_label(struct PyGccGimple *self);
 
 PyObject *
 PyGccGimple_repr(struct PyGccGimple * self);

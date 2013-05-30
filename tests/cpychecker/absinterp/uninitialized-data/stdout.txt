@@ -15,7 +15,7 @@ Trace 1:
     'when taking False path'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=46))
+    repr(): UnknownValue(gcctype=gcc.PointerType(dereference=gcc.IntegerType(name=gcc.TypeDecl('int'))), loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=46))
     str(): unknown int * from tests/cpychecker/absinterp/uninitialized-data/input.c:46
 
 Trace 2:
@@ -42,5 +42,5 @@ Trace 4:
     'when taking False path'
     'returning'
   Return value:
-    repr(): UnknownValue(gcctype=<gcc.PointerType object at 0xdeadbeef>, loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=46))
+    repr(): UnknownValue(gcctype=gcc.PointerType(dereference=gcc.IntegerType(name=gcc.TypeDecl('int'))), loc=gcc.Location(file='tests/cpychecker/absinterp/uninitialized-data/input.c', line=46))
     str(): unknown int * from tests/cpychecker/absinterp/uninitialized-data/input.c:46
