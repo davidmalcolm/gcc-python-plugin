@@ -1155,8 +1155,11 @@ class Location(object):
                 # Next gimple statement:
                 return Location(self.bb, self.idx + 1)
             else:
-                assert len(self.bb.succs) == 1
-                return Location.get_block_start(self.bb.succs[0].dest)
+                # Pick the next BB, avoiding "complex" successors
+                # e.g. exception-handling:
+                regular_succs = [e for e in self.bb.succs if not e.complex]
+                assert len(regular_succs) == 1
+                return Location.get_block_start(regular_succs[0].dest)
 
     def __eq__(self, other):
         return self.bb == other.bb and self.idx == other.idx

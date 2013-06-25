@@ -303,6 +303,18 @@ gcc_cfg_edge_get_can_fallthru(gcc_cfg_edge edge)
   return (edge.inner->flags & EDGE_CAN_FALLTHRU) == EDGE_CAN_FALLTHRU;
 }
 
+GCC_PUBLIC_API(bool)
+gcc_cfg_edge_is_complex(gcc_cfg_edge edge)
+{
+  return (edge.inner->flags & EDGE_COMPLEX);
+}
+
+GCC_PUBLIC_API(bool)
+gcc_cfg_edge_is_eh(gcc_cfg_edge edge)
+{
+  return (edge.inner->flags & EDGE_EH) == EDGE_EH;
+}
+
 
 /*
 Local variables:
