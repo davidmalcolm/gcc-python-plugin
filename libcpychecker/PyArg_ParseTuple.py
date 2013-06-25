@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2013 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -327,7 +327,7 @@ class PyArgParseFmt(ParsedFormatString):
             elif c == 'e':
                 if next in ['s', 't']:
                     arg = ConcreteUnit('e' + next,
-                                       [(get_const_char_ptr(), NullPointer()),
+                                       [(get_const_char_ptr(), get_char_ptr(), NullPointer()),
                                         gcc.Type.char().pointer.pointer])
                     i += 1
                     if i < len(fmt_string):
