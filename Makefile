@@ -226,7 +226,7 @@ install: $(PLUGIN_DSO) gcc-with-$(PLUGIN_NAME).1.gz
 
 	cp $(PLUGIN_DSO) $(DESTDIR)$(GCCPLUGINS_DIR)
 
-	mkdir $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
+	mkdir -p $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 	cp -a gccutils $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 	cp -a libcpychecker $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 
