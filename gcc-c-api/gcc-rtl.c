@@ -20,8 +20,10 @@
 #include "gcc-rtl.h"
 
 #include <gcc-plugin.h>
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
+#include "ggc.h"
 
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_rtl_insn_mark_in_use (gcc_rtl_insn insn)
 {

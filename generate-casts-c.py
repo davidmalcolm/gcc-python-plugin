@@ -68,7 +68,8 @@ def write_c(registry, c_out):
 
     c_out.write('#include "cp/cp-tree.h" /* for TFF_* for use by PyGccFunctionDecl_get_fullname */\n')
 
-    c_out.write('#include "tree-flow.h" /* for op_symbol_code */\n')
+    # op_symbol_code moved to tree-pretty-print.h in gcc 4.9
+    c_out.write('#include "tree-pretty-print.h"\n')
 
     c_out.write('#include "gcc-c-api/gcc-tree.h"\n')
     c_out.write('#include "gcc-c-api/gcc-type.h"\n')

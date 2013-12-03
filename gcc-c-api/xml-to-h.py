@@ -83,8 +83,6 @@ def write_api(api, out):
         out.write('''
 /* FIXME: rationalize these headers */
 #include "gcc-common.h"
-#include "tree-flow.h"
-#include "rtl.h"
 ''')
     else:
         out.write('#include "gcc-common.h"\n')
