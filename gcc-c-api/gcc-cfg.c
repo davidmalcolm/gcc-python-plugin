@@ -38,12 +38,10 @@
 #endif
 
 #include "params.h"
-#include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "opts.h"
-#include "c-family/c-pragma.h"	/* for parse_in */
 #include "rtl.h"
 
 #include "gcc-private-compat.h"

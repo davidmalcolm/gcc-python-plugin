@@ -23,15 +23,14 @@
 /* TODO: rationalize these headers */
 #include "tree.h"
 #include "params.h"
-#include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"
 #include "function.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "opts.h"
-#include "c-family/c-pragma.h"	/* for parse_in */
 #include "basic-block.h"
 #include "rtl.h"
+#include "ggc.h"
 
 /* Declarations: functions */
 
