@@ -22,7 +22,6 @@
 
 /* TODO: rationalize these headers */
 #include "tree.h"
-#include "gimple.h"
 #include "params.h"
 #include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"

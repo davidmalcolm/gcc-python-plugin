@@ -41,6 +41,11 @@ int plugin_is_GPL_compatible;
 #include "cgraph.h"
 //#include "opts.h"
 
+/* "maybe_get_identifier" was moved from tree.h to stringpool.h in 4.9 */
+#if (GCC_VERSION >= 4009)
+#include "stringpool.h"
+#endif
+
 /*
  * Use an unqualified name here and rely on dual search paths to let the
  * compiler find it.  This deals with c-pragma.h moving to a

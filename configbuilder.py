@@ -136,8 +136,9 @@ class ConfigBuilder:
         outpath = os.path.join(dirpath, 'feature-test.o')
         args= [os.environ.get('CC', 'gcc'),
                '-c', # don't run the linker (no main)
-               '-o', outpath,
-               srcpath] + extraargs
+               '-o', outpath]
+        args += extraargs
+        args += [srcpath]
         p = Popen(args, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         c = p.wait()

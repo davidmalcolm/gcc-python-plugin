@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2011, 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+#if (GCC_VERSION >= 4009)
+/* Needed for placement new */
+#include <new>
+#endif
 
 PyObject*
 PyGccPrettyPrinter_New(void)
@@ -37,7 +41,13 @@ PyGccPrettyPrinter_New(void)
     obj->buf[0] = '\0';
     obj->file_ptr = fmemopen(obj->buf, sizeof(obj->buf), "w");
 
+#if (GCC_VERSION >= 4009)
+    /* GCC 4.9 eliminated pp_construct in favor of a C++ ctor.
+       Use placement new to run it on obj->pp.  */
+    new ((void*)&obj->pp) pretty_printer(NULL, 0);
+#else
     pp_construct(&obj->pp, /* prefix */NULL, /* line-width */0);
+#endif
     pp_needs_newline(&obj->pp) = false;
     pp_translate_identifiers(&obj->pp) = false;
 

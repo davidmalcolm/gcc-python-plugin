@@ -26,7 +26,18 @@
 
 #include "cp/cp-tree.h" /* for TFF_* for use by PyGccFunctionDecl_get_fullname */
 
-#include "tree-flow.h" /* for op_symbol_code */
+/* for op_symbol_code */
+/* Moved to tree-pretty-print.h in gcc 4.9: */
+#if (GCC_VERSION >= 4009)
+#include "tree-pretty-print.h"
+#else
+#include "tree-flow.h"
+#endif
+
+/* "maybe_get_identifier" was moved from tree.h to stringpool.h in 4.9 */
+#if (GCC_VERSION >= 4009)
+#include "stringpool.h" /* for maybe_get_identifier */
+#endif
 
 #include "gcc-c-api/gcc-tree.h"
 #include "gcc-c-api/gcc-type.h"
