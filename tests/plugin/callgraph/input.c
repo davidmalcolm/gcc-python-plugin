@@ -19,8 +19,11 @@
 
 #include <stdio.h>
 
+extern const char *name;
+
 void foo()
 {
+    printf ("hello %s\n", name);
 }
 
 void bar(void)

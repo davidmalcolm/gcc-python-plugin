@@ -62,7 +62,13 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
                                    [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
                                     PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
                                     PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
-                                    ])
+                                    ],
+                                   identifier_prefix='PyGccLocation',
+                                   typename='PyGccLocation')
+    getsettable.add_simple_getter(cu,
+                                  'in_system_header',
+                                  'PyBool_FromLong(gcc_location_in_system_header_at(self->loc))',
+                                  'Boolean: is this location within a system header?')
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',
