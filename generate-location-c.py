@@ -67,7 +67,7 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
                                    typename='PyGccLocation')
     getsettable.add_simple_getter(cu,
                                   'in_system_header',
-                                  'PyBool_FromLong(gcc_location_in_system_header_at(self->loc))',
+                                  'PyBool_FromLong(gcc_location_get_in_system_header(self->loc))',
                                   'Boolean: is this location within a system header?')
     cu.add_defn(getsettable.c_defn())
 
