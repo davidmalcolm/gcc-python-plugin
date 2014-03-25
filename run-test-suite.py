@@ -44,6 +44,7 @@
 
 import glob
 import os
+import multiprocessing
 import re
 import sys
 from distutils.sysconfig import get_python_inc
@@ -620,35 +621,64 @@ if GCC_VERSION >= 4008:
     exclude_test('tests/cpychecker/refcounts/cplusplus/destructor')
     exclude_test('tests/cpychecker/refcounts/cplusplus/empty-function')
 
-
-num_passes = 0
-skipped_tests = []
-failed_tests = []
-for testdir in sorted(testdirs):
+def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)
         run_test(testdir)
         print('OK')
-        num_passes += 1
+        return (testdir, 'OK', None)
     except SkipTest:
         err = sys.exc_info()[1]
         print('skipped: %s' % err.reason)
-        skipped_tests.append(testdir)
+        return (testdir, 'SKIP', err.reason)
     except RuntimeError:
         err = sys.exc_info()[1]
         print('FAIL')
         print(err)
-        failed_tests.append(testdir)
+        return (testdir, 'FAIL', None)
 
-def num(count, singular, plural):
-    return '%i %s' % (count, singular if count == 1 else plural)
+class TestRunner:
+    def __init__(self):
+        self.num_passes = 0
+        self.skipped_tests = []
+        self.failed_tests = []
 
-print('%s; %s; %s' % (num(num_passes, "success", "successes"),
-                      num(len(failed_tests), "failure", "failures"),
-                      num(len(skipped_tests), "skipped", "skipped")))
-if len(failed_tests) > 0:
+    def run_tests(self, testdirs):
+        for testdir in sorted(testdirs):
+            tr.handle_outcome(run_one_test(testdir))
+
+    def run_tests_in_parallel(self, testdirs):
+        pool = multiprocessing.Pool(None) # uses cpu_count
+        for outcome in pool.map(run_one_test, testdirs):
+            tr.handle_outcome(outcome)
+
+    def handle_outcome(self, outcome):
+        testdir, result, detail = outcome
+        if result == 'OK':
+            self.num_passes += 1
+        elif result == 'SKIP':
+            self.skipped_tests.append(testdir)
+        else:
+            assert result == 'FAIL'
+            self.failed_tests.append(testdir)
+
+    def print_results(self):
+        def num(count, singular, plural):
+            return '%i %s' % (count, singular if count == 1 else plural)
+
+        print('%s; %s; %s' % (num(self.num_passes, "success", "successes"),
+                              num(len(self.failed_tests), "failure", "failures"),
+                              num(len(self.skipped_tests), "skipped", "skipped")))
+
+tr = TestRunner()
+if 1:
+    tr.run_tests_in_parallel(sorted(testdirs))
+else:
+    tr.run_tests(sorted(testdirs))
+
+tr.print_results()
+if len(tr.failed_tests) > 0:
     print('Failed tests:')
-    for test in failed_tests:
+    for test in tr.failed_tests:
         print('  %s' % test)
     sys.exit(1)
-
