@@ -339,12 +339,16 @@ correct_usage(PyObject *self, PyObject *args)
     def test_format_code_es(self):
         self._test_format_code('es',
           ['const char', 'char *'],
-          ['one of "const char *" (pointing to 8 bits) or NULL', '"char *"'])
+          [('one of "const char *" (pointing to 8 bits)'
+            ' or "char *" (pointing to 8 bits) or NULL'),
+           '"char * *"'])
 
     def test_format_code_et(self):
         self._test_format_code('et',
           ['const char', 'char *'],
-          ['one of "const char *" (pointing to 8 bits) or NULL', '"char * *"'])
+          [('one of "const char *" (pointing to 8 bits)'
+            ' or "char *" (pointing to 8 bits) or NULL'),
+           '"char * *"'])
 
     # "es#" and "et#" are affected by the PY_SSIZE_T_CLEAN macro; we test them
     # within:
