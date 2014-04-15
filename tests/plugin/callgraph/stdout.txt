@@ -57,15 +57,6 @@ class CallgraphEdge(__builtin__.object)
  |      T.__new__(S, ...) -> a new object with type S, a subtype of T
 
 cgn:
-  cgn.decl: gcc.FunctionDecl('printf')
-  cgn.decl.location.in_system_header: True
-  cgn.callers: [gcc.CallgraphEdge()]
-  cgn.callees: []
-gcc.CallgraphEdge()
-e.caller: gcc.CallgraphNode()
-e.callee: gcc.CallgraphNode()
-e.call_stmt: gcc.GimpleCall() printf ("hello %s\n", name.0);
-cgn:
   cgn.decl: gcc.FunctionDecl('baz')
   cgn.decl.location.in_system_header: False
   cgn.callers: []
@@ -91,7 +82,7 @@ cgn:
   cgn.decl: gcc.FunctionDecl('foo')
   cgn.decl.location.in_system_header: False
   cgn.callers: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
-  cgn.callees: [gcc.CallgraphEdge()]
+  cgn.callees: []
 gcc.CallgraphEdge()
 e.caller: gcc.CallgraphNode()
 e.callee: gcc.CallgraphNode()
