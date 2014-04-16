@@ -422,8 +422,10 @@ def generate_tree_code_classes():
                               'The precision of this type in bits, as an int (e.g. 32)')
 
         if tree_type.SYM in ('POINTER_TYPE', 'ARRAY_TYPE', 'VECTOR_TYPE'):
+            prefix = 'gcc_%s' % tree_type.SYM.lower()
             add_simple_getter('dereference',
-                              'PyGccTree_New(gcc_private_make_tree(TREE_TYPE(self->t.inner)))',
+                              ('PyGccTree_New(gcc_type_as_gcc_tree(%s_get_dereference(PyGccTree_as_%s(self))))'
+                               % (prefix, prefix)),
                               "The gcc.Type that this type points to'")
 
         if tree_type.SYM == 'POINTER_TYPE':

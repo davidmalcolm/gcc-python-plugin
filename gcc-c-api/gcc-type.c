@@ -28,6 +28,14 @@
   Types
 */
 
+GCC_IMPLEMENT_PRIVATE_API (gcc_type)
+gcc_private_make_type (tree inner)
+{
+  struct gcc_type result;
+  result.inner = inner;
+  return result;
+}
+
 GCC_IMPLEMENT_PRIVATE_API (gcc_pointer_type)
 gcc_private_make_pointer_type (tree inner)
 {
@@ -54,6 +62,12 @@ gcc_type_get_pointer (gcc_type node)
 /***************************************************************************
  gcc_array_type
  **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_type)
+gcc_array_type_get_dereference(gcc_array_type node)
+{
+  return gcc_private_make_type (TREE_TYPE (node.inner));
+}
+
 /***************************************************************************
  gcc_boolean_type
  **************************************************************************/
@@ -147,6 +161,12 @@ gcc_private_make_integer_constant (tree inner)
 /***************************************************************************
  gcc_pointer_type
  **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_type)
+gcc_pointer_type_get_dereference(gcc_pointer_type node)
+{
+  return gcc_private_make_type (TREE_TYPE (node.inner));
+}
+
 /***************************************************************************
  gcc_protocol_interface_type
  **************************************************************************/
@@ -198,6 +218,12 @@ gcc_real_type_get_precision (gcc_real_type node)
 /***************************************************************************
  gcc_vector_type
  **************************************************************************/
+GCC_IMPLEMENT_PUBLIC_API(gcc_type)
+gcc_vector_type_get_dereference(gcc_vector_type node)
+{
+  return gcc_private_make_type (TREE_TYPE (node.inner));
+}
+
 /***************************************************************************
  gcc_void_type
  **************************************************************************/
