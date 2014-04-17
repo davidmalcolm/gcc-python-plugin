@@ -765,7 +765,7 @@ PyGccSsaName_repr(struct PyGccTree * self)
     PyObject *repr_var = NULL;
     PyObject *result = NULL;
 
-    version = SSA_NAME_VERSION(self->t.inner);
+    version = gcc_ssa_name_get_version(gcc_tree_as_gcc_ssa_name(self->t));
     repr_var = PyGcc_GetReprOfAttribute((PyObject*)self, "var");
     if (!repr_var) {
         goto error;
