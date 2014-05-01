@@ -426,36 +426,36 @@ static PyMethodDef GccMethods[] = {
     /* Options: */
     {"get_option_list",
      PyGcc_get_option_list,
-     METH_VARARGS,
+     METH_NOARGS,
      "Get all command-line options, as a list of gcc.Option instances"},
 
     {"get_option_dict",
      PyGcc_get_option_dict,
-     METH_VARARGS,
+     METH_NOARGS,
      ("Get all command-line options, as a dict from command-line text strings "
       "to gcc.Option instances")},
 
-    {"get_parameters", PyGcc_get_parameters, METH_VARARGS,
+    {"get_parameters", PyGcc_get_parameters, METH_NOARGS,
      "Get all tunable GCC parameters.  Returns a dictionary, mapping from"
      "option name -> gcc.Parameter instance"},
 
-    {"get_variables", PyGcc_get_variables, METH_VARARGS,
+    {"get_variables", PyGcc_get_variables, METH_NOARGS,
      "Get all variables in this compilation unit as a list of gcc.Variable"},
 
     {"maybe_get_identifier", PyGcc_maybe_get_identifier, METH_VARARGS,
      "Get the gcc.IdentifierNode with this name, if it exists, otherwise None"},
 
-    {"get_translation_units", PyGcc_get_translation_units, METH_VARARGS,
+    {"get_translation_units", PyGcc_get_translation_units, METH_NOARGS,
      "Get a list of all gcc.TranslationUnitDecl"},
 
-    {"get_global_namespace", PyGcc_get_global_namespace, METH_VARARGS,
+    {"get_global_namespace", PyGcc_get_global_namespace, METH_NOARGS,
      "C++: get the global namespace (aka '::') as a gcc.NamespaceDecl"},
 
     /* Version handling: */
-    {"get_plugin_gcc_version", PyGcc_get_plugin_gcc_version, METH_VARARGS,
+    {"get_plugin_gcc_version", PyGcc_get_plugin_gcc_version, METH_NOARGS,
      "Get the gcc.Version that this plugin was compiled with"},
 
-    {"get_gcc_version", PyGcc_get_gcc_version, METH_VARARGS,
+    {"get_gcc_version", PyGcc_get_gcc_version, METH_NOARGS,
      "Get the gcc.Version for this version of GCC"},
 
     {"get_callgraph_nodes", PyGcc_get_callgraph_nodes, METH_VARARGS,
@@ -475,10 +475,10 @@ static PyMethodDef GccMethods[] = {
      "Determine whether or not we're being invoked during link-time optimization"},
 
     /* Garbage collection */
-    {"_force_garbage_collection", PyGcc__force_garbage_collection, METH_VARARGS,
+    {"_force_garbage_collection", PyGcc__force_garbage_collection, METH_NOARGS,
      "Forcibly trigger a single run of GCC's garbage collector"},
 
-    {"_gc_selftest", PyGcc__gc_selftest, METH_VARARGS,
+    {"_gc_selftest", PyGcc__gc_selftest, METH_NOARGS,
      "Run a garbage-collection selftest"},
 
     /* Sentinel: */
