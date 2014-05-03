@@ -106,8 +106,19 @@ install: $(LIBGCC_C_API_SO)
 # The python interpreter to use:
 PYTHON=python
 
-$(GENERATED_HEADERS): $(SOURCE_XML) xml-to-h.py xmltypes.py
+# Describe how to build the first generated header
+$(firstword $(GENERATED_HEADERS)):
 	$(PYTHON) xml-to-h.py
+
+# Make all generated headers depend on the true inputs
+$(GENERATED_HEADERS): xml-to-h.py xmltypes.py $(SOURCE_XML)
+
+# Add a fake dependency so that all headers other than the first will
+# depend on the first.  This allows the first generated header to do
+# double duty as a flag file.  This indirection ensures that Make will
+# only run one instance of the generation rule, rather than one per
+# required header file.
+$(wordlist 2, $(words $(GENERATED_HEADERS)), $(GENERATED_HEADERS)): $(firstword $(GENERATED_HEADERS))
 
 check-api:
 	xmllint --noout --relaxng api.rng *.xml
