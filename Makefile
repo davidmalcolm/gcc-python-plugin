@@ -102,7 +102,7 @@ PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
-PLUGIN_NAME := python
+PLUGIN_NAME := $(PYTHON)
 PLUGIN_DSO := $(PLUGIN_NAME).so
 PLUGIN_DIR := $(PLUGIN_NAME)
 
