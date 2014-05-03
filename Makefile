@@ -209,15 +209,11 @@ docs/_build/man/gcc-with-python.1: docs/gcc-with-python.rst
 
 gcc-with-$(PLUGIN_NAME).1: docs/_build/man/gcc-with-python.1
 	# Fixup the generic manpage for this build:
-	cp docs/_build/man/gcc-with-python.1 gcc-with-$(PLUGIN_NAME).1
 	sed \
-	   -i \
 	   -e"s|gcc-with-python|gcc-with-$(PLUGIN_NAME)|g" \
-	   gcc-with-$(PLUGIN_NAME).1
-	sed \
-	   -i \
 	   -e"s|GCC-WITH-PYTHON|GCC-WITH-$(UpperPluginName)|g" \
-	   gcc-with-$(PLUGIN_NAME).1
+	   < $< \
+	   > $@
 
 gcc-with-$(PLUGIN_NAME).1.gz: gcc-with-$(PLUGIN_NAME).1
 	rm -f gcc-with-$(PLUGIN_NAME).1.gz
@@ -238,21 +234,17 @@ install: $(PLUGIN_DSO) gcc-with-$(PLUGIN_NAME).1.gz
 
 	# Create "gcc-with-" support script:
 	mkdir -p $(DESTDIR)$(bindir)
-	install -m 755 gcc-with-python $(DESTDIR)/$(bindir)/gcc-with-$(PLUGIN_NAME)
 	# Fixup the reference to the plugin in that script, from being expressed as
 	# a DSO filename with a path (for a working copy) to a name of an installed
 	# plugin within GCC's search directory:
-	sed \
-	    -i \
-	    -e"s|-fplugin=[^ ]*|-fplugin=$(PLUGIN_NAME)|" \
-	    $(DESTDIR)$(bindir)/gcc-with-$(PLUGIN_NAME)
-
-        # Fixup the plugin name within -fplugin-arg-PLUGIN_NAME-script to match the
+	# Fixup the plugin name within -fplugin-arg-PLUGIN_NAME-script to match the
 	# name for this specific build:
 	sed \
-	   -i \
+	    -e"s|-fplugin=[^ ]*|-fplugin=$(PLUGIN_NAME)|" \
 	   -e"s|-fplugin-arg-python-script|-fplugin-arg-$(PLUGIN_NAME)-script|" \
-	   $(DESTDIR)$(bindir)/gcc-with-$(PLUGIN_NAME)
+	   < gcc-with-python \
+	   > $(DESTDIR)$(bindir)/gcc-with-$(PLUGIN_NAME)
+	chmod 755 $(DESTDIR)$(bindir)/gcc-with-$(PLUGIN_NAME)
 
 	mkdir -p $(DESTDIR)$(mandir)/man1
 	cp gcc-with-$(PLUGIN_NAME).1.gz $(DESTDIR)$(mandir)/man1
