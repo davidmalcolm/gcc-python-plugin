@@ -17,7 +17,7 @@
 
 .PHONY: all clean debug dump_gimple plugin show-ssa tarball \
 	test-suite testcpychecker testcpybuilder \
-	man
+	man install
 
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
