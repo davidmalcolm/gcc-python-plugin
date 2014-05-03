@@ -70,7 +70,9 @@ GENERATED_HEADERS:= \
   gcc-type.h \
   gcc-variable.h
 
-GCCPLUGINS_DIR:= $(shell $(CC) --print-file-name=plugin)
+TARGET_GCC:=$(CC)
+
+GCCPLUGINS_DIR:= $(shell $(TARGET_GCC) --print-file-name=plugin)
 
 LIBGCC_C_API_SO	:= libgcc-c-api.so
 
