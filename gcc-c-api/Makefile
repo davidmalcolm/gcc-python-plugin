@@ -15,7 +15,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-.PHONY: all clean check-api
+.PHONY: all clean check-api install
 
 HANDWRITTEN_C_FILES = \
   gcc-callgraph.c \
