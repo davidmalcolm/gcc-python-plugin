@@ -89,6 +89,7 @@ int i[PLUGIN_FINISH_DECL];
                 self.extra_compilation_args += ['-x', 'c++']
             def with_c():
                 check.okmsg = 'C'
+                self.extra_compilation_args += ['-x', 'c']
             auto_host_h = os.path.join(self.plugindir, 'include', 'auto-host.h')
             with open(auto_host_h, 'r') as f:
                 content = f.read()
