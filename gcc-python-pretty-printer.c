@@ -20,7 +20,7 @@
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 /* Needed for placement new */
 #include <new>
 #endif
@@ -41,7 +41,7 @@ PyGccPrettyPrinter_New(void)
     obj->buf[0] = '\0';
     obj->file_ptr = fmemopen(obj->buf, sizeof(obj->buf), "w");
 
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
     /* GCC 4.9 eliminated pp_construct in favor of a C++ ctor.
        Use placement new to run it on obj->pp.  */
     new ((void*)&obj->pp) pretty_printer(NULL, 0);

@@ -38,7 +38,7 @@ GCC_PUBLIC_API (void) gcc_cgraph_node_mark_in_use (gcc_cgraph_node node)
   /* As of gcc 4.9, a cgraph_node inherits from symtab node and uses that
      struct's marking routine.
   */
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
   gt_ggc_mx_symtab_node (node.inner);
 #else
   gt_ggc_mx_cgraph_node (node.inner);
@@ -58,11 +58,11 @@ gcc_cgraph_node_get_decl (gcc_cgraph_node node)
   */
   tree decl;
 
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
   /* Access decl field of parent class, symtab_node */
   decl = node.inner->decl;
 #else
-#  if (GCC_VERSION >= 4008)
+#  if (TARGET_GCC_VERSION >= 4008)
   decl = node.inner->symbol.decl;
 #  else
   decl = node.inner->decl;
@@ -153,7 +153,7 @@ gcc_for_each_cgraph_node (bool (*cb) (gcc_cgraph_node node, void *user_data),
     gcc 4.8 eliminated: extern GTY(()) struct cgraph_node *cgraph_nodes;
     FIXME: does this only visit *defined* functions then?
   */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
   FOR_EACH_DEFINED_FUNCTION(node)
 #else
   for (node = cgraph_nodes; node; node = node->next)

@@ -432,7 +432,7 @@ PyGccCfg_get_block_for_label(PyObject *s, PyObject *args)
     if (uid < 0 ||
         (
          (
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
           vec_safe_length(self->cfg.inner->x_label_to_block_map)
 #else
           VEC_length (basic_block, self->cfg.inner->x_label_to_block_map)

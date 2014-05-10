@@ -86,7 +86,7 @@ PyGccOption_repr(PyGccOption * self)
       #define warn_format global_options.x_warn_format
 */
 
-#if (GCC_VERSION < 4008)
+#if (TARGET_GCC_VERSION < 4008)
 /*
   Weakly import warn_format; it's not available in lto1
   (during link-time optimization)
@@ -135,7 +135,7 @@ int PyGcc_option_is_enabled(enum opt_code opt_code)
         /*  We don't know: */
         return -1;
 
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
     case OPT_Wformat_:
 #else
     case OPT_Wformat:
