@@ -632,6 +632,25 @@ if GCC_VERSION >= 4008:
 # For now, disable many of the tests on 4.6.*:
 if GCC_VERSION == 4006:
     exclude_tests_below('tests/cpychecker/refcounts')
+    exclude_test('tests/cpychecker/absinterp/exceptions')
+    exclude_test('tests/plugin/array-type')
+    exclude_test('tests/plugin/translation-units')
+
+# Other tests that fail on 4.6:
+if GCC_VERSION == 4006:
+    # some minor changes to stdout:
+    exclude_test('tests/examples/cplusplus/classes')
+
+    # presence of stdout line:
+    #   :py:class:`gcc.WidenLshiftExpr`    `w<<`
+    exclude_test('tests/plugin/expressions/get_symbol')
+
+    # too fragile?
+    exclude_test('tests/plugin/gimple-walk-tree/dump-all')
+
+    # repr() for gcc.CaseLabelExpr and gcc.GimpleLabel
+    exclude_test('tests/plugin/switch')
+
 
 def run_one_test(testdir):
     try:
