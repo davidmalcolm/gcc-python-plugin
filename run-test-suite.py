@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013, 2014 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013, 2014 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -620,6 +620,18 @@ if sys.version_info[:2] == (3, 3):
 if GCC_VERSION >= 4008:
     exclude_test('tests/cpychecker/refcounts/cplusplus/destructor')
     exclude_test('tests/cpychecker/refcounts/cplusplus/empty-function')
+
+# GCC 4.6.3 appears not to have a way to get at global variables; see:
+#   https://fedorahosted.org/gcc-python-plugin/ticket/21
+# and:
+#   https://github.com/davidmalcolm/gcc-python-plugin/issues/5
+# This prevents these from working:
+#   libcpychecker.compat.get_exception_decl_by_name
+#   libcpychecker.compat.get_typeobject_decl_by_name
+# which renders much of cpychecker unusable.
+# For now, disable many of the tests on 4.6.*:
+if GCC_VERSION == 4006:
+    exclude_tests_below('tests/cpychecker/refcounts')
 
 def run_one_test(testdir):
     try:
