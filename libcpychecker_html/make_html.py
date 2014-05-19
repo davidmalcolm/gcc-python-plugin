@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""Make our data into HTML!"""
+"""Make our data into HTML!
+These reports should be usable as email attachments, so either inline or cdn *everything*.
+"""
 from __future__ import print_function
 
 #   Copyright 2012 Buck Golemon <buck@yelp.com>
@@ -17,6 +19,8 @@ from __future__ import print_function
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
+from os.path import realpath, dirname, join
+HERE = dirname(realpath(__file__))
 
 from . import capi
 
@@ -53,16 +57,30 @@ class HtmlPage(object):
             }),
             E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
         )
+        head.append(E.LINK(
+            rel='stylesheet', 
+            href='http://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css',
+            type='text/css'
+        ))
         head.extend(
-            E.LINK(rel='stylesheet', href=css + '.css', type='text/css')
-            for css in ('extlib/reset-20110126', 'pygments_c', 'style')
+            E.STYLE(
+                file_contents(css + '.css'),
+                media='screen',
+                type='text/css'
+            )
+            for css in ('pygments_c', 'style')
         )
         head.extend(
-            E.SCRIPT(src=js + '.js')
+            E.SCRIPT(src=js)
             for js in (
-                'extlib/prefixfree-1.0.4.min',
-                'extlib/jquery-1.7.1.min',
-                'script'
+                'http://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js',
+                'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js',
+            )
+        )
+        head.append(
+            E.SCRIPT(
+                file_contents('script.js'),
+                type='text/javascript',
             )
         )
         return head
@@ -136,7 +154,7 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='bug-toggle'),
                     E.IMG(
-                        src='images/bug.png',
+                        src=data_uri('image/png', 'images/bug.png'),
                     ),
                     E.H3('Bug'),
                     ' [count]',
@@ -144,29 +162,17 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='prev'),
                     E.IMG(
-                        src='images/arrow-180.png',
+                        src=data_uri('image/png', 'images/arrow-180.png'),
                     ),
                 ),
                 E.DIV(
                     E.ATTR(id='next'),
                     E.IMG(
-                        src='images/arrow.png',
+                        src=data_uri('image/png', 'images/arrow.png'),
                     ),
                 ),
             ),
     )
-
-    @staticmethod
-    def footer():
-        """make the footer"""
-        return E.E.footer(
-            E.ATTR(id='footer'),
-            E.P(' &nbsp;|&nbsp; '.join((
-                'Hackathon 7.0',
-                'Buck G, Alex M, Jason M',
-                'Yelp HQ 2012',
-            )))
-        )
 
     def states(self):
         """Return an ordered-list of states, for each report."""
@@ -247,8 +253,16 @@ class HtmlPage(object):
         return E.BODY(
             self.header(),
             reports,
-            self.footer(),
         )
+
+def data_uri(mimetype, filename):
+    data = open(join(HERE, filename)).read().encode('base64').replace('\n', '')
+    return 'data:%s;base64,%s' % (mimetype, data)
+
+def file_contents(filename):
+    # The leading newline makes the first line show up in the right spot.
+    return '\n' + open(join(HERE, filename)).read()
+
 
 class CodeHtmlFormatter(HtmlFormatter):
     """Format our HTML!"""
