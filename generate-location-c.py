@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012, 2013 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013, 2014 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013, 2014 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -38,7 +38,11 @@ def generate_location():
 static PyObject *
 PyGccLocation_get_file(struct PyGccLocation *self, void *closure)
 {
-    return PyGccString_FromString(gcc_location_get_filename(self->loc));
+    const char *filename = gcc_location_get_filename(self->loc);
+    if (!filename) {
+      Py_RETURN_NONE;
+    }
+    return PyGccString_FromString(filename);
 }
 """)
 
