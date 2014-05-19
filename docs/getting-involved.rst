@@ -220,11 +220,44 @@ There are three test suites:
 Debugging the plugin's C code
 -----------------------------
 
-The `gcc` binary is a harness that launches subprocesses, so it can be fiddly
-to debug.
+The `gcc` binary is a harness that launches subprocesses, so it can be
+fiddly to debug.  Exactly what it launches depend on the inputs and
+options. Typically, the subprocesses it launches are (in order):
 
-When debugging, I've generally been adding "-v" to the gcc command line
-(verbose), so that it outputs the commands that it's running.  I can then use
+  * `cc1` or `cc1plus`: The C or C++ compiler, generating a .s assember
+    file.
+  * `as`: The assembler, converting a .s assembler file to a .o object
+    file.
+  * `collect2`: The linker, turning one or more .o files into an executable
+    (if you're going all the way to building an `a.out`-style executable).
+
+The easiest way to debug the plugin is to add these parameters to the gcc
+command line (e.g. to the end)::
+
+   -wrapper gdb,--args
+
+Note the lack of space between the comma and the `--args`.
+
+e.g.::
+
+  ./gcc-with-python examples/show-docs.py test.c -wrapper gdb,--args
+
+This will invoke each of the subprocesses in turn under gdb: e.g. `cc1`,
+`as` and `collect2`; the plugin runs with `cc1` (`cc1plus` for C++ code).
+
+For example::
+
+  $ ./gcc-with-cpychecker -c -I/usr/include/python2.7 demo.c -wrapper gdb,--args
+
+  GNU gdb (GDB) Fedora 7.6.50.20130731-19.fc20
+  [...snip...]
+  Reading symbols from /usr/libexec/gcc/x86_64-redhat-linux/4.8.2/cc1...Reading symbols from /usr/lib/debug/usr/libexec/gcc/x86_64-redhat-linux/4.8.2/cc1.debug...done.
+  done.
+  (gdb) run
+  [...etc...]
+
+Another way to do it is to add "-v" to the gcc command line
+(verbose), so that it outputs the commands that it's running.  You can then use
 this to launch::
 
    $ gdb --args ACTUAL PROGRAM WITH ACTUAL ARGS
