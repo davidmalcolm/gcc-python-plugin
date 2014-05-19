@@ -23,8 +23,13 @@
 #include "gcc-python-compat.h"
 #include "gcc-python-closure.h"
 #include "gimple.h"
+
+/* gimple_phi_arg_def etc were in tree-flow-inline.h prior to 4.9, when they
+   moved to gimple.h  */
+#if (GCC_VERSION < 4009)
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
+#endif
 
 /*
    Needed for pp_gimple_stmt_1 for gcc 4.8+;
@@ -35,6 +40,13 @@
 #endif
 
 #include "gcc-c-api/gcc-gimple.h"
+
+/* GCC 4.9 moved struct walk_stmt_info into the new header gimple-walk.h,
+   which in turn needs the new header gimple-iterator.h: */
+#if (GCC_VERSION >= 4009)
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
+#endif
 
 gcc_gimple_asm
 PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self)

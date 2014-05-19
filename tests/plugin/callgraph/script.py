@@ -36,6 +36,8 @@ def on_pass_execution(p, fn):
             print('cgn:')
             # print(dir(cgn))
             print('  cgn.decl: %r' % cgn.decl)
+            print('  cgn.decl.location.in_system_header: %r'
+                  % cgn.decl.location.in_system_header)
             print('  cgn.callers: %r' % cgn.callers)
             print('  cgn.callees: %r' % cgn.callees)
             for e in cgn.callers:

@@ -1172,12 +1172,11 @@ class Location(object):
                 # Next gimple statement:
                 return Location(self.bb, self.idx + 1)
             else:
-                # Ignore exception-handling edges:
-                succs = [succ
-                         for succ in self.bb.succs
-                         if not succ.eh]
-                assert len(succs) == 1
-                return Location.get_block_start(succs[0].dest)
+                # Pick the next BB, avoiding "complex" successors
+                # e.g. exception-handling:
+                regular_succs = [e for e in self.bb.succs if not e.complex]
+                assert len(regular_succs) == 1
+                return Location.get_block_start(regular_succs[0].dest)
 
     def __eq__(self, other):
         return self.bb == other.bb and self.idx == other.idx
@@ -1570,6 +1569,8 @@ class State(object):
             return ConcreteValue(expr.type, loc, expr.constant)
         if isinstance(expr, gcc.RealCst):
             return ConcreteValue(expr.type, loc, expr.constant)
+        if isinstance(expr, gcc.StringCst):
+            return AbstractValue(expr.type, loc)
         if isinstance(expr, gcc.SsaName):
             region = self.var_region(expr.var)
             check_isinstance(region, Region)
@@ -2599,6 +2600,8 @@ class State(object):
         elif stmt.exprcode == gcc.IntegerCst:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.RealCst:
+            return self.eval_rvalue(rhs[0], stmt.loc)
+        elif stmt.exprcode == gcc.StringCst:
             return self.eval_rvalue(rhs[0], stmt.loc)
         elif stmt.exprcode == gcc.AddrExpr:
             return self.eval_rvalue(rhs[0], stmt.loc)

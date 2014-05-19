@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2014 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2014 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -17,24 +17,14 @@
    <http://www.gnu.org/licenses/>.
 */
 
-void foo()
-{
-}
+#include <Python.h>
 
-void bar(void)
+char test_string(const char *src)
 {
-    foo();
-    foo();
-    foo();
+    char buf[256]="";
+    strncpy(buf, src, 256);
+    return buf[0];
 }
-
-void baz(void)
-{
-    bar();
-    bar();
-    bar();
-}
-
 
 /*
   PEP-7

@@ -22,8 +22,6 @@
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
 #include "rtl.h"
-#include "tree-flow.h"
-#include "tree-flow-inline.h"
 #include "gcc-c-api/gcc-rtl.h"
 
 PyObject *

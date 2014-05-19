@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012, 2013 Red Hat, Inc.
+#   Copyright 2011, 2012, 2013, 2014 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2012, 2013, 2014 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -38,7 +38,11 @@ def generate_location():
 static PyObject *
 PyGccLocation_get_file(struct PyGccLocation *self, void *closure)
 {
-    return PyGccString_FromString(gcc_location_get_filename(self->loc));
+    const char *filename = gcc_location_get_filename(self->loc);
+    if (!filename) {
+      Py_RETURN_NONE;
+    }
+    return PyGccString_FromString(filename);
 }
 """)
 
@@ -62,7 +66,13 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
                                    [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
                                     PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
                                     PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
-                                    ])
+                                    ],
+                                   identifier_prefix='PyGccLocation',
+                                   typename='PyGccLocation')
+    getsettable.add_simple_getter(cu,
+                                  'in_system_header',
+                                  'PyBool_FromLong(gcc_location_get_in_system_header(self->loc))',
+                                  'Boolean: is this location within a system header?')
     cu.add_defn(getsettable.c_defn())
 
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',

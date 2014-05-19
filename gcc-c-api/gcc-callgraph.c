@@ -18,6 +18,7 @@
 */
 
 #include "gcc-callgraph.h"
+#include "tree.h"
 #include "cgraph.h"
 #include "ggc.h"
 
@@ -34,7 +35,14 @@ gcc_private_make_cgraph_node (struct cgraph_node *inner)
 
 GCC_PUBLIC_API (void) gcc_cgraph_node_mark_in_use (gcc_cgraph_node node)
 {
+  /* As of gcc 4.9, a cgraph_node inherits from symtab node and uses that
+     struct's marking routine.
+  */
+#if (GCC_VERSION >= 4009)
+  gt_ggc_mx_symtab_node (node.inner);
+#else
   gt_ggc_mx_cgraph_node (node.inner);
+#endif
 }
 
 GCC_PUBLIC_API (gcc_function_decl)
@@ -44,13 +52,21 @@ gcc_cgraph_node_get_decl (gcc_cgraph_node node)
        tree decl;
      field of cgraph_node in favor of
        struct symtab_node_base symbol;
+
+     gcc 4.9 made cgraph_node inherit from symtab_node_base, renaming
+     the latter to symtab_node.
   */
   tree decl;
 
-#if (GCC_VERSION >= 4008)
-  decl = node.inner->symbol.decl;
-#else
+#if (GCC_VERSION >= 4009)
+  /* Access decl field of parent class, symtab_node */
   decl = node.inner->decl;
+#else
+#  if (GCC_VERSION >= 4008)
+  decl = node.inner->symbol.decl;
+#  else
+  decl = node.inner->decl;
+#  endif
 #endif
 
   return gcc_private_make_function_decl (decl);

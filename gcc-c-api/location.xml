@@ -33,6 +33,9 @@
 
     <attribute name="is_unknown" kind="bool">
     </attribute>
+
+    <attribute name="in_system_header" kind="bool">
+    </attribute>
   </type>
 
   <attribute name="input_location" kind="location" access="rw">

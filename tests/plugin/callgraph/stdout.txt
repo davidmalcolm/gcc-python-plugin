@@ -58,10 +58,12 @@ class CallgraphEdge(__builtin__.object)
 
 cgn:
   cgn.decl: gcc.FunctionDecl('baz')
+  cgn.decl.location.in_system_header: False
   cgn.callers: []
   cgn.callees: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
 cgn:
   cgn.decl: gcc.FunctionDecl('bar')
+  cgn.decl.location.in_system_header: False
   cgn.callers: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
   cgn.callees: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
 gcc.CallgraphEdge()
@@ -78,6 +80,7 @@ e.callee: gcc.CallgraphNode()
 e.call_stmt: gcc.GimpleCall() bar ();
 cgn:
   cgn.decl: gcc.FunctionDecl('foo')
+  cgn.decl.location.in_system_header: False
   cgn.callers: [gcc.CallgraphEdge(), gcc.CallgraphEdge(), gcc.CallgraphEdge()]
   cgn.callees: []
 gcc.CallgraphEdge()

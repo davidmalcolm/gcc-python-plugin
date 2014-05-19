@@ -23,6 +23,10 @@
 #include "diagnostic.h"
 #include "gcc-c-api/gcc-function.h"
 #include "gcc-c-api/gcc-location.h"
+#if (GCC_VERSION >= 4009)
+#include "context.h"
+#include "pass_manager.h"
+#endif
 
 /*
   Wrapper for GCC's (opt_pass *)
@@ -173,6 +177,74 @@ static unsigned int impl_execute(void)
     return 0;
 }
 
+#if (GCC_VERSION >= 4009)
+/*
+  GCC 4.9 converted passes to a C++ class hierarchy, with methods for gate
+  and execute.
+*/
+class PyGccGimplePass : public gimple_opt_pass
+{
+public:
+ PyGccGimplePass(const pass_data& data, gcc::context *ctxt) :
+    gimple_opt_pass(data, ctxt)
+ {
+ }
+
+  bool gate () { return impl_gate(); }
+  unsigned int execute () { return impl_execute(); }
+  opt_pass *clone() {return this; }
+};
+
+class PyGccRtlPass : public rtl_opt_pass
+{
+public:
+  PyGccRtlPass (const pass_data& data, gcc::context *ctxt)
+    : rtl_opt_pass (data, ctxt)
+  {
+  }
+
+  bool gate () { return impl_gate(); }
+  unsigned int execute () { return impl_execute(); }
+  opt_pass *clone() {return this; }
+};
+
+class PyGccIpaPass : public ipa_opt_pass_d
+{
+public:
+  PyGccIpaPass(const pass_data& data, gcc::context *ctxt)
+      : ipa_opt_pass_d (data, ctxt,
+                        NULL, /* void (*generate_summary) (void), */
+                        NULL, /* void (*write_summary) (void), */
+                        NULL, /* void (*read_summary) (void), */
+                        NULL, /* void (*write_optimization_summary) (void), */
+                        NULL, /* void (*read_optimization_summary) (void), */
+                        NULL, /* void (*stmt_fixup) (struct cgraph_node *, gimple *), */
+                        0, /* unsigned int function_transform_todo_flags_start, */
+                        NULL, /* unsigned int (*function_transform) (struct cgraph_node *), */
+                        NULL) /* void (*variable_transform) (struct varpool_node *)) */
+  {
+  }
+
+  bool gate () { return impl_gate(); }
+  unsigned int execute () { return impl_execute(); }
+  opt_pass *clone() {return this; }
+};
+
+class PyGccSimpleIpaPass : public simple_ipa_opt_pass
+{
+public:
+  PyGccSimpleIpaPass(const pass_data& data, gcc::context *ctxt)
+    : simple_ipa_opt_pass(data, ctxt)
+  {
+  }
+
+  bool gate () { return impl_gate(); }
+  unsigned int execute () { return impl_execute(); }
+  opt_pass *clone() {return this; }
+};
+
+#endif /* #if (GCC_VERSION >= 4009) */
+
 static int
 do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
              enum opt_pass_type pass_type,
@@ -195,6 +267,30 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
         return -1;
     }
 
+#if (GCC_VERSION >= 4009)
+    pass_data pass_data;
+    memset(&pass_data, 0, sizeof(pass_data));
+    pass_data.type = pass_type;
+    pass_data.name = PyGcc_strdup(name);
+    pass_data.has_gate = true;
+    pass_data.has_execute = true;
+    switch (pass_type) {
+      case GIMPLE_PASS:
+          pass = new PyGccGimplePass (pass_data, g);
+          break;
+      case RTL_PASS:
+          pass = new PyGccRtlPass (pass_data, g);
+          break;
+      case SIMPLE_IPA_PASS:
+          pass = new PyGccSimpleIpaPass (pass_data, g);
+          break;
+      case IPA_PASS:
+          pass = new PyGccIpaPass (pass_data, g);
+          break;
+      default:
+          gcc_unreachable();
+    }
+#else
     pass = (struct opt_pass*)PyMem_Malloc(sizeof_pass);
     if (!pass) {
         return -1;
@@ -214,6 +310,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
 
     pass->gate = impl_gate;
     pass->execute = impl_execute;
+#endif
 
     if (PyGcc_insert_new_wrapper_into_cache(&pass_wrapper_cache,
                                                  pass,
@@ -266,6 +363,15 @@ PyGccPass_repr(struct PyGccPass *self)
                                           Py_TYPE(self)->tp_name,
                                           self->pass->name);
 }
+
+#if (GCC_VERSION >= 4009)
+static struct dump_file_info *
+get_dump_file_info(int phase)
+{
+    gcc::dump_manager *dumps = g->get_dumps ();
+    return dumps->get_dump_file_info (phase);
+}
+#endif
 
 /* In GCC 4.8, dump_enabled_p changed from acting on one pass to the
    current phase (as of r192773), and dump_phase_enabled_p() was added (as
@@ -346,6 +452,15 @@ PyGccPass_set_dump_enabled(struct PyGccPass *self, PyObject *value, void *closur
     }
 }
 
+/* In GCC 4.9, passes moved from being globals to fields of the
+   pass_manager.  */
+#if (GCC_VERSION >= 4009)
+#define GET_PASS_LIST(PASS_NAME) (g->get_passes()->PASS_NAME)
+#else
+#define GET_PASS_LIST(PASS_NAME) (PASS_NAME)
+#endif
+
+
 PyObject *
 PyGccPass_get_roots(PyObject *cls, PyObject *noargs)
 {
@@ -360,8 +475,8 @@ PyGccPass_get_roots(PyObject *cls, PyObject *noargs)
         goto error;
     }
 
-#define SET_PASS(IDX, P) \
-    passobj = PyGccPass_New(P); \
+#define SET_PASS(IDX, PASS_NAME) \
+    passobj = PyGccPass_New(GET_PASS_LIST(PASS_NAME)); \
     if (!passobj) goto error;                  \
     PyTuple_SET_ITEM(result, IDX, passobj);    \
     (void)0;
@@ -369,7 +484,13 @@ PyGccPass_get_roots(PyObject *cls, PyObject *noargs)
     SET_PASS(0, all_lowering_passes);
     SET_PASS(1, all_small_ipa_passes);
     SET_PASS(2, all_regular_ipa_passes);
+    /* all_late_ipa_passes appeared in r175336 */
+    /* r204984 eliminated all_lto_gen_passes */
+#if (GCC_VERSION >= 4009)
+    SET_PASS(3, all_late_ipa_passes);
+#else
     SET_PASS(3, all_lto_gen_passes);
+#endif
     SET_PASS(4, all_passes);
 
     return result;
@@ -421,7 +542,7 @@ PyGccPass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
     }
 
 #define SEARCH_WITHIN_LIST(PASS_LIST) \
-    result = find_pass_by_name(name, (PASS_LIST));   \
+    result = find_pass_by_name(name, (GET_PASS_LIST(PASS_LIST))); \
     if (result) {                                    \
         return PyGccPass_New(result); \
     }
@@ -429,7 +550,13 @@ PyGccPass_get_by_name(PyObject *cls, PyObject *args, PyObject *kwargs)
     SEARCH_WITHIN_LIST(all_lowering_passes);
     SEARCH_WITHIN_LIST(all_small_ipa_passes);
     SEARCH_WITHIN_LIST(all_regular_ipa_passes);
+    /* all_late_ipa_passes appeared in r175336 */
+    /* r204984 eliminated all_lto_gen_passes */
+#if (GCC_VERSION >= 4009)
+    SEARCH_WITHIN_LIST(all_late_ipa_passes);
+#else
     SEARCH_WITHIN_LIST(all_lto_gen_passes);
+#endif
     SEARCH_WITHIN_LIST(all_passes);
 
     /* Not found: */

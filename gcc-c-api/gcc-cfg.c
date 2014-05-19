@@ -20,16 +20,28 @@
 #include "gcc-cfg.h"
 
 #include "tree.h"
-#include "gimple.h"
-#include "params.h"
-#include "cp/name-lookup.h"	/* for global_namespace */
-#include "tree.h"
 #include "function.h"
+#include "basic-block.h"
+
+#if (GCC_VERSION >= 4009)
+#include "tree-ssa-alias.h" /* needed by gimple.h in 4.9 */
+#include "internal-fn.h" /* needed by gimple.h in 4.9 */
+#include "is-a.h" /* needed by gimple.h in 4.9 */
+#include "predict.h" /* needed by gimple.h in 4.9 */
+#include "gimple-expr.h" /* needed by gimple.h in 4.9 */
+#endif
+#include "gimple.h"
+
+/* gcc 4.9 moved gimple_stmt_iterator into this header */
+#if (GCC_VERSION >= 4009)
+#include "gimple-iterator.h"
+#endif
+
+#include "params.h"
+#include "tree.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "opts.h"
-#include "c-family/c-pragma.h"	/* for parse_in */
-#include "basic-block.h"
 #include "rtl.h"
 
 #include "gcc-private-compat.h"
@@ -301,6 +313,12 @@ GCC_PUBLIC_API(bool)
 gcc_cfg_edge_get_can_fallthru(gcc_cfg_edge edge)
 {
   return (edge.inner->flags & EDGE_CAN_FALLTHRU) == EDGE_CAN_FALLTHRU;
+}
+
+GCC_PUBLIC_API(bool)
+gcc_cfg_edge_is_complex(gcc_cfg_edge edge)
+{
+  return (edge.inner->flags & EDGE_COMPLEX);
 }
 
 GCC_IMPLEMENT_PUBLIC_API(bool)

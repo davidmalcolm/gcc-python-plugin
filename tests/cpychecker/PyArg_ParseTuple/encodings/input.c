@@ -1,6 +1,6 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011 Red Hat, Inc.
+   Copyright 2013 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2013 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -17,24 +17,22 @@
    <http://www.gnu.org/licenses/>.
 */
 
-void foo()
-{
-}
+/*
+ */
+#include <Python.h>
 
-void bar(void)
+PyObject *
+test(PyObject *self, PyObject *args)
 {
-    foo();
-    foo();
-    foo();
-}
+    char *buffer = "I am a buffer";
+    int ival;
 
-void baz(void)
-{
-    bar();
-    bar();
-    bar();
-}
+    if (!PyArg_ParseTuple(args, "et#", "utf-8", &buffer, &ival)) {
+        return NULL;
+    }
 
+    Py_RETURN_NONE;
+}
 
 /*
   PEP-7

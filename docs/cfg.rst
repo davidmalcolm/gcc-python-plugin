@@ -162,5 +162,11 @@ You can get at the control flow graph of a :py:class:`gcc.Function` via its
      Boolean: `True` if this edge is taken when a :py:class:`gcc.GimpleCond`
      conditional is false, `False` otherwise
 
+  .. py:attribute:: complex
+
+     Boolean: `True` if this edge is "special" e.g. due to
+     exception-handling, or some other kind of "strange" control flow transfer,
+     `False` otherwise
+
   .. various other EDGE_ booleans, though it's not clear that they should be
      documented

@@ -1,5 +1,5 @@
 /*
-   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2014 Philip Herron <redbrain@gcc.gnu.org>
    Copyright 2011 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
@@ -17,22 +17,22 @@
    <http://www.gnu.org/licenses/>.
 */
 
-void foo()
+class test {
+    int a, b;
+public:
+    test (int, int);
+    int somefunc (void);
+};
+
+test::test (int x, int y)
 {
+    a = x;
+    b = y;
 }
 
-void bar(void)
+int test::somefunc (void)
 {
-    foo();
-    foo();
-    foo();
-}
-
-void baz(void)
-{
-    bar();
-    bar();
-    bar();
+    return a * b;
 }
 
 

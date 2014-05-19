@@ -48,7 +48,7 @@ There are actually five "roots" to this tree:
 
 .. classmethod:: gcc.Pass.get_roots()
 
-   Returns a tuple of :py:class:`gcc.Pass` instances, giving the 5 top-level
+   Returns a 5-tuple of :py:class:`gcc.Pass` instances, giving the 5 top-level
    passes within GCC's tree of passes, in the order described above.
 
 .. classmethod:: gcc.Pass.get_by_name(name)

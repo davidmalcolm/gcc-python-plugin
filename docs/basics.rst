@@ -489,7 +489,7 @@ Global data access
 	       The source language of this translation unit, as a string
 	       (e.g. "GNU C")
 
-.. py:function:: gcc.get_global_namespace(name)
+.. py:function:: gcc.get_global_namespace()
 
       C++ only: locate the :py:class:`gcc.NamespaceDecl` for the global
       namespace (a.k.a. "::")
@@ -547,3 +547,14 @@ Working with source code
    .. py:attribute:: column
 
       (int) Column number within source file  (starting at 1, not 0)
+
+   .. py:attribute:: in_system_header
+
+      (bool) This attribute flags locations that are within a system header
+      file.  It may be of use when writing custom warnings, so that you
+      can filter out issues in system headers, leaving just those within
+      the user's code::
+
+         # Don't report on issues found in system headers:
+         if decl.location.in_system_header:
+             return

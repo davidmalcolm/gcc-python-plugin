@@ -628,6 +628,10 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
 
       The fields of this type, as a list of :py:class:`gcc.FieldDecl` instances
 
+   .. py:attribute:: methods
+
+      The methods of this type, as a list of :py:class:`gcc.MethodType` instances
+
    You can look up C structures by looking within the top-level
    :py:class:`gcc.Block` within the current translation unit.  For example,
    given this sample C code:

@@ -27,6 +27,9 @@
   </type>
 
   <type name="array_type" base="type">
+    <attribute name="dereference" kind="type">
+      <doc>The type that this type points to</doc>
+    </attribute>
   </type>
 
   <type name="boolean_type" base="type">
@@ -88,6 +91,9 @@
   </type>
 
   <type name="pointer_type" base="type">
+    <attribute name="dereference" kind="type">
+      <doc>The type that this type points to</doc>
+    </attribute>
   </type>
 
   <type name="protocol_interface_type" base="type">
@@ -136,6 +142,9 @@
   </type>
 
   <type name="vector_type" base="type">
+    <attribute name="dereference" kind="type">
+      <doc>The type that this type points to</doc>
+    </attribute>
   </type>
 
   <type name="void_type" base="type">

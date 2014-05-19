@@ -1,0 +1,9 @@
+'struct test'
+[gcc.FieldDecl('a'), gcc.FieldDecl('b'), gcc.TypeDecl('test')]
+[   gcc.FunctionDecl('test'),
+    gcc.FunctionDecl('__base_ctor '),
+    gcc.FunctionDecl('__comp_ctor '),
+    gcc.FunctionDecl('test'),
+    gcc.FunctionDecl('__base_ctor '),
+    gcc.FunctionDecl('__comp_ctor '),
+    gcc.FunctionDecl('somefunc')]

@@ -22,12 +22,18 @@ import six
 
 from gccutils import Table
 
+pass_prop_flags = ['PROP_gimple_any', 'PROP_gimple_lcf', 'PROP_gimple_leh',
+                   'PROP_cfg', 'PROP_referenced_vars', 'PROP_ssa',
+                   'PROP_no_crit_edges', 'PROP_rtl', 'PROP_gimple_lomp',
+                   'PROP_cfglayout', 'PROP_gimple_lcx']
+# PROP_referenced_vars went away in GCC 4.8 (in r190067)
+if not hasattr(gcc, 'PROP_referenced_vars'):
+    pass_prop_flags.remove('PROP_referenced_vars')
+
 def pass_properties_to_str(bitfield):
     result = []
-    for attrname in ('PROP_gimple_any', 'PROP_gimple_lcf', 'PROP_gimple_leh',
-                     'PROP_cfg', 'PROP_referenced_vars', 'PROP_ssa',
-                     'PROP_no_crit_edges', 'PROP_rtl', 'PROP_gimple_lomp',
-                     'PROP_cfglayout', 'PROP_gimple_lcx'):
+
+    for attrname in pass_prop_flags:
         flag = getattr(gcc, attrname)
         if bitfield & flag:
             result.append(attrname[5:]) # drop the 'PROP_'

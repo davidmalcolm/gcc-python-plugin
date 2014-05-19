@@ -38,6 +38,11 @@ propdata = [
     ('PROP_gimple_lcx', (0.25, 0.25, 0.25)),
 ]
 
+# PROP_referenced_vars went away in GCC 4.8 (in r190067)
+if not hasattr(gcc, 'PROP_referenced_vars'):
+    propdata = [(flag, color) for (flag, color) in propdata
+                if flag != 'PROP_referenced_vars']
+
 def show_text_x_centered(ctx, text, x, y):
     ctx.set_source_rgb(0, 0, 0)
     te = ctx.text_extents(text)

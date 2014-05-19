@@ -56,6 +56,7 @@ def generate_edge():
                                  ('false_value', 'is_false_value'),
                                  ('loop_exit', 'is_loop_exit'),
                                  ('can_fallthru', 'get_can_fallthru'),
+                                 ('complex', 'is_complex'),
                                  ('eh', 'is_eh'),
                                  ]:
         getsettable.add_simple_getter(cu,

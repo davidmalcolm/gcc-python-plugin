@@ -57,6 +57,11 @@ GCC_PUBLIC_API (bool) gcc_location_is_unknown (gcc_location loc)
   return UNKNOWN_LOCATION == loc.inner;
 }
 
+GCC_IMPLEMENT_PUBLIC_API (bool) gcc_location_get_in_system_header (gcc_location loc)
+{
+  return in_system_header_at (loc.inner);
+}
+
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_set_input_location (gcc_location loc)
 {
   input_location = loc.inner;

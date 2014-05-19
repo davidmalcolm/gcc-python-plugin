@@ -21,18 +21,27 @@
 #include "gcc-tree.h"
 #include "gcc-internal.h"
 
-//#include "tree.h"
+#include "tree.h"
+#include "function.h"
+#include "basic-block.h"
+#if (GCC_VERSION >= 4009)
+//#include "alias.h" /* needed by tree-ssa-alias.h in 4.9 */
+#include "tree-ssa-alias.h" /* needed by gimple.h in 4.9 */
+#include "internal-fn.h" /* needed by gimple.h in 4.9 */
+#include "is-a.h" /* needed by gimple.h in 4.9 */
+#include "predict.h" /* needed by gimple.h in 4.9 */
+#include "gimple-expr.h" /* needed by gimple.h in 4.9 */
+#endif
 #include "gimple.h"
+
 #if 0
 #include "params.h"
 #include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"
-#include "function.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "opts.h"
 #include "c-family/c-pragma.h"	/* for parse_in */
-#include "basic-block.h"
 #include "rtl.h"
 #endif
 
@@ -41,7 +50,13 @@
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_gimple_mark_in_use (gcc_gimple stmt)
 {
   /* Mark the underlying object (recursing into its fields): */
+
+  /* GCC 4.9 converted gimple to a class hierarchy */
+#if (GCC_VERSION >= 4009)
+  gt_ggc_mx_gimple_statement_base (stmt.inner);
+#else
   gt_ggc_mx_gimple_statement_d (stmt.inner);
+#endif
 }
 
 GCC_IMPLEMENT_PRIVATE_API (struct gcc_gimple_phi)
