@@ -1,0 +1,8 @@
+Trace 0:
+  Transitions:
+    'returning'
+  Return value:
+    repr(): UnknownValue(gcctype=gcc.PointerType(dereference=<gcc.ArrayType object at 0xdeadbeef>), loc=gcc.Location(file='tests/cpychecker/absinterp/assignment-from-string-const/input.c', line=25))
+    str(): unknown char[256] * from tests/cpychecker/absinterp/assignment-from-string-const/input.c:25
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/absinterp/assignment-from-string-const/input.c:23
