@@ -38,6 +38,12 @@ The plugin has the following requirements:
 
        http://pygments.org/
 
+  * "firehose": The libcpychecker code uses the "firehose" Python
+    static analysis results library, for its internal data model for
+    results:
+
+       https://pypi.python.org/pypi/firehose/
+
   * graphviz: many of the interesting examples use "dot" to draw diagrams
     (e.g. control-flow graphs), so it's worth having graphviz installed.
 
@@ -76,13 +82,13 @@ On a Fedora box you can install them by running the following as root:
 
 .. code-block:: bash
 
-   yum install gcc-plugin-devel python-devel python-six python-pygments graphviz
+   yum install gcc-plugin-devel python-devel python-six python-pygments graphviz python-firehose
 
 for building against Python 2, or:
 
 .. code-block:: bash
 
-   yum install gcc-plugin-devel python3-devel python3-six python3-pygments graphviz
+   yum install gcc-plugin-devel python3-devel python3-six python3-pygments graphviz python3-firehose
 
 when building for Python 3.
 
