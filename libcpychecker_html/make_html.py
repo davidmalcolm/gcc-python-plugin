@@ -30,7 +30,7 @@ HERE = dirname(realpath(__file__))
 from . import capi
 
 from lxml.html import (
-        tostring, fragment_fromstring as parse, builder as E
+    tostring, fragment_fromstring as parse, builder as E
 )
 
 from pygments import highlight
@@ -41,13 +41,13 @@ from copy import deepcopy
 from itertools import islice
 
 
-def open(filename, mode='r'):
+def open(filename, mode='r'):  # pylint:disable=redefined-builtin
     """All files are treated as UTF-8, unless explicitly binary."""
-    from io import open
+    import io
     if 'b' in mode:
-        return open(filename, mode)
+        return io.open(filename, mode)
     else:
-        return open(filename, mode, encoding='UTF-8')
+        return io.open(filename, mode, encoding='UTF-8')
 
 
 class HtmlPage(object):
@@ -106,12 +106,12 @@ class HtmlPage(object):
         """generate the contents of the #code section"""
         # Get ready to use Pygments:
         formatter = CodeHtmlFormatter(
-                style='default',
-                cssclass='source',
-                linenostart=self.data['function']['lines'][0],
+            style='default',
+            cssclass='source',
+            linenostart=self.data['function']['lines'][0],
         )
 
-        #<link rel="stylesheet", href="pygments_c.css", type="text/css">
+        # <link rel="stylesheet", href="pygments_c.css", type="text/css">
         open('pygments_c.css', 'w').write(formatter.get_style_defs())
 
         # Use pygments to convert it all to HTML:
@@ -126,7 +126,6 @@ class HtmlPage(object):
                 name.append(link)
 
         return code
-
 
     def header(self):
         """Make the header bar of the webpage"""
@@ -183,7 +182,7 @@ class HtmlPage(object):
                     ),
                 ),
             ),
-    )
+        )
 
     def states(self):
         """Return an ordered-list of states, for each report."""
@@ -213,7 +212,7 @@ class HtmlPage(object):
 
             for note in report['notes']:
                 line = note['location'][0]['line']
-                note = E.P({'class':'note'}, note['message'])
+                note = E.P({'class': 'note'}, note['message'])
 
                 # Put this note on the last matching state, if possible
                 for ann in reversed(tuple(annotations)):
@@ -223,13 +222,11 @@ class HtmlPage(object):
                         break
                     elif line > annline:
                         ann.addnext(
-                                E.LI({'data-line': str(line)}, note)
+                            E.LI({'data-line': str(line)}, note)
                         )
                         break
                 else:
-                    annotations.insert(0,
-                            E.LI({'data-line': str(line)}, note)
-                    )
+                    annotations.insert(0, E.LI({'data-line': str(line)}, note))
 
             yield annotations, report['message']
 
@@ -240,25 +237,25 @@ class HtmlPage(object):
 
         for i, (state_html, state_problem) in enumerate(self.states(), 1):
             reports.append(
-                    E.LI(
-                        E.ATTR(id="state{0}".format(i)),
-                        E.DIV(
-                            E.CLASS('source'),
-                            E.E.header(
-                                E.DIV(
-                                    E.CLASS('error'),
-                                    state_problem,
-                                ),
-                                E.DIV(
-                                    E.CLASS('report-count'),
-                                    E.H3('Report'),
-                                    str(i),
-                                ),
+                E.LI(
+                    E.ATTR(id="state{0}".format(i)),
+                    E.DIV(
+                        E.CLASS('source'),
+                        E.E.header(
+                            E.DIV(
+                                E.CLASS('error'),
+                                state_problem,
                             ),
-                            deepcopy(code),
+                            E.DIV(
+                                E.CLASS('report-count'),
+                                E.H3('Report'),
+                                str(i),
+                            ),
                         ),
-                        state_html,
+                        deepcopy(code),
                     ),
+                    state_html,
+                ),
             )
 
         return E.BODY(
@@ -266,11 +263,13 @@ class HtmlPage(object):
             reports,
         )
 
+
 def data_uri(mimetype, filename):
     """represent a file as a data uri"""
     data = open(join(HERE, filename), 'rb').read()
     data = data.encode('base64').replace('\n', '')
     return 'data:%s;base64,%s' % (mimetype, data)
+
 
 def file_contents(filename):
     """Add a leading newline to make the first line show up in the right spot.
@@ -283,7 +282,7 @@ class CodeHtmlFormatter(HtmlFormatter):
 
     def wrap(self, source, outfile):
         yield 0, '<table data-first-line="%s">' % (
-                self.linenostart,
+            self.linenostart,
         )
         for i, line in source:
             if i == 1:
@@ -294,6 +293,7 @@ class CodeHtmlFormatter(HtmlFormatter):
             else:
                 yield i, line
         yield 0, '</table>'
+
 
 def main(argv):
     """our entry point"""
