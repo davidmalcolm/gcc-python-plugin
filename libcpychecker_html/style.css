@@ -353,7 +353,7 @@ var.leak {
 /* Selection overrides */
 .states li {
     left: 0;
-    transition-property: left background-color border-color;
+    transition-property: left, background-color, border-color;
 }
 .source tr
 .states li h2 {
@@ -362,8 +362,8 @@ var.leak {
 td .flow-dot,
 .states li,
 .states li h2 {
-    -moz-transition-duration: 0.25s;
-    -moz-transition-timing-function: ease-out;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
 }
 
 td.selected .flow-dot {
