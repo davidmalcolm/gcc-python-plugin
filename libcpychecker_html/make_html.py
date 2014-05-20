@@ -77,7 +77,7 @@ class HtmlPage(object):
                 media='screen',
                 type='text/css'
             )
-            for css in ('extlib/reset-20110126', 'pygments_c', 'style')
+            for css in ('extlib/reset-20110126.min', 'pygments_c', 'style')
         )
         head.extend(
             E.SCRIPT(
@@ -85,8 +85,8 @@ class HtmlPage(object):
                 type='text/javascript',
             )
             for js in (
+                'extlib/zepto-1.1.3.min',
                 'extlib/prefixfree-1.0.4.min',
-                'extlib/jquery-1.7.1.min',
                 'script'
             )
         )
