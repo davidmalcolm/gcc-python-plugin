@@ -80,20 +80,6 @@ class HtmlPage(object):
             )
             for css in ('extlib/reset-20110126.min', 'pygments_c', 'style')
         )
-        head.append(E.SCRIPT(
-            src='http://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.js',
-            type='text/javascript',
-        ))
-        head.extend(
-            E.SCRIPT(
-                file_contents(js + '.js'),
-                type='text/javascript',
-            )
-            for js in (
-                'extlib/prefixfree-1.0.4.min',
-                'script'
-            )
-        )
         return head
 
     def raw_code(self):
@@ -135,39 +121,34 @@ class HtmlPage(object):
             E.DIV(
                 E.ATTR(id='title'),
                 E.H1(
-                    'GCC Python Plugin',
+                    E.A(
+                        'GCC Python Plugin',
+                        href='http://gcc-python-plugin.readthedocs.org/',
+                    ),
                 ),
                 E.DIV(
-                    E.ATTR(id='filename'),
+                    E.ATTR(id='info'),
                     E.SPAN(
                         E.CLASS('label'),
                         'Filename: ',
                     ),
                     self.data['filename'],
-                ),
-            ),
-            E.E.nav(
-                E.ATTR(id='nav'),
-                E.DIV(
-                    E.ATTR(id='function'),
-                    E.H3('Function'),
+                    E.SPAN(
+                        E.CLASS('label'),
+                        'Function: ',
+                    ),
                     self.data['function']['name'],
                 ),
                 E.DIV(
                     E.ATTR(id='report-pagination'),
-                    E.H3('Report'),
+                    E.SPAN(
+                        E.CLASS('label'),
+                        'Report: ',
+                    ),
                     *(
                         E.A(str(i + 1), href="#state{0}".format(i + 1))
                         for i in range(len(self.data['reports']))
                     )
-                ),
-                E.DIV(
-                    E.ATTR(id='bug-toggle'),
-                    E.IMG(
-                        src=data_uri('image/png', 'images/bug.png'),
-                    ),
-                    E.H3('Bug'),
-                    ' [count]',
                 ),
                 E.DIV(
                     E.ATTR(id='prev'),
@@ -181,6 +162,25 @@ class HtmlPage(object):
                         src=data_uri('image/png', 'images/arrow.png'),
                     ),
                 ),
+            ),
+        )
+
+    @staticmethod
+    def footer():
+        """put non-essential javascript in the footer"""
+        return E.E.footer(
+            # zepto is the one resource we don't embed.
+            # It's (relatively) big, and non-essential.
+            E.SCRIPT(
+                src=(
+                    'http://cdnjs.cloudflare.com'
+                    '/ajax/libs/zepto/1.1.3/zepto.js'
+                ),
+                type='text/javascript',
+            ),
+            E.SCRIPT(
+                file_contents('script.js'),
+                type='text/javascript',
             ),
         )
 
@@ -239,28 +239,32 @@ class HtmlPage(object):
             reports.append(
                 E.LI(
                     E.ATTR(id="state{0}".format(i)),
-                    E.DIV(
-                        E.CLASS('source'),
-                        E.E.header(
-                            E.DIV(
-                                E.CLASS('error'),
-                                state_problem,
-                            ),
-                            E.DIV(
-                                E.CLASS('report-count'),
-                                E.H3('Report'),
-                                str(i),
-                            ),
+                    E.E.header(
+                        E.DIV(
+                            E.CLASS('error'),
+                            state_problem,
                         ),
-                        deepcopy(code),
+                        E.DIV(
+                            E.CLASS('report-count'),
+                            E.H3('Report'),
+                            str(i),
+                        ),
                     ),
-                    state_html,
+                    E.DIV(
+                        E.CLASS('body'),
+                        E.DIV(
+                            E.CLASS('source'),
+                            deepcopy(code),
+                        ),
+                        state_html,
+                    ),
                 ),
             )
 
         return E.BODY(
             self.header(),
             reports,
+            self.footer(),
         )
 
 
