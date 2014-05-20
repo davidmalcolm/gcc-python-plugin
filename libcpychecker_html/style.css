@@ -56,6 +56,7 @@ img {
 #reports {
     box-flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 
@@ -64,7 +65,7 @@ img {
     display: box;
     box-orient: horizontal;
     width: 100%;
-    padding: 1em;
+    padding: 0.5em;
     box-sizing: border-box;
     color: white;
 }
@@ -182,6 +183,8 @@ img {
     line-height: 1.33;
     min-width: 40em;
     box-flex: 3;
+    overflow-x: auto;
+    border-right: 1px solid hsl(0, 0%, 70%);
 }
 .source > header {
     display: box;
@@ -277,9 +280,10 @@ img {
     text-align: right;
     user-select: none;
     color: hsl(0, 0%, 60%);
+    vertical-align: middle;
 }
 .source .code {
-    white-space: pre-wrap;
+    white-space: pre;
 }
 
 
@@ -386,6 +390,9 @@ td.selected .flow-dot {
     min-width: 200px;
 }
 
+.note {
+    font-weight: bolder;
+}
 .note:first-of-type::before {
     /* content: url('images/exclamation.png');
      * to regenerate:

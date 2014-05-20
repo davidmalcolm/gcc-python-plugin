@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """Make our data into HTML!
-These reports should be usable as email attachments, so either inline or cdn *everything*.
+These reports should be usable as email attachments, offline.
+This means we need to embed *all* our assets.
+
+TODO: #11 optimize the filesize
 """
 from __future__ import print_function
+from __future__ import unicode_literals
 
 #   Copyright 2012 Buck Golemon <buck@yelp.com>
 #
@@ -35,6 +39,16 @@ from pygments.formatters.html import HtmlFormatter
 from copy import deepcopy
 from itertools import islice
 
+
+def open(filename, mode='r'):
+    """All files are treated as UTF-8, unless explicitly binary."""
+    from io import open
+    if 'b' in mode:
+        return open(filename, mode)
+    else:
+        return open(filename, mode, encoding='UTF-8')
+
+
 class HtmlPage(object):
     """Represent one html page."""
     def __init__(self, codefile, data):
@@ -57,30 +71,23 @@ class HtmlPage(object):
             }),
             E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
         )
-        head.append(E.LINK(
-            rel='stylesheet', 
-            href='http://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css',
-            type='text/css'
-        ))
         head.extend(
             E.STYLE(
                 file_contents(css + '.css'),
                 media='screen',
                 type='text/css'
             )
-            for css in ('pygments_c', 'style')
+            for css in ('extlib/reset-20110126', 'pygments_c', 'style')
         )
         head.extend(
-            E.SCRIPT(src=js)
-            for js in (
-                'http://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js',
-                'http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js',
-            )
-        )
-        head.append(
             E.SCRIPT(
-                file_contents('script.js'),
+                file_contents(js + '.js'),
                 type='text/javascript',
+            )
+            for js in (
+                'extlib/prefixfree-1.0.4.min',
+                'extlib/jquery-1.7.1.min',
+                'script'
             )
         )
         return head
@@ -256,7 +263,8 @@ class HtmlPage(object):
         )
 
 def data_uri(mimetype, filename):
-    data = open(join(HERE, filename)).read().encode('base64').replace('\n', '')
+    "represent a file as a data uri"
+    data = open(join(HERE, filename), 'rb').read().encode('base64').replace('\n', '')
     return 'data:%s;base64,%s' % (mimetype, data)
 
 def file_contents(filename):
