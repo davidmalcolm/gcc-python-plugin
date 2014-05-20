@@ -1,5 +1,5 @@
 {
-    "filename": "libcpychecker/html/test/example2/pylibmc-issue-68.c", 
+    "filename": "libcpychecker_html/test/example2/pylibmc-issue-68.c", 
     "function": {
         "lines": [
             52, 
@@ -822,7 +822,7 @@
                             "line": 114
                         }
                     ], 
-                    "message": "when treating unknown const char * from libcpychecker/html/test/example2/pylibmc-issue-68.c:68 as non-NULL"
+                    "message": "when treating unknown const char * from libcpychecker_html/test/example2/pylibmc-issue-68.c:68 as non-NULL"
                 }, 
                 {
                     "location": [
@@ -1446,7 +1446,7 @@
                             "line": 154
                         }
                     ], 
-                    "message": "when considering value == (int)0 from libcpychecker/html/test/example2/pylibmc-issue-68.c:148"
+                    "message": "when considering value == (int)0 from libcpychecker_html/test/example2/pylibmc-issue-68.c:148"
                 }, 
                 {
                     "location": [
@@ -1771,7 +1771,7 @@
                             "line": 177
                         }
                     ], 
-                    "message": "when treating unknown struct PyObject * from libcpychecker/html/test/example2/pylibmc-issue-68.c:176 as non-NULL"
+                    "message": "when treating unknown struct PyObject * from libcpychecker_html/test/example2/pylibmc-issue-68.c:176 as non-NULL"
                 }, 
                 {
                     "location": [
@@ -2065,7 +2065,7 @@
                             "line": 190
                         }
                     ], 
-                    "message": "calling tp_dealloc on PyDictObject allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:159"
+                    "message": "calling tp_dealloc on PyDictObject allocated at libcpychecker_html/test/example2/pylibmc-issue-68.c:159"
                 }, 
                 {
                     "location": null, 
@@ -2086,7 +2086,7 @@
                             "line": 195
                         }
                     ], 
-                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:77"
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker_html/test/example2/pylibmc-issue-68.c:77"
                 }, 
                 {
                     "location": [
@@ -2099,7 +2099,7 @@
                             "line": 196
                         }
                     ], 
-                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:76"
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker_html/test/example2/pylibmc-issue-68.c:76"
                 }, 
                 {
                     "location": [
@@ -2307,7 +2307,7 @@
                             "line": 200
                         }
                     ], 
-                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker/html/test/example2/pylibmc-issue-68.c:78"
+                    "message": "calling PyMem_Free on PyMem_Malloc allocated at libcpychecker_html/test/example2/pylibmc-issue-68.c:78"
                 }, 
                 {
                     "location": [
@@ -2333,7 +2333,7 @@
                             "line": 202
                         }
                     ], 
-                    "message": "when treating unknown struct memcached_result_st * * from libcpychecker/html/test/example2/pylibmc-issue-68.c:148 as non-NULL"
+                    "message": "when treating unknown struct memcached_result_st * * from libcpychecker_html/test/example2/pylibmc-issue-68.c:148 as non-NULL"
                 }, 
                 {
                     "location": [

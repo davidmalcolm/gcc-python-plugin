@@ -4,17 +4,17 @@ per-file license information).
 There are copies of various JavaScript and CSS libraries embedded within the
 source tree, which have their own licenses as follows:
 
-  libcpychecker/html/extlib/jquery-1.7.1.min.js:
+  libcpychecker_html/extlib/jquery-1.7.1.min.js:
      jquery.org/license (MIT or GPLv2)
 
-  libcpychecker/html/extlib/prefixfree-1.0.4.min.js:
+  libcpychecker_html/extlib/prefixfree-1.0.4.min.js:
      MIT license
 
-  libcpychecker/html/extlib/reset-20110126.css:
+  libcpychecker_html/extlib/reset-20110126.css:
      Public Domain
 
 There are also various images within:
-   libcpychecker/html/images
+   libcpychecke_/html/images
 These were taken from:
   http://code.google.com/p/fugue-icons-src/
 and are:
@@ -25,6 +25,6 @@ and are:
 
 The test code contains historical examples of reference-count bugs:
 
-  * libcpychecker/html/test/example2
+  * libcpychecker_html/test/example2
       contains an embedded copy of part of an old version of pylibmc, which
       is under a 3-clause BSD license

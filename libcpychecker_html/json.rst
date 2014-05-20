@@ -5,7 +5,7 @@ At the top level::
 
    {
        # Path to the source file being analyzed:
-       "filename": "libcpychecker/html/test/example1/bug.c", 
+       "filename": "libcpychecker_html/test/example1/bug.c", 
 
        # The particular function containing the error:
        "function": {

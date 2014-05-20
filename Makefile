@@ -287,7 +287,7 @@ demo: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
 
 json-examples: plugin
-	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker/html/test/example1/bug.c
+	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
 test-suite: plugin print-gcc-version
 	$(INVOCATION_ENV_VARS) $(PYTHON) run-test-suite.py

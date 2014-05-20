@@ -1,5 +1,5 @@
 {
-    "filename": "libcpychecker/html/test/example1/bug.c", 
+    "filename": "libcpychecker_html/test/example1/bug.c", 
     "function": {
         "lines": [
             3, 
@@ -4354,7 +4354,7 @@
                             "line": 16
                         }
                     ], 
-                    "message": "when considering count.0 == (int)1 from libcpychecker/html/test/example1/bug.c:10", 
+                    "message": "when considering count.0 == (int)1 from libcpychecker_html/test/example1/bug.c:10", 
                     "variables": {
                         "<retval>": {
                             "gcctype": "struct PyObject *", 
@@ -6399,7 +6399,7 @@
             ]
         }, 
         {
-            "message": "calling PyList_Append with NULL as argument 1 (list) at libcpychecker/html/test/example1/bug.c:18", 
+            "message": "calling PyList_Append with NULL as argument 1 (list) at libcpychecker_html/test/example1/bug.c:18", 
             "notes": [
                 {
                     "location": [
