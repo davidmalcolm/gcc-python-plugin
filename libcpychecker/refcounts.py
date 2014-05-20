@@ -4383,6 +4383,18 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
                    ('graphical error report for function %r written out to %r'
                     % (fun.decl.name, filename)))
 
+        filename_v2 = ('%s.%s-refcount-errors.v2.html'
+                       % (gcc.get_dump_base_name(), fun.decl.name))
+
+        from libcpychecker_html.make_html import HtmlPage
+        data = rep.to_json(fun)
+        srcfile = open(fun.start.file)
+        htmlfile = open(filename_v2, 'w')
+        htmlfile.write(str(HtmlPage(srcfile, data)))
+        htmlfile.close()
+        srcfile.close()
+
+
     if show_timings:
         end_cpusecs = time.clock()
         gcc.inform(fun.start, 'Finished analyzing reference-counting within %s' % fun.decl.name)

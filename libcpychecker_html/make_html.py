@@ -1,5 +1,12 @@
 #!/usr/bin/env python
-"""Make our data into HTML!"""
+"""Make our data into HTML!
+These reports should be usable as email attachments, offline.
+This means we need to embed *all* our assets.
+
+TODO: #11 optimize the filesize
+"""
+from __future__ import print_function
+from __future__ import unicode_literals
 
 #   Copyright 2012 Buck Golemon <buck@yelp.com>
 #
@@ -16,8 +23,10 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
+from os.path import realpath, dirname, join
+HERE = dirname(realpath(__file__))
 
-import capi
+from . import capi
 
 from lxml.html import (
         tostring, fragment_fromstring as parse, builder as E
@@ -29,24 +38,33 @@ from pygments.formatters.html import HtmlFormatter
 
 from copy import deepcopy
 from itertools import islice
-from json import load
+
+
+def open(filename, mode='r'):
+    """All files are treated as UTF-8, unless explicitly binary."""
+    from io import open
+    if 'b' in mode:
+        return open(filename, mode)
+    else:
+        return open(filename, mode, encoding='UTF-8')
+
 
 class HtmlPage(object):
     """Represent one html page."""
-    def __init__(self, codefile, jsonfile):
+    def __init__(self, codefile, data):
         self.codefile = codefile
-        self.data = load(jsonfile)
+        self.data = data
 
     def __str__(self):
         html = tostring(self.__html__())
         return '<!DOCTYPE html>\n' + html
 
     def __html__(self):
-        return E.HTML( self.head(), self.body() )
+        return E.HTML(self.head(), self.body())
 
     def head(self):
         """The HEAD of the html document"""
-        head =  E.HEAD(
+        head = E.HEAD(
             E.META({
                 'http-equiv': 'Content-Type',
                 'content': 'text/html; charset=utf-8'
@@ -54,11 +72,18 @@ class HtmlPage(object):
             E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
         )
         head.extend(
-            E.LINK(rel='stylesheet', href=css + '.css', type='text/css')
+            E.STYLE(
+                file_contents(css + '.css'),
+                media='screen',
+                type='text/css'
+            )
             for css in ('extlib/reset-20110126', 'pygments_c', 'style')
         )
         head.extend(
-            E.SCRIPT(src=js + '.js')
+            E.SCRIPT(
+                file_contents(js + '.js'),
+                type='text/javascript',
+            )
             for js in (
                 'extlib/prefixfree-1.0.4.min',
                 'extlib/jquery-1.7.1.min',
@@ -86,7 +111,7 @@ class HtmlPage(object):
         open('pygments_c.css', 'w').write(formatter.get_style_defs())
 
         # Use pygments to convert it all to HTML:
-        code =  parse(highlight(self.raw_code(), CLexer(), formatter))
+        code = parse(highlight(self.raw_code(), CLexer(), formatter))
 
         # linkify the python C-API functions
         for name in code.xpath('//span[@class="n"]'):
@@ -136,7 +161,7 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='bug-toggle'),
                     E.IMG(
-                        src='images/bug.png',
+                        src=data_uri('image/png', 'images/bug.png'),
                     ),
                     E.H3('Bug'),
                     ' [count]',
@@ -144,29 +169,17 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='prev'),
                     E.IMG(
-                        src='images/arrow-180.png',
+                        src=data_uri('image/png', 'images/arrow-180.png'),
                     ),
                 ),
                 E.DIV(
                     E.ATTR(id='next'),
                     E.IMG(
-                        src='images/arrow.png',
+                        src=data_uri('image/png', 'images/arrow.png'),
                     ),
                 ),
             ),
     )
-
-    @staticmethod
-    def footer():
-        """make the footer"""
-        return E.E.footer(
-            E.ATTR(id='footer'),
-            E.P(' &nbsp;|&nbsp; '.join((
-                'Hackathon 7.0',
-                'Buck G, Alex M, Jason M',
-                'Yelp HQ 2012',
-            )))
-        )
 
     def states(self):
         """Return an ordered-list of states, for each report."""
@@ -210,7 +223,7 @@ class HtmlPage(object):
                         )
                         break
                 else:
-                    annotations.insert(0, 
+                    annotations.insert(0,
                             E.LI({'data-line': str(line)}, note)
                     )
 
@@ -247,8 +260,17 @@ class HtmlPage(object):
         return E.BODY(
             self.header(),
             reports,
-            self.footer(),
         )
+
+def data_uri(mimetype, filename):
+    "represent a file as a data uri"
+    data = open(join(HERE, filename), 'rb').read().encode('base64').replace('\n', '')
+    return 'data:%s;base64,%s' % (mimetype, data)
+
+def file_contents(filename):
+    # The leading newline makes the first line show up in the right spot.
+    return '\n' + open(join(HERE, filename)).read()
+
 
 class CodeHtmlFormatter(HtmlFormatter):
     """Format our HTML!"""
@@ -271,9 +293,11 @@ def main(argv):
     """our entry point"""
     if len(argv) < 3:
         return "Please provide code and json filenames."
+
+    from json import load
     codefile = open(argv[1])
-    jsonfile = open(argv[2])
-    print(HtmlPage(codefile, jsonfile))
+    data = load(open(argv[2]))
+    print(HtmlPage(codefile, data))
 
 if __name__ == '__main__':
     from sys import argv as ARGV
