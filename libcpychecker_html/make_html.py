@@ -3,7 +3,8 @@
 These reports should be usable as email attachments, offline.
 This means we need to embed *all* our assets.
 
-TODO: #11 optimize the filesize
+We make an exception for zepto; it's (relatively) big, and the behaviors
+it adds are non-essential to reading the report.
 """
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -79,13 +80,16 @@ class HtmlPage(object):
             )
             for css in ('extlib/reset-20110126.min', 'pygments_c', 'style')
         )
+        head.append(E.SCRIPT(
+            src='http://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.js',
+            type='text/javascript',
+        ))
         head.extend(
             E.SCRIPT(
                 file_contents(js + '.js'),
                 type='text/javascript',
             )
             for js in (
-                'extlib/zepto-1.1.3.min',
                 'extlib/prefixfree-1.0.4.min',
                 'script'
             )
@@ -263,12 +267,14 @@ class HtmlPage(object):
         )
 
 def data_uri(mimetype, filename):
-    "represent a file as a data uri"
-    data = open(join(HERE, filename), 'rb').read().encode('base64').replace('\n', '')
+    """represent a file as a data uri"""
+    data = open(join(HERE, filename), 'rb').read()
+    data = data.encode('base64').replace('\n', '')
     return 'data:%s;base64,%s' % (mimetype, data)
 
 def file_contents(filename):
-    # The leading newline makes the first line show up in the right spot.
+    """Add a leading newline to make the first line show up in the right spot.
+    """
     return '\n' + open(join(HERE, filename)).read()
 
 
