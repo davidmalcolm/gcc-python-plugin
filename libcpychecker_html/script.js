@@ -89,10 +89,10 @@ $(function() {
                     // state commentary, highlight the dot and the comment and
                     // the row itself
                     var $group = $row.add(flow[0].$state).add($new_cell);
-                    $new_cell.add(flow[0].$state).hover(
-                        function() { $group.addClass('selected'); },
-                        function() { $group.removeClass('selected'); }
-                    );
+                    $new_cell.add(flow[0].$state).on({
+                        mouseenter: function() { $group.addClass('selected'); },
+                        mouseleave: function() { $group.removeClass('selected'); }
+                    });
 
                     flow.shift();
                 }
@@ -117,10 +117,10 @@ $(function() {
             // with that line
             if ($selectables.length) {
                 $selectables = $selectables.add($row);
-                $row.find('td:last-child').hover(
-                    function() { $selectables.addClass('selected') },
-                    function() { $selectables.removeClass('selected') }
-                );
+                $row.find('td:last-child').on({
+                    mouseenter: function() { $selectables.addClass('selected') },
+                    mouseleave: function() { $selectables.removeClass('selected') }
+                });
             }
         });
     });

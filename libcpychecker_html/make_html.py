@@ -1,6 +1,13 @@
 #!/usr/bin/env python
-"""Make our data into HTML!"""
+"""Make our data into HTML!
+These reports should be usable as email attachments, offline.
+This means we need to embed *all* our assets.
+
+We make an exception for zepto; it's (relatively) big, and the behaviors
+it adds are non-essential to reading the report.
+"""
 from __future__ import print_function
+from __future__ import unicode_literals
 
 #   Copyright 2012 Buck Golemon <buck@yelp.com>
 #
@@ -17,6 +24,8 @@ from __future__ import print_function
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
+from os.path import realpath, dirname, join
+HERE = dirname(realpath(__file__))
 
 from . import capi
 
@@ -30,6 +39,16 @@ from pygments.formatters.html import HtmlFormatter
 
 from copy import deepcopy
 from itertools import islice
+
+
+def open(filename, mode='r'):
+    """All files are treated as UTF-8, unless explicitly binary."""
+    from io import open
+    if 'b' in mode:
+        return open(filename, mode)
+    else:
+        return open(filename, mode, encoding='UTF-8')
+
 
 class HtmlPage(object):
     """Represent one html page."""
@@ -54,14 +73,24 @@ class HtmlPage(object):
             E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
         )
         head.extend(
-            E.LINK(rel='stylesheet', href=css + '.css', type='text/css')
-            for css in ('extlib/reset-20110126', 'pygments_c', 'style')
+            E.STYLE(
+                file_contents(css + '.css'),
+                media='screen',
+                type='text/css'
+            )
+            for css in ('extlib/reset-20110126.min', 'pygments_c', 'style')
         )
+        head.append(E.SCRIPT(
+            src='http://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.js',
+            type='text/javascript',
+        ))
         head.extend(
-            E.SCRIPT(src=js + '.js')
+            E.SCRIPT(
+                file_contents(js + '.js'),
+                type='text/javascript',
+            )
             for js in (
                 'extlib/prefixfree-1.0.4.min',
-                'extlib/jquery-1.7.1.min',
                 'script'
             )
         )
@@ -136,7 +165,7 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='bug-toggle'),
                     E.IMG(
-                        src='images/bug.png',
+                        src=data_uri('image/png', 'images/bug.png'),
                     ),
                     E.H3('Bug'),
                     ' [count]',
@@ -144,29 +173,17 @@ class HtmlPage(object):
                 E.DIV(
                     E.ATTR(id='prev'),
                     E.IMG(
-                        src='images/arrow-180.png',
+                        src=data_uri('image/png', 'images/arrow-180.png'),
                     ),
                 ),
                 E.DIV(
                     E.ATTR(id='next'),
                     E.IMG(
-                        src='images/arrow.png',
+                        src=data_uri('image/png', 'images/arrow.png'),
                     ),
                 ),
             ),
     )
-
-    @staticmethod
-    def footer():
-        """make the footer"""
-        return E.E.footer(
-            E.ATTR(id='footer'),
-            E.P(' &nbsp;|&nbsp; '.join((
-                'Hackathon 7.0',
-                'Buck G, Alex M, Jason M',
-                'Yelp HQ 2012',
-            )))
-        )
 
     def states(self):
         """Return an ordered-list of states, for each report."""
@@ -247,8 +264,19 @@ class HtmlPage(object):
         return E.BODY(
             self.header(),
             reports,
-            self.footer(),
         )
+
+def data_uri(mimetype, filename):
+    """represent a file as a data uri"""
+    data = open(join(HERE, filename), 'rb').read()
+    data = data.encode('base64').replace('\n', '')
+    return 'data:%s;base64,%s' % (mimetype, data)
+
+def file_contents(filename):
+    """Add a leading newline to make the first line show up in the right spot.
+    """
+    return '\n' + open(join(HERE, filename)).read()
+
 
 class CodeHtmlFormatter(HtmlFormatter):
     """Format our HTML!"""
