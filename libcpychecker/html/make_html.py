@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Make our data into HTML!"""
+from __future__ import print_function
 
 #   Copyright 2012 Buck Golemon <buck@yelp.com>
 #
@@ -17,7 +18,7 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
-import capi
+from . import capi
 
 from lxml.html import (
         tostring, fragment_fromstring as parse, builder as E
@@ -29,24 +30,23 @@ from pygments.formatters.html import HtmlFormatter
 
 from copy import deepcopy
 from itertools import islice
-from json import load
 
 class HtmlPage(object):
     """Represent one html page."""
-    def __init__(self, codefile, jsonfile):
+    def __init__(self, codefile, data):
         self.codefile = codefile
-        self.data = load(jsonfile)
+        self.data = data
 
     def __str__(self):
         html = tostring(self.__html__())
         return '<!DOCTYPE html>\n' + html
 
     def __html__(self):
-        return E.HTML( self.head(), self.body() )
+        return E.HTML(self.head(), self.body())
 
     def head(self):
         """The HEAD of the html document"""
-        head =  E.HEAD(
+        head = E.HEAD(
             E.META({
                 'http-equiv': 'Content-Type',
                 'content': 'text/html; charset=utf-8'
@@ -86,7 +86,7 @@ class HtmlPage(object):
         open('pygments_c.css', 'w').write(formatter.get_style_defs())
 
         # Use pygments to convert it all to HTML:
-        code =  parse(highlight(self.raw_code(), CLexer(), formatter))
+        code = parse(highlight(self.raw_code(), CLexer(), formatter))
 
         # linkify the python C-API functions
         for name in code.xpath('//span[@class="n"]'):
@@ -210,7 +210,7 @@ class HtmlPage(object):
                         )
                         break
                 else:
-                    annotations.insert(0, 
+                    annotations.insert(0,
                             E.LI({'data-line': str(line)}, note)
                     )
 
@@ -271,9 +271,11 @@ def main(argv):
     """our entry point"""
     if len(argv) < 3:
         return "Please provide code and json filenames."
+
+    from json import load
     codefile = open(argv[1])
-    jsonfile = open(argv[2])
-    print(HtmlPage(codefile, jsonfile))
+    data = load(open(argv[2]))
+    print(HtmlPage(codefile, data))
 
 if __name__ == '__main__':
     from sys import argv as ARGV
