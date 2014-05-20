@@ -4386,7 +4386,7 @@ def check_refcounts(fun, dump_traces=False, show_traces=False,
         filename_v2 = ('%s.%s-refcount-errors.v2.html'
                        % (gcc.get_dump_base_name(), fun.decl.name))
 
-        from libcpychecker.html.make_html import HtmlPage
+        from libcpychecker_html.make_html import HtmlPage
         data = rep.to_json(fun)
         srcfile = open(fun.start.file)
         htmlfile = open(filename_v2, 'w')
