@@ -79,8 +79,8 @@ $(function() {
             $.each(source_flow, function(idx, flow) {
                 // Lines mentioned in the flow get dots...
                 if (flow.length && flow[0].lineno == lineno) {
-                    var $new_cell = $('<td>', { "class": "flow-line" }).html('&#x200b;');
-                    $new_cell.append($('<span>', { "class": "flow-dot" }));
+                    var $new_cell = $('<td>', { "class": "flow-line" });
+                    $new_cell.append($('<span>', { "class": "flow-dot" }).html('&#x200b;'));
                     $paths = $paths.add($new_cell);
                     $selectables = $selectables.add($new_cell).add(flow[0].$state);
                     started[idx] = true;
