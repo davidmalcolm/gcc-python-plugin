@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"><title>_mysql.c -- GCC Python Plugin</title><style media="screen" type="text/css">
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+a,abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,caption,center,cite,code,dd,del,details,dfn,div,dl,dt,em,embed,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,output,p,pre,q,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,tt,u,ul,var,video{margin:0;padding:0;border:0;font:inherit;vertical-align:baseline}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:after,blockquote:before,q:after,q:before{content:'';content:none}table{border-collapse:collapse;border-spacing:0}
+</style><style media="screen" type="text/css">
+.source .hll { background-color: #ffffcc }
+.source  { background: #f8f8f8; }
+.source .c { color: #408080; font-style: italic } /* Comment */
+.source .err { border: 1px solid #FF0000 } /* Error */
+.source .k { color: #008000; font-weight: bold } /* Keyword */
+.source .o { color: #666666 } /* Operator */
+.source .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.source .cp { color: #BC7A00 } /* Comment.Preproc */
+.source .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.source .cs { color: #408080; font-style: italic } /* Comment.Special */
+.source .gd { color: #A00000 } /* Generic.Deleted */
+.source .ge { font-style: italic } /* Generic.Emph */
+.source .gr { color: #FF0000 } /* Generic.Error */
+.source .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.source .gi { color: #00A000 } /* Generic.Inserted */
+.source .go { color: #888888 } /* Generic.Output */
+.source .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.source .gs { font-weight: bold } /* Generic.Strong */
+.source .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.source .gt { color: #0044DD } /* Generic.Traceback */
+.source .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.source .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.source .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.source .kp { color: #008000 } /* Keyword.Pseudo */
+.source .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.source .kt { color: #B00040 } /* Keyword.Type */
+.source .m { color: #666666 } /* Literal.Number */
+.source .s { color: #BA2121 } /* Literal.String */
+.source .na { color: #7D9029 } /* Name.Attribute */
+.source .nb { color: #008000 } /* Name.Builtin */
+.source .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.source .no { color: #880000 } /* Name.Constant */
+.source .nd { color: #AA22FF } /* Name.Decorator */
+.source .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.source .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.source .nf { color: #0000FF } /* Name.Function */
+.source .nl { color: #A0A000 } /* Name.Label */
+.source .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.source .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.source .nv { color: #19177C } /* Name.Variable */
+.source .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.source .w { color: #bbbbbb } /* Text.Whitespace */
+.source .mf { color: #666666 } /* Literal.Number.Float */
+.source .mh { color: #666666 } /* Literal.Number.Hex */
+.source .mi { color: #666666 } /* Literal.Number.Integer */
+.source .mo { color: #666666 } /* Literal.Number.Oct */
+.source .sb { color: #BA2121 } /* Literal.String.Backtick */
+.source .sc { color: #BA2121 } /* Literal.String.Char */
+.source .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.source .s2 { color: #BA2121 } /* Literal.String.Double */
+.source .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.source .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.source .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.source .sx { color: #008000 } /* Literal.String.Other */
+.source .sr { color: #BB6688 } /* Literal.String.Regex */
+.source .s1 { color: #BA2121 } /* Literal.String.Single */
+.source .ss { color: #19177C } /* Literal.String.Symbol */
+.source .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.source .vc { color: #19177C } /* Name.Variable.Class */
+.source .vg { color: #19177C } /* Name.Variable.Global */
+.source .vi { color: #19177C } /* Name.Variable.Instance */
+.source .il { color: #666666 } /* Literal.Number.Integer.Long */</style><style media="screen" type="text/css">
+/*  Copyright 2012 Buck Golemon <buck@yelp.com>
+ *  with help from http://jsfiddle.net/simevidas/udyTs/show/light/
+ 
+    This is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see
+    <http://www.gnu.org/licenses/>.
+*/
+html, body {
+    width: 100%;
+    background: black;
+}
+html {
+    height: 100%;
+}
+body {
+    font: 12px "DejaVu Sans", "Bitstream Vera Sans", "Ubuntu Sans", Helvetica, Arial, sans-serif;
+    color: black;
+    background: #EBEBEB;
+    height: 100%;
+
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+h1, h2 {
+    font-weight: bolder;
+}
+h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+h3 {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 0.33em;
+}
+h3:after {
+    content: ':';
+}
+hr {
+    border-bottom: 1px solid #CCC; width: 640px;
+}
+img {
+    vertical-align: middle;
+}
+
+
+/* Main page layout */
+#header {
+    background-color: #0099ff;
+}
+#reports {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+/* Header */
+#title {
+    display:-webkit-box;
+    display:-webkit-flex;
+    display:-ms-flexbox;
+    display:flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: 0.5em 1em;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    color: white;
+    border-bottom: 1px solid #7A7A7A;
+    -webkit-box-shadow: 0px 0px 2px #000;
+    box-shadow: 0px 0px 2px #000;
+}
+#title h1 {
+    font-size: 1.2em;
+    text-shadow: 0 1px 1px black;
+}
+#title #info {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    -webkit-box-align: end;
+    -webkit-align-items: flex-end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    text-shadow: 0 1px 0 black;
+}
+
+/* Navigation */
+#nav {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: 0.5em 1em;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background-color: #E4E4E4;
+    border-bottom: 1px solid #7A7A7A;
+    -webkit-box-shadow: 0px 0px 2px #000;
+    box-shadow: 0px 0px 2px #000;
+}
+#report-pagination a {
+    padding: 4px;
+}
+#prev,
+#next {
+    padding: 0.25em 1em;
+    background-color: white;
+    border: 1px solid #ccc;
+    margin-left: 1em;
+}
+
+
+#header-container {
+    border-bottom:1px solid #7A7A7A;
+}
+
+#header ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+}
+
+#header ul li {
+    float: left;
+    margin-right: 5px;
+}
+
+#header ul li a{
+    color: #90b874;
+    font-weight: bold;
+    font-size: 1.4em;
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+#header ul li a:hover {
+    color: #beffbf;
+}
+
+
+
+
+
+#reports > li {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 100%;
+}
+#reports > li + li {
+    border-top: 1px dashed hsl(0, 0%, 70%);
+}
+#reports > li header {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    padding: .5em;
+    background: white;
+}
+#reports > li header .error {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    color: darkred;
+    font-weight: bold;
+    text-align: center;
+}
+#reports > li .body {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+}
+
+
+
+.label {
+    font-size: 12px;
+    font-weight:bolder;
+    margin-left: 2em;
+}
+
+#main {
+    background: red;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+
+.source {
+    height: 100%;
+    font-size: 12px;
+    background: white;
+    line-height: 1.33;
+    overflow-x: auto;
+    border-right: 1px solid hsl(0, 0%, 70%);
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 0 40em;
+    -ms-flex: 1 0 40em;
+    flex: 1 0 40em;
+}
+.source table {
+    width: 100%;
+    font-family: monospace;
+}
+
+#code {
+    background: blue;
+    min-width: 300px;
+    -webkit-box-flex: 2;
+    -webkit-flex: 2;
+    -ms-flex: 2;
+    flex: 2;
+}
+.source tr:nth-child(2n) {
+    background: hsl(0, 0%, 93%);
+}
+
+#container {
+    width: 1000px;
+    margin: 0 auto;
+    font-size:12px;
+    overflow: auto;
+    padding: 70px 0 0px;
+    background-color:#f8f8f8;
+}
+
+#content {
+    float: left;
+    width: 660px;
+    padding-top:20px;
+    padding-left:20px;
+    padding-right:10px;
+}
+
+#content .source td {
+    font-family: monospace;
+    white-space: pre;
+    min-height: 1em;
+    line-height: 20px;
+}
+
+
+.fnc-report {
+    font-size:12px;
+}
+
+#error-box {
+    font-size:12px;
+    font-color:000;
+    float:left;
+}
+
+#report-count{
+    font-size:12px;
+    float:right;
+}
+
+/* Left column: source code */
+.source tr:hover {
+    background: hsl(210, 30%, 87%);
+}
+.source .lineno {
+    padding-right: 0.5em;
+    text-align: right;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    color: hsl(0, 0%, 60%);
+    vertical-align: middle;
+}
+.source .code {
+    white-space: pre;
+}
+
+
+/* Right column: list of states */
+.states {
+    font-size: 12px;
+    top: 0.5em;
+    height: 100%;
+    min-width: 25em;
+    border-left: 1px solid hsl(0, 0%, 70%);
+    border-top: 2px solid #B2B2B2
+}
+.states li {
+    position: relative;
+    padding: 0.5em;
+    margin: 1em;
+    background: white;
+    border: 1px solid hsl(0, 0%, 80%);
+}
+.states li.new-subflow {
+    border-top-width: 4px;
+}
+.states h2 {
+    float: right;
+    padding: 0.33em 0.5em;
+    margin: -0.5em -0.5em 0.5em 0.5em;
+    background: hsl(0, 0%, 80%);
+    color: hsl(0, 0%, 30%);
+    border-radius: 0 0 0 0.5em;
+}
+.states p {
+    line-height: 1.5;
+}
+.states p + p {
+    margin-top: 0.5em;
+}
+
+var {
+    color: navy;
+}
+var.leak {
+    color: darkred;
+    font-weight: bold;
+    background: hsl(0, 100%, 90%);
+}
+
+.flow-line {
+    background: hsl(210, 80%, 60%);
+    -webkit-background-clip: content-box;
+    background-clip: content-box;
+    width: 2px;
+}
+.flow-empty, .flow-line {
+    padding: 0 5px;
+    text-align: center;
+}
+.flow-dot {
+    display: inline-block;
+    background: hsl(210, 80%, 60%);
+    outline: 1px solid rgba(100%, 100%, 100%, 0.5);
+    height: 6px;
+    width: 6px;
+    margin: -2px;
+    border-radius: 100px;
+    outline-radius: 100px;
+    vertical-align: middle;
+}
+
+/* Selection overrides */
+.states li {
+    left: 0;
+    -webkit-transition-property: left, background-color, border-color;
+    transition-property: left, background-color, border-color;
+}
+.source tr
+.states li h2 {
+    -webkit-transition-property: background-color;
+    transition-property: background-color;
+}
+td .flow-dot,
+.states li,
+.states li h2 {
+    -webkit-transition-duration: 0.25s;
+    transition-duration: 0.25s;
+    -webkit-transition-timing-function: ease-out;
+    transition-timing-function: ease-out;
+}
+
+td:hover .flow-dot,
+td.selected .flow-dot {
+    height: 10px;
+    width: 10px;
+    background: hsl(30, 80%, 60%);
+    margin: -5px;
+}
+
+.source tr:hover,
+.source tr.selected {
+    background-color: #ffe181;
+}
+.states li:hover,
+.states li.selected {
+    left: -2em;
+    background-color: #fef8cb;
+    border-color: #ffe181;
+}
+.states li:hover h2,
+.states li.selected h2 {
+    background-color: #ffe181;
+}
+
+#notes {
+    background: yellow;
+    min-width: 200px;
+}
+
+.note {
+    font-weight: bolder;
+}
+.note:first-of-type::before {
+    /* content: url('images/exclamation.png');
+     * to regenerate:
+     *      from libcpychecker_html.make_html import data_uri
+     *      data_uri('image/png', 'images/exclamation.png')
+     */
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAjBJREFUeNqkk0trE1EUx8/cO49OfGTSRNJMYsA0aVonoYh13YW71uJCKFQhKqibfgFLwYULsR/AhY+VG1d+C124kJiFIGipmoIZNUXtZDKTycz1njGpaRNU8MJv7txzzv/c5xEYY/A/TRQEAW5c5KwM+aKcR73/a5zvg84HT371wv07Apwuj0x+PZW/vArA4NO7x/f4+OGoIHLKAAiC/fBdHadSbCGZPTeTzC7OUElbQNvBOISMMnIqeqFSYs57mTkfZD1/qYS2f0rAZ5pVDmXnY/FSbn3jM6xvfAEtfjKnRDLz6BtK4PPPADi+ms6vGK71lti2DUintUVSJ84b6OvF7GlI4PNMPVgAZ49oxpyqRnXf+wGWZYX4ngWRiKYfPpqfw5hBjej7eweqCkSo6JOLhmd/hI7vQLVaBdM0YXt1FgK2CeJ40fCbmxUWsGc8vh3egtcFQPhyLsQnzpQJcbVmuw5mawtqtRo0Gg3wJQeY7ALIrqZEM2WM7esIPkROAgR5OZEpTTV3X4IXNEGiLnw1b4fItBNCBQuiqeQUA7qMGtSSLt8C38aVRLo47QVvVJFYoFAnJJG8FdIfI6rSVWMTx6ZRg1rS7UKeSspSMj2Wk+AbjPGZ+vTboA1JZbQcEcUl1Iq2zdZyxURBpruUMTzR38Vl79wM+9bO0/3vlwLVs+OF16/MNdFug/vi+Xadm+vDL/3uHyuR16Er4E3gKvEaOTLa/1LBuEQPF8hxfgowAINnMqTBUH7hAAAAAElFTkSuQmCC');
+    padding: 5px;
+}
+</style></head><body><header id="header"><div id="title"><h1><a href="http://gcc-python-plugin.readthedocs.org/">GCC Python Plugin</a></h1><div id="info"><span class="label">Filename: </span>_mysql.c<span class="label">Function: </span>init_mysql</div><div id="report-pagination"><span class="label">Report: </span><a href="#state1">1</a><a href="#state2">2</a><a href="#state3">3</a><a href="#state4">4</a><a href="#state5">5</a></div><div id="prev"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAmVBMVEUAAAAyjdgRYKsAAAAAAAAAAAAAAAAAAAAWZrEuh9IAAAAAAAA+nOc8muU4leAzjtkGUp0LWKMQX6oid8Iof8ocbrlAnuknfskCOnMdb7oCMmMFPnYXZ7IthtF4xfU8qOZCreeX5P9msu6J1ftotO8dvf9xvvNer+xVp+BEltNBk9CS3v2P2/xWyfo2xf8Oq/WCzvkruPdJm9g8P9teAAAAHnRSTlMAXFwHDjMCGtXVFSpc1dXV1dXV1dXVmVyoXHRcmZmc7OcWAAAAg0lEQVQY03XI1xKCMBRF0SskhCId7JpCx+7/f5x3yIOEGdfDmdkH/lhvFh2GRq8iGRkdyyqetyfbl6edsbfFta7bi1bgkd+UUl3/GcZx6HM89mXVcS6E4LglIMu9P9+udoLpyR5NBnNW2qRgOCbJLxzCAnrYUUoDRhxANvHZxCc2HktfOAUJ2EcSIOkAAAAASUVORK5CYII="></div><div id="next"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAArlBMVEUAAAAAAAAAAAAAAAAuh9IAAAAAAAAbarIAAAAWZrEAAAAAAAA+nOc1kdwaa7Y8muU4leAyjtkOXKgGUp4LWKQQX6oid8InfsocbrknfslAnukthtECOnMFPnYCMmMuh9IXZ7IthtFCred3w/SX5P9msu47p+Z6xvWJ1ftotO8dvf9er+xVp+BEltNBk9A+quWS3v2P2/xyvvSCzvlWyfo2xf8Oq/VxvfIruPdJm9jCm9cMAAAAInRSTlMADwcO1DMCARrWFSpaWlzV1dVc1tbW1tXWW5laqVx01ZuZpXRnmQAAAI9JREFUGNN1zscWgjAURVFa6NKbXSMkdOzl/3/MkDgwujijt/bkXWEqbWH/gOvaPHi5N+PEL3OfyV6hbS/nXFmOkOIDCeNHVR3TOYGk7fq+e7VNURSnhEAG0TBACBFqyswhsDNYz/vVcOhDVlzf4uB7R1RHATcsDNefUxV1CwCw2gBLl9URJNHUaaYsacJfbzuuC9BZF0LQAAAAAElFTkSuQmCC"></div></div></header><ol id="reports"><li id="state1"><header><div class="error">ob_refcnt of '*module' is 1 too high</div><div class="report-count"><h3>Report</h3>1</div></header><div class="body"><div class="source"><table data-first-line="2981"><tr><td class="code"><span class="n">DL_EXPORT</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="n">init_mysql</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">{</span>
+</td></tr><tr><td class="code">	<span class="n">PyObject</span> <span class="o">*</span><span class="n">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">emod</span><span class="p">,</span> <span class="o">*</span><span class="n">edict</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span> <span class="o">=</span> <span class="n">mysql_init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span><span class="o">-&gt;</span><span class="n">charset</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_charset_utf8mb4_unicode_ci</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysqlmodule</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span> <span class="n">module</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">module</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/allocation.html#Py_InitModule4">Py_InitModule4</a></span><span class="p">(</span><span class="s">"_mysql"</span><span class="p">,</span> <span class="n">_mysql_methods</span><span class="p">,</span> <span class="n">_mysql___doc__</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">PYTHON_API_VERSION</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#if PY_VERSION_HEX &gt;= 0x02020000</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#ifndef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">dict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">module</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"version_info"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n"><a href="http://docs.python.org/c-api/veryhigh.html#PyRun_String">PyRun_String</a></span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">version_info</span><span class="p">),</span> <span class="n">Py_eval_input</span><span class="p">,</span>
+</td></tr><tr><td class="code">				       <span class="n">dict</span><span class="p">,</span> <span class="n">dict</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"__version__"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n">PyUnicode_FromString</span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">__version__</span><span class="p">))))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"connection"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"result"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>	
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">emod</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/import.html#PyImport_ImportModule">PyImport_ImportModule</a></span><span class="p">(</span><span class="s">"_mysql_exceptions"</span><span class="p">)))</span> <span class="p">{</span>
+</td></tr><tr><td class="code">	    <span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Print">PyErr_Print</a></span><span class="p">();</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="p">}</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">edict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">emod</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_MySQLError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"MySQLError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Warning</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Warning"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Error</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Error"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InterfaceError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InterfaceError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DatabaseError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DatabaseError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DataError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DataError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_OperationalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"OperationalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_IntegrityError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"IntegrityError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InternalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InternalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_ProgrammingError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"ProgrammingError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NotSupportedError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"NotSupportedError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NULL</span> <span class="o">=</span> <span class="n">PyBytes_FromString</span><span class="p">(</span><span class="s">"NULL"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"NULL"</span><span class="p">,</span> <span class="n">_mysql_NULL</span><span class="p">))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">  <span class="nl">error:</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n">emod</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">emod</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Occurred">PyErr_Occurred</a></span><span class="p">())</span> <span class="p">{</span>
+</td></tr><tr><td class="code">		<span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_SetString">PyErr_SetString</a></span><span class="p">(</span><span class="n">PyExc_ImportError</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="s">"_mysql: init failed"</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">module</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="n">module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</td></tr><tr><td class="code">    <span class="p">}</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">}</span>
+</td></tr></table></div><ol class="states"><li data-line="2988"><p>when treating unknown struct MYSQL * from _mysql.c:2987 as non-NULL</p></li><li data-line="2994"><p>when Py_InitModule4TraceRefs_64() succeeds</p><p class="note">new ref from (unknown) Py_InitModule4TraceRefs_64 allocated at: 	module = Py_InitModule4("_mysql", _mysql_methods, _mysql___doc__,</p></li><li data-line="2996"><p>taking False path</p></li><li data-line="3016"><p>taking False path</p></li><li data-line="3017"><p>when PyRun_StringFlags() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3021"><p>when PyUnicodeUCS4_FromString() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3024"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3028"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3032"><p>when PyImport_ImportModule() succeeds</p><p>taking False path</p></li><li data-line="3036"><p>taking False path</p></li><li data-line="3038"><p>when _mysql_NewException() succeeds</p></li><li data-line="3037"><p>taking False path</p></li><li data-line="3041"><p>when _mysql_NewException() succeeds</p></li><li data-line="3040"><p>taking False path</p></li><li data-line="3044"><p>when _mysql_NewException() succeeds</p></li><li data-line="3043"><p>taking False path</p></li><li data-line="3047"><p>when _mysql_NewException() succeeds</p></li><li data-line="3046"><p>taking False path</p></li><li data-line="3050"><p>when _mysql_NewException() succeeds</p></li><li data-line="3049"><p>taking False path</p></li><li data-line="3053"><p>when _mysql_NewException() succeeds</p></li><li data-line="3052"><p>taking False path</p></li><li data-line="3056"><p>when _mysql_NewException() succeeds</p></li><li data-line="3055"><p>taking False path</p></li><li data-line="3059"><p>when _mysql_NewException() succeeds</p></li><li data-line="3058"><p>taking False path</p></li><li data-line="3062"><p>when _mysql_NewException() succeeds</p></li><li data-line="3061"><p>taking False path</p></li><li data-line="3065"><p>when _mysql_NewException() succeeds</p></li><li data-line="3064"><p>taking False path</p></li><li data-line="3068"><p>when _mysql_NewException() succeeds</p></li><li data-line="3067"><p>taking False path</p></li><li data-line="3070"><p>when PyString_FromString() succeeds</p><p>taking False path</p></li><li data-line="3072"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3074"><p>taking True path</p><p>when taking True path</p><p>taking False path</p></li><li data-line="3075"><p>PyErr_Occurred()</p><p>taking False path</p></li><li data-line="2996"><p>returning</p><p class="note">was expecting final ob_refcnt to be N + 0 (for some unknown N)</p><p class="note">but final ob_refcnt is N + 1</p><p class="note">found 1 similar trace(s) to this</p></li></ol></div></li><li id="state2"><header><div class="error">ob_refcnt of '*_mysql_ConnectionObject_Type.355' is 1 too high</div><div class="report-count"><h3>Report</h3>2</div></header><div class="body"><div class="source"><table data-first-line="2981"><tr><td class="code"><span class="n">DL_EXPORT</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="n">init_mysql</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">{</span>
+</td></tr><tr><td class="code">	<span class="n">PyObject</span> <span class="o">*</span><span class="n">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">emod</span><span class="p">,</span> <span class="o">*</span><span class="n">edict</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span> <span class="o">=</span> <span class="n">mysql_init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span><span class="o">-&gt;</span><span class="n">charset</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_charset_utf8mb4_unicode_ci</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysqlmodule</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span> <span class="n">module</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">module</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/allocation.html#Py_InitModule4">Py_InitModule4</a></span><span class="p">(</span><span class="s">"_mysql"</span><span class="p">,</span> <span class="n">_mysql_methods</span><span class="p">,</span> <span class="n">_mysql___doc__</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">PYTHON_API_VERSION</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#if PY_VERSION_HEX &gt;= 0x02020000</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#ifndef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">dict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">module</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"version_info"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n"><a href="http://docs.python.org/c-api/veryhigh.html#PyRun_String">PyRun_String</a></span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">version_info</span><span class="p">),</span> <span class="n">Py_eval_input</span><span class="p">,</span>
+</td></tr><tr><td class="code">				       <span class="n">dict</span><span class="p">,</span> <span class="n">dict</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"__version__"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n">PyUnicode_FromString</span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">__version__</span><span class="p">))))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"connection"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"result"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>	
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">emod</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/import.html#PyImport_ImportModule">PyImport_ImportModule</a></span><span class="p">(</span><span class="s">"_mysql_exceptions"</span><span class="p">)))</span> <span class="p">{</span>
+</td></tr><tr><td class="code">	    <span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Print">PyErr_Print</a></span><span class="p">();</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="p">}</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">edict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">emod</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_MySQLError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"MySQLError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Warning</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Warning"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Error</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Error"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InterfaceError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InterfaceError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DatabaseError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DatabaseError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DataError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DataError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_OperationalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"OperationalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_IntegrityError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"IntegrityError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InternalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InternalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_ProgrammingError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"ProgrammingError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NotSupportedError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"NotSupportedError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NULL</span> <span class="o">=</span> <span class="n">PyBytes_FromString</span><span class="p">(</span><span class="s">"NULL"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"NULL"</span><span class="p">,</span> <span class="n">_mysql_NULL</span><span class="p">))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">  <span class="nl">error:</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n">emod</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">emod</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Occurred">PyErr_Occurred</a></span><span class="p">())</span> <span class="p">{</span>
+</td></tr><tr><td class="code">		<span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_SetString">PyErr_SetString</a></span><span class="p">(</span><span class="n">PyExc_ImportError</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="s">"_mysql: init failed"</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">module</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="n">module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</td></tr><tr><td class="code">    <span class="p">}</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">}</span>
+</td></tr></table></div><ol class="states"><li data-line="2988"><p>when treating unknown struct MYSQL * from _mysql.c:2987 as non-NULL</p></li><li data-line="2994"><p>when Py_InitModule4TraceRefs_64() succeeds</p></li><li data-line="2996"><p>taking False path</p></li><li data-line="3016"><p>taking False path</p></li><li data-line="3017"><p>when PyRun_StringFlags() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3021"><p>when PyUnicodeUCS4_FromString() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3024"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3028"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3032"><p>when PyImport_ImportModule() succeeds</p><p>taking False path</p></li><li data-line="3036"><p>taking False path</p></li><li data-line="3038"><p>when _mysql_NewException() succeeds</p></li><li data-line="3037"><p>taking False path</p></li><li data-line="3041"><p>when _mysql_NewException() succeeds</p></li><li data-line="3040"><p>taking False path</p></li><li data-line="3044"><p>when _mysql_NewException() succeeds</p></li><li data-line="3043"><p>taking False path</p></li><li data-line="3047"><p>when _mysql_NewException() succeeds</p></li><li data-line="3046"><p>taking False path</p></li><li data-line="3050"><p>when _mysql_NewException() succeeds</p></li><li data-line="3049"><p>taking False path</p></li><li data-line="3053"><p>when _mysql_NewException() succeeds</p></li><li data-line="3052"><p>taking False path</p></li><li data-line="3056"><p>when _mysql_NewException() succeeds</p></li><li data-line="3055"><p>taking False path</p></li><li data-line="3059"><p>when _mysql_NewException() succeeds</p></li><li data-line="3058"><p>taking False path</p></li><li data-line="3062"><p>when _mysql_NewException() succeeds</p></li><li data-line="3061"><p>taking False path</p></li><li data-line="3065"><p>when _mysql_NewException() succeeds</p></li><li data-line="3064"><p>taking False path</p></li><li data-line="3068"><p>when _mysql_NewException() succeeds</p></li><li data-line="3067"><p>taking False path</p></li><li data-line="3070"><p>when PyString_FromString() succeeds</p><p>taking False path</p></li><li data-line="3072"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3074"><p>taking True path</p><p>when taking True path</p><p>taking False path</p></li><li data-line="3075"><p>PyErr_Occurred()</p><p>taking False path</p></li><li data-line="2996"><p>returning</p><p class="note">was expecting final ob_refcnt to be N + 0 (for some unknown N)</p><p class="note">but final ob_refcnt is N + 1</p><p class="note">found 9 similar trace(s) to this</p></li></ol></div></li><li id="state3"><header><div class="error">ob_refcnt of '*_mysql_ResultObject_Type.358' is 1 too high</div><div class="report-count"><h3>Report</h3>3</div></header><div class="body"><div class="source"><table data-first-line="2981"><tr><td class="code"><span class="n">DL_EXPORT</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="n">init_mysql</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">{</span>
+</td></tr><tr><td class="code">	<span class="n">PyObject</span> <span class="o">*</span><span class="n">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">emod</span><span class="p">,</span> <span class="o">*</span><span class="n">edict</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span> <span class="o">=</span> <span class="n">mysql_init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span><span class="o">-&gt;</span><span class="n">charset</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_charset_utf8mb4_unicode_ci</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysqlmodule</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span> <span class="n">module</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">module</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/allocation.html#Py_InitModule4">Py_InitModule4</a></span><span class="p">(</span><span class="s">"_mysql"</span><span class="p">,</span> <span class="n">_mysql_methods</span><span class="p">,</span> <span class="n">_mysql___doc__</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">PYTHON_API_VERSION</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#if PY_VERSION_HEX &gt;= 0x02020000</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#ifndef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">dict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">module</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"version_info"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n"><a href="http://docs.python.org/c-api/veryhigh.html#PyRun_String">PyRun_String</a></span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">version_info</span><span class="p">),</span> <span class="n">Py_eval_input</span><span class="p">,</span>
+</td></tr><tr><td class="code">				       <span class="n">dict</span><span class="p">,</span> <span class="n">dict</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"__version__"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n">PyUnicode_FromString</span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">__version__</span><span class="p">))))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"connection"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"result"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>	
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">emod</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/import.html#PyImport_ImportModule">PyImport_ImportModule</a></span><span class="p">(</span><span class="s">"_mysql_exceptions"</span><span class="p">)))</span> <span class="p">{</span>
+</td></tr><tr><td class="code">	    <span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Print">PyErr_Print</a></span><span class="p">();</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="p">}</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">edict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">emod</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_MySQLError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"MySQLError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Warning</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Warning"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Error</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Error"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InterfaceError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InterfaceError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DatabaseError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DatabaseError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DataError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DataError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_OperationalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"OperationalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_IntegrityError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"IntegrityError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InternalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InternalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_ProgrammingError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"ProgrammingError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NotSupportedError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"NotSupportedError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NULL</span> <span class="o">=</span> <span class="n">PyBytes_FromString</span><span class="p">(</span><span class="s">"NULL"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"NULL"</span><span class="p">,</span> <span class="n">_mysql_NULL</span><span class="p">))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">  <span class="nl">error:</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n">emod</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">emod</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Occurred">PyErr_Occurred</a></span><span class="p">())</span> <span class="p">{</span>
+</td></tr><tr><td class="code">		<span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_SetString">PyErr_SetString</a></span><span class="p">(</span><span class="n">PyExc_ImportError</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="s">"_mysql: init failed"</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">module</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="n">module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</td></tr><tr><td class="code">    <span class="p">}</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">}</span>
+</td></tr></table></div><ol class="states"><li data-line="2988"><p>when treating unknown struct MYSQL * from _mysql.c:2987 as non-NULL</p></li><li data-line="2994"><p>when Py_InitModule4TraceRefs_64() succeeds</p></li><li data-line="2996"><p>taking False path</p></li><li data-line="3016"><p>taking False path</p></li><li data-line="3017"><p>when PyRun_StringFlags() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3021"><p>when PyUnicodeUCS4_FromString() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3024"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3028"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3032"><p>when PyImport_ImportModule() succeeds</p><p>taking False path</p></li><li data-line="3036"><p>taking False path</p></li><li data-line="3038"><p>when _mysql_NewException() succeeds</p></li><li data-line="3037"><p>taking False path</p></li><li data-line="3041"><p>when _mysql_NewException() succeeds</p></li><li data-line="3040"><p>taking False path</p></li><li data-line="3044"><p>when _mysql_NewException() succeeds</p></li><li data-line="3043"><p>taking False path</p></li><li data-line="3047"><p>when _mysql_NewException() succeeds</p></li><li data-line="3046"><p>taking False path</p></li><li data-line="3050"><p>when _mysql_NewException() succeeds</p></li><li data-line="3049"><p>taking False path</p></li><li data-line="3053"><p>when _mysql_NewException() succeeds</p></li><li data-line="3052"><p>taking False path</p></li><li data-line="3056"><p>when _mysql_NewException() succeeds</p></li><li data-line="3055"><p>taking False path</p></li><li data-line="3059"><p>when _mysql_NewException() succeeds</p></li><li data-line="3058"><p>taking False path</p></li><li data-line="3062"><p>when _mysql_NewException() succeeds</p></li><li data-line="3061"><p>taking False path</p></li><li data-line="3065"><p>when _mysql_NewException() succeeds</p></li><li data-line="3064"><p>taking False path</p></li><li data-line="3068"><p>when _mysql_NewException() succeeds</p></li><li data-line="3067"><p>taking False path</p></li><li data-line="3070"><p>when PyString_FromString() succeeds</p><p>taking False path</p></li><li data-line="3072"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3074"><p>taking True path</p><p>when taking True path</p><p>taking False path</p></li><li data-line="3075"><p>PyErr_Occurred()</p><p>taking False path</p></li><li data-line="2996"><p>returning</p><p class="note">was expecting final ob_refcnt to be N + 0 (for some unknown N)</p><p class="note">but final ob_refcnt is N + 1</p><p class="note">found 9 similar trace(s) to this</p></li></ol></div></li><li id="state4"><header><div class="error">ob_refcnt of new ref from (unknown) PyRun_StringFlags is 1 too high</div><div class="report-count"><h3>Report</h3>4</div></header><div class="body"><div class="source"><table data-first-line="2981"><tr><td class="code"><span class="n">DL_EXPORT</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="n">init_mysql</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">{</span>
+</td></tr><tr><td class="code">	<span class="n">PyObject</span> <span class="o">*</span><span class="n">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">emod</span><span class="p">,</span> <span class="o">*</span><span class="n">edict</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span> <span class="o">=</span> <span class="n">mysql_init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span><span class="o">-&gt;</span><span class="n">charset</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_charset_utf8mb4_unicode_ci</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysqlmodule</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span> <span class="n">module</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">module</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/allocation.html#Py_InitModule4">Py_InitModule4</a></span><span class="p">(</span><span class="s">"_mysql"</span><span class="p">,</span> <span class="n">_mysql_methods</span><span class="p">,</span> <span class="n">_mysql___doc__</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">PYTHON_API_VERSION</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#if PY_VERSION_HEX &gt;= 0x02020000</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#ifndef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">dict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">module</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"version_info"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n"><a href="http://docs.python.org/c-api/veryhigh.html#PyRun_String">PyRun_String</a></span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">version_info</span><span class="p">),</span> <span class="n">Py_eval_input</span><span class="p">,</span>
+</td></tr><tr><td class="code">				       <span class="n">dict</span><span class="p">,</span> <span class="n">dict</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"__version__"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n">PyUnicode_FromString</span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">__version__</span><span class="p">))))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"connection"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"result"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>	
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">emod</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/import.html#PyImport_ImportModule">PyImport_ImportModule</a></span><span class="p">(</span><span class="s">"_mysql_exceptions"</span><span class="p">)))</span> <span class="p">{</span>
+</td></tr><tr><td class="code">	    <span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Print">PyErr_Print</a></span><span class="p">();</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="p">}</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">edict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">emod</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_MySQLError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"MySQLError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Warning</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Warning"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Error</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Error"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InterfaceError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InterfaceError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DatabaseError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DatabaseError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DataError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DataError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_OperationalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"OperationalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_IntegrityError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"IntegrityError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InternalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InternalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_ProgrammingError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"ProgrammingError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NotSupportedError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"NotSupportedError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NULL</span> <span class="o">=</span> <span class="n">PyBytes_FromString</span><span class="p">(</span><span class="s">"NULL"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"NULL"</span><span class="p">,</span> <span class="n">_mysql_NULL</span><span class="p">))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">  <span class="nl">error:</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n">emod</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">emod</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Occurred">PyErr_Occurred</a></span><span class="p">())</span> <span class="p">{</span>
+</td></tr><tr><td class="code">		<span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_SetString">PyErr_SetString</a></span><span class="p">(</span><span class="n">PyExc_ImportError</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="s">"_mysql: init failed"</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">module</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="n">module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</td></tr><tr><td class="code">    <span class="p">}</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">}</span>
+</td></tr></table></div><ol class="states"><li data-line="2988"><p>when treating unknown struct MYSQL * from _mysql.c:2987 as non-NULL</p></li><li data-line="2994"><p>when Py_InitModule4TraceRefs_64() succeeds</p></li><li data-line="2996"><p>taking False path</p></li><li data-line="3016"><p>taking False path</p></li><li data-line="3017"><p>when PyRun_StringFlags() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3021"><p>when PyUnicodeUCS4_FromString() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3024"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3028"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3032"><p>when PyImport_ImportModule() succeeds</p><p>taking False path</p></li><li data-line="3036"><p>taking False path</p></li><li data-line="3038"><p>when _mysql_NewException() succeeds</p></li><li data-line="3037"><p>taking False path</p></li><li data-line="3041"><p>when _mysql_NewException() succeeds</p></li><li data-line="3040"><p>taking False path</p></li><li data-line="3044"><p>when _mysql_NewException() succeeds</p></li><li data-line="3043"><p>taking False path</p></li><li data-line="3047"><p>when _mysql_NewException() succeeds</p></li><li data-line="3046"><p>taking False path</p></li><li data-line="3050"><p>when _mysql_NewException() succeeds</p></li><li data-line="3049"><p>taking False path</p></li><li data-line="3053"><p>when _mysql_NewException() succeeds</p></li><li data-line="3052"><p>taking False path</p></li><li data-line="3056"><p>when _mysql_NewException() succeeds</p></li><li data-line="3055"><p>taking False path</p></li><li data-line="3059"><p>when _mysql_NewException() succeeds</p></li><li data-line="3058"><p>taking False path</p></li><li data-line="3062"><p>when _mysql_NewException() succeeds</p></li><li data-line="3061"><p>taking False path</p></li><li data-line="3065"><p>when _mysql_NewException() succeeds</p></li><li data-line="3064"><p>taking False path</p></li><li data-line="3068"><p>when _mysql_NewException() succeeds</p></li><li data-line="3067"><p>taking False path</p></li><li data-line="3070"><p>when PyString_FromString() succeeds</p><p>taking False path</p></li><li data-line="3072"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3074"><p>taking True path</p><p>when taking True path</p><p>taking False path</p></li><li data-line="3075"><p>PyErr_Occurred()</p><p>taking False path</p></li><li data-line="2996"><p>returning</p><p class="note">was expecting final ob_refcnt to be N + 0 (for some unknown N)</p><p class="note">but final ob_refcnt is N + 1</p><p class="note">found 9 similar trace(s) to this</p></li><li data-line="3017"><p class="note">new ref from (unknown) PyRun_StringFlags allocated at: 	if (PyDict_SetItemString(dict, "version_info",</p></li></ol></div></li><li id="state5"><header><div class="error">ob_refcnt of new ref from (unknown) PyUnicodeUCS4_FromString is 1 too high</div><div class="report-count"><h3>Report</h3>5</div></header><div class="body"><div class="source"><table data-first-line="2981"><tr><td class="code"><span class="n">DL_EXPORT</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="n">init_mysql</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">{</span>
+</td></tr><tr><td class="code">	<span class="n">PyObject</span> <span class="o">*</span><span class="n">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">emod</span><span class="p">,</span> <span class="o">*</span><span class="n">edict</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span> <span class="o">=</span> <span class="n">mysql_init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</td></tr><tr><td class="code">    <span class="n">utf8conn</span><span class="o">-&gt;</span><span class="n">charset</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_charset_utf8mb4_unicode_ci</span><span class="p">;</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysqlmodule</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span> <span class="n">module</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">module</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/allocation.html#Py_InitModule4">Py_InitModule4</a></span><span class="p">(</span><span class="s">"_mysql"</span><span class="p">,</span> <span class="n">_mysql_methods</span><span class="p">,</span> <span class="n">_mysql___doc__</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">PYTHON_API_VERSION</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span> <span class="cm">/* this really should never happen */</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">Py_TYPE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">)</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#else</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">ob_type</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#if PY_VERSION_HEX &gt;= 0x02020000</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_alloc</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericAlloc">PyType_GenericAlloc</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_new</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/type.html#PyType_GenericNew">PyType_GenericNew</a></span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#ifndef IS_PY3K</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ConnectionObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n">_mysql_ResultObject_Type</span><span class="p">.</span><span class="n">tp_free</span> <span class="o">=</span> <span class="n">_PyObject_GC_Del</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code">
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">dict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">module</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"version_info"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n"><a href="http://docs.python.org/c-api/veryhigh.html#PyRun_String">PyRun_String</a></span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">version_info</span><span class="p">),</span> <span class="n">Py_eval_input</span><span class="p">,</span>
+</td></tr><tr><td class="code">				       <span class="n">dict</span><span class="p">,</span> <span class="n">dict</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"__version__"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="n">PyUnicode_FromString</span><span class="p">(</span><span class="n">QUOTE</span><span class="p">(</span><span class="n">__version__</span><span class="p">))))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"connection"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ConnectionObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"result"</span><span class="p">,</span>
+</td></tr><tr><td class="code">			       <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>	
+</td></tr><tr><td class="code">	<span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_INCREF">Py_INCREF</a></span><span class="p">(</span><span class="o">&amp;</span><span class="n">_mysql_ResultObject_Type</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">emod</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/import.html#PyImport_ImportModule">PyImport_ImportModule</a></span><span class="p">(</span><span class="s">"_mysql_exceptions"</span><span class="p">)))</span> <span class="p">{</span>
+</td></tr><tr><td class="code">	    <span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Print">PyErr_Print</a></span><span class="p">();</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="p">}</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">edict</span> <span class="o">=</span> <span class="n"><a href="http://docs.python.org/c-api/module.html#PyModule_GetDict">PyModule_GetDict</a></span><span class="p">(</span><span class="n">emod</span><span class="p">)))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_MySQLError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"MySQLError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Warning</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Warning"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_Error</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"Error"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InterfaceError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InterfaceError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DatabaseError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DatabaseError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_DataError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"DataError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_OperationalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"OperationalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_IntegrityError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"IntegrityError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_InternalError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"InternalError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_ProgrammingError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"ProgrammingError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NotSupportedError</span> <span class="o">=</span>
+</td></tr><tr><td class="code">	      <span class="n">_mysql_NewException</span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="n">edict</span><span class="p">,</span> <span class="s">"NotSupportedError"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">_mysql_NULL</span> <span class="o">=</span> <span class="n">PyBytes_FromString</span><span class="p">(</span><span class="s">"NULL"</span><span class="p">)))</span>
+</td></tr><tr><td class="code">		<span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/dict.html#PyDict_SetItemString">PyDict_SetItemString</a></span><span class="p">(</span><span class="n">dict</span><span class="p">,</span> <span class="s">"NULL"</span><span class="p">,</span> <span class="n">_mysql_NULL</span><span class="p">))</span> <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</td></tr><tr><td class="code">  <span class="nl">error:</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n">emod</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">emod</span><span class="p">);</span>
+</td></tr><tr><td class="code">	<span class="k">if</span> <span class="p">(</span><span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_Occurred">PyErr_Occurred</a></span><span class="p">())</span> <span class="p">{</span>
+</td></tr><tr><td class="code">		<span class="n"><a href="http://docs.python.org/c-api/exceptions.html#PyErr_SetString">PyErr_SetString</a></span><span class="p">(</span><span class="n">PyExc_ImportError</span><span class="p">,</span>
+</td></tr><tr><td class="code">				<span class="s">"_mysql: init failed"</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="n"><a href="http://docs.python.org/c-api/refcounting.html#Py_DECREF">Py_DECREF</a></span><span class="p">(</span><span class="n">module</span><span class="p">);</span>
+</td></tr><tr><td class="code">		<span class="n">module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</td></tr><tr><td class="code">    <span class="p">}</span>
+</td></tr><tr><td class="code"><span class="cp">#ifdef IS_PY3K</span>
+</td></tr><tr><td class="code">    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+</td></tr><tr><td class="code"><span class="cp">#endif</span>
+</td></tr><tr><td class="code"><span class="p">}</span>
+</td></tr></table></div><ol class="states"><li data-line="2988"><p>when treating unknown struct MYSQL * from _mysql.c:2987 as non-NULL</p></li><li data-line="2994"><p>when Py_InitModule4TraceRefs_64() succeeds</p></li><li data-line="2996"><p>taking False path</p></li><li data-line="3016"><p>taking False path</p></li><li data-line="3017"><p>when PyRun_StringFlags() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3021"><p>when PyUnicodeUCS4_FromString() succeeds</p><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3024"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3028"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3032"><p>when PyImport_ImportModule() succeeds</p><p>taking False path</p></li><li data-line="3036"><p>taking False path</p></li><li data-line="3038"><p>when _mysql_NewException() succeeds</p></li><li data-line="3037"><p>taking False path</p></li><li data-line="3041"><p>when _mysql_NewException() succeeds</p></li><li data-line="3040"><p>taking False path</p></li><li data-line="3044"><p>when _mysql_NewException() succeeds</p></li><li data-line="3043"><p>taking False path</p></li><li data-line="3047"><p>when _mysql_NewException() succeeds</p></li><li data-line="3046"><p>taking False path</p></li><li data-line="3050"><p>when _mysql_NewException() succeeds</p></li><li data-line="3049"><p>taking False path</p></li><li data-line="3053"><p>when _mysql_NewException() succeeds</p></li><li data-line="3052"><p>taking False path</p></li><li data-line="3056"><p>when _mysql_NewException() succeeds</p></li><li data-line="3055"><p>taking False path</p></li><li data-line="3059"><p>when _mysql_NewException() succeeds</p></li><li data-line="3058"><p>taking False path</p></li><li data-line="3062"><p>when _mysql_NewException() succeeds</p></li><li data-line="3061"><p>taking False path</p></li><li data-line="3065"><p>when _mysql_NewException() succeeds</p></li><li data-line="3064"><p>taking False path</p></li><li data-line="3068"><p>when _mysql_NewException() succeeds</p></li><li data-line="3067"><p>taking False path</p></li><li data-line="3070"><p>when PyString_FromString() succeeds</p><p>taking False path</p></li><li data-line="3072"><p>when PyDict_SetItemString() succeeds</p><p>taking False path</p></li><li data-line="3074"><p>taking True path</p><p>when taking True path</p><p>taking False path</p></li><li data-line="3075"><p>PyErr_Occurred()</p><p>taking False path</p></li><li data-line="2996"><p>returning</p><p class="note">was expecting final ob_refcnt to be N + 0 (for some unknown N)</p><p class="note">but final ob_refcnt is N + 1</p><p class="note">found 9 similar trace(s) to this</p></li><li data-line="3021"><p class="note">new ref from (unknown) PyUnicodeUCS4_FromString allocated at: 	if (PyDict_SetItemString(dict, "__version__",</p></li></ol></div></li></ol><footer><script src="http://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.js" type="text/javascript"></script><script type="text/javascript">
+/*  Copyright 2012 Buck Golemon <buck@yelp.com>
+ 
+    This is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see
+    <http://www.gnu.org/licenses/>.
+*/
+$(function() {
+    "use strict";
+
+    var $reports = $('#reports > li');
+    $reports.each(function() {
+        var $report = $(this);
+
+        // Add line numbers to the source code, and create a mapping of line
+        // numbers to table rows
+        var $source = $report.find('.source table');
+        var first_line = parseInt($source.data('first-line'), 10);
+        var $lines = $source.find('tr');
+        var $line_index = {};
+        $lines.each(function(idx) {
+            var $line = $(this);
+            var lineno = first_line + idx;
+            $line.prepend($('<td>', { 'class': 'lineno' }).append(lineno));
+
+            $line_index[lineno] = $line;
+        });
+
+        // Figure out the state flow based on the state list: this is a list of
+        // lists of line numbers that strictly increase.  If the flow moves
+        // backwards, that starts a new subflow
+        var $states = $report.find('.states li');
+        var source_flow = [];
+        var last_line = null;
+        $states.each(function() {
+            var $state = $(this);
+            var lineno = parseInt($state.data('line'), 10);
+            var $assoc_line = $line_index[lineno];
+            $state.data('line-element', $assoc_line);
+            $state.prepend($('<h2>').text(String(lineno)));
+
+            var flow;
+            if (! last_line || last_line >= lineno) {
+                // Mark commentary that starts a new subflow (but not the
+                // first)
+                if (source_flow.length) {
+                    $state.addClass('new-subflow');
+                }
+
+                flow = [];
+                source_flow.push(flow);
+            }
+            else {
+                flow = source_flow[source_flow.length - 1];
+            }
+            flow.push({ 'lineno': lineno, '$state': $state });
+
+            last_line = lineno;
+        });
+
+        // Add the flows to the source code table.  Each subflow becomes its
+        // own column.  A line actually executed within this subflow gets a
+        // td.flow-line; otherwise it gets td.flow-empty.  If there's
+        // commentary for a particular line, the cell gets a .flow-dot child as
+        // well.
+        var started = [];
+        $.each($line_index, function(lineno, $row) {
+            var $paths = $();
+            var $selectables = $();
+            $.each(source_flow, function(idx, flow) {
+                // Lines mentioned in the flow get dots...
+                if (flow.length && flow[0].lineno == lineno) {
+                    var $new_cell = $('<td>', { "class": "flow-line" });
+                    $new_cell.append($('<span>', { "class": "flow-dot" }).html('&#x200b;'));
+                    $paths = $paths.add($new_cell);
+                    $selectables = $selectables.add($new_cell).add(flow[0].$state);
+                    started[idx] = true;
+
+                    // When hovering either the dotted cell or the associated
+                    // state commentary, highlight the dot and the comment and
+                    // the row itself
+                    var $group = $row.add(flow[0].$state).add($new_cell);
+                    $new_cell.add(flow[0].$state).on({
+                        mouseenter: function() { $group.addClass('selected'); },
+                        mouseleave: function() { $group.removeClass('selected'); }
+                    });
+
+                    flow.shift();
+                }
+                // Lines between the start and end of a subflow, or before the
+                // start of the first subflow, or after the end of the last
+                // subflow, get undotted lines
+                else if (
+                    (idx == 0 && flow.length) ||
+                    (idx == source_flow.length - 1 && ! flow.length) ||
+                    (started[idx] && flow.length)
+                ) {
+                    $paths = $paths.add($('<td>', { "class": "flow-line" }).html('&#x200b;'));
+                }
+                // Anywhere else gets nothing
+                else {
+                    $paths = $paths.add($('<td>', { "class": "flow-empty" }).html('&#x200b;'));
+                }
+            });
+            $row.prepend($paths);
+
+            // When hovering the row, highlight *all* commentary associated
+            // with that line
+            if ($selectables.length) {
+                $selectables = $selectables.add($row);
+                $row.find('td:last-child').on({
+                    mouseenter: function() { $selectables.addClass('selected') },
+                    mouseleave: function() { $selectables.removeClass('selected') }
+                });
+            }
+        });
+    });
+});
+</script></footer></body></html>

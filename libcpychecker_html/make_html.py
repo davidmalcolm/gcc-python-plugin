@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 from os.path import realpath, dirname, join
 HERE = dirname(realpath(__file__))
 
-from . import capi
+import capi
 
 from lxml.html import (
     tostring, fragment_fromstring as parse, builder as E
