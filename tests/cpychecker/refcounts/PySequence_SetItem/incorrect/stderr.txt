@@ -1,7 +1,7 @@
 In function 'handle_SetItem':
-tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:51:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:50:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:34:nn: note: '*item' was allocated at:     item = PyLong_FromLong(42);
-tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:51:nn: note: was expecting final owned ob_refcnt of '*item' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
+tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:50:nn: note: was expecting final owned ob_refcnt of '*item' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:29:nn: note: when PyList_New() succeeds at:     list = PyList_New(1);
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:30:nn: note: taking False path at:     if (!list) {
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:34:nn: note: reaching:     item = PyLong_FromLong(42);
@@ -12,5 +12,5 @@ tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:41:nn: note: rea
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:41:nn: note: PySequence_SetItem() succeeds at:     rv = PySequence_SetItem(list, 0, item);
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:42:nn: note: taking False path at:     if (rv != 0) {
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:50:nn: note: reaching:     return list;
-tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:51:nn: note: returning
+tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:50:nn: note: returning
 tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c:24:nn: note: graphical error report for function 'handle_SetItem' written out to 'tests/cpychecker/refcounts/PySequence_SetItem/incorrect/input.c.handle_SetItem-refcount-errors.html'

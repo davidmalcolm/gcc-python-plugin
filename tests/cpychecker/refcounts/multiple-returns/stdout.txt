@@ -1,0 +1,111 @@
+Trace 0:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when taking True path'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37)))
+    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37)) from tests/cpychecker/refcounts/multiple-returns/input.c:37
+    r->ob_refcnt: refs: 1 owned
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=32))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32
+    r->ob_refcnt: refs: 0 owned
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/multiple-returns/input.c:29
+
+Trace 1:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when taking False path'
+    'calling tp_dealloc on PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32'
+    'returning'
+  Return value:
+    repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37), region=RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37)))
+    str(): (struct PyObject *)&RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37)) from tests/cpychecker/refcounts/multiple-returns/input.c:37
+    r->ob_refcnt: refs: 1 owned
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=37), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=32))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32
+    r->ob_refcnt: None
+    r->ob_type: None
+  Exception:
+    (struct PyObject *)0 from tests/cpychecker/refcounts/multiple-returns/input.c:29
+
+Trace 2:
+  Transitions:
+    'when PyDict_New() succeeds'
+    'taking False path'
+    'when PyDict_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=38), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/multiple-returns/input.c:38
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32:
+    repr(): RegionOnHeap('PyDictObject', gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=32))
+    str(): PyDictObject allocated at tests/cpychecker/refcounts/multiple-returns/input.c:32
+    r->ob_refcnt: refs: 1 owned
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=32), region=RegionForGlobal(gcc.VarDecl('PyDict_Type')))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/multiple-returns/input.c:37
+
+Trace 3:
+  Transitions:
+    'when PyDict_New() fails'
+    'taking True path'
+    'returning'
+  Return value:
+    repr(): ConcreteValue(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=33), value=0)
+    str(): (struct PyObject *)0 from tests/cpychecker/refcounts/multiple-returns/input.c:33
+  region for gcc.ParmDecl('self') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('self')")
+    str(): region for gcc.ParmDecl('self') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
+  region for gcc.ParmDecl('args') on stack:
+    repr(): RegionOnStack("region for gcc.ParmDecl('args')")
+    str(): region for gcc.ParmDecl('args') on stack
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
+    r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/multiple-returns/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
+  Exception:
+    (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/multiple-returns/input.c:32

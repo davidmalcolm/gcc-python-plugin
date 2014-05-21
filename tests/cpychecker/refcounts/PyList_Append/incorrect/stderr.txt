@@ -1,7 +1,7 @@
 In function 'test':
-tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:53:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:36:nn: note: '*item' was allocated at:     item = PyLong_FromLong(42);
-tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:nn: note: was expecting final owned ob_refcnt of '*item' to be 1 due to object being referenced by: PyListObject.ob_item[0] but final ob_refcnt is refs: 2 owned
+tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:53:nn: note: was expecting final owned ob_refcnt of '*item' to be 1 due to object being referenced by: PyListObject.ob_item[0] but final ob_refcnt is refs: 2 owned
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:32:nn: note: when PyList_New() succeeds at:     list = PyList_New(0);
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:33:nn: note: taking False path at:     if (!list) {
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:36:nn: note: reaching:     item = PyLong_FromLong(42);
@@ -14,5 +14,5 @@ tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:42:nn: note: ob_refcn
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:42:nn: note: '*item' is now referenced by 1 non-stack value(s): PyListObject.ob_item[0]
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:42:nn: note: taking False path at:     if (-1 == PyList_Append(list, item)) {
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:53:nn: note: reaching:     return list;
-tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:54:nn: note: returning
+tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:53:nn: note: returning
 tests/cpychecker/refcounts/PyList_Append/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyList_Append/incorrect/input.c.test-refcount-errors.html'

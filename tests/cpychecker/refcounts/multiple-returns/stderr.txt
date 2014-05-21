@@ -1,0 +1,13 @@
+In function 'test':
+tests/cpychecker/refcounts/multiple-returns/input.c:38:nn: warning: memory leak: ob_refcnt of '*dictA' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/multiple-returns/input.c:32:nn: note: '*dictA' was allocated at:     dictA = PyDict_New();
+tests/cpychecker/refcounts/multiple-returns/input.c:38:nn: note: was expecting final owned ob_refcnt of '*dictA' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
+tests/cpychecker/refcounts/multiple-returns/input.c:32:nn: note: when PyDict_New() succeeds at:     dictA = PyDict_New();
+tests/cpychecker/refcounts/multiple-returns/input.c:32:nn: note: ob_refcnt is now refs: 1 owned
+tests/cpychecker/refcounts/multiple-returns/input.c:33:nn: note: taking False path at:     if (!dictA) return NULL;
+tests/cpychecker/refcounts/multiple-returns/input.c:37:nn: note: reaching:     dictB = PyDict_New();
+tests/cpychecker/refcounts/multiple-returns/input.c:37:nn: note: when PyDict_New() fails at:     dictB = PyDict_New();
+tests/cpychecker/refcounts/multiple-returns/input.c:38:nn: note: taking True path at:     if (!dictB) return NULL;
+tests/cpychecker/refcounts/multiple-returns/input.c:38:nn: note: reaching:     if (!dictB) return NULL;
+tests/cpychecker/refcounts/multiple-returns/input.c:38:nn: note: returning
+tests/cpychecker/refcounts/multiple-returns/input.c:29:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/multiple-returns/input.c.test-refcount-errors.html'

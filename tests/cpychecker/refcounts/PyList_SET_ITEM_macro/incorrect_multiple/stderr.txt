@@ -1,7 +1,7 @@
 In function 'handle_SET_ITEM_macro':
-tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:76:nn: warning: memory leak: ob_refcnt of PyLongObject is 1 too high [enabled by default]
+cc1: warning: memory leak: ob_refcnt of PyLongObject is 1 too high [enabled by default]
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:50:nn: note: PyLongObject was allocated at:     items[2] = PyLong_FromLong(3000);
-tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:76:nn: note: was expecting final owned ob_refcnt of PyLongObject to be 1 due to object being referenced by: ob_item array for PyListObject[2] but final ob_refcnt is refs: 2 owned
+cc1: note: was expecting final owned ob_refcnt of PyLongObject to be 1 due to object being referenced by: ob_item array for PyListObject[2] but final ob_refcnt is refs: 2 owned
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:33:nn: note: when PyList_New() succeeds at:     list = PyList_New(3);
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:34:nn: note: taking False path at:     if (!list) {
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:39:nn: note: reaching:     items[0] = PyLong_FromLong(1000);
@@ -17,5 +17,5 @@ tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:51:n
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:64:nn: note: reaching:     PyList_SET_ITEM(list, 0, items[0]);
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:66:nn: note: PyLongObject is now referenced by 1 non-stack value(s): ob_item array for PyListObject[2]
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:71:nn: note: ob_refcnt is now refs: 2 owned
-tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:76:nn: note: returning
+cc1: note: returning
 tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c:24:nn: note: graphical error report for function 'handle_SET_ITEM_macro' written out to 'tests/cpychecker/refcounts/PyList_SET_ITEM_macro/incorrect_multiple/input.c.handle_SET_ITEM_macro-refcount-errors.html'

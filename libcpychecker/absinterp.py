@@ -1122,15 +1122,6 @@ def describe_stmt(stmt):
     else:
         return str(stmt.loc)
 
-def next_stmt_node(stmtnode):
-    if len(stmtnode.succs) != 1:
-        raise ValueError('len(stmtnode.succs) == %i at %s'
-                         % (len(stmtnode.succs), stmtnode))
-    edge = list(stmtnode.succs)[0]
-    assert edge.srcnode == stmtnode
-    assert edge.dstnode != stmtnode
-    return edge.dstnode
-
 class Region(object):
     __slots__ = ('name', 'parent', 'children', 'fields', )
 
@@ -1336,7 +1327,8 @@ class State(object):
     # We can't use the __slots__ optimization here, as we're adding additional
     # per-facet attributes
 
-    def __init__(self, stmtgraph, stmtnode, facets, region_for_var=None, value_for_region=None,
+    def __init__(self, stmtgraph, stmtnode, lastgccloc,
+                 facets, region_for_var=None, value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
         check_isinstance(stmtgraph, StmtGraph)
         check_isinstance(stmtnode, StmtNode)
@@ -1344,6 +1336,7 @@ class State(object):
         self.stmtgraph = stmtgraph
         self.fun = stmtgraph.fun
         self.stmtnode = stmtnode
+        self.lastgccloc = lastgccloc
         self.facets = facets
 
         # Mapping from VarDecl.name to Region:
@@ -1418,6 +1411,7 @@ class State(object):
     def copy(self):
         s_new = State(self.stmtgraph,
                       self.stmtnode,
+                      self.lastgccloc,
                       self.facets,
                       self.region_for_var.copy(),
                       self.value_for_region.copy(),
@@ -1928,8 +1922,7 @@ class State(object):
         log('mktrans_assignment(%r, %r, %r)', lhs, rhs, desc)
         if desc:
             check_isinstance(desc, str)
-        new = self.copy()
-        new.stmtnode = next_stmt_node(self.stmtnode)
+        new = self.use_next_stmt_node()
         if lhs:
             new.assign(lhs, rhs, self.stmtnode.get_gcc_loc())
         return Transition(self, new, desc)
@@ -1937,9 +1930,21 @@ class State(object):
     def update_stmt_node(self, new_stmt_node):
         new = self.copy()
         new.stmtnode = new_stmt_node
+        if new.stmtnode.stmt and new.stmtnode.stmt.loc:
+            new.lastgccloc = new.stmtnode.stmt.loc
+        else:
+            new.lastgccloc = self.lastgccloc
         return new
 
     def use_next_stmt_node(self):
+        def next_stmt_node(stmtnode):
+            if len(stmtnode.succs) != 1:
+                raise ValueError('len(stmtnode.succs) == %i at %s'
+                                 % (len(stmtnode.succs), stmtnode))
+            edge = list(stmtnode.succs)[0]
+            assert edge.srcnode == stmtnode
+            assert edge.dstnode != stmtnode
+            return edge.dstnode
         new_stmt_node = next_stmt_node(self.stmtnode)
         return self.update_stmt_node(new_stmt_node)
 
@@ -1959,7 +1964,8 @@ class State(object):
             # grrr... not all statements have a non-NULL location
             gccloc = self.stmtnode.get_stmt().loc
             if gccloc is None:
-                gccloc = fun.end
+                assert self.lastgccloc
+                return self.lastgccloc
             return gccloc
         else:
             return fun.end
@@ -2081,8 +2087,7 @@ class State(object):
         Clone this state (at a function call), updating the location, for
         functions with "void" return type
         """
-        newstate = self.copy()
-        newstate.stmtnode = next_stmt_node(self.stmtnode)
+        newstate = self.use_next_stmt_node()
         return newstate
 
     def mkstate_return_of(self, stmt, v_return):
@@ -2091,8 +2096,7 @@ class State(object):
         setting the result of the call to the given AbstractValue
         """
         check_isinstance(v_return, AbstractValue)
-        newstate = self.copy()
-        newstate.stmtnode = next_stmt_node(self.stmtnode)
+        newstate = self.use_next_stmt_node()
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             v_return,
@@ -2105,8 +2109,7 @@ class State(object):
         setting the result of the call to the given concrete value
         """
         check_isinstance(value, numeric_types)
-        newstate = self.copy()
-        newstate.stmtnode = next_stmt_node(self.stmtnode)
+        newstate = self.use_next_stmt_node()
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             ConcreteValue(stmt.lhs.type, stmt.loc, value),
@@ -2119,8 +2122,7 @@ class State(object):
         effect within our simulation (beyond advancing to the next location).
         [We might subsequently modify the destination state, though]
         """
-        newstate = self.copy()
-        newstate.stmtnode = next_stmt_node(self.stmtnode)
+        newstate = self.use_next_stmt_node()
         return Transition(self, newstate, 'calling %s()' % fnname)
 
 
@@ -2641,8 +2643,7 @@ class State(object):
 
         if stmt.string == '':
             # Empty fragment of inline assembler:
-            s_next = self.copy()
-            s_next.stmtnode = next_stmt_node(self.stmtnode)
+            s_next = self.use_next_stmt_node()
             return [Transition(self, s_next, None)]
 
         raise NotImplementedError('Unable to handle inline assembler: %s'
@@ -2952,6 +2953,7 @@ def iter_traces(stmtgraph, facets, prefix=None, limits=None, depth=0):
         prefix = Trace()
         curstate = State(stmtgraph,
                          stmtgraph.get_entry_nodes()[0],
+                         None,
                          facets,
                          None, None, None)
         #Resources())

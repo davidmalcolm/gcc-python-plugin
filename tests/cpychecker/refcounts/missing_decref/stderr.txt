@@ -1,7 +1,7 @@
 In function 'missing_decref':
-tests/cpychecker/refcounts/missing_decref/input.c:38:nn: warning: memory leak: ob_refcnt of '*list' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/missing_decref/input.c:34:nn: warning: memory leak: ob_refcnt of '*list' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/missing_decref/input.c:27:nn: note: '*list' was allocated at:     list = PyList_New(1);
-tests/cpychecker/refcounts/missing_decref/input.c:38:nn: note: was expecting final owned ob_refcnt of '*list' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
+tests/cpychecker/refcounts/missing_decref/input.c:34:nn: note: was expecting final owned ob_refcnt of '*list' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
 tests/cpychecker/refcounts/missing_decref/input.c:27:nn: note: when PyList_New() succeeds at:     list = PyList_New(1);
 tests/cpychecker/refcounts/missing_decref/input.c:27:nn: note: ob_refcnt is now refs: 1 owned
 tests/cpychecker/refcounts/missing_decref/input.c:28:nn: note: taking False path at:     if (!list)
@@ -9,5 +9,5 @@ tests/cpychecker/refcounts/missing_decref/input.c:30:nn: note: reaching:     ite
 tests/cpychecker/refcounts/missing_decref/input.c:30:nn: note: when PyLong_FromLong() fails at:     item = PyLong_FromLong(42);
 tests/cpychecker/refcounts/missing_decref/input.c:33:nn: note: taking True path at:     if (!item)
 tests/cpychecker/refcounts/missing_decref/input.c:34:nn: note: reaching:         return NULL;
-tests/cpychecker/refcounts/missing_decref/input.c:38:nn: note: returning
+tests/cpychecker/refcounts/missing_decref/input.c:34:nn: note: returning
 tests/cpychecker/refcounts/missing_decref/input.c:24:nn: note: graphical error report for function 'missing_decref' written out to 'tests/cpychecker/refcounts/missing_decref/input.c.missing_decref-refcount-errors.html'

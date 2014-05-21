@@ -1,7 +1,7 @@
 In function 'test':
-tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:62:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:57:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39:nn: note: '*item' was allocated at: 	PyObject *item = make_item(i);
-tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:62:nn: note: was expecting final owned ob_refcnt of '*item' to be 1 due to object being referenced by: PyListObject.ob_item[0] but final ob_refcnt is refs: 2 owned
+tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:57:nn: note: was expecting final owned ob_refcnt of '*item' to be 1 due to object being referenced by: PyListObject.ob_item[0] but final ob_refcnt is refs: 2 owned
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:nn: note: when PyList_New() succeeds at:     result = PyList_New(0);
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:34:nn: note: taking False path at:     if (!result) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: reaching:     for (i = 0; i < unknown_unsigned_val; i++) {
@@ -20,5 +20,5 @@ tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note:
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: when considering unknown_unsigned_val.1 == (const unsigned int)1 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:22 at:     for (i = 0; i < unknown_unsigned_val; i++) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:38:nn: note: taking False path at:     for (i = 0; i < unknown_unsigned_val; i++) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:57:nn: note: reaching:     return result;
-tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:62:nn: note: returning
+tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:57:nn: note: returning
 tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:29:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c.test-refcount-errors.html'

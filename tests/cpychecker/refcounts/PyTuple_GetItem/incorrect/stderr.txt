@@ -1,10 +1,10 @@
 In function 'test':
-tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:38:nn: warning: future use-after-free: ob_refcnt of return value is 1 too low [enabled by default]
+tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:35:nn: warning: future use-after-free: ob_refcnt of return value is 1 too low [enabled by default]
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:32:nn: note: return value was allocated at:     item = PyTuple_GetItem(some_tuple, 3);
-tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:38:nn: note: was expecting final owned ob_refcnt of return value to be 1 due to object being referenced by: return value but final ob_refcnt is refs: 0 owned, 1 borrowed
+tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:35:nn: note: was expecting final owned ob_refcnt of return value to be 1 due to object being referenced by: return value but final ob_refcnt is refs: 0 owned, 1 borrowed
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:32:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:26 as non-NULL at:     item = PyTuple_GetItem(some_tuple, 3);
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:32:nn: note: ob_refcnt is now refs: 0 owned, 1 borrowed
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:33:nn: note: taking True path at:     if (item) {
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:35:nn: note: reaching:         return item;
-tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:38:nn: note: returning
+tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:35:nn: note: returning
 tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c:30:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyTuple_GetItem/incorrect/input.c.test-refcount-errors.html'

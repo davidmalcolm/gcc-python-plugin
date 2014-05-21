@@ -149,8 +149,7 @@ class FunctionCall:
     def add_outcome(self, desc, s_new=None):
         assert not self._never_returns
         if s_new is None:
-            s_new = self.s_src.copy()
-            s_new.stmtnode = next_stmt_node(self.s_src.stmtnode)
+            s_new = self.s_src.use_next_stmt_node()
         oc_new = Outcome(self, desc, s_new)
         self.outcomes.append(oc_new)
         return oc_new
@@ -448,8 +447,7 @@ class GenericTpDealloc(AbstractValue):
         result = state.mktrans_assignment(stmt.lhs,
                                        UnknownValue.make(returntype, stmt.loc),
                                           desc)
-        s_new = state.copy()
-        s_new.stmtnode = next_stmt_node(state.stmtnode)
+        s_new = state.use_next_stmt_node()
 
         if region is not None:
             # Mark the region as deallocated:
@@ -824,8 +822,7 @@ class CPython(Facet):
 
         Returns a pair: (newstate, RegionOnHeap for the new object)
         """
-        newstate = self.state.copy()
-        newstate.stmtnode = next_stmt_node(self.state.stmtnode)
+        newstate = self.state.use_next_stmt_node()
 
         r_nonnull = newstate.cpython.make_sane_object(stmt, name,
                                               RefcountValue.new_ref(stmt.loc, None),
@@ -842,8 +839,7 @@ class CPython(Facet):
     def mkstate_borrowed_ref(self, stmt, fnmeta, r_typeobj=None):
         """Make a new State, giving a borrowed ref to some object"""
         check_isinstance(fnmeta, FnMeta)
-        newstate = self.state.copy()
-        newstate.stmtnode = next_stmt_node(self.state.stmtnode)
+        newstate = self.state.use_next_stmt_node()
 
         r_nonnull = newstate.cpython.make_sane_object(stmt,
                                               'borrowed reference returned by %s()' % fnmeta.name,
@@ -2484,8 +2480,7 @@ class CPython(Facet):
 
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
 
-        s_new = self.state.copy()
-        s_new.stmtnode = next_stmt_node(self.state.stmtnode)
+        s_new = self.state.use_next_stmt_node()
         desc = None
 
         # It's safe to call on NULL
