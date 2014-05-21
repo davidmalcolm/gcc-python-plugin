@@ -8,22 +8,22 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=40), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
     str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:40
-    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_refcnt: refs: 1 owned, 1 borrowed
     r->ob_type: None
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=31))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=31), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:29
@@ -38,22 +38,22 @@ Trace 1:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=40), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
     str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:40
-    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_refcnt: refs: 1 owned, 1 borrowed
     r->ob_type: None
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=31))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=31), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:37
@@ -69,17 +69,17 @@ Trace 2:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=40), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
     str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:40
-    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_refcnt: refs: 1 owned, 1 borrowed
     r->ob_type: None
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyStringObject allocated at tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=31))
@@ -100,12 +100,12 @@ Trace 3:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PySys_SetObject/correct/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PySys_SetObject/correct/input.c:31

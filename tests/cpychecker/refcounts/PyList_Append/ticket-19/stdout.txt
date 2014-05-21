@@ -10,7 +10,7 @@ Trace 0:
   region for gcc.ParmDecl('item') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('item')")
     str(): region for gcc.ParmDecl('item') on stack
-    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_refcnt: refs: 1 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:31
@@ -27,7 +27,7 @@ Trace 1:
   region for gcc.ParmDecl('item') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('item')")
     str(): region for gcc.ParmDecl('item') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:33
@@ -40,7 +40,7 @@ Trace 2:
   region for gcc.ParmDecl('item') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('item')")
     str(): region for gcc.ParmDecl('item') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('item')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Append/ticket-19/input.c:31

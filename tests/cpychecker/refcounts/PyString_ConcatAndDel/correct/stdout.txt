@@ -9,17 +9,17 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)))
     str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=Region('PyTypeObject for result of PyString_Concat'))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:28
@@ -35,17 +35,17 @@ Trace 1:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)))
     str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=Region('PyTypeObject for result of PyString_Concat'))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:28
@@ -61,17 +61,17 @@ Trace 2:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)))
     str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=Region('PyTypeObject for result of PyString_Concat'))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:28
@@ -87,17 +87,17 @@ Trace 3:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)))
     str(): (struct PyObject *)&RegionOnHeap('result of PyString_Concat', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30)) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=Region('PyTypeObject for result of PyString_Concat'))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:28
@@ -116,12 +116,12 @@ Trace 4:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -140,12 +140,12 @@ Trace 5:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -164,12 +164,12 @@ Trace 6:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -188,12 +188,12 @@ Trace 7:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -212,7 +212,7 @@ Trace 8:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -231,7 +231,7 @@ Trace 9:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
@@ -246,7 +246,7 @@ Trace 10:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:28
@@ -265,7 +265,7 @@ Trace 11:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29
@@ -284,7 +284,7 @@ Trace 12:
   PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30:
     repr(): RegionOnHeap('PyStringObject', gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30))
     str(): PyStringObject allocated at tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:30
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c', line=30), region=RegionForGlobal(gcc.VarDecl('PyString_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyString_ConcatAndDel/correct/input.c:29

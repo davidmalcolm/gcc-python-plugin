@@ -1,5 +1,5 @@
 finish_decl_cb(*args=(gcc.VarDecl('ext_int'), None, 'foo'), **kwargs={'bar': 'baz'})
-finish_decl_cb(*args=(gcc.ParmDecl(1703), None, 'foo'), **kwargs={'bar': 'baz'})
+finish_decl_cb(*args=(gcc.ParmDecl(nnnn), None, 'foo'), **kwargs={'bar': 'baz'})
 finish_decl_cb(*args=(gcc.FunctionDecl('ext_fn'), None, 'foo'), **kwargs={'bar': 'baz'})
 finish_decl_cb(*args=(gcc.FieldDecl('field'), None, 'foo'), **kwargs={'bar': 'baz'})
 finish_decl_cb(*args=(gcc.TypeDecl('test_typedef'), None, 'foo'), **kwargs={'bar': 'baz'})

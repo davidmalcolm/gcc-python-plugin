@@ -1,1 +1,1 @@
-tests/cpychecker/PyMethodDef/missing-sentinel/input.c:39:6: warning: missing NULL sentinel value at end of PyMethodDef table [enabled by default]
+tests/cpychecker/PyMethodDef/missing-sentinel/input.c:39:nn: warning: missing NULL sentinel value at end of PyMethodDef table [enabled by default]

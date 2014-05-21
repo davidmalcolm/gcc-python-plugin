@@ -1,14 +1,13 @@
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c: In function 'test':
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: warning: ob_refcnt of PyStringObject is 1 too high [enabled by default]
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:20: note: PyStringObject allocated at:     PyString_Concat(&result, PyString_FromString(msg1));
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:43: note: when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL at:     PyObject *result = PyString_FromString(msg0);
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:43: note: when PyString_FromString() succeeds at:     PyObject *result = PyString_FromString(msg0);
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:20: note: when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL at:     PyString_Concat(&result, PyString_FromString(msg1));
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:20: note: when PyString_FromString() succeeds at:     PyString_Concat(&result, PyString_FromString(msg1));
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:20: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) at:     return result;
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: note: returning at:     return result;
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:5: note: found 4 similar trace(s) to this
-tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:nn: warning: memory leak: ob_refcnt of PyStringObject is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:nn: note: PyStringObject was allocated at:     PyString_Concat(&result, PyString_FromString(msg1));
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:nn: note: was expecting final owned ob_refcnt of PyStringObject to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:nn: note: when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL at:     PyObject *result = PyString_FromString(msg0);
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:29:nn: note: when PyString_FromString() succeeds at:     PyObject *result = PyString_FromString(msg0);
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:nn: note: when treating unknown const char * from tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:27 as non-NULL at:     PyString_Concat(&result, PyString_FromString(msg1));
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:nn: note: when PyString_FromString() succeeds at:     PyString_Concat(&result, PyString_FromString(msg1));
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:32:nn: note: ob_refcnt is now refs: 1 owned
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:nn: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) at:     return result;
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:nn: note: returning at:     return result;
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:34:nn: note: found 4 similar trace(s) to this
+tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_Concat/leak-of-rhs/input.c.test-refcount-errors.html'

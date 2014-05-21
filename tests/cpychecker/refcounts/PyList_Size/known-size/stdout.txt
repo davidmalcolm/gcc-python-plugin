@@ -11,17 +11,17 @@ Trace 0:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/PyList_Size/known-size/input.c:29:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=29))
     str(): PyListObject allocated at tests/cpychecker/refcounts/PyList_Size/known-size/input.c:29
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=29), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyList_Size/known-size/input.c:28
@@ -40,12 +40,12 @@ Trace 1:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/PyList_Size/known-size/input.c:29:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=29))
@@ -66,12 +66,12 @@ Trace 2:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyList_Size/known-size/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyList_Size/known-size/input.c:29

@@ -1,4 +1,4 @@
-tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c: In function 'test':
-tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30:14: warning: division by zero [-Wdiv-by-zero]
-tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30:5: warning: integer division or modulo by zero with right-hand-side (int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30 [enabled by default]
-tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:29:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30:nn: warning: division by zero [-Wdiv-by-zero]
+tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30:nn: warning: integer division or modulo by zero with right-hand-side (int)0 from tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:30 [enabled by default]
+tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c:29:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/arithmetic/division-by-zero/definite/input.c.test-refcount-errors.html'

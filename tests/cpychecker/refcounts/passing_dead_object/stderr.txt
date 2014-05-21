@@ -1,4 +1,4 @@
-tests/cpychecker/refcounts/passing_dead_object/input.c: In function 'passing_dead_object_to_function':
+In function 'passing_dead_object_to_function':
 tests/cpychecker/refcounts/passing_dead_object/input.c:45:nn: warning: passing pointer to deallocated memory as argument 1 of function at tests/cpychecker/refcounts/passing_dead_object/input.c:45: memory deallocated at tests/cpychecker/refcounts/passing_dead_object/input.c:42 [enabled by default]
 tests/cpychecker/refcounts/passing_dead_object/input.c:32:nn: note: when PyLong_FromLong() succeeds at:     PyObject *tmp = PyLong_FromLong(0x1000);
 tests/cpychecker/refcounts/passing_dead_object/input.c:34:nn: note: taking False path at:     if (!tmp) {

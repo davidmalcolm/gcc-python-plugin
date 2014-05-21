@@ -1,12 +1,12 @@
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: warning: flags do not match callback signature for 'incorrect_pycfunction' within PyMethodDef table [enabled by default]
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: actual type of underlying callback: struct PyObject * <Tc53> (struct PyObject *, struct PyObject *) (2 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: warning: flags do not match callback signature for 'incorrect_subclass' within PyMethodDef table [enabled by default]
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: actual type of underlying callback: struct PyObject * <T152e> (struct MySubclass *, struct PyObject *) (2 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: warning: flags do not match callback signature for 'incorrect_pycfunction_with_keywords' within PyMethodDef table [enabled by default]
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)" (2 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: actual type of underlying callback: struct PyObject * <Tc58> (struct PyObject *, struct PyObject *, struct PyObject *) (3 arguments)
-tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:6: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:nn: warning: flags do not match callback signature for 'incorrect_pycfunction' within PyMethodDef table [enabled by default]
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:nn: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:nn: note: actual type of underlying callback: struct PyObject * <Tnnn> (struct PyObject *, struct PyObject *) (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:59:nn: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:nn: warning: flags do not match callback signature for 'incorrect_subclass' within PyMethodDef table [enabled by default]
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:nn: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *args, PyObject *kwargs)" due to METH_KEYWORDS flag (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:nn: note: actual type of underlying callback: struct PyObject * <Tnnn> (struct MySubclass *, struct PyObject *) (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:65:nn: note: see http://docs.python.org/c-api/structures.html#PyMethodDef
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:nn: warning: flags do not match callback signature for 'incorrect_pycfunction_with_keywords' within PyMethodDef table [enabled by default]
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:nn: note: expected ml_meth callback of type "PyObject (fn)(someobject *, PyObject *)" (2 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:nn: note: actual type of underlying callback: struct PyObject * <Tnnn> (struct PyObject *, struct PyObject *, struct PyObject *) (3 arguments)
+tests/cpychecker/PyMethodDef/incorrect-types/input.c:71:nn: note: see http://docs.python.org/c-api/structures.html#PyMethodDef

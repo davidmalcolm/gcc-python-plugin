@@ -1,18 +1,17 @@
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: warning: ob_refcnt of '*value' is 1 too high [enabled by default]
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:11: note: PyLongObject allocated at:     value = PyLong_FromLong(1000);
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:32:10: note: when PyDict_New() succeeds at:     dict = PyDict_New();
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:33:8: note: taking False path at:     if (!dict) {
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:11: note: reaching:     value = PyLong_FromLong(1000);
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:11: note: when PyLong_FromLong() succeeds at:     value = PyLong_FromLong(1000);
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:11: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:38:8: note: taking False path at:     if (!value) {
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:35: note: reaching:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:35: note: when PyDict_SetItemString() succeeds at:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:35: note: ob_refcnt is now refs: 1 + N where N >= 1
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:8: note: taking False path at:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:52:5: note: reaching:     return dict;
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:1: note: returning
-tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:nn: warning: memory leak: ob_refcnt of '*value' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:nn: note: '*value' was allocated at:     value = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:nn: note: was expecting final owned ob_refcnt of '*value' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned, 1 borrowed
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:32:nn: note: when PyDict_New() succeeds at:     dict = PyDict_New();
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:33:nn: note: taking False path at:     if (!dict) {
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:nn: note: reaching:     value = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:nn: note: when PyLong_FromLong() succeeds at:     value = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:37:nn: note: ob_refcnt is now refs: 1 owned
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:38:nn: note: taking False path at:     if (!value) {
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:nn: note: reaching:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:nn: note: when PyDict_SetItemString() succeeds at:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:nn: note: ob_refcnt is now refs: 1 owned, 1 borrowed
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:42:nn: note: taking False path at:     if (-1 == PyDict_SetItemString(dict, "key", value)) {
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:52:nn: note: reaching:     return dict;
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:58:nn: note: returning
+tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyDict_SetItemString/incorrect/input.c.test-refcount-errors.html'

@@ -5,7 +5,7 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29), region=RegionOnHeap('new ref from call to Py_BuildValue', gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29)))
     str(): (struct PyObject *)&RegionOnHeap('new ref from call to Py_BuildValue', gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29)) from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:29
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c', line=29), region=Region('PyTypeObject for new ref from call to Py_BuildValue'))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/Py_BuildValue/correct-code-s/input.c:28

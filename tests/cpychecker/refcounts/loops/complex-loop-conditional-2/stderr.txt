@@ -1,9 +1,7 @@
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c: In function 'test':
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: warning: ob_refcnt of '*item' is 1 too high [enabled by default]
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: note: due to object being referenced by: PyListObject.ob_item[0]
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: note: but final ob_refcnt is N + 2
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: new ref from (unknown) make_item allocated at: 	PyObject *item = make_item(i);
+In function 'test':
+tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: warning: memory leak: ob_refcnt of '*item' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: '*item' was allocated at: 	PyObject *item = make_item(i);
+tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:56:nn: note: was expecting final owned ob_refcnt of '*item' to be 1 due to object being referenced by: PyListObject.ob_item[0] but final ob_refcnt is refs: 2 owned
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:33:nn: note: when PyList_New() succeeds at:     result = PyList_New(0);
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:34:nn: note: taking False path at:     if (!result) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:39:nn: note: reaching:     for (i = 0; i < (2 * get_limit()) + 42; i++) {
@@ -11,11 +9,11 @@ tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:39:nn: note:
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:39:nn: note: taking True path at:     for (i = 0; i < (2 * get_limit()) + 42; i++) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: reaching: 	PyObject *item = make_item(i);
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: when make_item() succeeds at: 	PyObject *item = make_item(i);
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:40:nn: note: ob_refcnt is now refs: 1 owned
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:41:nn: note: taking False path at: 	if (!item) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: reaching: 	if (-1 == PyList_Append(result, item)) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: when PyList_Append() succeeds at: 	if (-1 == PyList_Append(result, item)) {
-tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: ob_refcnt is now refs: 2 + N where N >= 0
+tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: ob_refcnt is now refs: 2 owned
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: '*item' is now referenced by 1 non-stack value(s): PyListObject.ob_item[0]
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:44:nn: note: taking False path at: 	if (-1 == PyList_Append(result, item)) {
 tests/cpychecker/refcounts/loops/complex-loop-conditional-2/input.c:39:nn: note: reaching:     for (i = 0; i < (2 * get_limit()) + 42; i++) {

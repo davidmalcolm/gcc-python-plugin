@@ -1,27 +1,24 @@
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c: In function 'test':
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: warning: ob_refcnt of '*rhs' is 1 too low [enabled by default]
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: but final ob_refcnt is N + -1
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) (Py_DECREF() without deallocation on RHS) at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: ob_refcnt is now refs: -1 + N where N >= 1
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: returning at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: found 9 similar trace(s) to this
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: warning: ob_refcnt of return value is 1 too low [enabled by default]
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: was expecting final ob_refcnt to be N + 2 (for some unknown N)
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: due to object being referenced by: return value, heap-region-0
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: result of PyString_Concat allocated at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) (Py_DECREF() without deallocation on RHS) at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: returning at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: found 3 similar trace(s) to this
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:26: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as NULL at:     PyString_ConcatAndDel(lhs, rhs);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: when PyString_Concat() does nothing due to NULL *lhs (Py_DECREF() without deallocation on RHS) at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: returning at:     return *lhs;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:5: note: found 1 similar trace(s) to this
-tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: warning: future use-after-free: ob_refcnt of '*rhs' is 1 too low [enabled by default]
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: was expecting final owned ob_refcnt of '*rhs' to be 0 since nothing references it but final ob_refcnt is refs: -1 owned, 1 borrowed
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) (Py_DECREF() without deallocation on RHS) at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: ob_refcnt is now refs: -1 owned, 1 borrowed
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: returning at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: found 9 similar trace(s) to this
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: warning: future use-after-free: ob_refcnt of return value is 1 too low [enabled by default]
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: return value was allocated at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: was expecting final owned ob_refcnt of return value to be 2 due to object being referenced by: return value, heap-region-0 but final ob_refcnt is refs: 1 owned
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: when PyString_Concat() succeeds (Py_DECREF() without deallocation on *LHS) (Py_DECREF() without deallocation on RHS) at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: returning at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: found 3 similar trace(s) to this
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:27 as non-NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:29 as NULL at:     PyString_ConcatAndDel(lhs, rhs);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: when PyString_Concat() does nothing due to NULL *lhs (Py_DECREF() without deallocation on RHS) at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: returning at:     return *lhs;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:37:nn: note: found 1 similar trace(s) to this
+tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/basic/input.c.test-refcount-errors.html'

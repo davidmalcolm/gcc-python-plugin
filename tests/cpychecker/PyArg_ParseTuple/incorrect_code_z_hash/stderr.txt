@@ -1,5 +1,5 @@
-tests/cpychecker/PyArg_ParseTuple/incorrect_code_z_hash/input.c: In function 'incorrect_code_z_hash':
-tests/cpychecker/PyArg_ParseTuple/incorrect_code_z_hash/input.c:34:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "z#" [enabled by default]
+In function 'incorrect_code_z_hash':
+tests/cpychecker/PyArg_ParseTuple/incorrect_code_z_hash/input.c:34:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "z#" [enabled by default]
   argument 4 ("&len") had type
     "float *" (pointing to 32 bits)
   but was expecting

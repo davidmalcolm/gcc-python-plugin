@@ -1,60 +1,60 @@
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c: In function 'incorrect_usages_of_converter':
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:36:26: warning: Not enough arguments in call to PyArg_ParseTuple with format string "O&"
+In function 'incorrect_usages_of_converter':
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:36:nn: warning: Not enough arguments in call to PyArg_ParseTuple with format string "O&"
   expected 2 extra arguments:
     "int (converter)(PyObject *, T*)" for some type T
     "T*" for some type T
   but got none
  [enabled by default]
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:39:26: warning: Not enough arguments in call to PyArg_ParseTuple with format string "O&"
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:39:nn: warning: Not enough arguments in call to PyArg_ParseTuple with format string "O&"
   expected 2 extra arguments:
     "int (converter)(PyObject *, T*)" for some type T
     "T*" for some type T
   but got 1:
     "int"
  [enabled by default]
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:44:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:44:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("42") had type
     "int"
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:49:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:49:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("&i0") had type
     "int *" (pointing to 32 bits)
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:54:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:54:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("not_returning_int") had type
     "void (*fn) ()"
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:57:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:57:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("not_enough_args") had type
     "int (*fn) (struct PyObject *)"
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:60:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:60:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("too_many_args") had type
     "int (*fn) (struct PyObject *, int *, int)"
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:63:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:63:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 3 ("not_taking_PyObjectPtr") had type
     "int (*fn) (int, int)"
   but was expecting
     "int (converter)(PyObject *, T*)" for some type T
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:68:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:68:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 4 ("42") had type
     "int"
   but was expecting
     "Py_ssize_t *" (pointing to 64 bits) (from second argument of "int (*fn) (struct PyObject *, Py_ssize_t *)")
   for format code "O&"
-tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:73:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/incorrect_converters/input.c:73:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&" [enabled by default]
   argument 4 ("&i0") had type
     "int *" (pointing to 32 bits)
   but was expecting

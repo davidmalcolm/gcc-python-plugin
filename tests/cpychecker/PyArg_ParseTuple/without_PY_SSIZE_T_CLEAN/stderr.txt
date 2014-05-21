@@ -1,5 +1,5 @@
-In file included from tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN/input.c:28:0:
-tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN/../hash_format_codes.inc: In function 'hash_format_codes':
+In file included from tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN/input.c:28:nn:
+In function 'hash_format_codes':
 tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN/../hash_format_codes.inc:59:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "s#" [enabled by default]
   argument 4 ("&sval") had type
     "Py_ssize_t *" (pointing to 64 bits)

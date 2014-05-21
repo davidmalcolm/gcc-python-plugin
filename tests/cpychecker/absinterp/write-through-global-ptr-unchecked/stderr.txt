@@ -1,4 +1,4 @@
-tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c: In function 'test_write_through_global_without_check':
-tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:35:18: warning: possibly dereferencing NULL (coord_ptr.0->x) at tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:36 [enabled by default]
-tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:35:18: note: when treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:31 as NULL at:     coord_ptr->x = x;
-tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:34:1: note: graphical error report for function 'test_write_through_global_without_check' written out to 'tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c.test_write_through_global_without_check-refcount-errors.html'
+In function 'test_write_through_global_without_check':
+tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:35:nn: warning: possibly dereferencing NULL (coord_ptr.0->x) at tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:36 [enabled by default]
+tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:35:nn: note: when treating unknown struct coord * from tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:31 as NULL at:     coord_ptr->x = x;
+tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c:34:nn: note: graphical error report for function 'test_write_through_global_without_check' written out to 'tests/cpychecker/absinterp/write-through-global-ptr-unchecked/input.c.test_write_through_global_without_check-refcount-errors.html'

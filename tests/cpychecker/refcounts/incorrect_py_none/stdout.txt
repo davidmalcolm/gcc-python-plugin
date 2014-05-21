@@ -1,2 +1,2 @@
-_Py_NoneStruct.ob_refcnt: refs: 0 + N where N >= 1
+_Py_NoneStruct.ob_refcnt: refs: 0 owned, 1 borrowed
 state.return_rvalue: PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/incorrect_py_none/input.c', line=26), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))

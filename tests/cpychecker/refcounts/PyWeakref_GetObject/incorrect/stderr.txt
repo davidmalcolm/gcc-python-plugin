@@ -1,11 +1,9 @@
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: warning: ob_refcnt of return value is 1 too low [enabled by default]
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: note: but final ob_refcnt is N + 0
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32:nn: note: borrowed reference returned by PyWeakref_GetObject() allocated at:     item = PyWeakref_GetObject(some_ref);
+In function 'test':
+tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: warning: future use-after-free: ob_refcnt of return value is 1 too low [enabled by default]
+tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32:nn: note: return value was allocated at:     item = PyWeakref_GetObject(some_ref);
+tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: note: was expecting final owned ob_refcnt of return value to be 1 due to object being referenced by: return value but final ob_refcnt is refs: 0 owned, 1 borrowed
 tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:26 as non-NULL at:     item = PyWeakref_GetObject(some_ref);
-tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32:nn: note: ob_refcnt is now refs: 0 + N where N >= 1
+tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:32:nn: note: ob_refcnt is now refs: 0 owned, 1 borrowed
 tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:33:nn: note: taking True path at:     if (item) {
 tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:35:nn: note: reaching:         return item;
 tests/cpychecker/refcounts/PyWeakref_GetObject/incorrect/input.c:38:nn: note: returning

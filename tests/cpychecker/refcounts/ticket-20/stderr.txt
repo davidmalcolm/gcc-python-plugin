@@ -1,10 +1,9 @@
-tests/cpychecker/refcounts/ticket-20/input.c: In function 'test':
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: warning: ob_refcnt of '*self' is 1 too low [enabled by default]
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: note: but final ob_refcnt is N + -1
-tests/cpychecker/refcounts/ticket-20/input.c:33:5: note: ob_refcnt is now refs: -1 + N where N >= 1
-tests/cpychecker/refcounts/ticket-20/input.c:33:5: note: when taking True path at:     Py_DECREF(self);
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: note: reaching:     return 0;
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: note: returning at:     return 0;
-tests/cpychecker/refcounts/ticket-20/input.c:36:5: note: found 1 similar trace(s) to this
-tests/cpychecker/refcounts/ticket-20/input.c:31:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/ticket-20/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/ticket-20/input.c:36:nn: warning: future use-after-free: ob_refcnt of '*self' is 1 too low [enabled by default]
+tests/cpychecker/refcounts/ticket-20/input.c:36:nn: note: was expecting final owned ob_refcnt of '*self' to be 0 since nothing references it but final ob_refcnt is refs: -1 owned, 1 borrowed
+tests/cpychecker/refcounts/ticket-20/input.c:33:nn: note: ob_refcnt is now refs: -1 owned, 1 borrowed
+tests/cpychecker/refcounts/ticket-20/input.c:33:nn: note: when taking True path at:     Py_DECREF(self);
+tests/cpychecker/refcounts/ticket-20/input.c:36:nn: note: reaching:     return 0;
+tests/cpychecker/refcounts/ticket-20/input.c:36:nn: note: returning at:     return 0;
+tests/cpychecker/refcounts/ticket-20/input.c:36:nn: note: found 1 similar trace(s) to this
+tests/cpychecker/refcounts/ticket-20/input.c:31:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/ticket-20/input.c.test-refcount-errors.html'

@@ -276,52 +276,72 @@ class RefcountValue(AbstractValue):
 
     'relvalue' is all of the references owned within this function.
 
-    'min_external' is a lower bound on all references owned outside the
+    'external' is a WithinRange, a bound on all references owned outside the
     scope of this function.
 
-    The actual value of ob_refcnt >= (relvalue + min_external)
+    The actual value of ob_refcnt = (relvalue + external)
+    hence:
+
+        (relvalue + external.minvalue) <= ob_refcnt <= (relvalue + external.minvalue)
 
     Examples:
 
-      - an argument passed in a a borrowed ref starts with (0, 1), in that
+      - an argument passed in a borrowed ref starts with (0, [1, 1]), in that
       the function doesn't own any refs on it, but it has a refcount of at
       least 1, due to refs we know nothing about.
 
-      - a newly constructed object gets (1, 0): we own a reference on it,
+      - a newly constructed object gets (1, [0, 0]): we own a reference on it,
       and we don't know if there are any external refs on it.
     """
-    __slots__ = ('r_obj', 'relvalue', 'min_external')
+    __slots__ = ('r_obj', 'relvalue', 'external')
 
-    def __init__(self, loc, r_obj, relvalue, min_external):
+    def __init__(self, loc, r_obj, relvalue, external):
         if loc:
             check_isinstance(loc, gcc.Location)
         if r_obj:
             check_isinstance(r_obj, Region)
+        check_isinstance(external, WithinRange)
         AbstractValue.__init__(self, get_Py_ssize_t().type, loc)
         self.r_obj = r_obj
         self.relvalue = relvalue
-        self.min_external = min_external
+        self.external = external
 
     @classmethod
     def new_ref(cls, loc, r_obj):
         return RefcountValue(loc, r_obj,
                              relvalue=1,
-                             min_external=0)
+                             external=WithinRange(get_Py_ssize_t().type, loc,
+                                                  0, 0))
 
     @classmethod
     def borrowed_ref(cls, loc, r_obj):
         return RefcountValue(loc, r_obj,
                              relvalue=0,
-                             min_external=1)
+                             external=WithinRange(get_Py_ssize_t().type, loc,
+                                                  1, 1))
 
     def get_min_value(self):
-        return self.relvalue + self.min_external
+        return self.relvalue + self.external.minvalue
 
     def __str__(self):
-        return 'refs: %i + N where N >= %i' % (self.relvalue, self.min_external)
+        # Try to present the simplest possible string representation of
+        # a refcount:
+        if self.external.minvalue == self.external.maxvalue:
+            # Known value for external refcount
+            if self.external.minvalue == 0:
+                # We know there are no external refs; don't display it
+                # at all, rather than "0":
+                return 'refs: %i owned' % self.relvalue
+            else:
+                # We know of an exact number of external refs; display
+                # it as borrowed:
+                return ('refs: %i owned, %i borrowed'
+                        % (self.relvalue, self.external.minvalue))
+        return ('refs: %i owned + B borrowed where %s'
+                % (self.relvalue, str(self.external).replace('val', 'B')))
 
     def __repr__(self):
-        return 'RefcountValue(%i, %i)' % (self.relvalue, self.min_external)
+        return 'RefcountValue(%i, %r)' % (self.relvalue, self.external)
 
     def get_referrers_as_json(self, state):
         # FIXME:
@@ -346,7 +366,7 @@ class RefcountValue(AbstractValue):
 
     def json_fields(self, state):
         actual = OrderedDict(refs_we_own=self.relvalue,
-                             lower_bound_of_other_refs=self.min_external)
+                             lower_bound_of_other_refs=self.external.minvalue)
         exp_refs = self.get_referrers_as_json(state)
         expected = dict(pointers_to_this=exp_refs)
         return dict(actual_ob_refcnt=actual,
@@ -356,10 +376,10 @@ class RefcountValue(AbstractValue):
         if isinstance(rhs, ConcreteValue):
             if exprcode == gcc.PlusExpr:
                 return RefcountValue(loc, self.r_obj,
-                                     self.relvalue + rhs.value, self.min_external)
+                                     self.relvalue + rhs.value, self.external)
             elif exprcode == gcc.MinusExpr:
                 return RefcountValue(loc, self.r_obj,
-                                     self.relvalue - rhs.value, self.min_external)
+                                     self.relvalue - rhs.value, self.external)
         return UnknownValue.make(gcctype, loc)
 
     def eval_comparison(self, opname, rhs, rhsdesc):
@@ -566,7 +586,7 @@ class CPython(Facet):
             return RefcountValue(loc,
                                  pyobjectptr.region,
                                  oldvalue.relvalue + 1,
-                                 oldvalue.min_external)
+                                 oldvalue.external)
         self.change_refcount(pyobjectptr,
                              loc,
                              _incref_internal)
@@ -580,7 +600,10 @@ class CPython(Facet):
             return RefcountValue(loc,
                                  pyobjectptr.region,
                                  oldvalue.relvalue,
-                                 oldvalue.min_external + 1)
+                                 WithinRange(oldvalue.external.gcctype,
+                                             loc,
+                                             oldvalue.external.minvalue + 1,
+                                             oldvalue.external.maxvalue + 1))
         self.change_refcount(pyobjectptr,
                              loc,
                              _incref_external)
@@ -594,7 +617,7 @@ class CPython(Facet):
             return RefcountValue(loc,
                                  pyobjectptr.region,
                                  oldvalue.relvalue - 1,
-                                 oldvalue.min_external)
+                                 oldvalue.external)
         check_isinstance(pyobjectptr, PointerToRegion)
         v_ob_refcnt = self.change_refcount(pyobjectptr,
                                            loc,
@@ -737,7 +760,10 @@ class CPython(Facet):
             return RefcountValue(loc,
                                  pyobjectptr.region,
                                  v_old.relvalue - 1,
-                                 v_old.min_external + 1)
+                                 WithinRange(v_old.external.gcctype,
+                                             loc,
+                                             v_old.external.minvalue + 1,
+                                             v_old.external.maxvalue + 1))
         check_isinstance(pyobjectptr, PointerToRegion)
         self.change_refcount(pyobjectptr,
                              loc,
@@ -4019,25 +4045,27 @@ def emit_refcount_warning(msg,
                           exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
                           trace, endstate, fun, rep):
     w = rep.make_warning(fun, endstate.get_gcc_loc(fun), msg)
-    w.add_note(endstate.get_gcc_loc(fun),
-               ('was expecting final ob_refcnt to be N + %i (for some unknown N)'
-                % exp_refcnt))
-    if exp_refcnt > 0:
-        w.add_note(endstate.get_gcc_loc(fun),
-                   ('due to object being referenced by: %s'
-                    % ', '.join(exp_refs)))
-    w.add_note(endstate.get_gcc_loc(fun),
-               ('but final ob_refcnt is N + %i'
-                % v_ob_refcnt.relvalue))
+
     # For dynamically-allocated objects, indicate where they
     # were allocated:
     if isinstance(r_obj, RegionOnHeap):
         alloc_loc = r_obj.alloc_stmt.loc
         if alloc_loc:
             w.add_note(r_obj.alloc_stmt.loc,
-                         ('%s allocated at: %s'
-                          % (r_obj.name,
+                         ('%s was allocated at: %s'
+                          % (desc,
                              get_src_for_loc(alloc_loc))))
+
+    details = ('was expecting final owned ob_refcnt of %s to be %i'
+               % (desc, exp_refcnt))
+    if exp_refcnt > 0:
+        details += (' due to object being referenced by: %s'
+                    % ', '.join(exp_refs))
+    else:
+        details += (' since nothing references it')
+    details += ' but final ob_refcnt is %s' % v_ob_refcnt
+    w.add_note(endstate.get_gcc_loc(fun),
+               details)
 
     # Summarize the control flow we followed through the function:
     if 1:
@@ -4102,14 +4130,14 @@ def check_refcount_for_one_object(r_obj, v_ob_refcnt, v_return,
     if isinstance(v_ob_refcnt, RefcountValue):
         if v_ob_refcnt.relvalue > exp_refcnt:
             # Refcount is too high:
-            w = emit_refcount_warning('ob_refcnt of %s is %i too high'
+            w = emit_refcount_warning('memory leak: ob_refcnt of %s is %i too high'
                                       % (desc,
                                          v_ob_refcnt.relvalue - exp_refcnt),
                                       exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,
                                       trace, endstate, fun, rep)
         elif v_ob_refcnt.relvalue < exp_refcnt:
             # Refcount is too low:
-            w = emit_refcount_warning('ob_refcnt of %s is %i too low'
+            w = emit_refcount_warning('future use-after-free: ob_refcnt of %s is %i too low'
                                       % (desc,
                                          exp_refcnt - v_ob_refcnt.relvalue),
                                       exp_refcnt, exp_refs, v_ob_refcnt, r_obj, desc,

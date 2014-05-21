@@ -1,6 +1,6 @@
-tests/cpychecker/absinterp/uninitialized-data/input.c: In function 'test_void':
-tests/cpychecker/absinterp/uninitialized-data/input.c:35:12: warning: comparison against uninitialized data (j.0) at tests/cpychecker/absinterp/uninitialized-data/input.c:35 [enabled by default]
-tests/cpychecker/absinterp/uninitialized-data/input.c:30:8: note: when considering value == (int)0 from tests/cpychecker/absinterp/uninitialized-data/input.c:26 at:     if (i == 0) {
-tests/cpychecker/absinterp/uninitialized-data/input.c:30:8: note: taking True path at:     if (i == 0) {
-tests/cpychecker/absinterp/uninitialized-data/input.c:35:15: note: reaching:         if (i < j) {
-tests/cpychecker/absinterp/uninitialized-data/input.c:27:1: note: graphical error report for function 'test_void' written out to 'tests/cpychecker/absinterp/uninitialized-data/input.c.test_void-refcount-errors.html'
+In function 'test_void':
+tests/cpychecker/absinterp/uninitialized-data/input.c:35:nn: warning: comparison against uninitialized data (j.0) at tests/cpychecker/absinterp/uninitialized-data/input.c:35 [enabled by default]
+tests/cpychecker/absinterp/uninitialized-data/input.c:30:nn: note: when considering value == (int)0 from tests/cpychecker/absinterp/uninitialized-data/input.c:26 at:     if (i == 0) {
+tests/cpychecker/absinterp/uninitialized-data/input.c:30:nn: note: taking True path at:     if (i == 0) {
+tests/cpychecker/absinterp/uninitialized-data/input.c:35:nn: note: reaching:         if (i < j) {
+tests/cpychecker/absinterp/uninitialized-data/input.c:27:nn: note: graphical error report for function 'test_void' written out to 'tests/cpychecker/absinterp/uninitialized-data/input.c.test_void-refcount-errors.html'

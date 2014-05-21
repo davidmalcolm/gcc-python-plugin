@@ -1,10 +1,9 @@
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c: In function 'test':
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: warning: ob_refcnt of new ref from call to PyObject_CallObject is 1 too high [enabled by default]
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: new ref from call to PyObject_CallObject allocated at:     Py_XDECREF(PyObject_CallObject(callable, args));
+In function 'test':
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: warning: memory leak: ob_refcnt of new ref from call to PyObject_CallObject is 1 too high [enabled by default]
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: new ref from call to PyObject_CallObject was allocated at:     Py_XDECREF(PyObject_CallObject(callable, args));
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:46:nn: note: was expecting final owned ob_refcnt of new ref from call to PyObject_CallObject to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
 tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));
-tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: ob_refcnt is now refs: 1 owned
 tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: taking False path at:     Py_XDECREF(PyObject_CallObject(callable, args));
 tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: reaching:     Py_XDECREF(PyObject_CallObject(callable, args));
 tests/cpychecker/refcounts/macros/Py_XDECREF/crash/input.c:35:nn: note: when PyObject_CallObject() succeeds at:     Py_XDECREF(PyObject_CallObject(callable, args));

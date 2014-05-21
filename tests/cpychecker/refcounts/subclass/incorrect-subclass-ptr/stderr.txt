@@ -1,11 +1,10 @@
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c: In function 'test_function':
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:1: warning: ob_refcnt of '*self' is 5 too high [enabled by default]
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:1: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:1: note: but final ob_refcnt is N + 5
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:48:5: note: ob_refcnt is now refs: 1 + N where N >= 1
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:49:5: note: ob_refcnt is now refs: 2 + N where N >= 1
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:50:5: note: ob_refcnt is now refs: 3 + N where N >= 1
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:51:5: note: ob_refcnt is now refs: 4 + N where N >= 1
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:52:5: note: ob_refcnt is now refs: 5 + N where N >= 1
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:1: note: returning at: }
-tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:43:1: note: graphical error report for function 'test_function' written out to 'tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c.test_function-refcount-errors.html'
+In function 'test_function':
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:nn: warning: memory leak: ob_refcnt of '*self' is 5 too high [enabled by default]
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:nn: note: was expecting final owned ob_refcnt of '*self' to be 0 since nothing references it but final ob_refcnt is refs: 5 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:48:nn: note: ob_refcnt is now refs: 1 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:49:nn: note: ob_refcnt is now refs: 2 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:50:nn: note: ob_refcnt is now refs: 3 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:51:nn: note: ob_refcnt is now refs: 4 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:52:nn: note: ob_refcnt is now refs: 5 owned, 1 borrowed
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:53:nn: note: returning at: }
+tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c:43:nn: note: graphical error report for function 'test_function' written out to 'tests/cpychecker/refcounts/subclass/incorrect-subclass-ptr/input.c.test_function-refcount-errors.html'

@@ -1,8 +1,7 @@
-tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c: In function 'test':
-tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: warning: ob_refcnt of fooType is 1 too low [enabled by default]
-tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: but final ob_refcnt is N + -1
+In function 'test':
+tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: warning: future use-after-free: ob_refcnt of fooType is 1 too low [enabled by default]
+tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: was expecting final owned ob_refcnt of fooType to be 0 since nothing references it but final ob_refcnt is refs: -1 owned, 2 borrowed
 tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: when PyModule_AddObject() succeeds at:     return PyModule_AddObject(module,
-tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: ob_refcnt is now refs: -1 + N where N >= 2
+tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: ob_refcnt is now refs: -1 owned, 2 borrowed
 tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:31:nn: note: returning at:     return PyModule_AddObject(module,
 tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c:30:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyModule_AddObject/incorrect-with-cast/input.c.test-refcount-errors.html'

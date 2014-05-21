@@ -1,10 +1,9 @@
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: warning: ob_refcnt of '*obj' is 1 too high [enabled by default]
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: was expecting final ob_refcnt to be N + 0 (for some unknown N)
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: but final ob_refcnt is N + 1
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: PyCObject allocated at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
+In function 'test':
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: warning: memory leak: ob_refcnt of '*obj' is 1 too high [enabled by default]
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: '*obj' was allocated at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: was expecting final owned ob_refcnt of '*obj' to be 0 since nothing references it but final ob_refcnt is refs: 1 owned
 tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: when PyCObject_FromVoidPtrAndDesc() succeeds at:     PyObject *obj = PyCObject_FromVoidPtrAndDesc(&some_foo, "struct foo", NULL);
-tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: ob_refcnt is now refs: 1 + N where N >= 0
+tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:38:nn: note: ob_refcnt is now refs: 1 owned
 tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: when PyTuple_Pack() succeeds at:     return PyTuple_Pack(2, self, obj);
 tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: returning at:     return PyTuple_Pack(2, self, obj);
 tests/cpychecker/refcounts/PyCObject_FromVoidPtrAndDesc/incorrect/input.c:44:nn: note: found 1 similar trace(s) to this

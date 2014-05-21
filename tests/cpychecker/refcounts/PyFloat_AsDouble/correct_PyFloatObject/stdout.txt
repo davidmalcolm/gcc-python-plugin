@@ -11,7 +11,7 @@ Trace 0:
   PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33:
     repr(): RegionOnHeap('PyFloatObject', gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33))
     str(): PyFloatObject allocated at tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyFloat_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyFloat_AsDouble/correct_PyFloatObject/input.c:29

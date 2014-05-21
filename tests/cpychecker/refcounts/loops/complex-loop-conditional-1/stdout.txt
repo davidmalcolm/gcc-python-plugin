@@ -8,17 +8,17 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33)) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:29
@@ -39,22 +39,22 @@ Trace 1:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33)) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39:
     repr(): RegionOnHeap('new ref from (unknown) make_item', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39))
     str(): new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39
-    r->ob_refcnt: refs: 2 + N where N >= 0
+    r->ob_refcnt: refs: 2 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39), region=Region('PyTypeObject for new ref from (unknown) make_item'))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:29
@@ -79,22 +79,22 @@ Trace 2:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39:
     repr(): RegionOnHeap('new ref from (unknown) make_item', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39))
     str(): new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39), region=Region('PyTypeObject for new ref from (unknown) make_item'))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:43
@@ -120,12 +120,12 @@ Trace 3:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
@@ -135,7 +135,7 @@ Trace 3:
   new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39:
     repr(): RegionOnHeap('new ref from (unknown) make_item', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39))
     str(): new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39), region=Region('PyTypeObject for new ref from (unknown) make_item'))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:43
@@ -161,17 +161,17 @@ Trace 4:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   new ref from (unknown) make_item allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39:
     repr(): RegionOnHeap('new ref from (unknown) make_item', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=39))
@@ -203,12 +203,12 @@ Trace 5:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
@@ -240,17 +240,17 @@ Trace 6:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
     str(): PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33
-    r->ob_refcnt: refs: 0 + N where N >= 0
+    r->ob_refcnt: refs: 0 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:39
@@ -273,12 +273,12 @@ Trace 7:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   PyListObject allocated at tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=33))
@@ -300,12 +300,12 @@ Trace 8:
   region for gcc.ParmDecl('self') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('self')")
     str(): region for gcc.ParmDecl('self') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('self')"))
   region for gcc.ParmDecl('args') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('args')")
     str(): region for gcc.ParmDecl('args') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c', line=28), region=Region("region-for-type-of-arg-gcc.ParmDecl('args')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/loops/complex-loop-conditional-1/input.c:33

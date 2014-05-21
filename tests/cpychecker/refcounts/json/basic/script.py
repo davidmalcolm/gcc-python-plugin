@@ -43,15 +43,14 @@ def verify_json(optpass, fun):
             assertEqual(len(js['reports']), 1)
             r = js['reports'][0]
             assertEqual(r['severity'], "warning")
-            assertEqual(r['message'], "ob_refcnt of return value is 1 too low")
-            assertEqual(len(r['notes']), 4)
+            assertEqual(r['message'],
+                        "future use-after-free: ob_refcnt of return value is 1 too low")
+            assertEqual(len(r['notes']), 2)
             assertEqual(r['notes'][0]['message'],
-                        "was expecting final ob_refcnt to be N + 1 (for some unknown N)")
+                        'was expecting final owned ob_refcnt of return value to be 1'
+                        ' due to object being referenced by: return value'
+                        ' but final ob_refcnt is refs: 0 owned, 1 borrowed')
             assertEqual(r['notes'][1]['message'],
-                        "due to object being referenced by: return value")
-            assertEqual(r['notes'][2]['message'],
-                        "but final ob_refcnt is N + 0")
-            assertEqual(r['notes'][3]['message'],
                         "consider using \"Py_RETURN_NONE;\"")
 
             # Verify the JSON serialization of the endstate within the report:

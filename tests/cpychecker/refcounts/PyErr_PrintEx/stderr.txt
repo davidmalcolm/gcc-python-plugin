@@ -1,8 +1,8 @@
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c: In function 'test':
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:37:5: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:30:20: note: calling PyErr_SetString() at:     PyErr_SetString(PyExc_RuntimeError,
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:30:20: note: thread-local exception state now has value: unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34:18: note: calling PyErr_PrintEx() at:     PyErr_PrintEx(1);
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34:18: note: thread-local exception state now has value: (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:37:5: note: returning at:     return NULL;
-tests/cpychecker/refcounts/PyErr_PrintEx/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyErr_PrintEx/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:37:nn: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:30:nn: note: calling PyErr_SetString() at:     PyErr_SetString(PyExc_RuntimeError,
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:30:nn: note: thread-local exception state now has value: unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34:nn: note: calling PyErr_PrintEx() at:     PyErr_PrintEx(1);
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34:nn: note: thread-local exception state now has value: (struct PyObject *)0 from tests/cpychecker/refcounts/PyErr_PrintEx/input.c:34
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:37:nn: note: returning at:     return NULL;
+tests/cpychecker/refcounts/PyErr_PrintEx/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyErr_PrintEx/input.c.test-refcount-errors.html'

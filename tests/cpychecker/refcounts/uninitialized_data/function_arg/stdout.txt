@@ -8,7 +8,7 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34)))
     str(): (struct PyObject *)&RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34)) from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:29
@@ -24,7 +24,7 @@ Trace 1:
   PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34:
     repr(): RegionOnHeap('PyListObject', gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34))
     str(): PyListObject allocated at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c', line=34), region=RegionForGlobal(gcc.VarDecl('PyList_Type')))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:29

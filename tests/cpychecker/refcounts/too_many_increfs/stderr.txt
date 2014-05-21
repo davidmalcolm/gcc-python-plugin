@@ -1,13 +1,11 @@
-tests/cpychecker/refcounts/too_many_increfs/input.c: In function 'too_many_increfs':
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: warning: ob_refcnt of return value is 1 too high [enabled by default]
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: but final ob_refcnt is N + 2
-tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: PyLongObject allocated at:     tmp = PyLong_FromLong(0x1000);
-tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() succeeds at:     tmp = PyLong_FromLong(0x1000);
-tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: ob_refcnt is now refs: 1 + N where N >= 0
-tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: note: ob_refcnt is now refs: 2 + N where N >= 0
-tests/cpychecker/refcounts/too_many_increfs/input.c:31:5: note: returning at:     return tmp;
-tests/cpychecker/refcounts/too_many_increfs/input.c:30:5: warning: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30 [enabled by default]
-tests/cpychecker/refcounts/too_many_increfs/input.c:26:9: note: when PyLong_FromLong() fails at:     tmp = PyLong_FromLong(0x1000);
-tests/cpychecker/refcounts/too_many_increfs/input.c:24:1: note: graphical error report for function 'too_many_increfs' written out to 'tests/cpychecker/refcounts/too_many_increfs/input.c.too_many_increfs-refcount-errors.html'
+In function 'too_many_increfs':
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:nn: warning: memory leak: ob_refcnt of return value is 1 too high [enabled by default]
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:nn: note: return value was allocated at:     tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:nn: note: was expecting final owned ob_refcnt of return value to be 1 due to object being referenced by: return value but final ob_refcnt is refs: 2 owned
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:nn: note: when PyLong_FromLong() succeeds at:     tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:nn: note: ob_refcnt is now refs: 1 owned
+tests/cpychecker/refcounts/too_many_increfs/input.c:30:nn: note: ob_refcnt is now refs: 2 owned
+tests/cpychecker/refcounts/too_many_increfs/input.c:31:nn: note: returning at:     return tmp;
+tests/cpychecker/refcounts/too_many_increfs/input.c:30:nn: warning: dereferencing NULL (tmp->ob_refcnt) at tests/cpychecker/refcounts/too_many_increfs/input.c:30 [enabled by default]
+tests/cpychecker/refcounts/too_many_increfs/input.c:26:nn: note: when PyLong_FromLong() fails at:     tmp = PyLong_FromLong(0x1000);
+tests/cpychecker/refcounts/too_many_increfs/input.c:24:nn: note: graphical error report for function 'too_many_increfs' written out to 'tests/cpychecker/refcounts/too_many_increfs/input.c.too_many_increfs-refcount-errors.html'

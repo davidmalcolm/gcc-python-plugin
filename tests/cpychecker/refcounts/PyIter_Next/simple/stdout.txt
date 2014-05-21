@@ -5,12 +5,12 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=29), region=RegionOnHeap('new ref returned by PyIter_Next()', gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=29)))
     str(): (struct PyObject *)&RegionOnHeap('new ref returned by PyIter_Next()', gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=29)) from tests/cpychecker/refcounts/PyIter_Next/simple/input.c:29
-    r->ob_refcnt: refs: 1 + N where N >= 0
+    r->ob_refcnt: refs: 1 owned
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=29), region=Region('PyTypeObject for new ref returned by PyIter_Next()'))
   region for gcc.ParmDecl('iter') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('iter')")
     str(): region for gcc.ParmDecl('iter') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('iter')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyIter_Next/simple/input.c:28
@@ -25,7 +25,7 @@ Trace 1:
   region for gcc.ParmDecl('iter') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('iter')")
     str(): region for gcc.ParmDecl('iter') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('iter')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyIter_Next/simple/input.c:28
@@ -40,7 +40,7 @@ Trace 2:
   region for gcc.ParmDecl('iter') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('iter')")
     str(): region for gcc.ParmDecl('iter') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyIter_Next/simple/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('iter')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_MemoryError')) from tests/cpychecker/refcounts/PyIter_Next/simple/input.c:29

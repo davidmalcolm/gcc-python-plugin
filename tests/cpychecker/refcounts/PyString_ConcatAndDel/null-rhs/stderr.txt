@@ -1,8 +1,8 @@
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c: In function 'test':
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:5: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29:26: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as non-NULL at:     PyString_ConcatAndDel(str, NULL);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29:26: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29 as non-NULL at:     PyString_ConcatAndDel(str, NULL);
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:5: note: when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() without deallocation on *LHS) at:     return *str;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:5: note: returning at:     return *str;
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:5: note: found 2 similar trace(s) to this
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:nn: warning: returning (PyObject*)NULL without setting an exception [enabled by default]
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29:nn: note: when treating unknown struct PyObject * * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:27 as non-NULL at:     PyString_ConcatAndDel(str, NULL);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29:nn: note: when treating unknown struct PyObject * from tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:29 as non-NULL at:     PyString_ConcatAndDel(str, NULL);
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:nn: note: when PyString_Concat() cleans up due to NULL right-hand side (Py_DECREF() without deallocation on *LHS) at:     return *str;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:nn: note: returning at:     return *str;
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:32:nn: note: found 2 similar trace(s) to this
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/null-rhs/input.c.test-refcount-errors.html'

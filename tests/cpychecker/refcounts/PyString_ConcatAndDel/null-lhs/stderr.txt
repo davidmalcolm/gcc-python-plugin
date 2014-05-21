@@ -1,4 +1,4 @@
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c: In function 'test':
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28:26: warning: calling PyString_ConcatAndDel with NULL as argument 1 (0B) at tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28 [enabled by default]
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28:26: note: dereferences it unconditionally within PyString_Concat
-tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:27:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28:nn: warning: calling PyString_ConcatAndDel with NULL as argument 1 (0B) at tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28 [enabled by default]
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:28:nn: note: dereferences it unconditionally within PyString_Concat
+tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c:27:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyString_ConcatAndDel/null-lhs/input.c.test-refcount-errors.html'

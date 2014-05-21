@@ -1,17 +1,17 @@
-tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c: In function 'handle_subclasses':
-tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:85:19: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
+In function 'handle_subclasses':
+tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:85:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
   argument 10 ("long_obj") had type
     "struct PyLongObject *"
   but was expecting
     "struct PyUnicodeObject * *" (based on PyTypeObject: 'PyUnicode_Type') or "struct PyObject * *"
   for format code "O!"
-tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:90:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:90:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
   argument 12 ("&unknown_obj") had type
     "struct UnknownObject * *"
   but was expecting
     ""struct PyObject * *"" (unable to determine relevant PyTypeObject)
   for format code "O!"
-tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:90:26: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
+tests/cpychecker/PyArg_ParseTuple/code_O_bang/input.c:90:nn: warning: Mismatching type in call to PyArg_ParseTuple with format code "O!O!O!O!O!O!O!" [enabled by default]
   argument 14 ("&extension_obj") had type
     "struct ExtensionObject * *"
   but was expecting

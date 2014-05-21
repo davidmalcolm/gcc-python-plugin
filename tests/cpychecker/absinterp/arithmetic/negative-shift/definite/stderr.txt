@@ -1,4 +1,4 @@
-tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c: In function 'test':
-tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31:5: warning: left shift count is negative [enabled by default]
-tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31:5: warning: negative shift count with right-hand-side (int)-3 from tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31 [enabled by default]
-tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:30:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31:nn: warning: left shift count is negative [enabled by default]
+tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31:nn: warning: negative shift count with right-hand-side (int)-3 from tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:31 [enabled by default]
+tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c:30:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/absinterp/arithmetic/negative-shift/definite/input.c.test-refcount-errors.html'

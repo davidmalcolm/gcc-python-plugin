@@ -1,17 +1,17 @@
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c: In function 'test':
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:29: warning: calling PyDict_SetItem with NULL as argument 3 (value) at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45 [enabled by default]
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33:10: note: when PyDict_New() succeeds at:     dict = PyDict_New();
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:34:8: note: taking False path at:     if (!dict) {
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:9: note: reaching:     key = PyLong_FromLong(500);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:9: note: when PyLong_FromLong() succeeds at:     key = PyLong_FromLong(500);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39:11: note: when PyLong_FromLong() fails at:     value = PyLong_FromLong(1000);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:29: note: PyDict_SetItem() invokes Py_INCREF() on the pointer, thus accessing (NULL)->ob_refcnt
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:29: warning: calling PyDict_SetItem with NULL as argument 2 (key) at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45 [enabled by default]
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33:10: note: when PyDict_New() succeeds at:     dict = PyDict_New();
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:34:8: note: taking False path at:     if (!dict) {
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:9: note: reaching:     key = PyLong_FromLong(500);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:9: note: when PyLong_FromLong() fails at:     key = PyLong_FromLong(500);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39:11: note: when PyLong_FromLong() succeeds at:     value = PyLong_FromLong(1000);
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:29: note: PyDict_SetItem() invokes Py_TYPE() on the pointer via the PyString_CheckExact() macro, thus accessing (NULL)->ob_type
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:29: note: found 1 similar trace(s) to this
-tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:28:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:nn: warning: calling PyDict_SetItem with NULL as argument 3 (value) at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45 [enabled by default]
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33:nn: note: when PyDict_New() succeeds at:     dict = PyDict_New();
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:34:nn: note: taking False path at:     if (!dict) {
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:nn: note: reaching:     key = PyLong_FromLong(500);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:nn: note: when PyLong_FromLong() succeeds at:     key = PyLong_FromLong(500);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39:nn: note: when PyLong_FromLong() fails at:     value = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:nn: note: PyDict_SetItem() invokes Py_INCREF() on the pointer, thus accessing (NULL)->ob_refcnt
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:nn: warning: calling PyDict_SetItem with NULL as argument 2 (key) at tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45 [enabled by default]
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:33:nn: note: when PyDict_New() succeeds at:     dict = PyDict_New();
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:34:nn: note: taking False path at:     if (!dict) {
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:nn: note: reaching:     key = PyLong_FromLong(500);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:38:nn: note: when PyLong_FromLong() fails at:     key = PyLong_FromLong(500);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:39:nn: note: when PyLong_FromLong() succeeds at:     value = PyLong_FromLong(1000);
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:nn: note: PyDict_SetItem() invokes Py_TYPE() on the pointer via the PyString_CheckExact() macro, thus accessing (NULL)->ob_type
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:45:nn: note: found 1 similar trace(s) to this
+tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c:28:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/PyDict_SetItem/incorrect/input.c.test-refcount-errors.html'

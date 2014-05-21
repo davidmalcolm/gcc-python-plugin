@@ -1,10 +1,8 @@
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c: In function 'test':
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: warning: ob_refcnt of return value is 1 too low [enabled by default]
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: was expecting final ob_refcnt to be N + 1 (for some unknown N)
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: due to object being referenced by: return value
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: but final ob_refcnt is N + 0
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: borrowed reference returned by foo() allocated at:     PyObject *obj = foo();
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: when foo() succeeds at:     PyObject *obj = foo();
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:15: note: ob_refcnt is now refs: 0 + N where N >= 1
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:5: note: returning at:     return obj;
-tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:40:1: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c.test-refcount-errors.html'
+In function 'test':
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:nn: warning: future use-after-free: ob_refcnt of return value is 1 too low [enabled by default]
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:nn: note: return value was allocated at:     PyObject *obj = foo();
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:nn: note: was expecting final owned ob_refcnt of return value to be 1 due to object being referenced by: return value but final ob_refcnt is refs: 0 owned, 1 borrowed
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:nn: note: when foo() succeeds at:     PyObject *obj = foo();
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:45:nn: note: ob_refcnt is now refs: 0 owned, 1 borrowed
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:46:nn: note: returning at:     return obj;
+tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c:40:nn: note: graphical error report for function 'test' written out to 'tests/cpychecker/refcounts/attributes/returns-borrowed-ref/incorrect-usage/input.c.test-refcount-errors.html'

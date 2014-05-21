@@ -1,4 +1,4 @@
-tests/cpychecker/absinterp/custom-strdup/input.c: In function 'test_strdup':
+In function 'test_strdup':
 tests/cpychecker/absinterp/custom-strdup/input.c:50:nn: warning: possibly dereferencing NULL (*str) at tests/cpychecker/absinterp/custom-strdup/input.c:50 [enabled by default]
 tests/cpychecker/absinterp/custom-strdup/input.c:45:nn: note: when treating unknown void * from tests/cpychecker/absinterp/custom-strdup/input.c:43 as non-NULL at:     if (!result) {
 tests/cpychecker/absinterp/custom-strdup/input.c:45:nn: note: taking False path at:     if (!result) {

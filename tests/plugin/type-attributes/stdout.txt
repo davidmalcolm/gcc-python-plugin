@@ -3,7 +3,7 @@ str(fn_type): 'int example0 (const char *, const char *, const char *)'
 str(fn_type.type): 'int'
 argument_types: ['const char *', 'const char *', 'const char *']
 fn_type.attributes: {}
-gccutils.get_nonnull_arguments(fn_type): frozenset([])
+gccutils.get_nonnull_arguments(fn_type): frozenset()
 -----------------------------------------------------
 
 fn_type_decl.name: 'example1'
@@ -11,7 +11,7 @@ str(fn_type): 'int example1 (const char *, const char *, const char *)'
 str(fn_type.type): 'int'
 argument_types: ['const char *', 'const char *', 'const char *']
 fn_type.attributes: {'nonnull': []}
-gccutils.get_nonnull_arguments(fn_type): frozenset([0, 1, 2])
+gccutils.get_nonnull_arguments(fn_type): frozenset({0, 1, 2})
 -----------------------------------------------------
 
 fn_type_decl.name: 'example2'
@@ -19,7 +19,7 @@ str(fn_type): 'int example2 (const char *, const char *, const char *)'
 str(fn_type.type): 'int'
 argument_types: ['const char *', 'const char *', 'const char *']
 fn_type.attributes: {'nonnull': [gcc.IntegerCst(1), gcc.IntegerCst(3)]}
-gccutils.get_nonnull_arguments(fn_type): frozenset([0, 2])
+gccutils.get_nonnull_arguments(fn_type): frozenset({0, 2})
 -----------------------------------------------------
 
 fn_type_decl.name: 'example3'
@@ -27,6 +27,6 @@ str(fn_type): 'int example3 (const char *, const char *, const char *)'
 str(fn_type.type): 'int'
 argument_types: ['const char *', 'const char *', 'const char *']
 fn_type.attributes: {'nonnull': [gcc.IntegerCst(1)]}
-gccutils.get_nonnull_arguments(fn_type): frozenset([0])
+gccutils.get_nonnull_arguments(fn_type): frozenset({0})
 -----------------------------------------------------
 

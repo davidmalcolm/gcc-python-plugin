@@ -8,17 +8,17 @@ Trace 0:
   region for gcc.ParmDecl('o') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('o')")
     str(): region for gcc.ParmDecl('o') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
   region for gcc.ParmDecl('name') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('name')")
     str(): region for gcc.ParmDecl('name') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
   region for gcc.ParmDecl('value') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('value')")
     str(): region for gcc.ParmDecl('value') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('value')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:28
@@ -33,17 +33,17 @@ Trace 1:
   region for gcc.ParmDecl('o') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('o')")
     str(): region for gcc.ParmDecl('o') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('o')"))
   region for gcc.ParmDecl('name') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('name')")
     str(): region for gcc.ParmDecl('name') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('name')"))
   region for gcc.ParmDecl('value') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('value')")
     str(): region for gcc.ParmDecl('value') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c', line=27), region=Region("region-for-type-of-arg-gcc.ParmDecl('value')"))
   Exception:
     (struct PyObject *)&RegionForGlobal(gcc.VarDecl('PyExc_AttributeError')) from tests/cpychecker/refcounts/PyObject_GenericSetAttr/basic/input.c:29

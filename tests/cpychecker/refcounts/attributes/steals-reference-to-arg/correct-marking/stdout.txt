@@ -4,17 +4,17 @@ Trace 0:
   Return value:
     repr(): PointerToRegion(gcctype='struct PyObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/correct-marking/input.c', line=51), region=RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')))
     str(): (struct PyObject *)&RegionForGlobal(gcc.VarDecl('_Py_NoneStruct')) from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/correct-marking/input.c:51
-    r->ob_refcnt: refs: 1 + N where N >= 1
+    r->ob_refcnt: refs: 1 owned, 1 borrowed
     r->ob_type: None
   region for gcc.ParmDecl('foo') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('foo')")
     str(): region for gcc.ParmDecl('foo') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/correct-marking/input.c', line=43), region=Region("region-for-type-of-arg-gcc.ParmDecl('foo')"))
   region for gcc.ParmDecl('bar') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('bar')")
     str(): region for gcc.ParmDecl('bar') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/attributes/steals-reference-to-arg/correct-marking/input.c', line=43), region=Region("region-for-type-of-arg-gcc.ParmDecl('bar')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/attributes/steals-reference-to-arg/correct-marking/input.c:44

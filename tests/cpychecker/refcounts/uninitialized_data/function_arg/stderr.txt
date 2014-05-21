@@ -1,4 +1,4 @@
-tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c: In function 'test':
+In function 'test':
 tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41:nn: warning: passing uninitialized data (item) as argument 3 to function at tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:41 [enabled by default]
 tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:34:nn: note: when PyList_New() succeeds at:     result = PyList_New(len);
 tests/cpychecker/refcounts/uninitialized_data/function_arg/input.c:35:nn: note: taking False path at:     if (!result) {

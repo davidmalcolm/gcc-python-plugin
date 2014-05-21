@@ -7,7 +7,7 @@ Trace 0:
   region for gcc.ParmDecl('obj') on stack:
     repr(): RegionOnStack("region for gcc.ParmDecl('obj')")
     str(): region for gcc.ParmDecl('obj') on stack
-    r->ob_refcnt: refs: 0 + N where N >= 1
+    r->ob_refcnt: refs: 0 owned, 1 borrowed
     r->ob_type: PointerToRegion(gcctype='struct PyTypeObject *', loc=gcc.Location(file='tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c', line=30), region=Region("region-for-type-of-arg-gcc.ParmDecl('obj')"))
   Exception:
     (struct PyObject *)0 from tests/cpychecker/refcounts/tp_iternext/partial-type-object/input.c:31
