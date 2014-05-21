@@ -198,7 +198,7 @@ gcc_cfg_block_for_each_gimple_phi (gcc_cfg_block block,
       return false;
     }
 
-  for (gsi = gsi_start (info->seq);
+  for (gsi = gsi_start (info->phi_nodes);
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
 
