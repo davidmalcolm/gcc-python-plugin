@@ -57,6 +57,8 @@ from cpybuilder import CommandError
 
 from testcpychecker import get_gcc_version
 
+WRITEBACK=0
+
 PLUGIN_NAME = os.environ.get('PLUGIN_NAME', 'python')
 
 class CompilationError(CommandError):
@@ -385,8 +387,8 @@ def run_test(testdir):
     if exitcode_expected == 0:
         assert os.path.exists(outfile)
     
-    out.check_for_diff(out.actual, err.actual, p, args, 'stdout', 0)
-    err.check_for_diff(out.actual, err.actual, p, args, 'stderr', 0)
+    out.check_for_diff(out.actual, err.actual, p, args, 'stdout', WRITEBACK)
+    err.check_for_diff(out.actual, err.actual, p, args, 'stderr', WRITEBACK)
 
 
 from optparse import OptionParser
