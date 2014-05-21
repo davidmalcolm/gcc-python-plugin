@@ -34,7 +34,7 @@ class StmtGraph(Graph):
                  '__lastnode',
                  'supernode_for_stmtnode')
 
-    def __init__(self, fun, split_phi_nodes):
+    def __init__(self, fun, split_phi_nodes, omit_complex_edges=False):
         """
         fun : the underlying gcc.Function
 
@@ -65,7 +65,7 @@ class StmtGraph(Graph):
             self.__lastnode = None
 
             def add_stmt(stmt):
-                nextnode = self.add_node(StmtNode(fun, stmt))
+                nextnode = self.add_node(StmtNode(fun, bb, stmt))
                 self.node_for_stmt[stmt] = nextnode
                 if self.__lastnode:
                     self.add_edge(self.__lastnode, nextnode, None)
@@ -96,7 +96,7 @@ class StmtGraph(Graph):
                     # returning void that contain multiple "return;"
                     # statements:
                     cls = StmtNode
-                node = self.add_node(cls(fun, None))
+                node = self.add_node(cls(fun, bb, None))
                 self.entry_of_bb[bb] = node
                 self.exit_of_bb[bb] = node
                 if bb == fun.cfg.entry:
@@ -110,6 +110,13 @@ class StmtGraph(Graph):
         # 2nd pass: wire up the cross-BB edges:
         for bb in basic_blocks:
             for edge in bb.succs:
+
+                # If requested, omit "complex" edges e.g. due to
+                # exception-handling:
+                if omit_complex_edges:
+                    if edge.complex:
+                        continue
+
                 last_node = self.exit_of_bb[bb]
                 if split_phi_nodes:
                     # add SplitPhiNode instances at the end of each edge
@@ -150,7 +157,7 @@ class StmtGraph(Graph):
                     edge.caselabelexprs = frozenset(caselabelexprs)
 
     def _make_edge(self, srcnode, dstnode, edge):
-        return StmtEdge(srcnode, dstnode, edge)
+        return StmtEdge(srcnode, dstnode, edge, len(self.edges))
 
     def get_entry_nodes(self):
         return [self.entry]
@@ -161,11 +168,12 @@ class StmtGraph(Graph):
         return self.entry_of_bb[bb]
 
 class StmtNode(Node):
-    __slots__ = ('fun', 'stmt')
+    __slots__ = ('fun', 'bb', 'stmt')
 
-    def __init__(self, fun, stmt):
+    def __init__(self, fun, bb, stmt):
         Node.__init__(self)
         self.fun = fun
+        self.bb = bb
         self.stmt = stmt # can be None for empty BBs
 
     def __str__(self):
@@ -202,6 +210,9 @@ class StmtNode(Node):
             # return Font([table], face="monospace")
         else:
             return Text(str(self))
+
+    def __eq__(self, other):
+        return self.stmt == other.stmt
 
 class EntryNode(StmtNode):
     __slots__ = ()
@@ -268,7 +279,7 @@ class SplitPhiNode(StmtNode):
     __slots__ = ('inneredge', 'rhs')
 
     def __init__(self, fun, stmt, inneredge):
-        StmtNode.__init__(self, fun, stmt)
+        StmtNode.__init__(self, fun, None, stmt)
         self.inneredge = inneredge
 
         # Lookup the RHS for this edge:
@@ -288,18 +299,24 @@ class SplitPhiNode(StmtNode):
     def __repr__(self):
         return 'SplitPhiNode(%r, %r)' % (self.stmt, self.inneredge)
 
-class StmtEdge(Edge):
-    __slots__ = ('cfgedge', 'caselabelexprs')
+    def __eq__(self, other):
+        return isinstance(other, SplitPhiNode) and self.inneredge == other.inneredge
 
-    def __init__(self, srcnode, dstnode, cfgedge):
+class StmtEdge(Edge):
+    __slots__ = ('cfgedge', 'sortidx', 'caselabelexprs')
+
+    def __init__(self, srcnode, dstnode, cfgedge, sortidx):
         Edge.__init__(self, srcnode, dstnode)
         self.cfgedge = cfgedge # will be None within a BB
+        self.sortidx = sortidx
 
         # For use in handling switch statements:
         # the set of gcc.CaseLabelExpr for this edge
         self.caselabelexprs = frozenset()
 
+
     def to_dot_label(self, ctx):
+        return str(self.sortidx)
         if self.cfgedge:
             if self.cfgedge.true_value:
                 return 'true'
@@ -330,4 +347,7 @@ class StmtEdge(Edge):
     def false_value(self):
         if self.cfgedge:
             return self.cfgedge.false_value
+
+    def __cmp__(self, other):
+        return cmp(self.sortidx, other.sortidx)
 

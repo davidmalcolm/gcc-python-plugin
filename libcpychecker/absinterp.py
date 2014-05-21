@@ -20,7 +20,10 @@ import gccutils
 import re
 import sys
 from six import StringIO, integer_types
+
 from gccutils import get_src_for_loc, get_nonnull_arguments, check_isinstance
+from gccutils.graph.stmtgraph import StmtGraph, StmtNode
+
 from collections import OrderedDict
 from libcpychecker.utils import log, logging_enabled
 from libcpychecker.types import *
@@ -1038,7 +1041,7 @@ class UsageOfUninitializedData(PredictedValueError):
 
     def __str__(self):
         return ('%s at %s'
-                % (self.desc, self.state.loc.get_stmt().loc))
+                % (self.desc, self.state.stmtnode.get_stmt().loc))
 
 class NullPtrDereference(PredictedValueError):
     def __init__(self, state, expr, ptr, isdefinite):
@@ -1050,10 +1053,10 @@ class NullPtrDereference(PredictedValueError):
     def __str__(self):
         if self.isdefinite:
             return ('dereferencing NULL (%s) at %s'
-                    % (self.expr, self.state.loc.get_stmt().loc))
+                    % (self.expr, self.state.stmtnode.get_stmt().loc))
         else:
             return ('possibly dereferencing NULL (%s) at %s'
-                    % (self.expr, self.state.loc.get_stmt().loc))
+                    % (self.expr, self.state.stmtnode.get_stmt().loc))
 
 class NullPtrArgument(PredictedValueError):
     def __init__(self, state, stmt, idx, ptr, isdefinite, why):
@@ -1076,13 +1079,13 @@ class NullPtrArgument(PredictedValueError):
                     % (self.stmt.fn,
                        self.idx + 1,
                        self.expr,
-                       self.state.loc.get_stmt().loc))
+                       self.state.stmtnode.get_stmt().loc))
         else:
             return ('possibly calling %s with NULL as argument %i (%s) at %s'
                     % (self.stmt.fn,
                        self.idx + 1,
                        self.expr,
-                       self.state.loc.get_stmt().loc))
+                       self.state.stmtnode.get_stmt().loc))
 
 
 
@@ -1119,68 +1122,14 @@ def describe_stmt(stmt):
     else:
         return str(stmt.loc)
 
-class Location(object):
-    """A location within a CFG: a gcc.BasicBlock together with an index into
-    the gimple list.  (We don't support SSA passes)"""
-    __slots__ = ('bb', 'idx', )
-
-    def __init__(self, bb, idx):
-        check_isinstance(bb, gcc.BasicBlock)
-        check_isinstance(idx, int)
-        self.bb = bb
-        self.idx = idx
-
-    def __repr__(self):
-        return ('Location(bb=%i, idx=%i)'
-                % (self.bb.index, self.idx))
-
-    def __str__(self):
-        stmt = self.get_stmt()
-        return ('block %i stmt:%i : %20r : %s'
-                % (self.bb.index, self.idx, stmt, stmt))
-
-    def next_locs(self):
-        """Get a list of Location instances, for what can happen next"""
-        if self.bb.gimple and len(self.bb.gimple) > self.idx + 1:
-            # Next gimple statement:
-            return [Location(self.bb, self.idx + 1)]
-        else:
-            # At end of gimple statements: successor BBs:
-            return [Location.get_block_start(outedge.dest) for outedge in self.bb.succs]
-
-    def next_loc(self):
-        """Get the next Location, for when it's unique"""
-        if self.bb.gimple:
-            if len(self.bb.gimple) > self.idx + 1:
-                # Next gimple statement:
-                return Location(self.bb, self.idx + 1)
-            else:
-                # Pick the next BB, avoiding "complex" successors
-                # e.g. exception-handling:
-                regular_succs = [e for e in self.bb.succs if not e.complex]
-                assert len(regular_succs) == 1
-                return Location.get_block_start(regular_succs[0].dest)
-
-    def __eq__(self, other):
-        return self.bb == other.bb and self.idx == other.idx
-
-    @classmethod
-    def get_block_start(cls, bb):
-        # Don't bother iterating through phi_nodes if there aren't any:
-        return Location(bb, 0)
-
-    def get_stmt(self):
-        if self.bb.gimple:
-            return self.bb.gimple[self.idx]
-        else:
-            return None
-
-    def get_gcc_loc(self):
-        stmt = self.get_stmt()
-        if stmt:
-            return stmt.loc
-        else:
-            return None
+def next_stmt_node(stmtnode):
+    if len(stmtnode.succs) != 1:
+        raise ValueError('len(stmtnode.succs) == %i at %s'
+                         % (len(stmtnode.succs), stmtnode))
+    edge = list(stmtnode.succs)[0]
+    assert edge.srcnode == stmtnode
+    assert edge.dstnode != stmtnode
+    return edge.dstnode
 
 class Region(object):
     __slots__ = ('name', 'parent', 'children', 'fields', )
@@ -1387,13 +1336,14 @@ class State(object):
     # We can't use the __slots__ optimization here, as we're adding additional
     # per-facet attributes
 
-    def __init__(self, fun, loc, facets, region_for_var=None, value_for_region=None,
+    def __init__(self, stmtgraph, stmtnode, facets, region_for_var=None, value_for_region=None,
                  return_rvalue=None, has_returned=False, not_returning=False):
-        check_isinstance(fun, gcc.Function)
-        check_isinstance(loc, Location)
+        check_isinstance(stmtgraph, StmtGraph)
+        check_isinstance(stmtnode, StmtNode)
         check_isinstance(facets, dict)
-        self.fun = fun
-        self.loc = loc
+        self.stmtgraph = stmtgraph
+        self.fun = stmtgraph.fun
+        self.stmtnode = stmtnode
         self.facets = facets
 
         # Mapping from VarDecl.name to Region:
@@ -1416,13 +1366,13 @@ class State(object):
 
     def __str__(self):
         return ('loc: %s region_for_var:%s value_for_region:%s'
-                % (self.loc,
+                % (self.stmtnode,
                    self.region_for_var,
                    self.value_for_region))
 
     def __repr__(self):
         return ('loc: %r region_for_var:%r value_for_region:%r'
-                % (self.loc,
+                % (self.stmtnode,
                    self.region_for_var,
                    self.value_for_region))
 
@@ -1445,7 +1395,7 @@ class State(object):
             value = self.value_for_region.get(region, None)
             if value:
                 variables[region.as_json()] = value.as_json(self)
-        result = dict(location=location_as_json(self.loc.get_gcc_loc()),
+        result = dict(location=location_as_json(self.stmtnode.get_gcc_loc()),
                       message=desc,
                       variables=variables)
         return result
@@ -1461,13 +1411,13 @@ class State(object):
         # FIXME: derived class/extra:
         #self.resources.log(logger, indent)
 
-        logger('loc: %s', self.loc)
-        if self.loc.get_stmt():
-            logger('%s', self.loc.get_stmt().loc)
+        logger('loc: %s', self.stmtnode)
+        if self.stmtnode.get_stmt():
+            logger('%s', self.stmtnode.get_stmt().loc)
 
     def copy(self):
-        s_new = State(self.fun,
-                      self.loc,
+        s_new = State(self.stmtgraph,
+                      self.stmtnode,
                       self.facets,
                       self.region_for_var.copy(),
                       self.value_for_region.copy(),
@@ -1979,23 +1929,23 @@ class State(object):
         if desc:
             check_isinstance(desc, str)
         new = self.copy()
-        new.loc = self.loc.next_loc()
+        new.stmtnode = next_stmt_node(self.stmtnode)
         if lhs:
-            new.assign(lhs, rhs, self.loc.get_gcc_loc())
+            new.assign(lhs, rhs, self.stmtnode.get_gcc_loc())
         return Transition(self, new, desc)
 
-    def update_loc(self, newloc):
+    def update_stmt_node(self, new_stmt_node):
         new = self.copy()
-        new.loc = newloc
+        new.stmtnode = new_stmt_node
         return new
 
-    def use_next_loc(self):
-        newloc = self.loc.next_loc()
-        return self.update_loc(newloc)
+    def use_next_stmt_node(self):
+        new_stmt_node = next_stmt_node(self.stmtnode)
+        return self.update_stmt_node(new_stmt_node)
 
     def get_gcc_loc_or_none(self):
         # Return the gcc.Location for this state, which could be None
-        stmt = self.loc.get_stmt()
+        stmt = self.stmtnode.get_stmt()
         if stmt:
             return stmt.loc
 
@@ -2003,12 +1953,11 @@ class State(object):
         # Return a non-None gcc.Location for this state
         # Some statements have None for their location, but gcc.error() etc
         # don't allow this.  Use the end of the function for this case.
-        stmt = self.loc.get_stmt()
-        log('%s %r', stmt, stmt)
+        stmt = self.stmtnode.get_stmt()
         if stmt:
-            log('%s' % self.loc.get_stmt().loc)
+            log('%s' % self.stmtnode.get_stmt().loc)
             # grrr... not all statements have a non-NULL location
-            gccloc = self.loc.get_stmt().loc
+            gccloc = self.stmtnode.get_stmt().loc
             if gccloc is None:
                 gccloc = fun.end
             return gccloc
@@ -2089,14 +2038,14 @@ class State(object):
 
     def get_transitions(self):
         # Return a list of Transition instances, based on input State
-        stmt = self.loc.get_stmt()
+        stmt = self.stmtnode.get_stmt()
         if stmt:
             return self._get_transitions_for_stmt(stmt)
         else:
             result = []
-            for loc in self.loc.next_locs():
+            for succedge in sorted(self.stmtnode.succs):
                 newstate = self.copy()
-                newstate.loc = loc
+                newstate.stmtnode = succedge.dstnode
                 result.append(Transition(self, newstate, ''))
             log('result: %s', result)
             return result
@@ -2111,7 +2060,7 @@ class State(object):
         elif isinstance(stmt, (gcc.GimpleDebug, gcc.GimpleLabel,
                                gcc.GimplePredict, gcc.GimpleNop)):
             return [Transition(self,
-                               self.use_next_loc(),
+                               self.use_next_stmt_node(),
                                None)]
         elif isinstance(stmt, gcc.GimpleCond):
             return self._get_transitions_for_GimpleCond(stmt)
@@ -2133,7 +2082,7 @@ class State(object):
         functions with "void" return type
         """
         newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.stmtnode)
         return newstate
 
     def mkstate_return_of(self, stmt, v_return):
@@ -2143,7 +2092,7 @@ class State(object):
         """
         check_isinstance(v_return, AbstractValue)
         newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.stmtnode)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             v_return,
@@ -2157,7 +2106,7 @@ class State(object):
         """
         check_isinstance(value, numeric_types)
         newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.stmtnode)
         if stmt.lhs:
             newstate.assign(stmt.lhs,
                             ConcreteValue(stmt.lhs.type, stmt.loc, value),
@@ -2171,7 +2120,7 @@ class State(object):
         [We might subsequently modify the destination state, though]
         """
         newstate = self.copy()
-        newstate.loc = self.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.stmtnode)
         return Transition(self, newstate, 'calling %s()' % fnname)
 
 
@@ -2433,9 +2382,9 @@ class State(object):
 
     def _get_transitions_for_GimpleCond(self, stmt):
         def make_transition_for_true(stmt, has_siblings):
-            e = true_edge(self.loc.bb)
+            e = true_edge(self.stmtnode)
             assert e
-            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate = self.update_stmt_node(e.dstnode)
             nextstate.prior_bool = True
             if has_siblings:
                 desc = 'when taking True path'
@@ -2444,9 +2393,9 @@ class State(object):
             return Transition(self, nextstate, desc)
 
         def make_transition_for_false(stmt, has_siblings):
-            e = false_edge(self.loc.bb)
+            e = false_edge(self.stmtnode)
             assert e
-            nextstate = self.update_loc(Location.get_block_start(e.dest))
+            nextstate = self.update_stmt_node(e.dstnode)
             nextstate.prior_bool = False
             if has_siblings:
                 desc = 'when taking False path'
@@ -2634,7 +2583,7 @@ class State(object):
         if isinstance(value, DeallocatedMemory):
             raise ReadFromDeallocatedMemory(stmt, value)
 
-        nextstate = self.use_next_loc()
+        nextstate = self.use_next_stmt_node()
         return [self.mktrans_assignment(stmt.lhs,
                                         value,
                                         None)]
@@ -2671,8 +2620,8 @@ class State(object):
         result = []
         for label in labels:
             newstate = self.copy()
-            bb = self.fun.cfg.get_block_for_label(label.target)
-            newstate.loc = Location(bb, 0)
+            bb = self.stmtgraph.fun.cfg.get_block_for_label(label.target)
+            newstate.stmtnode = self.stmtgraph.entry_of_bb[bb]
             if label.low:
                 check_isinstance(label.low, gcc.IntegerCst)
                 if label.high:
@@ -2693,7 +2642,7 @@ class State(object):
         if stmt.string == '':
             # Empty fragment of inline assembler:
             s_next = self.copy()
-            s_next.loc = self.loc.next_loc()
+            s_next.stmtnode = next_stmt_node(self.stmtnode)
             return [Transition(self, s_next, None)]
 
         raise NotImplementedError('Unable to handle inline assembler: %s'
@@ -2755,17 +2704,16 @@ class Trace(object):
         self.transitions = []
         self.err = None
 
-        # A list of (src gcc.BasicBlock, dest gcc.BasicBlock) pairs
-        # where the basic blocks are different
+        # A list of (src gcc.StmtNode, dest gcc.StmtNode) pairs
         self.paths_taken = []
 
     def add(self, transition):
         check_isinstance(transition, Transition)
         self.states.append(transition.dest)
         self.transitions.append(transition)
-        if transition.src.loc.bb != transition.dest.loc.bb:
-            self.paths_taken.append( (transition.src.loc.bb,
-                                      transition.dest.loc.bb) )
+        if transition.src.stmtnode.bb != transition.dest.stmtnode.bb:
+            self.paths_taken.append( (transition.src.stmtnode.bb,
+                                      transition.dest.stmtnode.bb) )
         return self
 
     def add_error(self, err):
@@ -2788,7 +2736,7 @@ class Trace(object):
             logger('  Trace ended with error: %s' % self.err)
 
     def get_last_stmt(self):
-        return self.states[-1].loc.get_stmt()
+        return self.states[-1].stmtnode.get_stmt()
 
     def return_value(self):
         return self.states[-1].return_rvalue
@@ -2817,8 +2765,8 @@ class Trace(object):
                        'src, loc: %s' % ((endtransition.src.loc, endtransition.dest.loc),))
 
         # Is this a path we've followed before?
-        src_bb = endtransition.src.loc.bb
-        dest_bb = endtransition.dest.loc.bb
+        src_bb = endtransition.src.stmtnode.bb
+        dest_bb = endtransition.dest.stmtnode.bb
         if src_bb != dest_bb:
             if (src_bb, dest_bb) in self.paths_taken[0:-1]:
                 return True
@@ -2893,16 +2841,15 @@ class Trace(object):
         # Otherwise, just use the name of the region
         return r_in.name
 
-def true_edge(bb):
-    for e in bb.succs:
+def true_edge(stmtnode):
+    for e in stmtnode.succs:
         if e.true_value:
             return e
 
-def false_edge(bb):
-    for e in bb.succs:
+def false_edge(stmtnode):
+    for e in stmtnode.succs:
         if e.false_value:
             return e
-
 
 def process_splittable_transitions(transitions, callback):
     """
@@ -2979,11 +2926,14 @@ class Limits:
         """
         result is a list of all *complete* traces so far
         """
+        if 0:
+            print('%s -> %s'
+                  % (transition.src.stmtnode, transition.dest.stmtnode))
         self.trans_seen += 1
         if self.trans_seen > self.maxtrans:
             raise TooComplicated(result)
 
-def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
+def iter_traces(stmtgraph, facets, prefix=None, limits=None, depth=0):
     """
     Traverse the tree of traces of program state, returning a list
     of Trace instances.
@@ -2996,11 +2946,12 @@ def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
     capture an incomplete list of paths down to some of the bottoms of the
     tree.
     """
+    fun = stmtgraph.fun
     log('iter_traces(%r, %r, %r)', fun, facets, prefix)
     if prefix is None:
         prefix = Trace()
-        curstate = State(fun,
-                         Location.get_block_start(fun.cfg.entry),
+        curstate = State(stmtgraph,
+                         stmtgraph.get_entry_nodes()[0],
                          facets,
                          None, None, None)
         #Resources())
@@ -3039,7 +2990,7 @@ def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
         prevstate = None
 
     prefix.log(log, 'PREFIX')
-    log('  %s:%s', fun.decl.name, curstate.loc)
+    log('  %s:%s', fun.decl.name, curstate.stmtnode)
     try:
         transitions = curstate.get_transitions()
         check_isinstance(transitions, list)
@@ -3076,7 +3027,7 @@ def iter_traces(fun, facets, prefix=None, limits=None, depth=0):
             # Recurse
             # This gives us a depth-first traversal of the state tree
             try:
-                for trace in iter_traces(fun, facets, newprefix, limits,
+                for trace in iter_traces(stmtgraph, facets, newprefix, limits,
                                          depth + 1):
                     result.append(trace)
             except TooComplicated:
@@ -3117,7 +3068,7 @@ class StateGraph:
         self._gather_states(initial, logger)
 
     def _gather_states(self, curstate, logger):
-        logger('  %s:%s' % (self.fun.decl.name, curstate.loc))
+        logger('  %s:%s' % (self.fun.decl.name, curstate.stmtnode))
         try:
             transitions = curstate.get_transitions()
             #print transitions

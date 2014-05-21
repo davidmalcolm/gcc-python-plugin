@@ -77,7 +77,7 @@ def describe_trace(trace, report, annotator):
                 report.add_inform(t.src.get_gcc_loc(report.fun),
                                   '%s' % t.desc)
 
-            if t.src.loc.bb != t.dest.loc.bb:
+            if t.src.stmtnode.bb != t.dest.stmtnode.bb:
                 # Tell the user where conditionals reach:
                 destloc = t.dest.get_gcc_loc_or_none()
                 if destloc:

@@ -150,7 +150,7 @@ class FunctionCall:
         assert not self._never_returns
         if s_new is None:
             s_new = self.s_src.copy()
-            s_new.loc = self.s_src.loc.next_loc()
+            s_new.stmtnode = next_stmt_node(self.s_src.stmtnode)
         oc_new = Outcome(self, desc, s_new)
         self.outcomes.append(oc_new)
         return oc_new
@@ -449,7 +449,7 @@ class GenericTpDealloc(AbstractValue):
                                        UnknownValue.make(returntype, stmt.loc),
                                           desc)
         s_new = state.copy()
-        s_new.loc = state.loc.next_loc()
+        s_new.stmtnode = next_stmt_node(state.stmtnode)
 
         if region is not None:
             # Mark the region as deallocated:
@@ -825,7 +825,7 @@ class CPython(Facet):
         Returns a pair: (newstate, RegionOnHeap for the new object)
         """
         newstate = self.state.copy()
-        newstate.loc = self.state.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.state.stmtnode)
 
         r_nonnull = newstate.cpython.make_sane_object(stmt, name,
                                               RefcountValue.new_ref(stmt.loc, None),
@@ -843,7 +843,7 @@ class CPython(Facet):
         """Make a new State, giving a borrowed ref to some object"""
         check_isinstance(fnmeta, FnMeta)
         newstate = self.state.copy()
-        newstate.loc = self.state.loc.next_loc()
+        newstate.stmtnode = next_stmt_node(self.state.stmtnode)
 
         r_nonnull = newstate.cpython.make_sane_object(stmt,
                                               'borrowed reference returned by %s()' % fnmeta.name,
@@ -2485,7 +2485,7 @@ class CPython(Facet):
         # FIXME: it's unsafe to call repeatedly, or on the wrong memory region
 
         s_new = self.state.copy()
-        s_new.loc = self.state.loc.next_loc()
+        s_new.stmtnode = next_stmt_node(self.state.stmtnode)
         desc = None
 
         # It's safe to call on NULL
@@ -3827,10 +3827,10 @@ class CPython(Facet):
 
 
 def get_traces(fun):
-    return list(iter_traces(fun,
+    stmtgraph = make_stmt_graph(fun)
+    return list(iter_traces(stmtgraph,
                             {'cpython':CPython},
                             limits=Limits(maxtrans=1024)))
-
 
 def dump_traces_to_stdout(traces):
     """
@@ -4206,6 +4206,9 @@ def warn_about_NULL_without_exception(v_return,
                        % v_return.value))
                 w.add_trace(trace, ExceptionStateAnnotator())
 
+def make_stmt_graph(fun):
+    stmtgraph = StmtGraph(fun, False, omit_complex_edges=True)
+    return stmtgraph
 
 def impl_check_refcounts(fun, dump_traces=False,
                          show_possible_null_derefs=False,
@@ -4238,8 +4241,14 @@ def impl_check_refcounts(fun, dump_traces=False,
 
     limits=Limits(maxtrans=maxtrans)
 
+    stmtgraph = make_stmt_graph(fun)
+    if 0:
+        dot = stmtgraph.to_dot('foo')
+        from gccutils import invoke_dot
+        invoke_dot(dot)
+
     try:
-        traces = iter_traces(fun,
+        traces = iter_traces(stmtgraph,
                              facets,
                              limits=limits)
     except TooComplicated:
