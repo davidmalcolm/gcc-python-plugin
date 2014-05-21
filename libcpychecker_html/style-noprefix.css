@@ -185,7 +185,6 @@ img {
 .source {
     height: 100%;
     font-size: 12px;
-    padding: 1em;
     background: white;
     line-height: 1.33;
     overflow-x: auto;
@@ -194,7 +193,6 @@ img {
 }
 .source table {
     width: 100%;
-    margin-top: 1em;
     font-family: monospace;
 }
 
@@ -222,12 +220,6 @@ img {
     padding-top:20px;
     padding-left:20px;
     padding-right:10px;
-}
-
-
-#content table.source {
-    clear: left;
-    margin: 2em 0;
 }
 
 #content .source td {
@@ -315,6 +307,7 @@ var.leak {
 .flow-line {
     background: hsl(210, 80%, 60%);
     background-clip: content-box;
+    width: 2px;
 }
 .flow-empty, .flow-line {
     padding: 0 5px;
