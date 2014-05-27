@@ -70,7 +70,11 @@ class HtmlPage(object):
                 'http-equiv': 'Content-Type',
                 'content': 'text/html; charset=utf-8'
             }),
-            E.TITLE('%s -- GCC Python Plugin' % self.data['filename']),
+            # get_string() _mysql.c -- GCC Python Plugin
+            E.TITLE('%s() %s -- GCC Python Plugin' % (
+                self.data['function']['name'],
+                self.data['filename'],
+            )),
         )
         head.extend(
             E.STYLE(

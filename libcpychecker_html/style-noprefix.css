@@ -279,6 +279,7 @@ img {
 }
 .states li.new-subflow {
     border-top-width: 4px;
+    border-top-color: black;
 }
 .states h2 {
     float: right;
