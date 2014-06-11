@@ -234,6 +234,10 @@ install: $(PLUGIN_DSO) gcc-with-$(PLUGIN_NAME).1.gz
 	cp -a gccutils $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 	cp -a libcpychecker $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 
+	# add python dir to python search path
+	mkdir -p $(shell $(PYTHON) -m site --user-site)
+	echo "$(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)" > $(shell $(PYTHON) -m site --user-site)/gcc-python-plugin.pth
+
 	# Create "gcc-with-" support script:
 	mkdir -p $(DESTDIR)$(bindir)
 	install -m 755 gcc-with-python $(DESTDIR)/$(bindir)/gcc-with-$(PLUGIN_NAME)
