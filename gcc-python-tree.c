@@ -542,8 +542,7 @@ PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
 {
     PyObject *result;
     PyObject *item;
-    int i;
-    unsigned int size;
+    int i, size;
     tree iter;
     tree head = TYPE_ARG_TYPES(self->t.inner);
 
