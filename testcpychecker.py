@@ -90,6 +90,13 @@ class AnalyzerTests(unittest.TestCase):
         return bm
 
     def assertFindsError(self, src, experr):
+        if GCC_VERSION >= 4009:
+            experr = experr.replace('$(SRCFILE):12:26:', '$(SRCFILE):12:10:')
+            experr = experr.replace('$(SRCFILE):13:25:', '$(SRCFILE):13:9:')
+            experr = experr.replace('$(SRCFILE):13:26:', '$(SRCFILE):13:10:')
+            experr = experr.replace('$(SRCFILE):14:26:', '$(SRCFILE):14:10:')
+            experr = experr.replace('$(SRCFILE):14:37:', '$(SRCFILE):14:10:')
+            experr = experr.replace('$(SRCFILE):17:26:', '$(SRCFILE):17:10:')
         if isinstance(src, SimpleModule):
             sm = src
         else:

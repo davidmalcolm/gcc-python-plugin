@@ -163,6 +163,9 @@ class TestStream:
             line = re.sub(r'input.c:([0-9]+):([0-9]+):',
                           r'input.c:\1:nn:',
                           line)
+            line = re.sub(r'hash_format_codes.inc:([0-9]+):([0-9]+):',
+                          r'hash_format_codes.inc:\1:nn:',
+                          line)
 
             # GCC 4.8's output sometimes omits the filename prefix for a
             # diagnostic:
@@ -176,6 +179,9 @@ class TestStream:
             line = re.sub(r'r->ob_refcnt: \(long int\)val',
                           r'r->ob_refcnt: (Py_ssize_t)val',
                           line)
+
+            # Strip off " [enabled by default]" suffixes from warning lines
+            line = re.sub(r' \[enabled by default\]', '', line)
 
             # Python 3.3's unicode reimplementation drops the macro redirection
             # to narrow/wide implementations ("UCS2"/"UCS4")
