@@ -35,6 +35,10 @@ BuildRequires:  python-sphinx
 BuildRequires: python-pygments
 BuildRequires: python3-pygments
 
+# lxml is used when running the selftests:
+BuildRequires: python-lxml
+BuildRequires: python3-lxml
+
 %global gcc_plugins_dir %(gcc --print-file-name=plugin)
 
 %description
@@ -52,6 +56,7 @@ Summary: GCC plugin embedding Python 2
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: python-lxml
 Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-plugin
@@ -62,6 +67,7 @@ Summary: GCC plugin embedding Python 3
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: python3-lxml
 Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-plugin
@@ -72,6 +78,7 @@ Summary: GCC plugin embedding Python 2 debug build
 Group:   Development/Languages
 Requires: python-six
 Requires: python-pygments
+Requires: python-lxml
 Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python2-debug-plugin
@@ -82,6 +89,7 @@ Summary: GCC plugin embedding Python 3 debug build
 Group:   Development/Languages
 Requires: python3-six
 Requires: python3-pygments
+Requires: python3-lxml
 Requires: gcc-python-plugin-c-api%{?_isa} = %{version}-%{release}
 
 %description  -n gcc-python3-debug-plugin

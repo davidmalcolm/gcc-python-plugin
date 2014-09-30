@@ -38,6 +38,9 @@ The plugin has the following requirements:
 
        http://pygments.org/
 
+  * "lxml": The libcpychecker code uses the "lxml" internally when writing
+    out error reports.
+
   * graphviz: many of the interesting examples use "dot" to draw diagrams
     (e.g. control-flow graphs), so it's worth having graphviz installed.
 

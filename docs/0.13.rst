@@ -26,6 +26,9 @@ The major features in this release are:
 
   * a major revamping to the HTML output from gcc-with-cpychecker
 
+New dependency: ``lxml``.   The new HTML output format uses lxml
+internally.
+
 
 Changes to the GCC Python Plugin
 ================================
