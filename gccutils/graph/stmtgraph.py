@@ -182,6 +182,9 @@ class StmtNode(Node):
     def __repr__(self):
         return 'StmtNode(%r)' % self.stmt
 
+    def __hash__(self):
+        return hash(self.stmt)
+
     def get_stmt(self):
         return self.stmt
 

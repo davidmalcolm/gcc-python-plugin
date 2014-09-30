@@ -95,7 +95,7 @@ PYTHON_CONFIG=python-config
 #PYTHON_CONFIG=python-debug-config
 
 #PYTHON=python3-debug
-#PYTHON_CONFIG=python3.2dmu-config
+#PYTHON_CONFIG=python3.3dm-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)

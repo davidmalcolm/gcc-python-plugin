@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 from os.path import realpath, dirname, join
 HERE = dirname(realpath(__file__))
 
-import capi
+from . import capi
 
 from lxml.html import (
     tostring, fragment_fromstring as parse, builder as E
@@ -37,6 +37,7 @@ from pygments import highlight
 from pygments.lexers.compiled import CLexer
 from pygments.formatters.html import HtmlFormatter
 
+import base64
 from copy import deepcopy
 from itertools import islice
 
@@ -58,7 +59,7 @@ class HtmlPage(object):
 
     def __str__(self):
         html = tostring(self.__html__())
-        return '<!DOCTYPE html>\n' + html
+        return '<!DOCTYPE html>\n' + html.decode('utf-8')
 
     def __html__(self):
         return E.HTML(self.head(), self.body())
@@ -271,8 +272,9 @@ class HtmlPage(object):
 def data_uri(mimetype, filename):
     """represent a file as a data uri"""
     data = open(join(HERE, filename), 'rb').read()
-    data = data.encode('base64').replace('\n', '')
-    return 'data:%s;base64,%s' % (mimetype, data)
+    data = base64.encodestring(data)
+    data = data.replace(b'\n', b'')
+    return 'data:%s;base64,%s' % (mimetype, data.decode('ascii'))
 
 
 def file_contents(filename):
