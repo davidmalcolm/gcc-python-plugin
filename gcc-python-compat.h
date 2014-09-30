@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2014 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2014 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -54,7 +54,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 extern bool ggc_force_collect;
 
 /* From c-family/c-common.h */
+#if GCC_VERSION < 4008
 extern tree c_sizeof_or_alignof_type (location_t, tree, bool, int);
+#endif
 
 
 /*

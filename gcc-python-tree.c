@@ -471,8 +471,14 @@ PyGccType_get_sizeof(struct PyGccTree *self, void *closure)
     /*
       c_sizeof_or_alignof_type wants a location; we use a fake one
     */
-    tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t.inner, true, 0);
+    tree t_sizeof = c_sizeof_or_alignof_type(input_location, self->t.inner, true,
+#if (GCC_VERSION >= 4009)
+                                             false,
+#endif
+                                             0);
     PyObject *str;
+
+    /* Did TREE_INT_CST go away in 5.0? (wide-int?) */
 
     /* This gives us either an INTEGER_CST or the dummy error type: */
     if (INTEGER_CST == TREE_CODE(t_sizeof)) {
