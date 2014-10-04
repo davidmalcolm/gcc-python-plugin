@@ -26,7 +26,7 @@
 
 /* gimple_phi_arg_def etc were in tree-flow-inline.h prior to 4.9, when they
    moved to gimple.h  */
-#if (GCC_VERSION < 4009)
+#if (TARGET_GCC_VERSION < 4009)
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
 #endif
@@ -35,7 +35,7 @@
    Needed for pp_gimple_stmt_1 for gcc 4.8+;
    this header didn't exist in gcc 4.6:
  */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
 #include "gimple-pretty-print.h"
 #endif
 
@@ -43,7 +43,7 @@
 
 /* GCC 4.9 moved struct walk_stmt_info into the new header gimple-walk.h,
    which in turn needs the new header gimple-iterator.h: */
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #endif
@@ -109,7 +109,7 @@ do_pretty_print(struct PyGccGimple * self, int spc, int flags)
       gcc 4.8 renamed "dump_gimple_stmt" to "pp_gimple_stmt_1"
       (in r191884).  Declaration is in gimple-pretty-print.h
     */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
     pp_gimple_stmt_1(PyGccPrettyPrinter_as_pp(ppobj),
                      self->stmt.inner,
                      spc, flags);

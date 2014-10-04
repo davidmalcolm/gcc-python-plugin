@@ -42,7 +42,7 @@ int plugin_is_GPL_compatible;
 //#include "opts.h"
 
 /* "maybe_get_identifier" was moved from tree.h to stringpool.h in 4.9 */
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 #include "stringpool.h"
 #endif
 
@@ -572,7 +572,7 @@ PyGcc_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_lcf);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_leh);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_cfg);
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
     /* PROP_referenced_vars went away in GCC 4.8 (in r190067) */
 #else
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_referenced_vars);
@@ -584,7 +584,7 @@ PyGcc_init_gcc_module(struct plugin_name_args *plugin_info)
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_cfglayout);
     PyModule_AddIntMacro(PyGcc_globals.module, PROP_gimple_lcx);
 
-    PyModule_AddIntMacro(PyGcc_globals.module, GCC_VERSION);
+    PyModule_AddIntConstant(PyGcc_globals.module, "GCC_VERSION", TARGET_GCC_VERSION);
 
     /* Success: */
     return 1;

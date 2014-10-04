@@ -25,7 +25,7 @@
 #include "diagnostic.h"
 #include "plugin.h"
 
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 /* GCC 4.9 moved debug_tree here: */
 #include "print-tree.h"
 #endif

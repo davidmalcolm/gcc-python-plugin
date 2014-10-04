@@ -23,7 +23,7 @@
 #include "function.h"
 #include "basic-block.h"
 
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 #include "tree-ssa-alias.h" /* needed by gimple.h in 4.9 */
 #include "internal-fn.h" /* needed by gimple.h in 4.9 */
 #include "is-a.h" /* needed by gimple.h in 4.9 */
@@ -33,7 +33,7 @@
 #include "gimple.h"
 
 /* gcc 4.9 moved gimple_stmt_iterator into this header */
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 #include "gimple-iterator.h"
 #endif
 
@@ -118,7 +118,7 @@ gcc_cfg_block_get_index (gcc_cfg_block block)
 
 static bool
 for_each_edge (
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
                vec<edge, va_gc> *vec_edges,
 #else
                VEC (edge, gc) * vec_edges,
@@ -174,7 +174,7 @@ checked_get_gimple_info(gcc_cfg_block block)
       return NULL;
     }
 
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
   return &block.inner->il.gimple;
 #else
   return block.inner->il.gimple;

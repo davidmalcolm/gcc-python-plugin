@@ -32,6 +32,12 @@ def nullable_ptr(ptr):
     else:
         return 'NULL'
 
+def nullable_strptr(s,caststr='char*'):
+	if s:
+		return '(%s)"%s"' % (caststr,s)
+	else:
+		return 'NULL'
+
 def simple_unaryfunc(identifier, typename, c_expression):
     """Define a simple unaryfunc, using a specifc PyObject subclass"""
     self.add_defn("static PyObject *\n" +
@@ -97,7 +103,7 @@ class PyGetSetDef:
         result =  '    {(char*)"%s",\n' % self.name
         result += '     (getter)%s,\n' % nullable_ptr(self.get)
         result += '     (setter)%s,\n' % nullable_ptr(self.set)
-        result += '     (char*)"%s",\n' % nullable_ptr(self.doc)
+        result += '     %s,\n' % nullable_strptr(self.doc)
         result += '     %s},\n' % nullable_ptr(self.closure)
         return result
 

@@ -27,7 +27,7 @@
  *************************************************************************/
 
 /* Getting the length of a vector, returning 0 if it is NULL: */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
   #define GCC_COMPAT_VEC_LENGTH(KIND, V) \
     ( (V) ? ( (V)->length() ) : 0 )
 #else
@@ -36,7 +36,7 @@
 #endif
 
 /* Looking up an element by index: */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
   #define GCC_COMPAT_VEC_INDEX(KIND, V, IDX) \
     ( (*(V))[IDX] )
 #else
@@ -46,7 +46,7 @@
 
 /* Iterating over every element in a vector, or not at all if it is
    NULL: */
-#if (GCC_VERSION >= 4008)
+#if (TARGET_GCC_VERSION >= 4008)
   #define GCC_COMPAT_FOR_EACH_VEC_ELT(KIND, V, IDX_VAR, ITEM_VAR) \
     if ( (V) != NULL ) \
       FOR_EACH_VEC_ELT ( (*V), (IDX_VAR), (ITEM_VAR) )

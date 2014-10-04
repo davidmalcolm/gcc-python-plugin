@@ -24,7 +24,7 @@
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
 //#include "alias.h" /* needed by tree-ssa-alias.h in 4.9 */
 #include "tree-ssa-alias.h" /* needed by gimple.h in 4.9 */
 #include "internal-fn.h" /* needed by gimple.h in 4.9 */
@@ -52,7 +52,7 @@ GCC_IMPLEMENT_PUBLIC_API (void) gcc_gimple_mark_in_use (gcc_gimple stmt)
   /* Mark the underlying object (recursing into its fields): */
 
   /* GCC 4.9 converted gimple to a class hierarchy */
-#if (GCC_VERSION >= 4009)
+#if (TARGET_GCC_VERSION >= 4009)
   gt_ggc_mx_gimple_statement_base (stmt.inner);
 #else
   gt_ggc_mx_gimple_statement_d (stmt.inner);
