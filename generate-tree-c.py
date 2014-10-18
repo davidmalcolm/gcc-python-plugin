@@ -545,6 +545,10 @@ def generate_tree_code_classes():
                                   'PyGccTypeDecl_get_pointer',
                                   None,
                                   "The gcc.PointerType representing '(this_type *)'")
+            getsettable.add_gsdef('original_type',
+                                  'PyGccTypeDecl_get_original_type',
+                                  None,
+                                  "The gcc.Type from which this type was typedef'd from.'")
 
         if tree_type.SYM == 'FUNCTION_TYPE':
             getsettable.add_gsdef('argument_types',
