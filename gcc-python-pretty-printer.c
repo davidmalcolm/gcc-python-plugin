@@ -86,12 +86,16 @@ PyGccPrettyPrinter_as_string(PyObject *obj)
 
     /* Convert to a python string, leaving off the trailing newline: */
     len = strlen(ppobj->buf);
-    assert(len > 0);
-    if ('\n' == ppobj->buf[len - 1]) {
-	return PyGccString_FromString_and_size(ppobj->buf,
-						      len - 1);
-    } else {
-	return PyGccString_FromString(ppobj->buf);
+    if (len > 0) {
+      if ('\n' == ppobj->buf[len - 1]) {
+	  return PyGccString_FromString_and_size(ppobj->buf,
+							len - 1);
+      } else {
+	  return PyGccString_FromString(ppobj->buf);
+      }
+    }
+    else { /* FIXME: */
+      return PyGccString_FromString("");
     }
 }
 
