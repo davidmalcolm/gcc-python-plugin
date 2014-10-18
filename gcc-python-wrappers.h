@@ -299,6 +299,9 @@ PyObject *
 PyGccTypeDecl_get_pointer(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccTypeDecl_get_original_type(struct PyGccTree *self, void *closure);
+
+PyObject *
 PyGccSsaName_repr(struct PyGccTree * self);
 
 PyObject *

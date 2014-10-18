@@ -765,6 +765,17 @@ PyGccTypeDecl_get_pointer(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+PyGccTypeDecl_get_original_type(struct PyGccTree *self, void *closure)
+{
+    tree decl_type = TREE_TYPE(self->t.inner);
+    if (!decl_type) {
+        PyErr_SetString(PyExc_ValueError, "gcc.TypeDecl has no associated type");
+        return NULL;
+    }
+    return PyGccTree_New(gcc_private_make_tree(DECL_ORIGINAL_TYPE(TYPE_NAME(decl_type))));
+}
+
+PyObject *
 PyGccSsaName_repr(struct PyGccTree * self)
 {
     int version;
