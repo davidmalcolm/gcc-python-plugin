@@ -470,13 +470,29 @@ def generate_tree_code_classes():
                               'PyGccTree_New(gcc_private_make_tree(TREE_OPERAND(self->t.inner, 2)))',
                               "The position of the first referenced bit, as a gcc.IntegerCst")
 
-        if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
+        if tree_type.SYM in ( 'UNION_TYPE', 'QUAL_UNION_TYPE'):
             add_simple_getter('fields',
                               'PyGcc_TreeListFromChain(TYPE_FIELDS(self->t.inner))',
                               "The fields of this type")
             add_simple_getter('methods',
                               'PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner))',
                               "The methods of this type")
+       
+        if tree_type.SYM in ('RECORD_TYPE'):
+            add_simple_getter('fields',
+                              'PyGcc_TreeListFromChain(TYPE_FIELDS(self->t.inner))',
+                              "The fields of this type")
+            add_simple_getter('methods',
+                              'PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner))',
+                              "The methods of this type")
+            add_simple_getter('context',
+                              'PyGcc_TreeListFromChain(TYPE_CONTEXT(self->t.inner))',
+                              "The context of this type")
+    
+        if tree_type.SYM == 'ENUMERAL_TYPE':
+            add_simple_getter('values',
+                              'PyGcc_TreeListFromChain(TYPE_VALUES(self->t.inner))',
+                              "The values of this type")
 
         if tree_type.SYM == 'IDENTIFIER_NODE':
             add_simple_getter('name',
