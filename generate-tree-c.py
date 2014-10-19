@@ -538,6 +538,11 @@ def generate_tree_code_classes():
                                   None,
                                   "The gcc.Type from which this type was typedef'd from.'")
 
+        if tree_type.SYM == 'FIELD_DECL':
+            add_simple_getter('addressable',
+                              'PyBool_FromLong(!DECL_NONADDRESSABLE_P(self->t.inner))',
+                              'The list of gcc.Declarations within this namespace')
+
         if tree_type.SYM == 'FUNCTION_TYPE':
             getsettable.add_gsdef('argument_types',
                                   'PyGccFunction_TypeObj_get_argument_types',
