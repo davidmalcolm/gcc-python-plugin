@@ -99,6 +99,7 @@ PYTHON_CONFIG=python-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
+PYTHON_SITE_DIR=$(shell $(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
@@ -235,8 +236,8 @@ install: $(PLUGIN_DSO) gcc-with-$(PLUGIN_NAME).1.gz
 	cp -a libcpychecker $(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)
 
 	# add python dir to python search path
-	mkdir -p $(shell $(PYTHON) -m site --user-site)
-	echo "$(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)" > $(shell $(PYTHON) -m site --user-site)/gcc-python-plugin.pth
+	mkdir -p $(PYTHON_SITE_DIR)
+	echo "$(DESTDIR)$(GCCPLUGINS_DIR)/$(PLUGIN_DIR)" > $(PYTHON_SITE_DIR)/gcc-python-plugin.pth
 
 	# Create "gcc-with-" support script:
 	mkdir -p $(DESTDIR)$(bindir)
