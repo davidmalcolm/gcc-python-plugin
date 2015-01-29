@@ -1172,6 +1172,12 @@ gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
 }
 
 PyObject *
+PyGcc_TreeMakeListOfPairsFromTreeListChain(tree t)
+{
+    return gcc_tree_list_of_pairs_from_tree_list_chain(t);
+}
+
+PyObject *
 VEC_tree_as_PyList(
 #if (GCC_VERSION >= 4008)
     vec<tree, va_gc> *vec_nodes
