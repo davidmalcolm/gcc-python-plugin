@@ -723,9 +723,10 @@ if GCC_VERSION >= 5000:
         exclude_test('tests/cpychecker/refcounts/uninitialized_data/function_arg')
         exclude_test('tests/cpychecker/refcounts/use_after_dealloc')
 
-# Tests failing on Python 3.4:
-if sys.version_info[:2] == (3, 4):
+# Tests failing due to repr changes in Python 3.4+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
     exclude_test('tests/plugin/callgraph')
+    exclude_test('tests/plugin/rtl')
 
 def run_one_test(testdir):
     try:
