@@ -1,5 +1,5 @@
-.. Copyright 2011-2015 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2015 Red Hat, Inc.
+.. Copyright 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -15,16 +15,8 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Release Notes
-=============
+0.14
+~~~~
 
-.. toctree::
-   
-   0.14.rst
-   0.13.rst
-   0.12.rst
-   0.11.rst
-   0.10.rst
-   0.9.rst
-   0.8.rst
-   0.7.rst
+This releases adds support for gcc 5  (along with continued
+support for gcc 4.6, 4.7, 4.8 and 4.9).

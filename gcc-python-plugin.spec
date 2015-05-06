@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.13
+Version:        0.14
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
@@ -177,7 +177,7 @@ BuildPlugin \
 
 BuildPlugin \
   python3-debug \
-  python3.3dm-config \
+  python3.4dm-config \
   python3_debug.so \
   python3_debug
 
@@ -236,7 +236,7 @@ InstallPlugin \
 
 InstallPlugin \
   python3-debug \
-  python3.3dm-config \
+  python3.4dm-config \
   python3_debug.so \
   python3_debug
 
@@ -322,7 +322,7 @@ CheckPlugin \
 #   (shares the issues of the above)
 CheckPlugin \
   python3-debug \
-  python3.3dm-config \
+  python3.4dm-config \
   python3_debug.so \
   python3_debug \
   "-x tests/cpychecker"
