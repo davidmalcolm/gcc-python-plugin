@@ -97,6 +97,9 @@ class AnalyzerTests(unittest.TestCase):
             experr = experr.replace('$(SRCFILE):14:26:', '$(SRCFILE):14:10:')
             experr = experr.replace('$(SRCFILE):14:37:', '$(SRCFILE):14:10:')
             experr = experr.replace('$(SRCFILE):17:26:', '$(SRCFILE):17:10:')
+        if GCC_VERSION >= 5000:
+            experr = experr.replace('$(SRCFILE):12:5:', '$(SRCFILE):12:12:')
+            experr = experr.replace('$(SRCFILE):13:5:', '$(SRCFILE):13:12:')
         if isinstance(src, SimpleModule):
             sm = src
         else:

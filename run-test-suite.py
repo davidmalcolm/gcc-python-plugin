@@ -659,6 +659,9 @@ if GCC_VERSION == 4006:
     # repr() for gcc.CaseLabelExpr and gcc.GimpleLabel
     exclude_test('tests/plugin/switch')
 
+if GCC_VERSION >= 5000:
+    # Avoid warning from -Wshift-count-negative
+    exclude_test('tests/cpychecker/absinterp/arithmetic/negative-shift/definite')
 
 def run_one_test(testdir):
     try:

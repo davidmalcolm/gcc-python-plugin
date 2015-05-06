@@ -23,6 +23,9 @@
   Test that we can cope with various kinds of comparisons
 */
 
+extern void should_not_be_reached(void);
+extern void should_be_reached(void);
+
 extern void __cpychecker_log(const char *);
 
 int test_conditionals(void)
