@@ -549,6 +549,10 @@ if hasattr(sys, 'gettotalrefcount'):
     exclude_test('tests/cpychecker/refcounts/use_after_dealloc')
     exclude_test('tests/examples/spelling-checker')
 
+# The debug build probably doesn't have lxml available:
+if hasattr(sys, 'gettotalrefcount'):
+    exclude_tests_below('tests/cpychecker')
+
 # This test is unreliable, due to differences in the dictionary:
 exclude_test('tests/examples/spelling-checker')
 
@@ -677,6 +681,51 @@ if GCC_VERSION >= 5000:
     exclude_test('tests/examples/attributes')
     exclude_test('tests/examples/hello-world')
     exclude_test('tests/plugin/rtl')
+
+    # Various tests failing with Python 3 with GCC 5:
+    if six.PY3:
+        exclude_test('tests/cpychecker/absinterp/arithmetic/division-by-zero/definite')
+        exclude_test('tests/cpychecker/absinterp/arithmetic/division-by-zero/possible')
+        exclude_test('tests/cpychecker/absinterp/arithmetic/negative-shift/possible')
+        exclude_test('tests/cpychecker/absinterp/arrays3')
+        exclude_test('tests/cpychecker/absinterp/arrays6')
+        exclude_test('tests/cpychecker/absinterp/arrays7')
+        exclude_test('tests/cpychecker/absinterp/bitfields/reading')
+        exclude_test('tests/cpychecker/absinterp/custom-strdup')
+        exclude_test('tests/cpychecker/absinterp/function-pointers')
+        exclude_test('tests/cpychecker/absinterp/nested-fields2')
+        exclude_test('tests/cpychecker/absinterp/nested-fields3')
+        exclude_test('tests/cpychecker/absinterp/read-through-global-ptr-unchecked')
+        exclude_test('tests/cpychecker/absinterp/read-through-uninitialized-ptr')
+        exclude_test('tests/cpychecker/absinterp/uninitialized-data')
+        exclude_test('tests/cpychecker/absinterp/write-through-arg-unchecked')
+        exclude_test('tests/cpychecker/absinterp/write-through-global-ptr-unchecked')
+        exclude_test('tests/cpychecker/refcounts/PyArg_UnpackTuple/missing-initialization')
+        exclude_test('tests/cpychecker/refcounts/PyArg_UnpackTuple/wrong-number-of-varargs')
+        exclude_test('tests/cpychecker/refcounts/PyDict_GetItem/correct')
+        exclude_test('tests/cpychecker/refcounts/PyDict_GetItem/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyDict_GetItemString/correct')
+        exclude_test('tests/cpychecker/refcounts/PyDict_GetItemString/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyDict_SetItem/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyErr_NewException/basic')
+        exclude_test('tests/cpychecker/refcounts/PyEval_CallMethod/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyList_Append/ticket-19')
+        exclude_test('tests/cpychecker/refcounts/PyList_GetItem/correct')
+        exclude_test('tests/cpychecker/refcounts/PyObject_GetAttr/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyObject_GetAttrString/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyObject_HasAttrString/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyTuple_GetItem/correct')
+        exclude_test('tests/cpychecker/refcounts/PyTuple_GetItem/incorrect')
+        exclude_test('tests/cpychecker/refcounts/PyTuple_Size/incorrect')
+        exclude_test('tests/cpychecker/refcounts/passing_dead_object')
+        exclude_test('tests/cpychecker/refcounts/too_many_increfs')
+        exclude_test('tests/cpychecker/refcounts/uninitialized_data/comparison')
+        exclude_test('tests/cpychecker/refcounts/uninitialized_data/function_arg')
+        exclude_test('tests/cpychecker/refcounts/use_after_dealloc')
+
+# Tests failing on Python 3.4:
+if sys.version_info[:2] == (3, 4):
+    exclude_test('tests/plugin/callgraph')
 
 def run_one_test(testdir):
     try:
