@@ -318,6 +318,9 @@ VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 #endif
 
 PyObject *
+PyGcc_int_from_int_cst(tree int_cst);
+
+PyObject *
 PyGcc_int_from_decimal_string_buffer(const char *buf);
 
 void

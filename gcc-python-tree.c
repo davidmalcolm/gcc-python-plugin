@@ -491,12 +491,9 @@ PyGccType_get_sizeof(struct PyGccTree *self, void *closure)
                                              0);
     PyObject *str;
 
-    /* Did TREE_INT_CST go away in 5.0? (wide-int?) */
-
     /* This gives us either an INTEGER_CST or the dummy error type: */
     if (INTEGER_CST == TREE_CODE(t_sizeof)) {
-        return PyGcc_int_from_double_int(TREE_INT_CST(t_sizeof),
-                                              1);
+        return PyGcc_int_from_int_cst (t_sizeof);
     }
 
     /* Error handling: */
@@ -669,22 +666,38 @@ PyGccConstructor_get_elements(PyObject *self, void *closure)
 }
 
 PyObject *
+PyGcc_int_from_int_cst(tree int_cst)
+{
+    tree type = TREE_TYPE(int_cst);
+#if (GCC_VERSION >= 5000)
+    char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+    print_dec(int_cst, buf, TYPE_SIGN (type));
+    return PyGcc_int_from_decimal_string_buffer(buf);
+#else
+    return PyGcc_int_from_double_int(TREE_INT_CST(int_cst),
+                                     TYPE_UNSIGNED(type));
+#endif
+}
+
+PyObject *
 PyGccIntegerConstant_get_constant(struct PyGccTree * self, void *closure)
 {
-    tree type = TREE_TYPE(self->t.inner);
-    return PyGcc_int_from_double_int(TREE_INT_CST(self->t.inner),
-                                          TYPE_UNSIGNED(type));
+    return PyGcc_int_from_int_cst(self->t.inner);
 }
 
 PyObject *
 PyGccIntegerConstant_repr(struct PyGccTree * self)
 {
     tree type = TREE_TYPE(self->t.inner);
+#if (GCC_VERSION >= 5000)
+    char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+    print_dec(self->t.inner, buf, TYPE_SIGN (type));
+#else
     char buf[512];
-
     PyGcc_DoubleIntAsText(TREE_INT_CST(self->t.inner),
                                   TYPE_UNSIGNED(type),
                                   buf, sizeof(buf));
+#endif
     return PyGccString_FromFormat("%s(%s)",
                                          Py_TYPE(self)->tp_name,
                                          buf);

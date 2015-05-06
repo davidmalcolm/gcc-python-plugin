@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -854,6 +854,38 @@ PyGccStringOrNone(const char *str_or_null)
     }
 }
 
+PyObject *
+PyGcc_int_from_decimal_string_buffer(const char *buf)
+{
+    PyObject *long_obj;
+#if PY_MAJOR_VERSION < 3
+    long long_val;
+    int overflow;
+#endif
+    long_obj = PyLong_FromString((char *)buf, NULL, 10);
+    if (!long_obj) {
+        return NULL;
+    }
+#if PY_MAJOR_VERSION >= 3
+    return long_obj;
+#else
+    long_val = PyLong_AsLongAndOverflow(long_obj, &overflow);
+    if (overflow) {
+        /* Doesn't fit in a PyIntObject; use the PyLongObject: */
+        return long_obj;
+    } else {
+        /* Fits in a PyIntObject: use that */
+        PyObject *int_obj = PyInt_FromLong(long_val);
+        if (!int_obj) {
+            return long_obj;
+        }
+        Py_DECREF(long_obj);
+        return int_obj;
+    }
+#endif
+}
+
+#if (GCC_VERSION < 5000)
 /*
   "double_int" is declared in gcc/double-int.h as a pair of HOST_WIDE_INT.
   These in turn are defined in gcc/hwint.h as a #define to one of "long",
@@ -882,36 +914,12 @@ PyGcc_DoubleIntAsText(double_int di, bool is_unsigned,
 PyObject *
 PyGcc_int_from_double_int(double_int di, bool is_unsigned)
 {
-    PyObject *long_obj;
-#if PY_MAJOR_VERSION < 3
-    long long_val;
-    int overflow;
-#endif
     char buf[512]; /* FIXME */
     PyGcc_DoubleIntAsText(di, is_unsigned, buf, sizeof(buf));
-
-    long_obj = PyLong_FromString(buf, NULL, 10);
-    if (!long_obj) {
-        return NULL;
-    }
-#if PY_MAJOR_VERSION >= 3
-    return long_obj;
-#else
-    long_val = PyLong_AsLongAndOverflow(long_obj, &overflow);
-    if (overflow) {
-        /* Doesn't fit in a PyIntObject; use the PyLongObject: */
-        return long_obj;
-    } else {
-        /* Fits in a PyIntObject: use that */
-        PyObject *int_obj = PyInt_FromLong(long_val);
-        if (!int_obj) {
-            return long_obj;
-        }
-        Py_DECREF(long_obj);
-        return int_obj;
-    }
-#endif
+    return PyGcc_int_from_decimal_string_buffer(buf);
 }
+
+#endif /* #if (GCC_VERSION < 5000) */
 
 /*
    GCC's headers "poison" strdup to make it unavailable, so we provide our own.
