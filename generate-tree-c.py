@@ -253,13 +253,17 @@ PyObject*
             # with macros to look into it of this form:
             #       #define unsigned_type_node    integer_types[itk_unsigned_int]
             #
-            for std_type in ('itk_char', 'itk_signed_char',
-                             'itk_unsigned_char', 'itk_short',
-                             'itk_unsigned_short', 'itk_int',
-                             'itk_unsigned_int', 'itk_long',
-                             'itk_unsigned_long', 'itk_long_long',
-                             'itk_unsigned_long_long', 'itk_int128',
-                             'itk_unsigned_int128'):
+            std_types = ['itk_char', 'itk_signed_char', 'itk_unsigned_char',
+                         'itk_short', 'itk_unsigned_short',
+                         'itk_int', 'itk_unsigned_int',
+                         'itk_long', 'itk_unsigned_long',
+                         'itk_long_long', 'itk_unsigned_long_long']
+            if GCC_VERSION < 5000:
+                # int128 seems to have gone away in
+                # 9f75f0266e3611513f196c898088e2712a71eaf4, discussed at
+                # https://gcc.gnu.org/ml/gcc-patches/2014-08/msg01396.html
+                std_types += ['itk_int128', 'itk_unsigned_int128']
+            for std_type in std_types:
                 # strip off the "itk_" prefix
                 assert std_type.startswith('itk_')
                 stddef = std_type[4:]
