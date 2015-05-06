@@ -254,7 +254,20 @@ public:
   opt_pass *clone() {return this; }
 };
 
-#endif /* #if (GCC_VERSION >= 4009) */
+#else /* #if (GCC_VERSION >= 4009) */
+/*
+  Before GCC 4.9, passes were implemented using callback functions.
+*/
+static bool gate_cb(void)
+{
+    return impl_gate(cfun);
+}
+
+static unsigned int execute_cb(void)
+{
+    return impl_execute(cfun);
+}
+#endif /* #else clause of if (GCC_VERSION >= 4009) */
 
 static int
 do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
@@ -303,7 +316,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
       default:
           gcc_unreachable();
     }
-#else
+#else /* #if (GCC_VERSION >= 4009) */
     pass = (struct opt_pass*)PyMem_Malloc(sizeof_pass);
     if (!pass) {
         return -1;
@@ -321,9 +334,9 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
         return -1;
     }
 
-    pass->gate = impl_gate;
-    pass->execute = impl_execute;
-#endif
+    pass->gate = gate_cb;
+    pass->execute = execute_cb;
+#endif /* ending the #else clause of #if (GCC_VERSION >= 4009) */
 
     if (PyGcc_insert_new_wrapper_into_cache(&pass_wrapper_cache,
                                                  pass,
