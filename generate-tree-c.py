@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012, 2013 Red Hat, Inc.
+#   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011-2013, 2015 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -560,9 +560,10 @@ def generate_tree_code_classes():
             add_simple_getter('result',
                               'PyGccTree_New(gcc_private_make_tree(DECL_RESULT_FLD(self->t.inner)))',
                               'The gcc.ResultDecl for the return value')
-            add_simple_getter('callgraph_node',
-                              'PyGccCallgraphNode_New(gcc_private_make_cgraph_node(cgraph_get_node(self->t.inner)))',
-                              'The gcc.CallgraphNode for this function declaration, or None')
+            getsettable.add_gsdef('callgraph_node',
+                                  'PyGccFunctionDecl_get_callgraph_node',
+                                  None,
+                                  'The gcc.CallgraphNode for this function declaration, or None')
 
             for attr in ('public', 'private', 'protected', 'static'):
                 getsettable.add_simple_getter(cu,

@@ -1,6 +1,6 @@
 /*
-   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012, 2013 Red Hat, Inc.
+   Copyright 2012, 2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -21,6 +21,10 @@
 #include "tree.h"
 #include "cgraph.h"
 #include "ggc.h"
+#include "tree-ssa-alias.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
+#include "gimple.h"
 
 /***********************************************************
    gcc_cgraph_node

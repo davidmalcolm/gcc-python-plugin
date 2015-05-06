@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+   Copyright 2011, 2012, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011, 2012, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -174,7 +174,11 @@ PyGcc_get_callgraph_nodes(PyObject *self, PyObject *args)
     /* For debugging, see GCC's dump of things: */
     if (0) {
         fprintf(stderr, "----------------BEGIN----------------\n");
+#if (GCC_VERSION >= 5000)
+        cgraph_node::dump_cgraph (stderr);
+#else
         dump_cgraph (stderr);
+#endif
         fprintf(stderr, "---------------- END ----------------\n");
     }
 

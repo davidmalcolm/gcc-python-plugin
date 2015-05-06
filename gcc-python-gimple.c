@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -358,7 +358,7 @@ PyGccGimplePhi_get_args(struct PyGccGimple *self, void *closure)
 
     for (i = 0 ; i < num_args; i++) {
         tree arg_def = gimple_phi_arg_def(self->stmt.inner, i);
-        edge arg_edge = gimple_phi_arg_edge(self->stmt.inner, i);
+        edge arg_edge = gimple_phi_arg_edge(AS_A_GPHI(self->stmt.inner), i);
         /* fwiw, there's also gimple_phi_arg_has_location and gimple_phi_arg_location */
         PyObject *tuple_obj;
         tuple_obj = Py_BuildValue("O&O&",

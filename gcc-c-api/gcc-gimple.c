@@ -1,6 +1,6 @@
 /*
-   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012, 2013 Red Hat, Inc.
+   Copyright 2012, 2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -108,10 +108,10 @@ GCC_IMPLEMENT_PUBLIC_API (gcc_tree) gcc_gimple_get_expr_type (gcc_gimple stmt)
 /***************************************************************************
  gcc_gimple_asm
  **************************************************************************/
-  GCC_IMPLEMENT_PUBLIC_API (const char *)
+GCC_IMPLEMENT_PUBLIC_API (const char *)
 gcc_gimple_asm_get_string (gcc_gimple_asm stmt)
 {
-  return gimple_asm_string (stmt.inner);
+  return gimple_asm_string (AS_A_GASM (stmt.inner));
 }
 
 /***************************************************************************
@@ -172,10 +172,11 @@ gcc_gimple_call_for_each_arg (gcc_gimple_call stmt,
 /***************************************************************************
  gcc_gimple_return
  **************************************************************************/
-  GCC_IMPLEMENT_PUBLIC_API (gcc_tree)
+GCC_IMPLEMENT_PUBLIC_API (gcc_tree)
 gcc_gimple_return_get_retval (gcc_gimple_return stmt)
 {
-  return gcc_private_make_tree (gimple_return_retval (stmt.inner));
+  return gcc_private_make_tree
+            (gimple_return_retval (AS_A_GRETURN (stmt.inner)));
 }
 
 /***************************************************************************
@@ -196,13 +197,15 @@ gcc_gimple_cond_get_rhs (gcc_gimple_cond stmt)
 GCC_IMPLEMENT_PUBLIC_API (gcc_tree)
 gcc_gimple_cond_get_true_label (gcc_gimple_cond stmt)
 {
-  return gcc_private_make_tree (gimple_cond_true_label (stmt.inner));
+  return gcc_private_make_tree (gimple_cond_true_label
+                                 (AS_A_GCOND (stmt.inner)));
 }
 
 GCC_IMPLEMENT_PUBLIC_API (gcc_tree)
 gcc_gimple_cond_get_false_label (gcc_gimple_cond stmt)
 {
-  return gcc_private_make_tree (gimple_cond_false_label (stmt.inner));
+  return gcc_private_make_tree (gimple_cond_false_label
+                                 (AS_A_GCOND (stmt.inner)));
 }
 
 /***************************************************************************
@@ -244,7 +247,8 @@ gcc_gimple_phi_for_each_edges (gcc_gimple_phi phi,
   GCC_IMPLEMENT_PUBLIC_API (gcc_tree)
 gcc_gimple_switch_get_indexvar (gcc_gimple_switch stmt)
 {
-  return gcc_private_make_tree (gimple_switch_index (stmt.inner));
+  return gcc_private_make_tree (gimple_switch_index
+                                  (AS_A_GSWITCH (stmt.inner)));
 }
 
 GCC_IMPLEMENT_PUBLIC_API (bool)
@@ -253,14 +257,14 @@ gcc_gimple_switch_for_each_label (gcc_gimple_switch stmt,
 					      void *user_data),
 				  void *user_data)
 {
-  unsigned num_labels = gimple_switch_num_labels (stmt.inner);
+  unsigned num_labels = gimple_switch_num_labels (AS_A_GSWITCH (stmt.inner));
   unsigned i;
 
   for (i = 0; i < num_labels; i++)
     {
       if (cb
 	  (gcc_private_make_case_label_expr
-	   (gimple_switch_label (stmt.inner, i)), user_data))
+	   (gimple_switch_label (AS_A_GSWITCH (stmt.inner), i)), user_data))
 	{
 	  return true;
 	}
@@ -274,7 +278,9 @@ gcc_gimple_switch_for_each_label (gcc_gimple_switch stmt,
 GCC_IMPLEMENT_PUBLIC_API(gcc_label_decl)
 gcc_gimple_label_get_label(gcc_gimple_label stmt)
 {
-  return gcc_tree_as_gcc_label_decl (gcc_private_make_tree (gimple_label_label (stmt.inner)));
+  return gcc_tree_as_gcc_label_decl
+           (gcc_private_make_tree (gimple_label_label
+                                     (AS_A_GLABEL (stmt.inner))));
 }
 
 /*

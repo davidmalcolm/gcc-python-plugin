@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "rtl.h"
 #include "gcc-c-api/gcc-rtl.h"
 
+#if (GCC_VERSION < 5000)
 PyObject *
 PyGccRtl_get_location(struct PyGccRtl *self, void *closure)
 {
@@ -38,6 +39,7 @@ PyGccRtl_get_location(struct PyGccRtl *self, void *closure)
     Py_RETURN_NONE;
 #endif
 }
+#endif
 
 PyObject *
 get_operand_as_object(const_rtx in_rtx, int idx, char fmt)

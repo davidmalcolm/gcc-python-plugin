@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -334,6 +334,19 @@ PyGccFunctionDecl_get_fullname(struct PyGccTree *self, void *closure)
                          |TFF_FUNCTION_DEFAULT_ARGUMENTS
                          |TFF_EXCEPTION_SPECIFICATION);
     return PyGccString_FromString(str);
+}
+
+PyObject *
+PyGccFunctionDecl_get_callgraph_node(struct PyGccTree *self, void *closure)
+{
+    /* cgraph_get_node became cgraph_node::get in 5.0 */
+    struct cgraph_node *node;
+#if (GCC_VERSION >= 5000)
+    node = cgraph_node::get(self->t.inner);
+#else
+    node = cgraph_get_node(self->t.inner);
+#endif
+    return PyGccCallgraphNode_New(gcc_private_make_cgraph_node(node));
 }
 
 PyObject *

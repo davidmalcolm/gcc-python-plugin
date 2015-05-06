@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -33,3 +33,18 @@
 #define GCC_IMPLEMENT_PUBLIC_API(RETURN_TYPE) RETURN_TYPE
 #define GCC_IMPLEMENT_PRIVATE_API(RETURN_TYPE) RETURN_TYPE
 
+#if (GCC_VERSION >= 5000)
+#define AS_A_GASM(STMT) (as_a <gasm *> (STMT))
+#define AS_A_GCOND(STMT) (as_a <gcond *> (STMT))
+#define AS_A_GLABEL(STMT) (as_a <glabel *> (STMT))
+#define AS_A_GPHI(STMT) (as_a <gphi *> (STMT))
+#define AS_A_GSWITCH(STMT) (as_a <gswitch *> (STMT))
+#define AS_A_GRETURN(STMT) (as_a <greturn *> (STMT))
+#else
+#define AS_A_GASM(STMT) (STMT)
+#define AS_A_GCOND(STMT) (STMT)
+#define AS_A_GLABEL(STMT) (STMT)
+#define AS_A_GPHI(STMT) (STMT)
+#define AS_A_GSWITCH(STMT) (STMT)
+#define AS_A_GRETURN(STMT) (STMT)
+#endif

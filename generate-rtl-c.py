@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012 Red Hat, Inc.
+#   Copyright 2011-2012, 2015 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011-2012, 2015 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@
 from maketreetypes import iter_rtl_expr_types #, iter_rtl_struct_types
 
 from cpybuilder import *
+from testcpychecker import get_gcc_version
 from wrapperbuilder import PyGccWrapperTypeObject
+
+GCC_VERSION = get_gcc_version()
 
 cu = CompilationUnit()
 cu.add_include('gcc-python.h')
@@ -55,10 +58,11 @@ PyGccRtl_get_block(struct PyGccRtl *self, void *closure)
 """)
     '''
     getsettable = PyGetSetDefTable('PyGccRtl_getset_table', [])
-    getsettable.add_gsdef('loc',
-                          'PyGccRtl_get_location',
-                          None,
-                          'Source code location of this expression, as a gcc.Location')
+    if GCC_VERSION < 5000:
+        getsettable.add_gsdef('loc',
+                              'PyGccRtl_get_location',
+                              None,
+                              'Source code location of this instruction, as a gcc.Location')
     getsettable.add_gsdef('operands',
                           'PyGccRtl_get_operands',
                           None,

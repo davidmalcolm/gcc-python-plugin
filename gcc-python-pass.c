@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 */
 static PyObject *pass_wrapper_cache = NULL;
 
-static bool impl_gate(void)
+static bool impl_gate(function *fun)
 {
     PyObject *pass_obj;
     PyObject *cfun_obj = NULL;
@@ -72,8 +72,9 @@ static bool impl_gate(void)
         return true;
     }
 
-    /* Supply the current function, if any */
-    if (cfun) {
+    /* Supply the function, if any */
+    if (fun) {
+        assert (fun == cfun);
         gcc_function cf = gcc_get_current_function();
 
         /* Temporarily override input_location to the top of the function: */
@@ -106,7 +107,7 @@ static bool impl_gate(void)
     return result;
 }
 
-static unsigned int impl_execute(void)
+static unsigned int impl_execute(function *fun)
 {
     PyObject *pass_obj;
     PyObject *cfun_obj = NULL;
@@ -117,8 +118,8 @@ static unsigned int impl_execute(void)
     pass_obj = PyGccPass_New(current_pass);
     assert(pass_obj); /* we own a ref at this point */
 
-    /* Supply the current function, if any */
-    if (cfun) {
+    if (fun) {
+        assert (fun == cfun);
         gcc_function cf = gcc_get_current_function();
 
         /* Temporarily override input_location to the top of the function: */
@@ -182,6 +183,20 @@ static unsigned int impl_execute(void)
   GCC 4.9 converted passes to a C++ class hierarchy, with methods for gate
   and execute.
 */
+
+#if (GCC_VERSION >= 5000)
+/* GCC 5 added a "fun" param to the "gate" and "execute" vfuncs of
+   pass opt_pass.  */
+# define PASS_DECLARE_GATE_AND_EXECUTE                                  \
+    bool gate (function *fun) { return impl_gate(fun); }                \
+    unsigned int execute (function *fun) { return impl_execute(fun); }
+#else
+/* ...whereas in GCC 4.9 they took no params, with cfun being implied.  */
+# define PASS_DECLARE_GATE_AND_EXECUTE                            \
+    bool gate () { return impl_gate(cfun); }                      \
+    unsigned int execute () { return impl_execute(cfun); }
+#endif /* #if (GCC_VERSION >= 5000) */
+
 class PyGccGimplePass : public gimple_opt_pass
 {
 public:
@@ -190,8 +205,7 @@ public:
  {
  }
 
-  bool gate () { return impl_gate(); }
-  unsigned int execute () { return impl_execute(); }
+  PASS_DECLARE_GATE_AND_EXECUTE
   opt_pass *clone() {return this; }
 };
 
@@ -203,8 +217,7 @@ public:
   {
   }
 
-  bool gate () { return impl_gate(); }
-  unsigned int execute () { return impl_execute(); }
+  PASS_DECLARE_GATE_AND_EXECUTE
   opt_pass *clone() {return this; }
 };
 
@@ -225,8 +238,7 @@ public:
   {
   }
 
-  bool gate () { return impl_gate(); }
-  unsigned int execute () { return impl_execute(); }
+  PASS_DECLARE_GATE_AND_EXECUTE
   opt_pass *clone() {return this; }
 };
 
@@ -238,8 +250,7 @@ public:
   {
   }
 
-  bool gate () { return impl_gate(); }
-  unsigned int execute () { return impl_execute(); }
+  PASS_DECLARE_GATE_AND_EXECUTE
   opt_pass *clone() {return this; }
 };
 
@@ -272,8 +283,10 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     memset(&pass_data, 0, sizeof(pass_data));
     pass_data.type = pass_type;
     pass_data.name = PyGcc_strdup(name);
+#if (GCC_VERSION < 5000)
     pass_data.has_gate = true;
     pass_data.has_execute = true;
+#endif
     switch (pass_type) {
       case GIMPLE_PASS:
           pass = new PyGccGimplePass (pass_data, g);

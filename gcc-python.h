@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -222,7 +222,11 @@ DECLARE_SIMPLE_WRAPPER(PyGccParameter,
 
 DECLARE_SIMPLE_WRAPPER(PyGccRtl,
                        PyGccRtl_TypeObj,
+#if (GCC_VERSION >= 5000)
+                       rtl_insn *,
+#else
                        rtl,
+#endif
                        gcc_rtl_insn, insn)
 
 DECLARE_SIMPLE_WRAPPER(PyGccTree,
@@ -313,12 +317,20 @@ PyObject *
 VEC_tree_as_PyList(VEC(tree,gc) *vec_nodes);
 #endif
 
+PyObject *
+PyGcc_int_from_decimal_string_buffer(const char *buf);
+
 void
 PyGcc_DoubleIntAsText(double_int di, bool is_unsigned,
                               char *out, int bufsize)  __attribute__((nonnull));
 
+#if (GCC_VERSION >= 5000)
+PyObject *
+PyGcc_int_from_wide_int();
+#else
 PyObject *
 PyGcc_int_from_double_int(double_int di, bool is_unsigned);
+#endif
 
 PyObject *
 PyGcc_LazilyCreateWrapper(PyObject **cache,

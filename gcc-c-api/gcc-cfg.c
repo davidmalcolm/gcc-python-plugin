@@ -1,6 +1,6 @@
 /*
-   Copyright 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012, 2013 Red Hat, Inc.
+   Copyright 2012, 2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -247,7 +247,11 @@ gcc_cfg_block_for_each_rtl_insn (gcc_cfg_block block,
 					     void *user_data),
 				 void *user_data)
 {
+#if (GCC_VERSION >= 5000)
+  rtx_insn *insn;
+#else
   rtx insn;
+#endif
 
   if (!(block.inner->flags & BB_RTL))
     {

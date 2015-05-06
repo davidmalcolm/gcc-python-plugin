@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -254,6 +254,9 @@ PyObject *
 PyGccFunctionDecl_get_fullname(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccFunctionDecl_get_callgraph_node(struct PyGccTree *self, void *closure);
+
+PyObject *
 PyGccIdentifierNode_repr(struct PyGccTree * self);
 
 PyObject *
@@ -455,8 +458,10 @@ void
 PyGccPrettyPrinter_dealloc(PyObject *obj);
 
 /* gcc-python-rtl.c: */
+#if (GCC_VERSION < 5000)
 PyObject *
 PyGccRtl_get_location(struct PyGccRtl *self, void *closure);
+#endif
 
 PyObject *
 PyGccRtl_get_operands(struct PyGccRtl *self, void *closure);
