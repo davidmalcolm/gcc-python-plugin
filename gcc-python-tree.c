@@ -570,10 +570,14 @@ PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
     }
 
     /* "size" should now be the length of the chain */
+    
+    /* When a function with no input arguments is passed ( ex int foo())
+       the previous code crashed. */
+    if(size == 0)
+        size = 1;
 
     /* The last element in the list is a VOID_TYPE; don't add this;
        see dump_function_declaration() in gcc/tree-pretty-print.c */
-    assert(size>0);
     size--;
 
     result = PyTuple_New(size);
