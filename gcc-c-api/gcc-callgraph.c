@@ -26,6 +26,8 @@
 #if (GCC_VERSION >= 5000)
 #include "gimple-expr.h"
 #endif
+#include "internal-fn.h"
+#include "gimple-expr.h"
 #include "gimple.h"
 
 /***********************************************************
