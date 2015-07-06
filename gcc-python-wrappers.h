@@ -131,6 +131,10 @@ PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs);
 extern PyObject *
 PyGccPass_New(struct opt_pass *pass);
 
+/* gcc-python-pragmas.c */
+PyObject*
+PyGcc_CRegisterPragma(PyObject *self, PyObject *args, PyObject *kwargs);
+
 /* gcc-python-location.c: */
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self);

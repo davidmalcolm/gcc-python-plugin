@@ -400,6 +400,11 @@ static PyMethodDef GccMethods[] = {
      (METH_VARARGS | METH_KEYWORDS),
      "Pre-define a named value in the preprocessor."},
 
+    {"c_register_pragma",
+     (PyCFunction)PyGcc_CRegisterPragma,
+     (METH_VARARGS | METH_KEYWORDS),
+     "Register a callback for whenever a user defined pragma is parsed."},
+
     /* Diagnostics: */
     {"permerror", PyGcc_permerror, METH_VARARGS,
      NULL},

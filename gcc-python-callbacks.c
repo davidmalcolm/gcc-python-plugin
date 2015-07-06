@@ -293,6 +293,17 @@ PyGcc_CallbackFor_GGC_END(void *gcc_data, void *user_data)
 					user_data);
 }
 
+static void
+PyGcc_CallbackFor_PRAGMAS(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+
+    gstate = PyGILState_Ensure();
+
+    PyGcc_FinishInvokingCallback(gstate,
+					0, NULL,
+					user_data);
+}
 
 PyObject*
 PyGcc_RegisterCallback(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -385,6 +396,13 @@ PyGcc_RegisterCallback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  closure);
 	break;
 #endif /* GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL */
+
+    case PLUGIN_PRAGMAS:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  PyGcc_CallbackFor_PRAGMAS,
+			  closure);
+        break;
 
     default:
         PyErr_Format(PyExc_ValueError, "event type %i invalid (or not wired up yet)", event);
