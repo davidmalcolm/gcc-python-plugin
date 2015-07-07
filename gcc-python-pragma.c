@@ -12,7 +12,7 @@
 #include "plugin.h"
 #include <c-family/c-pragma.h> 
 
-unsigned char *
+static unsigned char *
 parse_pragma_params (cpp_reader *pfile)
 {
     const cpp_token *token;
@@ -51,8 +51,11 @@ parse_pragma_params (cpp_reader *pfile)
 }
 
 void handle_python_pragma(struct cpp_reader *cpp_reader, void *data) {
-    PyObject * callback = (PyObject*)data;
+    PyObject *callback = NULL;
+    PyObject *user_args = NULL;
 
+    // unpack the {callback, args} tuple from the pragma registration
+    PyArg_ParseTuple((PyObject*)data, "OO", &callback, &user_args);
 
     /* Debug code: */
     if (0) {
@@ -60,11 +63,8 @@ void handle_python_pragma(struct cpp_reader *cpp_reader, void *data) {
         fprintf(stderr, "cpp_reader: %p\n", cpp_reader);
     }
 
-    
-    const unsigned char * thing = parse_pragma_params(cpp_reader);
-    printf("%s\n", thing);
-    PyObject * args = Py_BuildValue("s", thing);
-    PyObject_CallObject(callback, args);
+    PyObject * pragma_args = Py_BuildValue("s", parse_pragma_params(cpp_reader));
+    PyObject_CallFunctionObjArgs(callback, pragma_args, user_args, NULL);
 }
 
 PyObject*
@@ -73,16 +73,36 @@ PyGcc_CRegisterPragma(PyObject *self, PyObject *args)
     const char *directive_space = NULL;
     const char *directive = NULL;
     PyObject *callback = NULL;
+    PyObject *user_args = NULL;
+    unsigned char withExpansion = 0; 
+    PyObject *packed_args = NULL;
 
+    // parse the python tuple
     if (!PyArg_ParseTuple(args,
-                          "ssO:c_register_pragma",
+                          "ssOOb:c_register_pragma",
                           &directive_space,
                           &directive,
-                          &callback)) {
+                          &callback,
+                          &user_args,
+                          &withExpansion)) {
         return NULL;
     }
 
-    c_register_pragma_with_data(directive_space, directive, handle_python_pragma, (void*)callback);
+    // pack callback and args so that they can be passed as a single argument
+    // to the pragma handler
+    packed_args = Py_BuildValue("OO", callback, user_args);
+
+    // register the new callback
+    if (withExpansion)
+    {
+        c_register_pragma_with_expansion_and_data(directive_space, directive,
+            handle_python_pragma, (void*)packed_args);
+    }
+    else
+    {
+        c_register_pragma_with_data(directive_space, directive, handle_python_pragma,
+            (void*)packed_args);
+    }
 
     Py_RETURN_NONE;
 }
