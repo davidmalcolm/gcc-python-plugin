@@ -402,7 +402,7 @@ static PyMethodDef GccMethods[] = {
 
     {"c_register_pragma",
      (PyCFunction)PyGcc_CRegisterPragma,
-     (METH_VARARGS | METH_KEYWORDS),
+     METH_VARARGS,
      "Register a callback for whenever a user defined pragma is parsed."},
 
     /* Diagnostics: */
