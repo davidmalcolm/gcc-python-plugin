@@ -12,8 +12,47 @@
 #include "plugin.h"
 #include <c-family/c-pragma.h> 
 
+unsigned char *
+parse_pragma_params (cpp_reader *pfile)
+{
+    const cpp_token *token;
+    unsigned int out = 0;
+    unsigned int alloced = 120 + out;
+    unsigned char *result = (unsigned char *) xmalloc (alloced);
+
+    token = cpp_get_token (pfile);
+    while (token->type != CPP_EOF && token->type != CPP_PRAGMA_EOL)
+    {
+        unsigned char *last;
+        /* Include room for a possible space and the terminating nul.  */
+        unsigned int len = cpp_token_len (token) + 2;
+
+        if (out + len > alloced)
+        {
+            alloced *= 2;
+            if (out + len > alloced)
+                alloced = out + len;
+            result = (unsigned char *) xrealloc (result, alloced);
+        }
+
+        last = cpp_spell_token (pfile, token, &result[out], 0);
+        out = last - result;
+
+        token = cpp_get_token (pfile);
+        if (token->flags & PREV_WHITE)
+            result[out++] = ' ';
+
+        if (token->type == CPP_PRAGMA_EOL)
+            _cpp_backup_tokens(pfile, 1);
+    }
+
+    result[out] = '\0';
+    return result;
+}
+
 void handle_python_pragma(struct cpp_reader *cpp_reader, void *data) {
     PyObject * callback = (PyObject*)data;
+
 
     /* Debug code: */
     if (0) {
@@ -21,7 +60,11 @@ void handle_python_pragma(struct cpp_reader *cpp_reader, void *data) {
         fprintf(stderr, "cpp_reader: %p\n", cpp_reader);
     }
 
-    PyObject_CallObject(callback, NULL);
+    
+    const unsigned char * thing = parse_pragma_params(cpp_reader);
+    printf("%s\n", thing);
+    PyObject * args = Py_BuildValue("s", thing);
+    PyObject_CallObject(callback, args);
 }
 
 PyObject*
@@ -39,7 +82,7 @@ PyGcc_CRegisterPragma(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    c_register_pragma_with_data(directive_space, directive, pragma_callback, (void*)callback);
+    c_register_pragma_with_data(directive_space, directive, handle_python_pragma, (void*)callback);
 
     Py_RETURN_NONE;
 }
