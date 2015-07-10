@@ -23,4 +23,4 @@ Trace 0:
     'taking True path'
     'returning'
   Exception:
-    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/conditionals/input.c:29
+    (struct PyObject *)0 from tests/cpychecker/absinterp/comparisons/conditionals/input.c:32

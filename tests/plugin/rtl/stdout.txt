@@ -13,7 +13,7 @@ class Rtl(__builtin__.object)
  |  Data descriptors defined here:
  |  
  |  loc
- |      Source code location of this expression, as a gcc.Location
+ |      Source code location of this instruction, as a gcc.Location
  |  
  |  operands
  |      Operands of this expression, as a tuple

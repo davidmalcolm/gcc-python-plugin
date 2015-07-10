@@ -33,6 +33,7 @@ PLUGIN_SOURCE_FILES= \
   gcc-python-option.c \
   gcc-python-parameter.c \
   gcc-python-pass.c \
+  gcc-python-pragma.c \
   gcc-python-pretty-printer.c \
   gcc-python-rtl.c \
   gcc-python-tree.c \
