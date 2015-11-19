@@ -564,30 +564,19 @@ PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
 
     /* Get length of chain */
     for (size = 0, iter = head;
-         iter && iter != error_mark_node;
+         iter && iter != error_mark_node && iter != void_list_node;
          iter = TREE_CHAIN(iter), size++) {
         /* empty */
     }
 
     /* "size" should now be the length of the chain */
 
-    /* The last element in the list is a VOID_TYPE; don't add this;
-       see dump_function_declaration() in gcc/tree-pretty-print.c */
-    assert(size>0);
-    size--;
-
     result = PyTuple_New(size);
     if (!result) {
         return NULL;
     }
 
-    /* Iterate, but don't visit the final element: */
-    for (i = 0, iter = head;
-         iter && TREE_CHAIN(iter) && iter != error_mark_node;
-         iter = TREE_CHAIN(iter), i++) {
-
-        assert(i<size);
-
+    for (i = 0, iter = head; i < size; iter = TREE_CHAIN(iter), i++) {
 	item = PyGccTree_New(gcc_private_make_tree(TREE_VALUE(iter)));
 	if (!item) {
 	    goto error;
@@ -606,9 +595,33 @@ PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self, void *closure)
 }
 
 PyObject *
+PyGccFunction_TypeObj_is_variadic(struct PyGccTree * self, void *closure)
+{
+    tree iter;
+    tree head = TYPE_ARG_TYPES(self->t.inner);
+
+    /* Get length of chain */
+    for (iter = head;
+         iter && iter != error_mark_node && iter != void_list_node;
+         iter = TREE_CHAIN(iter)) {
+        /* empty */
+    }
+
+    if (iter == void_list_node)
+        Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
+}
+
+PyObject *
 PyGccMethodType_get_argument_types(struct PyGccTree * self,void *closure)
 {
     return PyGccFunction_TypeObj_get_argument_types(self, closure);
+}
+
+PyObject *
+PyGccMethodType_is_variadic(struct PyGccTree * self,void *closure)
+{
+    return PyGccFunction_TypeObj_is_variadic(self, closure);
 }
 
 PyObject *

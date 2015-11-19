@@ -269,6 +269,9 @@ PyObject *
 PyGccFunction_TypeObj_get_argument_types(struct PyGccTree * self,void *closure);
 
 PyObject *
+PyGccFunction_TypeObj_is_variadic(struct PyGccTree * self, void *closure);
+
+PyObject *
 PyGccConstructor_get_elements(PyObject *self, void *closure);
 
 PyObject *
@@ -294,6 +297,9 @@ PyGccIntegerType_repr(struct PyGccTree * self);
 
 PyObject *
 PyGccMethodType_get_argument_types(struct PyGccTree * self,void *closure);
+
+PyObject *
+PyGccMethodType_is_variadic(struct PyGccTree * self,void *closure);
 
 PyObject *
 PyGccStringConstant_repr(struct PyGccTree * self);

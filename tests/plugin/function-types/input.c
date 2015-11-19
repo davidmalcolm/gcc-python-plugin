@@ -18,3 +18,5 @@
 */
 
 typedef int (example_fn_type)(char, float);
+
+typedef int (example_variadic_fn_type)(char, float, ...);
