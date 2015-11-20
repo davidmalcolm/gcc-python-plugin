@@ -485,6 +485,11 @@ def generate_tree_code_classes():
                               'PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner))',
                               "The methods of this type")
 
+        if tree_type.SYM == 'ENUMERAL_TYPE':
+            add_simple_getter('values',
+                              'PyGcc_TreeMakeListOfPairsFromTreeListChain(TYPE_VALUES(self->t.inner))',
+                              "The values of this type")
+
         if tree_type.SYM == 'IDENTIFIER_NODE':
             add_simple_getter('name',
                               'PyGccStringOrNone(IDENTIFIER_POINTER(self->t.inner))',

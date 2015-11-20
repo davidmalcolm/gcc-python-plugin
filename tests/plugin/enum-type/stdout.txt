@@ -1,0 +1,5 @@
+the_enum
+length = 3
+ONE = 1
+TWO = 2
+MINUS_ONE = -1
