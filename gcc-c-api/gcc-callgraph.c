@@ -23,7 +23,7 @@
 #include "ggc.h"
 #include "tree-ssa-alias.h"
 #include "basic-block.h"
-#if (GCC_VERSION >= 5000)
+#if (GCC_VERSION >= 4009)
 #include "gimple-expr.h"
 #endif
 #include "gimple.h"
