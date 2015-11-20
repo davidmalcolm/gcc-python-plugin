@@ -39,6 +39,12 @@ def on_finish_unit():
     dump_integer_type(gcc.Type.unsigned_char())
     dump_integer_type(gcc.Type.signed_char())
 
+    print(gcc.Type.char().const)
+    print(gcc.Type.char().const_equivalent.const)
+    print(gcc.Type.char().const_equivalent.restrict_equivalent.const)
+    print(gcc.Type.char().const_equivalent.volatile_equivalent.const)
+    print(gcc.Type.char().const_equivalent.volatile_equivalent.unqualified_equivalent.const)
+
     def dump_real_type(t):
         print('gcc.Type: %r' % str(t))
         print('  t.const: %r' % t.const)

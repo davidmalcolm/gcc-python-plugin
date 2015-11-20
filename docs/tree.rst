@@ -421,6 +421,38 @@ Types
       .. note:: This attribute is not usable from within `lto1`; attempting
          to use it there will lead to a `RuntimeError` exception.
 
+Additional attributes for various :py:class:`gcc.Type` subclasses:
+
+   .. py:attribute:: const
+
+      (Boolean) Does this type have the `const` modifier?
+
+   .. py:attribute:: const_equivalent
+
+      The :py:class:`gcc.Type` for the `const` version of this type
+
+   .. py:attribute:: volatile
+
+      (Boolean) Does this type have the `volatile` modifier?
+
+   .. py:attribute:: volatile_equivalent
+
+      The :py:class:`gcc.Type` for the `volatile` version of this type
+
+   .. py:attribute:: restrict
+
+      (Boolean) Does this type have the `restrict` modifier?
+
+   .. py:attribute:: restrict_equivalent
+
+      The :py:class:`gcc.Type` for the `restrict` version of this type
+
+   .. py:attribute:: unqualified_equivalent
+
+      The :py:class:`gcc.Type` for the version of this type that does
+      not have any qualifiers.
+
+
    The standard C types are accessible via class methods of :py:class:`gcc.Type`.
    They are only created by GCC after plugins are loaded, and so they're
    only visible during callbacks, not during the initial run of the code.
@@ -548,33 +580,6 @@ Types
    .. py:attribute:: dereference
 
       The :py:class:`gcc.Type` that this type points to
-
-Additional attributes for various :py:class:`gcc.Type` subclasses:
-
-   .. py:attribute:: const
-
-      (Boolean) Does this type have the `const` modifier?
-
-   .. py:attribute:: const_equivalent
-
-      The :py:class:`gcc.Type` for the `const` version of this type
-
-   .. py:attribute:: volatile
-
-      (Boolean) Does this type have the `volatile` modifier?
-
-   .. py:attribute:: volatile_equivalent
-
-      The :py:class:`gcc.Type` for the `volatile` version of this type
-
-   .. py:attribute:: restrict
-
-      (Boolean) Does this type have the `restrict` modifier?
-
-   .. py:attribute:: restrict_equivalent
-
-      The :py:class:`gcc.Type` for the `restrict` version of this type
-
 
 .. py:class:: gcc.FunctionType
 
