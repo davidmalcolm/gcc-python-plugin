@@ -585,6 +585,12 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
 
    The `type` attribute holds the return type.
 
+   .. py:attribute:: is_variadic
+
+      True if this type represents a variadic function.  Note that for
+      a variadic function, the final `...` argument is not explicitly
+      represented in `argument_types`.
+
    .. py:attribute:: argument_types
 
       A tuple of :py:class:`gcc.Type` instances, representing the function's

@@ -543,12 +543,20 @@ def generate_tree_code_classes():
                                   'PyGccFunction_TypeObj_get_argument_types',
                                   None,
                                   "A tuple of gcc.Type instances, representing the argument types of this function type")
+            getsettable.add_gsdef('is_variadic',
+                                  'PyGccFunction_TypeObj_is_variadic',
+                                  None,
+                                  "Boolean: is this function variadic")
 
         if tree_type.SYM == 'METHOD_TYPE':
             getsettable.add_gsdef('argument_types',
                                   'PyGccMethodType_get_argument_types',
                                   None,
                                   "A tuple of gcc.Type instances, representing the argument types of this method type")
+            getsettable.add_gsdef('is_variadic',
+                                  'PyGccMethodType_is_variadic',
+                                  None,
+                                  "Boolean: is this method variadic")
 
         if tree_type.SYM == 'FUNCTION_DECL':
             getsettable.add_gsdef('fullname',

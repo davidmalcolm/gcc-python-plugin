@@ -18,8 +18,8 @@
 import gcc
 import gccutils
 
-def on_finish_unit():
-    fn_type_decl = gccutils.get_global_typedef('example_fn_type')
+def check_fn_type(name):
+    fn_type_decl = gccutils.get_global_typedef(name)
     assert isinstance(fn_type_decl, gcc.TypeDecl)
 
     print('fn_type_decl.name: %r' % fn_type_decl.name)
@@ -30,6 +30,7 @@ def on_finish_unit():
     print('str(fn_type.type): %r' % str(fn_type.type))
     assert isinstance(fn_type.argument_types, tuple)
     print('argument_types: %r' % [str(t) for t in fn_type.argument_types])
+    print('is_variadic: %r' % fn_type.is_variadic)
     try:
         fn_type.sizeof
         assert 0 # an exception should have been raised
@@ -38,6 +39,9 @@ def on_finish_unit():
         print('err: %s' % err)
 
 
+def on_finish_unit():
+    check_fn_type('example_fn_type')
+    check_fn_type('example_variadic_fn_type')
 
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       on_finish_unit)

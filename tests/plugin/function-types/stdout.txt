@@ -2,4 +2,11 @@ fn_type_decl.name: 'example_fn_type'
 str(fn_type): 'int example_fn_type (char, float)'
 str(fn_type.type): 'int'
 argument_types: ['char', 'float']
+is_variadic: False
 err: type "int example_fn_type (char, float)" does not have a "sizeof"
+fn_type_decl.name: 'example_variadic_fn_type'
+str(fn_type): 'int example_variadic_fn_type (char, float, ...)'
+str(fn_type.type): 'int'
+argument_types: ['char', 'float']
+is_variadic: True
+err: type "int example_variadic_fn_type (char, float, ...)" does not have a "sizeof"
