@@ -12,6 +12,10 @@ gcc.Type: 'signed char'
   t.min_value.constant: -128
   t.max_value.constant: 127
   t.sizeof: 1
+False
+True
+True
+True
 gcc.Type: 'float'
   t.const: False
   t.precision: 32
