@@ -447,6 +447,11 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
 
       The :py:class:`gcc.Type` for the `restrict` version of this type
 
+   .. py:attribute:: unqualified_equivalent
+
+      The :py:class:`gcc.Type` for the version of this type that does
+      not have any qualifiers.
+
 
    The standard C types are accessible via class methods of :py:class:`gcc.Type`.
    They are only created by GCC after plugins are loaded, and so they're
