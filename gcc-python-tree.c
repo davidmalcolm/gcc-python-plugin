@@ -1152,7 +1152,7 @@ PyGcc_TreeMakeListFromTreeList(tree t)
   Extract a list of objects for the values
  */
 PyObject *
-gcc_tree_list_of_pairs_from_tree_list_chain(tree t)
+PyGcc_TreeMakeListOfPairsFromTreeListChain(tree t)
 {
     PyObject *result = NULL;
 

@@ -542,6 +542,17 @@ Additional attributes for various :py:class:`gcc.Type` subclasses:
       The :py:class:`gcc.Type` that this type points to.  In the above
       example (`int *`), this would be the `int` type.
 
+.. py:class:: gcc.EnumeralType
+
+   Subclass of :py:class:`gcc.Type` representing an enumeral type.
+
+   .. py:attribute:: values
+
+      A list of tuple representing the constants defined in this
+      enumeration.  Each tuple consists of two elements; the first
+      being the name of the constant, a :py:class:`gcc.IdentifierNode`;
+      and the second being the value, a :py:class:`gcc.Constant`.
+
 .. py:class:: gcc.ArrayType
 
    Subclass of :py:class:`gcc.Type` representing an array type.  For example,
