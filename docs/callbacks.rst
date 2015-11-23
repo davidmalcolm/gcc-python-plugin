@@ -178,6 +178,15 @@ ID                                               Meaning
 
    where `decl` is a :py:class:`gcc.Declaration`.
 
+.. py:data:: gcc.PLUGIN_FINISH_TYPE
+
+   Called when GCC has finished parsing a type.  Arguments to the
+   callback are:
+
+      (`type`, `*extraargs`, `**kwargs`)
+
+   where `type` is a :py:class:`gcc.Type`.
+
 .. py:data:: gcc.PLUGIN_FINISH
 
    Called before GCC exits.
