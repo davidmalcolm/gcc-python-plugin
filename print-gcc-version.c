@@ -17,7 +17,11 @@
    <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
 #include "plugin.h"
+#include <stdio.h>
 
 int main(int argc, const char *argv[])
 {
