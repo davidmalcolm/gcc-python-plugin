@@ -53,14 +53,21 @@ GCC_IMPLEMENT_PUBLIC_API (void) gcc_gimple_mark_in_use (gcc_gimple stmt)
 
   /* GCC 4.9 converted gimple to a class hierarchy */
 #if (GCC_VERSION >= 4009)
+
+  /* GCC 6 converted the base class from "gimple_statement_base" to
+     "gimple".  */
+# if (GCC_VERSION >= 6000)
+  gt_ggc_mx_gimple (stmt.inner);
+# else
   gt_ggc_mx_gimple_statement_base (stmt.inner);
-#else
+# endif
+#else /* #if (GCC_VERSION >= 4009) */
   gt_ggc_mx_gimple_statement_d (stmt.inner);
-#endif
+#endif  /* #if (GCC_VERSION >= 4009) */
 }
 
 GCC_IMPLEMENT_PRIVATE_API (struct gcc_gimple_phi)
-gcc_private_make_gimple_phi (gimple inner)
+gcc_private_make_gimple_phi (gimple_stmt_ptr inner)
 {
   struct gcc_gimple_phi result;
   GIMPLE_CHECK (inner, GIMPLE_PHI);
@@ -69,7 +76,7 @@ gcc_private_make_gimple_phi (gimple inner)
 }
 
 GCC_IMPLEMENT_PRIVATE_API (struct gcc_gimple_call)
-gcc_private_make_gimple_call (gimple inner)
+gcc_private_make_gimple_call (gimple_stmt_ptr inner)
 {
   struct gcc_gimple_call result;
   GIMPLE_CHECK (inner, GIMPLE_CALL);
@@ -78,7 +85,7 @@ gcc_private_make_gimple_call (gimple inner)
 }
 
 GCC_IMPLEMENT_PRIVATE_API (struct gcc_gimple)
-gcc_private_make_gimple (gimple inner)
+gcc_private_make_gimple (gimple_stmt_ptr inner)
 {
   struct gcc_gimple result;
   result.inner = inner;

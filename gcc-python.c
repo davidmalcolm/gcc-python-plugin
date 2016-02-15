@@ -35,6 +35,9 @@ int plugin_is_GPL_compatible;
 
 #if 1
 /* Ideally we wouldn't have these includes here: */
+#if (GCC_VERSION >= 6000)
+#include "cp/cp-tree.h" /* for cp_expr */
+#endif
 #include "cp/name-lookup.h" /* for global_namespace */
 #include "tree.h"
 #include "function.h"

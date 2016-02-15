@@ -182,11 +182,10 @@ not_enough_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               "$(SRCFILE): In function 'not_enough_varargs':\n"
-                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i"\n'
+                              '$(SRCFILE):13:25: error: Not enough arguments in call to PyArg_ParseTuple with format string "i" [-Werror]\n'
                               '  expected 1 extra arguments:\n'
                               '    "int *" (pointing to 32 bits)\n'
-                              '  but got none\n'
-                              ' [-Werror]\n')
+                              '  but got none\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -202,13 +201,12 @@ too_many_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               "$(SRCFILE): In function 'too_many_varargs':\n"
-                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i"\n'
+                              '$(SRCFILE):14:26: error: Too many arguments in call to PyArg_ParseTuple with format string "i" [-Werror]\n'
                               '  expected 1 extra arguments:\n'
                               '    "int *" (pointing to 32 bits)\n'
                               '  but got 2:\n'
                               '    "int *" (pointing to 32 bits)\n'
-                              '    "int *" (pointing to 32 bits)\n'
-                              ' [-Werror]\n')
+                              '    "int *" (pointing to 32 bits)\n')
 
     def test_correct_usage(self):
         src = """
@@ -528,11 +526,10 @@ not_enough_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               "$(SRCFILE): In function 'not_enough_varargs':\n"
-                              '$(SRCFILE):13:5: error: Not enough arguments in call to Py_BuildValue with format string "i"\n'
+                              '$(SRCFILE):13:5: error: Not enough arguments in call to Py_BuildValue with format string "i" [-Werror]\n'
                               '  expected 1 extra arguments:\n'
                               '    "int"\n'
-                              '  but got none\n'
-                              ' [-Werror]\n')
+                              '  but got none\n')
 
     def test_too_many_varargs(self):
         src = """
@@ -544,13 +541,12 @@ too_many_varargs(PyObject *self, PyObject *args)
 """
         self.assertFindsError(src,
                               "$(SRCFILE): In function 'too_many_varargs':\n"
-                              '$(SRCFILE):13:5: error: Too many arguments in call to Py_BuildValue with format string "i"\n'
+                              '$(SRCFILE):13:5: error: Too many arguments in call to Py_BuildValue with format string "i" [-Werror]\n'
                               '  expected 1 extra arguments:\n'
                               '    "int"\n'
                               '  but got 2:\n'
                               '    "int"\n'
-                              '    "int"\n'
-                              ' [-Werror]\n')
+                              '    "int"\n')
 
     def test_correct_usage(self):
         src = """

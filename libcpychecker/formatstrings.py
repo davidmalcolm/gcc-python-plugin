@@ -1,5 +1,5 @@
-#   Copyright 2011 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011 Red Hat, Inc.
+#   Copyright 2011, 2016 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011, 2016 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -57,6 +57,13 @@ class CExtensionWarning(Exception):
 class FormatStringWarning(CExtensionWarning):
     def __init__(self, fmt_string):
         self.fmt_string = fmt_string
+
+    def emit_as_warning(self, loc):
+        if gcc.warning(loc, str(self)):
+            sys.stderr.write(self.extra_info())
+
+    def extra_info(self):
+        return ""
 
 class UnknownFormatChar(FormatStringWarning):
     def __init__(self, fmt_string, ch):
@@ -137,12 +144,14 @@ class WrongNumberOfVars(ParsedFormatStringWarning):
         self.varargs = varargs
 
     def __str__(self):
-        result = ('%s in call to %s with format string "%s"\n'
-                  '  expected %i extra arguments:\n'
-                  % (self._get_desc_prefix(),
-                     self.funcname,
-                     self.fmt.fmt_string,
-                     self.fmt.num_expected()))
+        return ('%s in call to %s with format string "%s"'
+                % (self._get_desc_prefix(),
+                   self.funcname,
+                   self.fmt.fmt_string))
+
+    def extra_info(self):
+        result = ('  expected %i extra arguments:\n'
+                  % self.fmt.num_expected())
         for (arg, exp_type) in self.fmt.iter_exp_types():
             result += '    %s\n' % describe_type(exp_type)
         if len(self.varargs) == 0:
@@ -380,8 +389,8 @@ def check_pyargs(fun):
                 try:
                     fmt = parser.from_string(fmt_string, with_size_t)
                 except FormatStringWarning:
-                    exc = sys.exc_info()[1]
-                    gcc.warning(stmt.loc, str(exc))
+                    err = sys.exc_info()[1]
+                    err.emit_as_warning(stmt.loc)
                     return
                 log('fmt: %r', fmt.args)
 
@@ -392,11 +401,11 @@ def check_pyargs(fun):
                 varargs = stmt.args[varargs_idx:]
                 # log('varargs: %r', varargs)
                 if len(varargs) < len(exp_types):
-                    gcc.warning(loc, str(NotEnoughVars(funcname, fmt, varargs)))
+                    NotEnoughVars(funcname, fmt, varargs).emit_as_warning(loc)
                     return
 
                 if len(varargs) > len(exp_types):
-                    gcc.warning(loc, str(TooManyVars(funcname, fmt, varargs)))
+                    TooManyVars(funcname, fmt, varargs).emit_as_warning(loc)
                     return
 
                 for index, ((exp_arg, exp_type), vararg) in enumerate(zip(exp_types, varargs)):
@@ -408,9 +417,7 @@ def check_pyargs(fun):
                             loc = vararg.location
                         else:
                             loc = stmt.loc
-                        gcc.warning(loc,
-                                    str(err))
-                        sys.stderr.write(err.extra_info())
+                        err.emit_as_warning(loc)
 
     def maybe_check_callsite(stmt):
         if stmt.fndecl:
