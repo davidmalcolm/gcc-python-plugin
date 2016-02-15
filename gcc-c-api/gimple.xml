@@ -21,7 +21,7 @@
 
   <doc>GIMPLE statements</doc>
 
-  <type name="gimple" varname="stmt" inner="gimple">
+  <type name="gimple" varname="stmt" inner="gimple_stmt_ptr">
     <attribute name="location" kind="location">
       <doc>Source code location of this statement</doc>
     </attribute>

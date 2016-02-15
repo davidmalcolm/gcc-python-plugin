@@ -202,7 +202,7 @@ gcc_cfg_block_for_each_gimple_phi (gcc_cfg_block block,
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
 
-      gimple stmt = gsi_stmt (gsi);
+      gimple_stmt_ptr stmt = gsi_stmt (gsi);
       if (cb (gcc_private_make_gimple_phi (stmt), user_data))
 	{
 	  return true;
@@ -231,7 +231,7 @@ gcc_cfg_block_for_each_gimple (gcc_cfg_block block,
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
 
-      gimple stmt = gsi_stmt (gsi);
+      gimple_stmt_ptr stmt = gsi_stmt (gsi);
       if (cb (gcc_private_make_gimple (stmt), user_data))
 	{
 	  return true;

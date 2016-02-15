@@ -728,6 +728,10 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
     exclude_test('tests/plugin/callgraph')
     exclude_test('tests/plugin/rtl')
 
+# Tests that are over-specified and only work for GCC 6 and later:
+if GCC_VERSION < 6000:
+    exclude_test('tests/examples/find-global-state')
+
 def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)

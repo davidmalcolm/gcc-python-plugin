@@ -27,6 +27,12 @@
 #define GCC_PUBLIC_API(RETURN_TYPE) extern RETURN_TYPE
 #define GCC_PRIVATE_API(RETURN_TYPE) extern RETURN_TYPE
 
+#if (GCC_VERSION >= 6000)
+typedef gimple *gimple_stmt_ptr;
+#else
+typedef gimple gimple_stmt_ptr;
+#endif
+
 #include "gcc-public-types.h"
 
 /* For internal use: */
