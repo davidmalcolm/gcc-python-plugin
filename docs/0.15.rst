@@ -1,5 +1,5 @@
-.. Copyright 2011-2016 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2016 Red Hat, Inc.
+.. Copyright 2016 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2016 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -15,17 +15,23 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Release Notes
-=============
+0.15
+~~~~
 
-.. toctree::
-   
-   0.15.rst
-   0.14.rst
-   0.13.rst
-   0.12.rst
-   0.11.rst
-   0.10.rst
-   0.9.rst
-   0.8.rst
-   0.7.rst
+This releases adds support for gcc 6  (along with continued
+support for gcc 4.6, 4.7, 4.8, 4.9 and 5).
+
+Additionally, this release contains the following improvements
+(contributed by Tom Tromey; thanks Tom):
+
+    * document :py:data:`gcc.PLUGIN_FINISH_TYPE`
+
+    * document :py:class:`gcc.EnumeralType`; add 'values' attribute
+
+    * add unqualified_equivalent to gcc.Type subclasses
+
+    * preserve qualifiers when adding more qualifiers
+
+    * fix include for gcc 4.9.2
+
+    * handle variadic function types

@@ -1,5 +1,5 @@
 Name:           gcc-python-plugin
-Version:        0.14
+Version:        0.15
 Release:        1%{?dist}
 Summary:        GCC plugin that embeds Python
 
@@ -177,7 +177,7 @@ BuildPlugin \
 
 BuildPlugin \
   python3-debug \
-  python3.4dm-config \
+  /usr/bin/python3.?dm-config \
   python3_debug.so \
   python3_debug
 
