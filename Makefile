@@ -387,16 +387,14 @@ rpm:
 	rpmbuild -ba gcc-python-plugin.spec
 
 # Perform a test (scratch) build in Koji:
-# f16 was gcc 4.6, but this has been deleted from Koji
-# f17: gcc 4.7
-# f19: gcc 4.8
-koji-gcc-4.6: srpm
-	koji build --scratch f16 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc17.src.rpm
+# The following have been deleted from Koji:
+#   f16 was gcc 4.6
+#   f17 was gcc 4.7
+#   f19 was gcc 4.8
+koji-gcc-5: srpm
+	koji build --scratch f23 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc20.src.rpm
 
-koji-gcc-4.7: srpm
-	koji build --scratch f17 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc17.src.rpm
+koji-gcc-6: srpm
+	koji build --scratch f24 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc20.src.rpm
 
-koji-gcc-4.8: srpm
-	koji build --scratch f19 ~/rpmbuild/SRPMS/gcc-python-plugin-$(VERSION)-1.fc17.src.rpm
-
-koji: koji-gcc-4.7 koji-gcc-4.8
+koji: koji-gcc-5 koji-gcc-6
