@@ -37,7 +37,7 @@ def get_global_typedef(name):
     # Look up a typedef in global scope by name, returning a gcc.TypeDecl,
     # or None if not found
     for u in gcc.get_translation_units():
-        if u.language == 'GNU C++':
+        if u.language.startswith('GNU C++'):
             gns = gcc.get_global_namespace()
             return gns.lookup(name)
         if u.block:
