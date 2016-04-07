@@ -25,8 +25,9 @@
 #include "basic-block.h"
 #if (GCC_VERSION >= 4009)
 #include "gimple-expr.h"
-#endif
+#else
 #include "gimple.h"
+#endif
 
 /***********************************************************
    gcc_cgraph_node
