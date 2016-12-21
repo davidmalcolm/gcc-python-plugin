@@ -295,6 +295,13 @@ test-suite: plugin print-gcc-version
 show-ssa: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-python examples/show-ssa.py test.c
 
+demo-show-lto-supergraph: plugin
+	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-python \
+	  examples/show-lto-supergraph.py \
+	  -flto \
+	  -flto-partition=none \
+	  tests/examples/lto/input-*.c
+
 html: docs/tables-of-passes.rst docs/passes.svg
 	cd docs && $(MAKE) html
 
