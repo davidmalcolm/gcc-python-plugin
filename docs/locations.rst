@@ -60,6 +60,27 @@ Locations
          if decl.location.in_system_header:
              return
 
+   From GCC 6 onwards, these values can represent both a caret and a range,
+   e.g.::
+
+      a = (foo && bar)
+          ~~~~~^~~~~~~
+
+   .. py:attribute:: caret
+
+      (:py:class:`gcc.Location`) The caret location within this location.
+      In the above example, the caret is on the first '&' character.
+
+   .. py:attribute:: start
+
+      (:py:class:`gcc.Location`) The start location of this range.
+      In the above example, the start is on the opening parenthesis.
+
+   .. py:attribute:: start
+
+      (:py:class:`gcc.Location`) The finish location of this range.
+      In the above example, the finish is on the closing parenthesis.
+
 .. py:class:: gcc.RichLocation
 
    Wrapper around GCC's `rich_location`, representing one or more locations

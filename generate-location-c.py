@@ -62,10 +62,37 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
 }
 """)
 
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_caret(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_caret(self->loc));
+}
+""")
+
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_start(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_start(self->loc));
+}
+""")
+
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_finish(self->loc));
+}
+""")
+
     getsettable = PyGetSetDefTable('PyGccLocation_getset_table',
                                    [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
                                     PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
                                     PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
+                                    PyGetSetDef('caret', 'PyGccLocation_get_caret', None, 'Location of caret'),
+                                    PyGetSetDef('start', 'PyGccLocation_get_start', None, 'Starting location of range'),
+                                    PyGetSetDef('finish', 'PyGccLocation_get_finish', None, 'End location of range'),
                                     ],
                                    identifier_prefix='PyGccLocation',
                                    typename='PyGccLocation')
