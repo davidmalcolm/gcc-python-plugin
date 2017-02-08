@@ -59,3 +59,13 @@ Locations
          # Don't report on issues found in system headers:
          if decl.location.in_system_header:
              return
+
+.. py:class:: gcc.RichLocation
+
+   Wrapper around GCC's `rich_location`, representing one or more locations
+   within the source code, and zero or more fix-it hints.
+
+   .. method:: add_fixit_replace(self, new_content)
+
+      Add a fix-it hint, suggesting replacement of the content covered
+      by range 0 of the rich location with new_content.

@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -193,6 +193,50 @@ PyGcc_WrtpMarkForPyGccLocation(PyGccLocation *wrapper)
     /* empty */
 }
 
+/* rich_location. */
+
+PyObject *
+PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
+                                    PyObject *kwargs)
+{
+    const char *keywords[] = {"new_content",
+                              NULL};
+    const char *new_content;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "s", (char**)keywords,
+                                     &new_content)) {
+        return NULL;
+    }
+
+    self->richloc.add_fixit_replace (new_content);
+
+    Py_RETURN_NONE;
+}
+
+int
+PyGccRichLocation_init(PyGccRichLocation *self, PyObject *args,
+                       PyObject *kwargs)
+{
+    const char *keywords[] = {"location",
+                              NULL};
+    PyGccLocation *loc_obj;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!", (char**)keywords,
+                                     &PyGccLocation_TypeObj, &loc_obj)) {
+        return -1;
+    }
+    // FIXME: also need a manual dtor call
+    new (&self->richloc) rich_location (line_table, loc_obj->loc.inner);
+    return 0;
+}
+
+void
+PyGcc_WrtpMarkForPyGccRichLocation(PyGccRichLocation *wrapper)
+{
+    /* empty */
+}
 
 /*
   PEP-7  

@@ -113,11 +113,12 @@ Generating custom errors and warnings
 
    Returns True if the warning was actually printed, False otherwise
 
-.. py:function:: gcc.inform(loc, str)
+.. py:function:: gcc.inform(location, message)
 
    This is a wrapper around GCC's `inform` function.
 
-   Expects an instance of :py:class:`gcc.Location` (not None) and a string
+   Expects an instance of :py:class:`gcc.Location` or
+   :py:class:`gcc.RichLocation`, (not None) and a string
 
    Emit an informational message at that location.
 
