@@ -165,6 +165,18 @@ PyGccLocation_hash(struct PyGccLocation * self)
 }
 
 PyObject *
+PyGccLocation_offset_column(PyGccLocation *self, PyObject *args)
+{
+    int offset;
+
+    if (!PyArg_ParseTuple(args, "i", &offset)) {
+        return NULL;
+    }
+
+    return PyGccLocation_New(gcc_location_offset_column(self->loc, offset));
+}
+
+PyObject *
 PyGccLocation_New(gcc_location loc)
 {
     struct PyGccLocation *location_obj = NULL;

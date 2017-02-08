@@ -43,6 +43,11 @@
     </attribute>
     <attribute name="finish" kind="location">
     </attribute>
+
+    <function name="offset_column" returntype="location">
+      <parameter name="offset" type="int"/>
+    </function>
+
   </type>
 
   <attribute name="input_location" kind="location" access="rw">

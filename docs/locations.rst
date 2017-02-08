@@ -60,6 +60,11 @@ Locations
          if decl.location.in_system_header:
              return
 
+   .. py:method:: offset_column(self, offset)
+
+      Generate a new :py:class:`gcc.Location` based on the caret location
+      of this location, offsetting the column by the given amount.
+
    From GCC 6 onwards, these values can represent both a caret and a range,
    e.g.::
 

@@ -80,6 +80,14 @@ gcc_location_get_finish (gcc_location loc)
   return gcc_private_make_location (get_finish (loc.inner));
 }
 
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_location_offset_column (gcc_location loc, int offset)
+{
+  return gcc_private_make_location
+    (linemap_position_for_loc_and_offset (line_table, loc.inner,
+                                          offset));
+}
+
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_set_input_location (gcc_location loc)
 {
   input_location = loc.inner;

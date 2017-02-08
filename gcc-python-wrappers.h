@@ -145,6 +145,9 @@ long
 PyGccLocation_hash(struct PyGccLocation * self);
 
 PyObject *
+PyGccLocation_offset_column(PyGccLocation *self, PyObject *args);
+
+PyObject *
 PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
                                     PyObject *kwargs);
 

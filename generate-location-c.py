@@ -102,6 +102,13 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
                                   'Boolean: is this location within a system header?')
     cu.add_defn(getsettable.c_defn())
 
+    methods = PyMethodTable('PyGccLocation_methods', [])
+    methods.add_method('offset_column',
+                       '(PyCFunction)PyGccLocation_offset_column',
+                       'METH_VARARGS',
+                       "")
+    cu.add_defn(methods.c_defn())
+
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',
                           localname = 'Location',
                           tp_name = 'gcc.Location',
@@ -111,6 +118,7 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
                           tp_hash = '(hashfunc)PyGccLocation_hash',
                           tp_repr = '(reprfunc)PyGccLocation_repr',
                           tp_str = '(reprfunc)PyGccLocation_str',
+                          tp_methods = methods.identifier,
                           tp_richcompare = 'PyGccLocation_richcompare',
                           tp_dealloc = 'PyGccWrapper_Dealloc')
     cu.add_defn(pytype.c_defn())
