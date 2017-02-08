@@ -114,6 +114,7 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
                           tp_name = 'gcc.Location',
                           struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
+                          tp_init = '(initproc)PyGccLocation_init',
                           tp_getset = getsettable.identifier,
                           tp_hash = '(hashfunc)PyGccLocation_hash',
                           tp_repr = '(reprfunc)PyGccLocation_repr',

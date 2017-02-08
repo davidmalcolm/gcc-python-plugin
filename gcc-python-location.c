@@ -33,6 +33,31 @@
           typedef unsigned int source_location;
 */
 
+int
+PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs)
+{
+    const char *keywords[] = {"caret", "start", "finish",
+                              NULL};
+    PyGccLocation *caret_obj;
+    PyGccLocation *start_obj;
+    PyGccLocation *finish_obj;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!O!O!", (char**)keywords,
+                                     &PyGccLocation_TypeObj, &caret_obj,
+                                     &PyGccLocation_TypeObj, &start_obj,
+                                     &PyGccLocation_TypeObj, &finish_obj)) {
+        return -1;
+    }
+
+    self->loc
+        = gcc_private_make_location (make_location (caret_obj->loc.inner,
+                                                    start_obj->loc.inner,
+                                                    finish_obj->loc.inner));
+
+    return 0;
+}
+
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self)
 {

@@ -71,6 +71,13 @@ Locations
       a = (foo && bar)
           ~~~~~^~~~~~~
 
+   .. py:method:: __init__(self, caret, start, finish)
+
+      Construct a location, using the caret location of caret as the
+      caret, and the start/finish of start and finish respectively::
+
+        compound_loc = gcc.Location(caret, start, finish)
+
    .. py:attribute:: caret
 
       (:py:class:`gcc.Location`) The caret location within this location.

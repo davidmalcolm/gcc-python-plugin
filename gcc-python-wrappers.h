@@ -132,6 +132,9 @@ extern PyObject *
 PyGccPass_New(struct opt_pass *pass);
 
 /* gcc-python-location.c: */
+int
+PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs);
+
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self);
 
