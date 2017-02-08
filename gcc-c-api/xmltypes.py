@@ -136,6 +136,10 @@ class Type(XmlWrapper, HasDocsMixin):
         for node in self.node.iter('iterator'):
             yield Iterator(self.api, node)
 
+    def iter_functions(self):
+        for node in self.node.findall('function'):
+            yield Function(self, node)
+
 class Attribute(XmlWrapper, HasDocsMixin):
     def get_xml_name(self):
         return self.node.get('name')
