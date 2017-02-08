@@ -33,6 +33,7 @@ Contents:
    examples.rst
    working-with-c.rst
    locations.rst
+   diagnostics.rst
    cfg.rst
    tree.rst
    gimple.rst
