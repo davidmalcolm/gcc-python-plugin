@@ -1,5 +1,5 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+.. Copyright 2011-2012, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2012, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -510,49 +510,3 @@ Global data access
       :py:class:`gcc.QualUnionType`, along with a string `name`, look for a
       field with that name within the given struct or union, returning it as a
       :py:class:`gcc.FieldDecl`, or None if it wasn't found
-
-
-Working with source code
-========================
-
-.. py:function:: gccutils.get_src_for_loc(loc)
-
-      Given a :py:class:`gcc.Location`, get the source line as a string
-      (without trailing whitespace or newlines)
-
-.. py:class:: gcc.Location
-
-   Wrapper around GCC's `location_t`, representing a location within the source
-   code.  Use :py:func:`gccutils.get_src_for_loc` to get at the line of actual
-   source code.
-
-   The output from __repr__ looks like this::
-
-      gcc.Location(file='./src/test.c', line=42)
-
-   The output from__str__  looks like this::
-
-      ./src/test.c:42
-
-   .. py:attribute:: file
-
-      (string) Name of the source file (or header file)
-
-   .. py:attribute:: line
-
-      (int) Line number within source file (starting at 1, not 0)
-
-   .. py:attribute:: column
-
-      (int) Column number within source file  (starting at 1, not 0)
-
-   .. py:attribute:: in_system_header
-
-      (bool) This attribute flags locations that are within a system header
-      file.  It may be of use when writing custom warnings, so that you
-      can filter out issues in system headers, leaving just those within
-      the user's code::
-
-         # Don't report on issues found in system headers:
-         if decl.location.in_system_header:
-             return
