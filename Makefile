@@ -19,6 +19,8 @@
 	test-suite testcpychecker testcpybuilder testdejagnu \
 	man
 
+CC=/home/david/coding-3/gcc-git-plugins/install/bin/gcc
+
 PLUGIN_SOURCE_FILES= \
   gcc-python.c \
   gcc-python-attribute.c \
