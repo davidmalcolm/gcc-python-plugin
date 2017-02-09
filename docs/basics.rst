@@ -1,5 +1,5 @@
-.. Copyright 2011, 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012 Red Hat, Inc.
+.. Copyright 2011-2012, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2012, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ Building the code
 ------------------
 You can obtain the source code from git by using::
 
-   $ git clone git://git.fedorahosted.org/gcc-python-plugin.git
+   $ git clone git@github.com:davidmalcolm/gcc-python-plugin.git
 
 To build the plugin, run:
 

@@ -1,5 +1,5 @@
-.. Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+.. Copyright 2012, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 Getting Involved
 ================
 
-The plugin's web site is the Trac instance at: https://fedorahosted.org/gcc-python-plugin/
+The plugin's web site is this GitHub repository:
+
+   https://github.com/davidmalcolm/gcc-python-plugin
 
 The primary place for discussion of the plugin is the mailing list:
 https://fedorahosted.org/mailman/listinfo/gcc-python-plugin
@@ -28,26 +30,6 @@ A pre-built version of the HTML documentation can be seen at:
 http://readthedocs.org/docs/gcc-python-plugin/en/latest/index.html
 
 The project's mailing list is here: https://fedorahosted.org/mailman/listinfo/gcc-python-plugin
-
-There's also a mailing list that receives commit notifications here: https://fedorahosted.org/mailman/listinfo/gcc-python-plugin-commits
-
-Bugs can be filed with the Trac instance:
-
-  https://fedorahosted.org/gcc-python-plugin/newticket
-
-though you need a Fedora account to do so (creating a Fedora account is trivial; see: http://fedoraproject.org/wiki/Account_System/NewAccount )
-
-The code is stored in the git repository here:
-
-   http://git.fedorahosted.org/git/?p=gcc-python-plugin.git;a=summary
-
-You can obtain the source code from git by using::
-
-   $ git clone git://git.fedorahosted.org/gcc-python-plugin.git
-
-There is also a clone of the repository on github here:
-
-   https://github.com/davidmalcolm/gcc-python-plugin
 
 Ideas for using the plugin
 --------------------------
