@@ -56,6 +56,7 @@ from six.moves import configparser
 from cpybuilder import CommandError
 
 from testcpychecker import get_gcc_version
+from dejagnu import uses_dg_directives, DgContext
 
 WRITEBACK=0
 
@@ -229,6 +230,9 @@ class UnexpectedOutput(CompilationError):
     def _extra_info(self):
         return self.stream.diff(self.label)
 
+class DejaGnuError(Exception):
+    def __init__(self, ctxt):
+        self.ctxt = ctxt
 
 def get_source_files(testdir):
     """
@@ -352,6 +356,15 @@ def run_test(testdir):
     # and the source files go at the end:
     args += inputfiles
 
+    if uses_dg_directives(inputfiles):
+        dg_context = DgContext(inputfiles)
+        dg_context.echo_results = True
+        for inputfile in inputfiles:
+            dg_context.parse_directives(inputfile)
+        args += dg_context.get_args()
+    else:
+        dg_context = None
+
     if options.show:
         # Show the gcc invocation:
         print(' '.join(args))
@@ -370,6 +383,12 @@ def run_test(testdir):
         # then the user wants to see the gcc invocation directly
         sys.stdout.write(out.actual)
         sys.stderr.write(err.actual)
+
+    if dg_context:
+        dg_context.check_result(out.actual, err.actual, exitcode_actual)
+        if dg_context.num_failures() > 0:
+            raise DejaGnuError(dg_context)
+        return
 
     # Expected exit code
     # By default, we expect success if the expected stderr is empty, and
@@ -742,6 +761,9 @@ def run_one_test(testdir):
         err = sys.exc_info()[1]
         print('skipped: %s' % err.reason)
         return (testdir, 'SKIP', err.reason)
+    except DejaGnuError:
+        print('FAIL')
+        return (testdir, 'FAIL', None)
     except RuntimeError:
         err = sys.exc_info()[1]
         print('FAIL')
