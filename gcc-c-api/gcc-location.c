@@ -1,6 +1,6 @@
 /*
-   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2012 Red Hat, Inc.
+   Copyright 2012, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2012, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -60,6 +60,32 @@ GCC_PUBLIC_API (bool) gcc_location_is_unknown (gcc_location loc)
 GCC_IMPLEMENT_PUBLIC_API (bool) gcc_location_get_in_system_header (gcc_location loc)
 {
   return in_system_header_at (loc.inner);
+}
+
+GCC_IMPLEMENT_PUBLIC_API (gcc_location)
+gcc_location_get_caret (gcc_location loc)
+{
+  return gcc_private_make_location (get_pure_location (loc.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API (gcc_location)
+gcc_location_get_start (gcc_location loc)
+{
+  return gcc_private_make_location (get_start (loc.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API (gcc_location)
+gcc_location_get_finish (gcc_location loc)
+{
+  return gcc_private_make_location (get_finish (loc.inner));
+}
+
+GCC_IMPLEMENT_PUBLIC_API(gcc_location)
+gcc_location_offset_column (gcc_location loc, int offset)
+{
+  return gcc_private_make_location
+    (linemap_position_for_loc_and_offset (line_table, loc.inner,
+                                          offset));
 }
 
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_set_input_location (gcc_location loc)

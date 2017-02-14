@@ -1,5 +1,5 @@
-#   Copyright 2011, 2012, 2013, 2014 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2011, 2012, 2013, 2014 Red Hat, Inc.
+#   Copyright 2011-2014, 2017 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2011-2014, 2017 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -62,10 +62,37 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
 }
 """)
 
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_caret(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_caret(self->loc));
+}
+""")
+
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_start(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_start(self->loc));
+}
+""")
+
+    cu.add_defn("""
+static PyObject *
+PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
+{
+    return PyGccLocation_New(gcc_location_get_finish(self->loc));
+}
+""")
+
     getsettable = PyGetSetDefTable('PyGccLocation_getset_table',
                                    [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
                                     PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
                                     PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
+                                    PyGetSetDef('caret', 'PyGccLocation_get_caret', None, 'Location of caret'),
+                                    PyGetSetDef('start', 'PyGccLocation_get_start', None, 'Starting location of range'),
+                                    PyGetSetDef('finish', 'PyGccLocation_get_finish', None, 'End location of range'),
                                     ],
                                    identifier_prefix='PyGccLocation',
                                    typename='PyGccLocation')
@@ -75,22 +102,63 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
                                   'Boolean: is this location within a system header?')
     cu.add_defn(getsettable.c_defn())
 
+    methods = PyMethodTable('PyGccLocation_methods', [])
+    methods.add_method('offset_column',
+                       '(PyCFunction)PyGccLocation_offset_column',
+                       'METH_VARARGS',
+                       "")
+    cu.add_defn(methods.c_defn())
+
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',
                           localname = 'Location',
                           tp_name = 'gcc.Location',
                           struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
+                          tp_init = '(initproc)PyGccLocation_init',
                           tp_getset = getsettable.identifier,
                           tp_hash = '(hashfunc)PyGccLocation_hash',
                           tp_repr = '(reprfunc)PyGccLocation_repr',
                           tp_str = '(reprfunc)PyGccLocation_str',
+                          tp_methods = methods.identifier,
                           tp_richcompare = 'PyGccLocation_richcompare',
                           tp_dealloc = 'PyGccWrapper_Dealloc')
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
 
+def generate_rich_location():
+    #
+    # Generate the gcc.RichLocation class:
+    #
+    global modinit_preinit
+    global modinit_postinit
+
+    methods = PyMethodTable('PyGccRichLocation_methods', [])
+    methods.add_method('add_fixit_replace',
+                       '(PyCFunction)PyGccRichLocation_add_fixit_replace',
+                       'METH_VARARGS | METH_KEYWORDS',
+                       "FIXME")
+    cu.add_defn(methods.c_defn())
+
+    pytype = PyGccWrapperTypeObject(identifier = 'PyGccRichLocation_TypeObj',
+                          localname = 'RichLocation',
+                          tp_name = 'gcc.RichLocation',
+                          struct_name = 'PyGccRichLocation',
+                          tp_new = 'PyType_GenericNew',
+                          tp_init = '(initproc)PyGccRichLocation_init',
+                          #tp_getset = getsettable.identifier,
+                          #tp_hash = '(hashfunc)PyGccRichLocation_hash',
+                          #tp_repr = '(reprfunc)PyGccRichLocation_repr',
+                          #tp_str = '(reprfunc)PyGccRichLocation_str',
+                          tp_methods = methods.identifier,
+                          #tp_richcompare = 'PyGccRichLocation_richcompare',
+                          tp_dealloc = 'PyGccWrapper_Dealloc')
+    cu.add_defn(pytype.c_defn())
+    modinit_preinit += pytype.c_invoke_type_ready()
+    modinit_postinit += pytype.c_invoke_add_to_module()
+
 generate_location()
+generate_rich_location()
 
 cu.add_defn("""
 int autogenerated_location_init_types(void)

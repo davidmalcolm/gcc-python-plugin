@@ -1,6 +1,6 @@
 /*
-   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2013, 2015 Red Hat, Inc.
+   Copyright 2011-2013, 2015, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -132,6 +132,9 @@ extern PyObject *
 PyGccPass_New(struct opt_pass *pass);
 
 /* gcc-python-location.c: */
+int
+PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs);
+
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self);
 
@@ -143,6 +146,17 @@ PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op);
 
 long
 PyGccLocation_hash(struct PyGccLocation * self);
+
+PyObject *
+PyGccLocation_offset_column(PyGccLocation *self, PyObject *args);
+
+PyObject *
+PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
+                                    PyObject *kwargs);
+
+int
+PyGccRichLocation_init(PyGccRichLocation *self, PyObject *args,
+                       PyObject *kwargs);
 
 /* gcc-python-cfg.c: */
 PyObject *
