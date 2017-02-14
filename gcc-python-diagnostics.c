@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -144,22 +144,32 @@ PyGcc_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *
 PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyGccLocation *loc_obj;
+    PyObject *obj;
     const char *msg;
     const char *keywords[] = {"location",
                               "message",
                               NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "O!s:inform", (char**)keywords,
-                                     &PyGccLocation_TypeObj, &loc_obj,
-                                     &msg)) {
+                                     "Os:inform", (char**)keywords,
+                                     &obj, &msg)) {
         return NULL;
     }
 
-    gcc_inform(loc_obj->loc, msg);
-
-    Py_RETURN_NONE;
+    /* Check for location vs rich_location.  */
+    if (Py_TYPE (obj) == (PyTypeObject *)&PyGccLocation_TypeObj) {
+        PyGccLocation *loc_obj = (PyGccLocation *)obj;
+        gcc_inform(loc_obj->loc, msg);
+        Py_RETURN_NONE;
+    } else if (Py_TYPE (obj) == (PyTypeObject *)&PyGccRichLocation_TypeObj) {
+        PyGccRichLocation *richloc_obj = (PyGccRichLocation *)obj;
+        inform_at_rich_loc (&richloc_obj->richloc, msg);
+        Py_RETURN_NONE;
+    } else {
+        return PyErr_Format(PyExc_TypeError,
+                            ("type of location must be either gcc.Location"
+                             " or gcc.RichLocation"));
+    }
 }
 
 /*

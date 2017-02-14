@@ -150,6 +150,23 @@ def write_api(api, out):
             writer.writeln('    void *user_data);')
             writer.writeln()
 
+        # add functions:
+        for fun in type_.iter_functions():
+            doc = fun.get_doc()
+            if doc:
+                writer.write_doc_comment(doc)
+            writer.writeln('GCC_PUBLIC_API(%s)' % fun.get_c_return_type())
+            paramstrs = ['%s %s' % (type_.get_c_name(),
+                                    type_.get_varname())]
+            for param in fun.iter_params():
+                paramstrs.append('%s %s' % (param.get_c_type(),
+                                            param.get_xml_name()))
+            writer.writeln('%s_%s(%s);'
+                           % (type_.get_c_prefix(),
+                              fun.get_c_name(),
+                              ', '.join(paramstrs)))
+            writer.writeln()
+
         # add upcasts
         for base in type_.get_bases():
             writer.writeln('GCC_PUBLIC_API(%s)'

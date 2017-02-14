@@ -1,5 +1,6 @@
-.. Copyright 2011-2016 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2016 Red Hat, Inc.
+/*
+   Copyright 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -14,18 +15,18 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
+*/
 
-Release Notes
-=============
+/* { dg-do compile } */
 
-.. toctree::
-   
-   0.15.rst
-   0.14.rst
-   0.13.rst
-   0.12.rst
-   0.11.rst
-   0.10.rst
-   0.9.rst
-   0.8.rst
-   0.7.rst
+void test_1 (void)
+{ /* { dg-message "1: this is the start of the function" } */
+} /* { dg-message "1: this is the end of the function" } */
+
+/*
+  PEP-7
+Local variables:
+c-basic-offset: 4
+indent-tabs-mode: nil
+End:
+*/

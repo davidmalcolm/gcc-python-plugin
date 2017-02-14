@@ -1,6 +1,6 @@
 /*
-   Copyright 2011-2013, 2015 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2013, 2015 Red Hat, Inc.
+   Copyright 2011-2013, 2015, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2015, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -184,6 +184,11 @@ DECLARE_SIMPLE_WRAPPER(PyGccLocation,
 		       PyGccLocation_TypeObj,
 		       location,
 		       gcc_location, loc)
+
+DECLARE_SIMPLE_WRAPPER(PyGccRichLocation,
+		       PyGccRichLocation_TypeObj,
+		       rich_location,
+		       rich_location, richloc)
 
 DECLARE_SIMPLE_WRAPPER(PyGccGimple, 
 		       PyGccGimple_TypeObj,

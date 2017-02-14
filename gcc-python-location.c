@@ -1,6 +1,6 @@
 /*
-   Copyright 2011, 2012, 2013 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011, 2012, 2013 Red Hat, Inc.
+   Copyright 2011-2013, 2017 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2013, 2017 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -32,6 +32,31 @@
       A logical line/column number, i.e. an "index" into a line_map:
           typedef unsigned int source_location;
 */
+
+int
+PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs)
+{
+    const char *keywords[] = {"caret", "start", "finish",
+                              NULL};
+    PyGccLocation *caret_obj;
+    PyGccLocation *start_obj;
+    PyGccLocation *finish_obj;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!O!O!", (char**)keywords,
+                                     &PyGccLocation_TypeObj, &caret_obj,
+                                     &PyGccLocation_TypeObj, &start_obj,
+                                     &PyGccLocation_TypeObj, &finish_obj)) {
+        return -1;
+    }
+
+    self->loc
+        = gcc_private_make_location (make_location (caret_obj->loc.inner,
+                                                    start_obj->loc.inner,
+                                                    finish_obj->loc.inner));
+
+    return 0;
+}
 
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self)
@@ -165,6 +190,18 @@ PyGccLocation_hash(struct PyGccLocation * self)
 }
 
 PyObject *
+PyGccLocation_offset_column(PyGccLocation *self, PyObject *args)
+{
+    int offset;
+
+    if (!PyArg_ParseTuple(args, "i", &offset)) {
+        return NULL;
+    }
+
+    return PyGccLocation_New(gcc_location_offset_column(self->loc, offset));
+}
+
+PyObject *
 PyGccLocation_New(gcc_location loc)
 {
     struct PyGccLocation *location_obj = NULL;
@@ -193,6 +230,50 @@ PyGcc_WrtpMarkForPyGccLocation(PyGccLocation *wrapper)
     /* empty */
 }
 
+/* rich_location. */
+
+PyObject *
+PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
+                                    PyObject *kwargs)
+{
+    const char *keywords[] = {"new_content",
+                              NULL};
+    const char *new_content;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "s", (char**)keywords,
+                                     &new_content)) {
+        return NULL;
+    }
+
+    self->richloc.add_fixit_replace (new_content);
+
+    Py_RETURN_NONE;
+}
+
+int
+PyGccRichLocation_init(PyGccRichLocation *self, PyObject *args,
+                       PyObject *kwargs)
+{
+    const char *keywords[] = {"location",
+                              NULL};
+    PyGccLocation *loc_obj;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!", (char**)keywords,
+                                     &PyGccLocation_TypeObj, &loc_obj)) {
+        return -1;
+    }
+    // FIXME: also need a manual dtor call
+    new (&self->richloc) rich_location (line_table, loc_obj->loc.inner);
+    return 0;
+}
+
+void
+PyGcc_WrtpMarkForPyGccRichLocation(PyGccRichLocation *wrapper)
+{
+    /* empty */
+}
 
 /*
   PEP-7  

@@ -17,6 +17,8 @@
 
 .PHONY: all clean check-api
 
+CC=/home/david/coding-3/gcc-git-plugins/install/bin/gcc
+
 HANDWRITTEN_C_FILES = \
   gcc-callgraph.c \
   gcc-cfg.c \
