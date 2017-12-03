@@ -33,6 +33,8 @@
           typedef unsigned int source_location;
 */
 
+#if (GCC_VERSION >= 7000)
+
 int
 PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs)
 {
@@ -57,6 +59,8 @@ PyGccLocation_init(PyGccLocation *self, PyObject *args, PyObject *kwargs)
 
     return 0;
 }
+
+#endif
 
 PyObject *
 PyGccLocation_repr(struct PyGccLocation * self)
@@ -189,6 +193,8 @@ PyGccLocation_hash(struct PyGccLocation * self)
     return self->loc.inner;
 }
 
+#if (GCC_VERSION >= 5000)
+
 PyObject *
 PyGccLocation_offset_column(PyGccLocation *self, PyObject *args)
 {
@@ -200,6 +206,8 @@ PyGccLocation_offset_column(PyGccLocation *self, PyObject *args)
 
     return PyGccLocation_New(gcc_location_offset_column(self->loc, offset));
 }
+
+#endif /* #if (GCC_VERSION >= 5000) */
 
 PyObject *
 PyGccLocation_New(gcc_location loc)
@@ -230,7 +238,10 @@ PyGcc_WrtpMarkForPyGccLocation(PyGccLocation *wrapper)
     /* empty */
 }
 
+
 /* rich_location. */
+
+#if (GCC_VERSION >= 6000)
 
 PyObject *
 PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
@@ -246,7 +257,9 @@ PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
         return NULL;
     }
 
-    self->richloc.add_fixit_replace (new_content);
+    self->richloc.add_fixit_replace (get_range_from_loc (line_table,
+                                                         self->richloc.get_loc (0)),
+                                     new_content);
 
     Py_RETURN_NONE;
 }
@@ -274,6 +287,8 @@ PyGcc_WrtpMarkForPyGccRichLocation(PyGccRichLocation *wrapper)
 {
     /* empty */
 }
+
+#endif /* #if (GCC_VERSION >= 6000) */
 
 /*
   PEP-7  

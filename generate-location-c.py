@@ -16,6 +16,7 @@
 #   <http://www.gnu.org/licenses/>.
 
 from cpybuilder import *
+from testcpychecker import get_gcc_version
 from wrapperbuilder import PyGccWrapperTypeObject
 
 cu = CompilationUnit()
@@ -61,24 +62,22 @@ PyGccLocation_get_column(struct PyGccLocation *self, void *closure)
     return PyGccInt_FromLong(gcc_location_get_column(self->loc));
 }
 """)
-
-    cu.add_defn("""
+    if get_gcc_version() >= 7000:
+        cu.add_defn("""
 static PyObject *
 PyGccLocation_get_caret(struct PyGccLocation *self, void *closure)
 {
     return PyGccLocation_New(gcc_location_get_caret(self->loc));
 }
 """)
-
-    cu.add_defn("""
+        cu.add_defn("""
 static PyObject *
 PyGccLocation_get_start(struct PyGccLocation *self, void *closure)
 {
     return PyGccLocation_New(gcc_location_get_start(self->loc));
 }
 """)
-
-    cu.add_defn("""
+        cu.add_defn("""
 static PyObject *
 PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
 {
@@ -90,12 +89,13 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
                                    [PyGetSetDef('file', 'PyGccLocation_get_file', None, 'Name of the source file'),
                                     PyGetSetDef('line', 'PyGccLocation_get_line', None, 'Line number within source file'),
                                     PyGetSetDef('column', 'PyGccLocation_get_column', None, 'Column number within source file'),
-                                    PyGetSetDef('caret', 'PyGccLocation_get_caret', None, 'Location of caret'),
-                                    PyGetSetDef('start', 'PyGccLocation_get_start', None, 'Starting location of range'),
-                                    PyGetSetDef('finish', 'PyGccLocation_get_finish', None, 'End location of range'),
                                     ],
                                    identifier_prefix='PyGccLocation',
                                    typename='PyGccLocation')
+    if get_gcc_version() >= 7000:
+        getsettable.gsdefs += [PyGetSetDef('caret', 'PyGccLocation_get_caret', None, 'Location of caret'),
+                               PyGetSetDef('start', 'PyGccLocation_get_start', None, 'Starting location of range'),
+                               PyGetSetDef('finish', 'PyGccLocation_get_finish', None, 'End location of range')]
     getsettable.add_simple_getter(cu,
                                   'in_system_header',
                                   'PyBool_FromLong(gcc_location_get_in_system_header(self->loc))',
@@ -103,10 +103,11 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
     cu.add_defn(getsettable.c_defn())
 
     methods = PyMethodTable('PyGccLocation_methods', [])
-    methods.add_method('offset_column',
-                       '(PyCFunction)PyGccLocation_offset_column',
-                       'METH_VARARGS',
-                       "")
+    if get_gcc_version() >= 5000:
+        methods.add_method('offset_column',
+                           '(PyCFunction)PyGccLocation_offset_column',
+                           'METH_VARARGS',
+                           "")
     cu.add_defn(methods.c_defn())
 
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccLocation_TypeObj',
@@ -114,7 +115,7 @@ PyGccLocation_get_finish(struct PyGccLocation *self, void *closure)
                           tp_name = 'gcc.Location',
                           struct_name = 'PyGccLocation',
                           tp_new = 'PyType_GenericNew',
-                          tp_init = '(initproc)PyGccLocation_init',
+                          tp_init = '(initproc)PyGccLocation_init' if get_gcc_version() >= 7000 else None,
                           tp_getset = getsettable.identifier,
                           tp_hash = '(hashfunc)PyGccLocation_hash',
                           tp_repr = '(reprfunc)PyGccLocation_repr',
@@ -130,6 +131,12 @@ def generate_rich_location():
     #
     # Generate the gcc.RichLocation class:
     #
+
+    # class rich_location was added to libcpp in gcc 6.
+    GCC_VERSION = get_gcc_version()
+    if GCC_VERSION < 6000:
+        return
+
     global modinit_preinit
     global modinit_postinit
 

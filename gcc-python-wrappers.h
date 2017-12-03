@@ -150,6 +150,8 @@ PyGccLocation_hash(struct PyGccLocation * self);
 PyObject *
 PyGccLocation_offset_column(PyGccLocation *self, PyObject *args);
 
+#if (GCC_VERSION >= 6000)
+
 PyObject *
 PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
                                     PyObject *kwargs);
@@ -157,6 +159,8 @@ PyGccRichLocation_add_fixit_replace(PyGccRichLocation *self, PyObject *args,
 int
 PyGccRichLocation_init(PyGccRichLocation *self, PyObject *args,
                        PyObject *kwargs);
+
+#endif
 
 /* gcc-python-cfg.c: */
 PyObject *

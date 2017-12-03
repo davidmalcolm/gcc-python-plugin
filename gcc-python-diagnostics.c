@@ -144,11 +144,12 @@ PyGcc_warning(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *
 PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *obj;
     const char *msg;
     const char *keywords[] = {"location",
                               "message",
                               NULL};
+#if (GCC_VERSION >= 6000)
+    PyObject *obj;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "Os:inform", (char**)keywords,
@@ -170,6 +171,20 @@ PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
                             ("type of location must be either gcc.Location"
                              " or gcc.RichLocation"));
     }
+#else
+    PyGccLocation *loc_obj;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     "O!s:inform", (char**)keywords,
+                                     &PyGccLocation_TypeObj, &loc_obj,
+                                     &msg)) {
+        return NULL;
+    }
+
+    gcc_inform(loc_obj->loc, msg);
+
+    Py_RETURN_NONE;
+#endif
 }
 
 /*
