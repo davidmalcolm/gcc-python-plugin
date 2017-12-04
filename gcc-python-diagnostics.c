@@ -164,7 +164,11 @@ PyGcc_inform(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_NONE;
     } else if (Py_TYPE (obj) == (PyTypeObject *)&PyGccRichLocation_TypeObj) {
         PyGccRichLocation *richloc_obj = (PyGccRichLocation *)obj;
+#if (GCC_VERSION >= 8000)
+        inform (&richloc_obj->richloc, msg);
+#else
         inform_at_rich_loc (&richloc_obj->richloc, msg);
+#endif
         Py_RETURN_NONE;
     } else {
         return PyErr_Format(PyExc_TypeError,
