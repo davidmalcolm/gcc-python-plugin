@@ -185,10 +185,16 @@ DECLARE_SIMPLE_WRAPPER(PyGccLocation,
 		       location,
 		       gcc_location, loc)
 
+/* class rich_location was added to libcpp in gcc 6.  */
+
+#if (GCC_VERSION >= 6000)
+
 DECLARE_SIMPLE_WRAPPER(PyGccRichLocation,
 		       PyGccRichLocation_TypeObj,
 		       rich_location,
 		       rich_location, richloc)
+
+#endif
 
 DECLARE_SIMPLE_WRAPPER(PyGccGimple, 
 		       PyGccGimple_TypeObj,

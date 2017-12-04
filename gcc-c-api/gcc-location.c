@@ -62,6 +62,14 @@ GCC_IMPLEMENT_PUBLIC_API (bool) gcc_location_get_in_system_header (gcc_location 
   return in_system_header_at (loc.inner);
 }
 
+/* get_pure_location and get_finish were added to gcc's input.h in
+   gcc's r238792 (aka f17776ffcba650feb512137e3e22a04f3f433c84).
+   get_start was added to gcc's input.h in gcc's r239831
+   (aka aca2a315073c72fb7c9ab1be779c290cc91f564c).
+   I believe that makes them available in gcc 7 onwards.  */
+
+#if (GCC_VERSION >= 7000)
+
 GCC_IMPLEMENT_PUBLIC_API (gcc_location)
 gcc_location_get_caret (gcc_location loc)
 {
@@ -80,6 +88,14 @@ gcc_location_get_finish (gcc_location loc)
   return gcc_private_make_location (get_finish (loc.inner));
 }
 
+#endif
+
+/* linemap_position_for_loc_and_offset was added in gcc's r217383
+   (aka 766928aa6ac2c846c2d098ef4ef9e220feb4dcab).
+   It's present in gcc 5.1. */
+
+#if (GCC_VERSION >= 5000)
+
 GCC_IMPLEMENT_PUBLIC_API(gcc_location)
 gcc_location_offset_column (gcc_location loc, int offset)
 {
@@ -87,6 +103,8 @@ gcc_location_offset_column (gcc_location loc, int offset)
     (linemap_position_for_loc_and_offset (line_table, loc.inner,
                                           offset));
 }
+
+#endif
 
 GCC_IMPLEMENT_PUBLIC_API (void) gcc_set_input_location (gcc_location loc)
 {
