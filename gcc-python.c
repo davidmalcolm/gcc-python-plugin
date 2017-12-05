@@ -301,8 +301,22 @@ PyGcc_get_translation_units(PyObject *self, PyObject *args)
                            add_translation_unit_decl_to_list)
 }
 
-/* Weakly import global_namespace; it will be non-NULL for the C++ frontend: */
+
+/* Weakly import global_namespace; it will be non-NULL for the C++ frontend.
+
+   GCC 8's r247599 (aka c99e91fe8d1191b348cbc1659fbfbac2fc07e154)
+   converted it from:
+      extern GTY(()) tree global_namespace;
+   to:
+      #define global_namespace               cp_global_trees[CPTI_GLOBAL]
+   so we have to access cp_global_trees instead.  */
+
+#if (GCC_VERSION >= 8000)
+__typeof__ (cp_global_trees) cp_global_trees __attribute__ ((weak));
+#else
 __typeof__ (global_namespace) global_namespace __attribute__ ((weak));
+#endif /* #if (GCC_VERSION >= 8000) */
+
 
 static PyObject *
 PyGcc_get_global_namespace(PyObject *self, PyObject *args)
