@@ -997,6 +997,16 @@ PyGccNamespaceDecl_declarations(tree t)
   return PyGcc_TreeListFromChain(cp_namespace_decls(t));
 }
 
+#if (GCC_VERSION >= 8000)
+
+static int is_namespace (tree decl, void *)
+{
+    return (TREE_CODE (decl) == NAMESPACE_DECL
+            && !DECL_NAMESPACE_ALIAS (decl));
+}
+
+#endif /* #if (GCC_VERSION >= 8000) */
+
 PyObject *
 PyGccNamespaceDecl_namespaces(tree t)
 {
@@ -1010,7 +1020,15 @@ PyGccNamespaceDecl_namespaces(tree t)
   if (DECL_NAMESPACE_ALIAS(t))
     return raise_namespace_alias("gcc.NamespaceDecl.namespaces");
 
+  /* GCC 8's r248821 (aka f7564df45462679c3b0b82f2942f5fb50b640113)
+     eliminated the "namespaces" field from cp_binding_level.  */
+
+#if (GCC_VERSION >= 8000)
+  return PyGcc_TreeListFromChainWithFilter(NAMESPACE_LEVEL(t)->names,
+                                           is_namespace, NULL);
+#else
   return PyGcc_TreeListFromChain(NAMESPACE_LEVEL(t)->namespaces);
+#endif
 }
 
 /* Accessing the fields and methods of compound types.
