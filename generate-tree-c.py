@@ -479,10 +479,10 @@ def generate_tree_code_classes():
 
         if tree_type.SYM in ('RECORD_TYPE', 'UNION_TYPE', 'QUAL_UNION_TYPE'):
             add_simple_getter('fields',
-                              'PyGcc_TreeListFromChain(TYPE_FIELDS(self->t.inner))',
+                              'PyGcc_GetFields(self)',
                               "The fields of this type")
             add_simple_getter('methods',
-                              'PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner))',
+                              'PyGcc_GetMethods(self)',
                               "The methods of this type")
 
         if tree_type.SYM == 'ENUMERAL_TYPE':

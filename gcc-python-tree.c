@@ -1013,6 +1013,48 @@ PyGccNamespaceDecl_namespaces(tree t)
   return PyGcc_TreeListFromChain(NAMESPACE_LEVEL(t)->namespaces);
 }
 
+/* Accessing the fields and methods of compound types.
+   GCC 8's r250413 (aka ab87ee8f509c0b600102195704105d4d98ec59d9)
+   eliminated TYPE_METHODS, instead putting both fields and methods
+   on the TYPE_FIELDS chain, using DECL_DECLARES_FUNCTION_P to
+   distinguish them.  */
+
+#if (GCC_VERSION >= 8000)
+
+static int is_field (tree t, void *)
+{
+    return !DECL_DECLARES_FUNCTION_P (t);
+}
+
+static int is_method (tree t, void *)
+{
+    return DECL_DECLARES_FUNCTION_P (t);
+}
+
+#endif /* #if (GCC_VERSION >= 8000) */
+
+PyObject *
+PyGcc_GetFields(struct PyGccTree *self)
+{
+#if (GCC_VERSION >= 8000)
+    return PyGcc_TreeListFromChainWithFilter(TYPE_FIELDS(self->t.inner),
+                                             is_field, NULL);
+#else
+    return PyGcc_TreeListFromChain(TYPE_FIELDS(self->t.inner));
+#endif
+}
+
+PyObject *
+PyGcc_GetMethods(struct PyGccTree *self)
+{
+#if (GCC_VERSION >= 8000)
+    return PyGcc_TreeListFromChainWithFilter(TYPE_FIELDS(self->t.inner),
+                                             is_method, NULL);
+#else
+    return PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner));
+#endif
+}
+
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c
@@ -1112,6 +1154,44 @@ PyGcc_TreeListFromChain(tree t)
 	}
         Py_DECREF(item);
 	t = TREE_CHAIN(t);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+/* As above, but only add nodes for which "filter" returns true.  */
+PyObject *
+PyGcc_TreeListFromChainWithFilter(tree t,
+                                  int (*filter) (tree, void *),
+                                  void *user_data)
+{
+    PyObject *result = NULL;
+
+    result = PyList_New(0);
+    if (!result) {
+	goto error;
+    }
+
+    while (t) {
+        if (filter (t, user_data)) {
+            PyObject *item;
+
+            item = PyGccTree_New(gcc_private_make_tree(t));
+            if (!item) {
+                goto error;
+            }
+            if (-1 == PyList_Append(result, item)) {
+                Py_DECREF(item);
+                goto error;
+            }
+            Py_DECREF(item);
+        }
+
+        t = TREE_CHAIN(t);
     }
 
     return result;
