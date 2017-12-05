@@ -60,8 +60,16 @@ __typeof__ (lang_check_failed) lang_check_failed __attribute__ ((weak));
 
 __typeof__ (decl_as_string) decl_as_string __attribute__ ((weak));
 
-/* Similar for namespace_binding: */
+/* Similar for namespace_binding, though gcc 8's r247654 (aka
+   f906dcc33dd818b71e16c88cef38f33c161070db) replaced it with
+   get_namespace_value and reversed the order of the params
+   and r247745 (aka 9d79db401edbb9665cde47ddea2702671c89e548)
+   renamed it from get_namespace_value to get_namespace_binding.  */
+#if (GCC_VERSION >= 8000)
+__typeof__ (get_namespace_binding) get_namespace_binding __attribute__ ((weak));
+#else
 __typeof__ (namespace_binding) namespace_binding __attribute__ ((weak));
+#endif
 
 /* And for cp_namespace_decls: */
 __typeof__ (cp_namespace_decls) cp_namespace_decls __attribute__ ((weak));
@@ -931,13 +939,22 @@ PyGccNamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwa
         return NULL;
     }
 
+#if (GCC_VERSION >= 8000)
+    if (NULL == get_namespace_binding) {
+#else
     if (NULL == namespace_binding) {
+#endif
         return raise_cplusplus_only("gcc.NamespaceDecl.lookup");
     }
 
     t_name = get_identifier(name);
 
+#if (GCC_VERSION >= 8000)
+    t_result = get_namespace_binding(self->t.inner, t_name);
+#else
     t_result = namespace_binding(t_name, self->t.inner);
+#endif
+
     return PyGccTree_New(gcc_private_make_tree(t_result));
 }
 
