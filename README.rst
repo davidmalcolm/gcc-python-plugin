@@ -23,6 +23,10 @@ use graphviz and eog to plot a handy visualization of a control flow graph,
 showing the source code interleaved with GCC's ``GIMPLE`` internal
 representation.
 
+The documentation can be seen at:
+
+  http://gcc-python-plugin.readthedocs.io/en/latest/index.html
+
 Requirements
 ------------
 
