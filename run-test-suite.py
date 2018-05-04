@@ -751,6 +751,10 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
 if GCC_VERSION < 6000:
     exclude_test('tests/examples/find-global-state')
 
+# class rich_location was added to libcpp in gcc 6.
+if GCC_VERSION < 6000:
+    exclude_test('tests/plugin/rich-location')
+
 # compound locations are only supported for GCC 7 and later:
 if GCC_VERSION < 7000:
     exclude_test('tests/plugin/compound-locations')
