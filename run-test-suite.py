@@ -755,6 +755,23 @@ if GCC_VERSION < 6000:
 if GCC_VERSION < 7000:
     exclude_test('tests/plugin/compound-locations')
 
+# Tests that are over-specified and only work for GCC 7 and earlier:
+if GCC_VERSION >= 8000:
+    # change from '__base_ctor ' to '__ct_base ' etc:
+    exclude_test('tests/examples/cplusplus/methods')
+
+    # reorg of namespace lookup:
+    exclude_test('tests/plugin/namespace')
+
+    # removal of column number from "In file included from" in stderr:
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN')
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN')
+
+# absinterp and thus the refcount-checker have bit-rotted:
+if GCC_VERSION >= 8000:
+    exclude_tests_below('tests/cpychecker/absinterp')
+    exclude_tests_below('tests/cpychecker/refcounts')
+
 def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)
