@@ -25,7 +25,7 @@ The plugin has the following requirements:
 
   * GCC: 4.6 or later (it uses APIs that weren't exposed to plugins in 4.5)
 
-  * Python: tested with 2.7 and 3.2; it may work with earlier versions
+  * Python: requires 2.7 or 3.2 or later
 
   * "six": The libcpychecker code uses the "six" Python compatibility library to
     smooth over Python 2 vs Python 3 differences, both at build-time and
