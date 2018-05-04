@@ -749,6 +749,7 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
 
 # Tests that are over-specified and only work for GCC 5 and later:
 if GCC_VERSION < 5000:
+    exclude_test('tests/cpychecker/absinterp/comparisons/conditionals')
     exclude_test('tests/plugin/rtl')
 
 # Tests that are over-specified and only work for GCC 6 and later:
