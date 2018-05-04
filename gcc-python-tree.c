@@ -686,13 +686,28 @@ PyGccConstructor_get_elements(PyObject *self, void *closure)
     return NULL;
 }
 
+static void
+print_integer_cst_to_buf(tree int_cst, char *buf, tree type)
+{
+    /*
+      GCC 8 commit r253595 (aka e3d0f65c14ffd7a63455dc1aa9d0405d25b327e4,
+      2017-10-10) introduces and requires the use of wi::to_wide on
+      INTEGER_CST.
+    */
+#if (GCC_VERSION >= 8000)
+    print_dec(wi::to_wide(int_cst), buf, TYPE_SIGN (type));
+#else
+    print_dec(int_cst, buf, TYPE_SIGN (type));
+#endif
+}
+
 PyObject *
 PyGcc_int_from_int_cst(tree int_cst)
 {
     tree type = TREE_TYPE(int_cst);
 #if (GCC_VERSION >= 5000)
     char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec(int_cst, buf, TYPE_SIGN (type));
+    print_integer_cst_to_buf (int_cst, buf, type);
     return PyGcc_int_from_decimal_string_buffer(buf);
 #else
     return PyGcc_int_from_double_int(TREE_INT_CST(int_cst),
@@ -712,7 +727,7 @@ PyGccIntegerConstant_repr(struct PyGccTree * self)
     tree type = TREE_TYPE(self->t.inner);
 #if (GCC_VERSION >= 5000)
     char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec(self->t.inner, buf, TYPE_SIGN (type));
+    print_integer_cst_to_buf (self->t.inner, buf, type);
 #else
     char buf[512];
     PyGcc_DoubleIntAsText(TREE_INT_CST(self->t.inner),
