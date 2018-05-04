@@ -747,9 +747,39 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
     exclude_test('tests/plugin/callgraph')
     exclude_test('tests/plugin/rtl')
 
+# Tests that are over-specified and only work for GCC 5 and later:
+if GCC_VERSION < 5000:
+    exclude_test('tests/cpychecker/absinterp/comparisons/conditionals')
+    exclude_test('tests/plugin/rtl')
+
 # Tests that are over-specified and only work for GCC 6 and later:
 if GCC_VERSION < 6000:
     exclude_test('tests/examples/find-global-state')
+
+# class rich_location was added to libcpp in gcc 6.
+if GCC_VERSION < 6000:
+    exclude_test('tests/plugin/rich-location')
+
+# compound locations are only supported for GCC 7 and later:
+if GCC_VERSION < 7000:
+    exclude_test('tests/plugin/compound-locations')
+
+# Tests that are over-specified and only work for GCC 7 and earlier:
+if GCC_VERSION >= 8000:
+    # change from '__base_ctor ' to '__ct_base ' etc:
+    exclude_test('tests/examples/cplusplus/methods')
+
+    # reorg of namespace lookup:
+    exclude_test('tests/plugin/namespace')
+
+    # removal of column number from "In file included from" in stderr:
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/with_PY_SSIZE_T_CLEAN')
+    exclude_test('tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN')
+
+# absinterp and thus the refcount-checker have bit-rotted:
+if GCC_VERSION >= 7000:
+    exclude_tests_below('tests/cpychecker/absinterp')
+    exclude_tests_below('tests/cpychecker/refcounts')
 
 def run_one_test(testdir):
     try:

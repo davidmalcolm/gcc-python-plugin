@@ -24,7 +24,11 @@
 #include "tree-ssa-alias.h"
 #include "basic-block.h"
 #if (GCC_VERSION >= 4009)
-#include "gimple-expr.h"
+#include "tree-ssa-alias.h" /* needed by gimple.h in 4.9 */
+#include "internal-fn.h" /* needed by gimple.h in 4.9 */
+#include "is-a.h" /* needed by gimple.h in 4.9 */
+#include "predict.h" /* needed by gimple.h in 4.9 */
+#include "gimple-expr.h" /* needed by gimple.h in 4.9 */
 #endif
 #include "gimple.h"
 

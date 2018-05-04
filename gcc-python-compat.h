@@ -43,12 +43,20 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
 
 
 /*
-   This is declared in gcc/tree-pretty-print.c (around line 580); it doesn't
-   seem to be declared in any of the plugin headers:
+   This is declared in gcc/tree-pretty-print.c (around line 580); it was only
+   exposed to plugin headers (in tree-pretty-print.h) in GCC commit r203113
+   (aka 0d9585ca35b919263b973afb371f0eda04857159, 2013-10-02), as part of
+   GCC 4.9
+
+   The signature was changed by GCC 8 commit r248140 (aka
+   3f6e5ced7eb1cf5b3212b2391c5b70ec3dcaf136, 2017-05-17), which introduced
+   dump_flags_t.
  */
+#if GCC_VERSION < 4009
 extern int
 dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		   bool is_stmt);
+#endif
 
 /* Within gcc/gcc-internal.h, not exposed by plugin API */
 extern bool ggc_force_collect;

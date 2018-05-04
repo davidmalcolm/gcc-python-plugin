@@ -17,3 +17,4 @@
    <http://www.gnu.org/licenses/>.
 */
 
+int nonempty;

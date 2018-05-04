@@ -346,6 +346,11 @@ PyGccNamespaceDecl_declarations(tree t);
 PyObject *
 PyGccNamespaceDecl_namespaces(tree t);
 
+PyObject *
+PyGcc_GetFields(struct PyGccTree *self);
+
+PyObject *
+PyGcc_GetMethods(struct PyGccTree *self);
 
 /* gcc-python-gimple.c: */
 extern gcc_gimple_asm
@@ -498,6 +503,11 @@ PyGccRtl_str(struct PyGccRtl * self);
 
 PyObject *
 PyGcc_TreeListFromChain(tree t);
+
+PyObject *
+PyGcc_TreeListFromChainWithFilter(tree t,
+                                  int (*filter) (tree, void *),
+                                  void *user_data);
 
 PyObject *
 PyGcc_TreeMakeListFromTreeList(tree t);

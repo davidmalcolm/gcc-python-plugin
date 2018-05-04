@@ -60,8 +60,16 @@ __typeof__ (lang_check_failed) lang_check_failed __attribute__ ((weak));
 
 __typeof__ (decl_as_string) decl_as_string __attribute__ ((weak));
 
-/* Similar for namespace_binding: */
+/* Similar for namespace_binding, though gcc 8's r247654 (aka
+   f906dcc33dd818b71e16c88cef38f33c161070db) replaced it with
+   get_namespace_value and reversed the order of the params
+   and r247745 (aka 9d79db401edbb9665cde47ddea2702671c89e548)
+   renamed it from get_namespace_value to get_namespace_binding.  */
+#if (GCC_VERSION >= 8000)
+__typeof__ (get_namespace_binding) get_namespace_binding __attribute__ ((weak));
+#else
 __typeof__ (namespace_binding) namespace_binding __attribute__ ((weak));
+#endif
 
 /* And for cp_namespace_decls: */
 __typeof__ (cp_namespace_decls) cp_namespace_decls __attribute__ ((weak));
@@ -678,13 +686,32 @@ PyGccConstructor_get_elements(PyObject *self, void *closure)
     return NULL;
 }
 
+#if (GCC_VERSION >= 5000)
+
+static void
+print_integer_cst_to_buf(tree int_cst, char *buf, tree type)
+{
+    /*
+      GCC 8 commit r253595 (aka e3d0f65c14ffd7a63455dc1aa9d0405d25b327e4,
+      2017-10-10) introduces and requires the use of wi::to_wide on
+      INTEGER_CST.
+    */
+#if (GCC_VERSION >= 8000)
+    print_dec(wi::to_wide(int_cst), buf, TYPE_SIGN (type));
+#else
+    print_dec(int_cst, buf, TYPE_SIGN (type));
+#endif
+}
+
+#endif /* #if (GCC_VERSION >= 5000) */
+
 PyObject *
 PyGcc_int_from_int_cst(tree int_cst)
 {
     tree type = TREE_TYPE(int_cst);
 #if (GCC_VERSION >= 5000)
     char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec(int_cst, buf, TYPE_SIGN (type));
+    print_integer_cst_to_buf (int_cst, buf, type);
     return PyGcc_int_from_decimal_string_buffer(buf);
 #else
     return PyGcc_int_from_double_int(TREE_INT_CST(int_cst),
@@ -704,7 +731,7 @@ PyGccIntegerConstant_repr(struct PyGccTree * self)
     tree type = TREE_TYPE(self->t.inner);
 #if (GCC_VERSION >= 5000)
     char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec(self->t.inner, buf, TYPE_SIGN (type));
+    print_integer_cst_to_buf (self->t.inner, buf, type);
 #else
     char buf[512];
     PyGcc_DoubleIntAsText(TREE_INT_CST(self->t.inner),
@@ -931,13 +958,22 @@ PyGccNamespaceDecl_lookup(struct PyGccTree * self, PyObject *args, PyObject *kwa
         return NULL;
     }
 
+#if (GCC_VERSION >= 8000)
+    if (NULL == get_namespace_binding) {
+#else
     if (NULL == namespace_binding) {
+#endif
         return raise_cplusplus_only("gcc.NamespaceDecl.lookup");
     }
 
     t_name = get_identifier(name);
 
+#if (GCC_VERSION >= 8000)
+    t_result = get_namespace_binding(self->t.inner, t_name);
+#else
     t_result = namespace_binding(t_name, self->t.inner);
+#endif
+
     return PyGccTree_New(gcc_private_make_tree(t_result));
 }
 
@@ -980,6 +1016,16 @@ PyGccNamespaceDecl_declarations(tree t)
   return PyGcc_TreeListFromChain(cp_namespace_decls(t));
 }
 
+#if (GCC_VERSION >= 8000)
+
+static int is_namespace (tree decl, void *)
+{
+    return (TREE_CODE (decl) == NAMESPACE_DECL
+            && !DECL_NAMESPACE_ALIAS (decl));
+}
+
+#endif /* #if (GCC_VERSION >= 8000) */
+
 PyObject *
 PyGccNamespaceDecl_namespaces(tree t)
 {
@@ -993,7 +1039,57 @@ PyGccNamespaceDecl_namespaces(tree t)
   if (DECL_NAMESPACE_ALIAS(t))
     return raise_namespace_alias("gcc.NamespaceDecl.namespaces");
 
+  /* GCC 8's r248821 (aka f7564df45462679c3b0b82f2942f5fb50b640113)
+     eliminated the "namespaces" field from cp_binding_level.  */
+
+#if (GCC_VERSION >= 8000)
+  return PyGcc_TreeListFromChainWithFilter(NAMESPACE_LEVEL(t)->names,
+                                           is_namespace, NULL);
+#else
   return PyGcc_TreeListFromChain(NAMESPACE_LEVEL(t)->namespaces);
+#endif
+}
+
+/* Accessing the fields and methods of compound types.
+   GCC 8's r250413 (aka ab87ee8f509c0b600102195704105d4d98ec59d9)
+   eliminated TYPE_METHODS, instead putting both fields and methods
+   on the TYPE_FIELDS chain, using DECL_DECLARES_FUNCTION_P to
+   distinguish them.  */
+
+#if (GCC_VERSION >= 8000)
+
+static int is_field (tree t, void *)
+{
+    return !DECL_DECLARES_FUNCTION_P (t);
+}
+
+static int is_method (tree t, void *)
+{
+    return DECL_DECLARES_FUNCTION_P (t);
+}
+
+#endif /* #if (GCC_VERSION >= 8000) */
+
+PyObject *
+PyGcc_GetFields(struct PyGccTree *self)
+{
+#if (GCC_VERSION >= 8000)
+    return PyGcc_TreeListFromChainWithFilter(TYPE_FIELDS(self->t.inner),
+                                             is_field, NULL);
+#else
+    return PyGcc_TreeListFromChain(TYPE_FIELDS(self->t.inner));
+#endif
+}
+
+PyObject *
+PyGcc_GetMethods(struct PyGccTree *self)
+{
+#if (GCC_VERSION >= 8000)
+    return PyGcc_TreeListFromChainWithFilter(TYPE_FIELDS(self->t.inner),
+                                             is_method, NULL);
+#else
+    return PyGcc_TreeListFromChain(TYPE_METHODS(self->t.inner));
+#endif
 }
 
 /* 
@@ -1095,6 +1191,44 @@ PyGcc_TreeListFromChain(tree t)
 	}
         Py_DECREF(item);
 	t = TREE_CHAIN(t);
+    }
+
+    return result;
+
+ error:
+    Py_XDECREF(result);
+    return NULL;
+}
+
+/* As above, but only add nodes for which "filter" returns true.  */
+PyObject *
+PyGcc_TreeListFromChainWithFilter(tree t,
+                                  int (*filter) (tree, void *),
+                                  void *user_data)
+{
+    PyObject *result = NULL;
+
+    result = PyList_New(0);
+    if (!result) {
+	goto error;
+    }
+
+    while (t) {
+        if (filter (t, user_data)) {
+            PyObject *item;
+
+            item = PyGccTree_New(gcc_private_make_tree(t));
+            if (!item) {
+                goto error;
+            }
+            if (-1 == PyList_Append(result, item)) {
+                Py_DECREF(item);
+                goto error;
+            }
+            Py_DECREF(item);
+        }
+
+        t = TREE_CHAIN(t);
     }
 
     return result;
