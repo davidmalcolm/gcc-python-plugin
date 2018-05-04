@@ -68,6 +68,14 @@ language: c
 compiler:
   - gcc
 
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"  # 3.7 development branch
+
 before_install:
   - eval "${MATRIX_EVAL}"
   - sudo apt-get update -qq
