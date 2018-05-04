@@ -751,6 +751,10 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 4:
 if GCC_VERSION < 6000:
     exclude_test('tests/examples/find-global-state')
 
+# compound locations are only supported for GCC 7 and later:
+if GCC_VERSION < 7000:
+    exclude_test('tests/plugin/compound-locations')
+
 def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)
