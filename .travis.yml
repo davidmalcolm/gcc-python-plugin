@@ -32,7 +32,6 @@ env:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6 gcc-6-plugin-dev
-      env:
 
   - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       addons:
@@ -49,7 +48,6 @@ env:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8 gcc-8-plugin-dev
-      env:
 
 python:
   - "2.7"
