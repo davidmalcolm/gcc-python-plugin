@@ -55,9 +55,8 @@ matrix:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
 before_install:
-    - eval "${MATRIX_EVAL}"
+  - eval "${MATRIX_EVAL}"
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq python-six python-pygments graphviz python-lxml
 
 script: make
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq python-six python-pygments graphviz python-lxml
