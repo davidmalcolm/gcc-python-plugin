@@ -686,6 +686,8 @@ PyGccConstructor_get_elements(PyObject *self, void *closure)
     return NULL;
 }
 
+#if (GCC_VERSION >= 5000)
+
 static void
 print_integer_cst_to_buf(tree int_cst, char *buf, tree type)
 {
@@ -700,6 +702,8 @@ print_integer_cst_to_buf(tree int_cst, char *buf, tree type)
     print_dec(int_cst, buf, TYPE_SIGN (type));
 #endif
 }
+
+#endif /* #if (GCC_VERSION >= 5000) */
 
 PyObject *
 PyGcc_int_from_int_cst(tree int_cst)
