@@ -1,0 +1,36 @@
+.. Copyright 2018 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2018 Red Hat, Inc.
+
+   This is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+0.16
+~~~~
+
+This releases adds support for gcc 7 and gcc 8  (along with continued
+support for gcc 4.6, 4.7, 4.8, 4.9, 5 and 6).
+
+The upstream location for the plugin has moved from fedorahosted.org
+to https://github.com/davidmalcolm/gcc-python-plugin
+
+Additionally, this release contains the following improvements:
+
+* add :py:class:`gcc.RichLocation` for GCC 6 onwards
+
+* :py:class:`gcc.Location`
+
+  * add :py:attr:`~gcc.Location.caret`, :py:attr:`~gcc.Location.start`,
+    :py:attr:`~gcc.Location.finish` attributes for GCC 7 onwards
+
+  * add :py:meth:`gcc.Location.offset_column` method

@@ -1,5 +1,5 @@
-.. Copyright 2011-2016 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2016 Red Hat, Inc.
+.. Copyright 2011-2018 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2018 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ Release Notes
 
 .. toctree::
    
+   0.16.rst
    0.15.rst
    0.14.rst
    0.13.rst
