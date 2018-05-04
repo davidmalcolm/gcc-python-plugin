@@ -64,17 +64,17 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
+  python:
+    - "2.7"
+    - "3.3"
+    - "3.4"
+    - "3.5"
+    - "3.6"
+    - "3.7-dev"  # 3.7 development branch
+
 language: c
 compiler:
   - gcc
-
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7-dev"  # 3.7 development branch
 
 before_install:
   - eval "${MATRIX_EVAL}"
