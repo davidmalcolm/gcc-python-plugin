@@ -57,9 +57,6 @@ matrix:
 before_install:
     - eval "${MATRIX_EVAL}"
 
-language: c
-compiler:
-  - gcc
 script: make
 before_install:
  - sudo apt-get update -qq
