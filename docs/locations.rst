@@ -1,5 +1,5 @@
-.. Copyright 2011-2012, 2017 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2012, 2017 Red Hat, Inc.
+.. Copyright 2011-2012, 2017-2018 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2011-2012, 2017-2018 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ Locations
       (:py:class:`gcc.Location`) The start location of this range.
       In the above example, the start is on the opening parenthesis.
 
-   .. py:attribute:: start
+   .. py:attribute:: finish
 
       (:py:class:`gcc.Location`) The finish location of this range.
       In the above example, the finish is on the closing parenthesis.
@@ -97,6 +97,10 @@ Locations
 
    Wrapper around GCC's `rich_location`, representing one or more locations
    within the source code, and zero or more fix-it hints.
+
+   .. note::
+
+      gcc.RichLocation is only available from GCC 6 onwards
 
    .. method:: add_fixit_replace(self, new_content)
 
