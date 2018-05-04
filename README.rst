@@ -32,7 +32,9 @@ Requirements
 
 * GCC: 4.6 or later (it uses APIs that weren't exposed to plugins in 4.5)
 
-* Python: tested with 2.7 and 3.2; it may work with earlier versions
+  * tested with 4.8, 4.9, 5, 6, 7, and 8.
+
+* Python: requires 2.7 or 3.2 or later
 
 * "six": The libcpychecker code uses the "six" Python compatibility library to
   smooth over Python 2 vs Python 3 differences, both at build-time and
@@ -54,25 +56,8 @@ You can also use::
 
 to demonstrate the new compiler errors.
 
-All of my coding so far has been on Fedora 15 x86_64, using::
-
-    gcc-plugin-devel-4.6.0-0.15.fc15.x86_64
-
-and I don't know to what extent it will be compatible with other versions and
-architectures.
-
-The code also makes some assumptions about the Python version you have
-installed (grep for "PyRuntime" in the .py files).  I've been using::
-
-    python-devel-2.7.1-5.fc15.x86_64
-    python-debug-2.7.1-5.fc15.x86_64
-    python3-debug-3.2-0.9.rc1.fc15.x86_64
-    python3-devel-3.2-0.9.rc1.fc15.x86_64
-
-but you may have to hack up the `PyRuntime()` invocations in the code to get
-it to build on other machines.  Ultimately I want the plugin to be buildable
-against multiple python versions, so there could be a python27.so,
-python27-debug.so, python-32mu.so, python-32-dmu.so, etc (c.f. PEP-3149)
+Development has been on x86_64 and I don't know to what extent it will be
+compatible with other architectures.
 
 There isn't an installer yet.  In theory you should be able to add these
 arguments to the gcc invocation::
