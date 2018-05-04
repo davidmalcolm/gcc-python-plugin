@@ -64,6 +64,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
+matrix:
   include:
     - python: "2.7"
     - python: "3.3"
