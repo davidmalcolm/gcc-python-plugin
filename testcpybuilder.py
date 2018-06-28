@@ -73,7 +73,13 @@ class BuiltModule:
         self.args += ['-o', self.modfile]
         self.args +=  ['-I' + sc.get_python_inc(),
                        '-I' + sc.get_python_inc(plat_specific=True)]
-        self.args += sc.get_config_var('CFLAGS').split()
+
+        # Get CFLAGS from sysconfig
+        cflags = sc.get_config_var('CFLAGS').split()
+        # Filter out LTO
+        cflags = filter(lambda flag: flag != '-flto', cflags)
+        self.args += cflags
+
         self.args += ['-Wall',  '-Werror'] # during testing
         # on some builds of Python, CFLAGS does not contain -fPIC, but it
         # appears to still be necessary:
