@@ -290,10 +290,31 @@ debug: plugin
 demo: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
 
+# Run 'demo', and verify the output.
+testdemo: plugin
+	$(INVOCATION_ENV_VARS) \
+	  $(srcdir)./gcc-with-cpychecker \
+	  -c \
+	  $(PYTHON_INCLUDES) \
+	  demo.c \
+	  > demo.out 2> demo.err \
+	  || true
+	echo "Demo: stdout:"
+	cat demo.out
+	echo "Demo: stderr:"
+	cat demo.err
+	egrep '^demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
+	  demo.err \
+	  | sed 's/:[0-9][0-9]*: warning:/:: warning:/;s/\[enabled by default\]//' \
+	  > demo.filtered
+	echo "Demo: compare with expected output"
+	diff demo.filtered demo.expected
+	rm demo.out demo.err demo.filtered
+
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
-test-suite: plugin print-gcc-version testdejagnu
+test-suite: plugin print-gcc-version testdejagnu testdemo
 	$(INVOCATION_ENV_VARS) $(PYTHON) run-test-suite.py
 
 show-ssa: plugin
