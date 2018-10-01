@@ -290,10 +290,26 @@ debug: plugin
 demo: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
 
+# Run 'demo', and verify the output.
+testdemo: DEMO_REF=$(shell \
+	if [ $$(./print-gcc-version) -ge 7000 ]; then \
+		echo demo.expected.no-refcounts; \
+	else \
+		echo demo.expected; \
+	fi)
+testdemo: plugin print-gcc-version
+	$(MAKE) demo > demo.out 2> demo.err
+	egrep '^demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
+	  demo.err \
+	  | sed 's/:[0-9][0-9]*: warning:/:: warning:/;s/ \[enabled by default\]//' \
+	  > demo.filtered
+	diff $(DEMO_REF) demo.filtered
+	rm demo.out demo.err demo.filtered
+
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
-test-suite: plugin print-gcc-version testdejagnu
+test-suite: plugin print-gcc-version testdejagnu testdemo
 	$(INVOCATION_ENV_VARS) $(PYTHON) run-test-suite.py
 
 show-ssa: plugin
