@@ -44,6 +44,8 @@ class CpyCheckerGimplePass(gcc.GimplePass):
         self.show_traces = show_traces
         self.verify_pyargs = verify_pyargs
         self.verify_refcounting = verify_refcounting
+        if gcc.get_gcc_version() >= 7000:
+            self.verify_refcounting = False
         self.show_possible_null_derefs = show_possible_null_derefs
         self.only_on_python_code = only_on_python_code
         self.maxtrans = maxtrans
