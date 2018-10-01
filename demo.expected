@@ -1,0 +1,13 @@
+demo.c: In function ‘socket_htons’:
+demo.c:30:10: warning: Mismatching type in call to PyArg_ParseTuple with format code "i:htons"
+demo.c: In function ‘not_enough_varargs’:
+demo.c:40:9: warning: Not enough arguments in call to PyArg_ParseTuple with format string "i"
+demo.c: In function ‘too_many_varargs’:
+demo.c:50:10: warning: Too many arguments in call to PyArg_ParseTuple with format string "i"
+demo.c: In function ‘kwargs_example’:
+demo.c:62:10: warning: Mismatching type in call to PyArg_ParseTupleAndKeywords with format code "(ff):kwargs_example"
+demo.c:62:10: warning: Mismatching type in call to PyArg_ParseTupleAndKeywords with format code "(ff):kwargs_example"
+demo.c: In function ‘buggy_converter’:
+demo.c:76:10: warning: Mismatching type in call to PyArg_ParseTuple with format code "O&"
+demo.c: In function ‘make_a_list_of_random_ints_badly’:
+demo.c:90:10: warning: Mismatching type in call to PyArg_ParseTuple with format code "i"
