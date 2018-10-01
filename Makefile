@@ -290,10 +290,22 @@ debug: plugin
 demo: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
 
+# Run 'demo', and verify the output.
+testdemo: plugin
+	$(INVOCATION_ENV_VARS) \
+	  $(srcdir)./gcc-with-cpychecker \
+	  -c \
+	  $(PYTHON_INCLUDES) \
+	  demo.c \
+	  > demo.output 2> demo.err
+	grep '^demo.c:' demo.err > demo.filtered
+	diff demo.filtered demo.expected
+	rm demo.output demo.err demo.filtered
+
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
-test-suite: plugin print-gcc-version testdejagnu
+test-suite: plugin print-gcc-version testdejagnu testdemo
 	$(INVOCATION_ENV_VARS) $(PYTHON) run-test-suite.py
 
 show-ssa: plugin
