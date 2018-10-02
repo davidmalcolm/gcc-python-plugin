@@ -98,7 +98,7 @@ PYTHON_CONFIG=python-config
 #PYTHON_CONFIG=python3.3dm-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
-PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
+PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
