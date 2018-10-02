@@ -70,13 +70,19 @@ if 0:
 # but unfortunately gcc's option parser seems to not be able to cope with '='
 # within an option's value.  So we do it using dictionary syntax instead:
 dictstr = '"verify_refcounting":True'
+dictstr += ', "verbose":True'
 dictstr += ', "maxtrans":%i' % ns.maxtrans
 dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
 
-# (Do not look up CC in the environment, to avoid forkbombing
-# when setting CC=gcc-with-cpychecker)
-args = ['gcc',
+# Do not use CC in the environment, to avoid forkbombing when setting
+# CC=gcc-with-cpychecker.  Instead, use CC_FOR_CPYCHECKER.
+if 'CC_FOR_CPYCHECKER' in os.environ:
+    gcc = os.environ['CC_FOR_CPYCHECKER']
+else:
+    gcc = 'gcc'
+
+args = [gcc,
         ('-fplugin=%s' % PLUGIN),
         ('-fplugin-arg-python-command=%s' % cmd)]
 args += other_args # (the args we didn't consume)
