@@ -98,7 +98,7 @@ PYTHON_CONFIG=python-config
 #PYTHON_CONFIG=python3.3dm-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
-PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
+PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
@@ -298,7 +298,9 @@ testdemo: DEMO_REF=$(shell \
 		echo demo.expected; \
 	fi)
 testdemo: plugin print-gcc-version
-	$(MAKE) demo > demo.out 2> demo.err
+	$(MAKE) demo > demo.out 2> demo.err || true
+	cat demo.out
+	cat demo.err
 	egrep '^demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
 	  demo.err \
 	  | sed 's/:[0-9][0-9]*: warning:/:: warning:/;s/ \[enabled by default\]//' \
