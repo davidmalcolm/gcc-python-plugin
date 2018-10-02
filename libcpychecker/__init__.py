@@ -15,6 +15,8 @@
 #   along with this program.  If not, see
 #   <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+import sys
 import gcc
 from libcpychecker.formatstrings import check_pyargs
 from libcpychecker.utils import log
@@ -38,12 +40,26 @@ class CpyCheckerGimplePass(gcc.GimplePass):
                  show_possible_null_derefs=False,
                  only_on_python_code=True,
                  maxtrans=256,
-                 dump_json=False):
+                 dump_json=False,
+                 verbose=False):
         gcc.GimplePass.__init__(self, 'cpychecker-gimple')
         self.dump_traces = dump_traces
         self.show_traces = show_traces
         self.verify_pyargs = verify_pyargs
-        self.verify_refcounting = verify_refcounting
+        # Refcounting verification is run before rewriting gimple into ssa form,
+        # and as such is not expected to handle ssa.  In gcc 7 and later, gcc
+        # introduces ssa names before the ssa rewrite (for call arguments that
+        # are calls themselves), and this causes Python exceptions in
+        # refcounting verification.  So, disable refcounting for gcc 7 and
+        # later, until refcounting verification can handle ssa names.
+        if verify_refcounting and gcc.GCC_VERSION >= 7000:
+            if verbose:
+                print("cpychecker: warning: "
+                      + "Detected gcc 7 or later, disabling verify_refcounting",
+                      file=sys.stderr)
+            self.verify_refcounting = False
+        else:
+            self.verify_refcounting = verify_refcounting
         self.show_possible_null_derefs = show_possible_null_derefs
         self.only_on_python_code = only_on_python_code
         self.maxtrans = maxtrans

@@ -70,6 +70,7 @@ if 0:
 # but unfortunately gcc's option parser seems to not be able to cope with '='
 # within an option's value.  So we do it using dictionary syntax instead:
 dictstr = '"verify_refcounting":True'
+dictstr += ', "verbose":True'
 dictstr += ', "maxtrans":%i' % ns.maxtrans
 dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
