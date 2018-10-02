@@ -57,6 +57,11 @@ parser.add_argument('--dump-json',
                           ' "foo.c.bar.json" will be written out in JSON'
                           ' form'))
 
+parser.add_argument('--cpychecker-verbose',
+                    action='store_true',
+                    default=False,
+                    help=('Output extra information'))
+
 # Only consume args we understand, leaving the rest for gcc:
 ns, other_args = parser.parse_known_args()
 if 0:
@@ -70,7 +75,7 @@ if 0:
 # but unfortunately gcc's option parser seems to not be able to cope with '='
 # within an option's value.  So we do it using dictionary syntax instead:
 dictstr = '"verify_refcounting":True'
-dictstr += ', "verbose":True'
+dictstr += ', "verbose":%i' % (ns.cpychecker_verbose)
 dictstr += ', "maxtrans":%i' % ns.maxtrans
 dictstr += ', "dump_json":%i' % ns.dump_json
 cmd = 'from libcpychecker import main; main(**{%s})' % dictstr
