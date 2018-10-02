@@ -298,7 +298,9 @@ testdemo: DEMO_REF=$(shell \
 		echo demo.expected; \
 	fi)
 testdemo: plugin print-gcc-version
-	$(MAKE) demo > demo.out 2> demo.err
+	$(MAKE) demo > demo.out 2> demo.err || true
+	cat demo.out
+	cat demo.err
 	egrep '^demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
 	  demo.err \
 	  | sed 's/:[0-9][0-9]*: warning:/:: warning:/;s/ \[enabled by default\]//' \
