@@ -55,9 +55,9 @@ End:
 */
 ''')
 
-def main(c_filename):
+def main(c_filename, xmldir):
     registry = ApiRegistry()
-    for xmlfile in sorted(glob.glob('*.xml')):
+    for xmlfile in sorted(glob.glob(xmldir + '*.xml')):
         api = Api(registry, xmlfile)
 
     with open(c_filename, 'w') as c_out:
@@ -86,4 +86,5 @@ def main(c_filename):
 
         write_footer(c_out)
 
-main(c_filename=sys.argv[1])
+main(c_filename=sys.argv[1],
+     xmldir=sys.argv[2])
