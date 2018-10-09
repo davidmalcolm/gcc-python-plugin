@@ -292,8 +292,8 @@ debug: plugin
 	$(INVOCATION_ENV_VARS) $(CC) -v $(TEST_CFLAGS) $(CURDIR)/test.c
 
 # A simple demo, to make it easy to demonstrate the cpychecker:
-demo: plugin
-	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) demo.c
+demo: demo.c plugin
+	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) $<
 
 # Run 'demo', and verify the output.
 testdemo: DEMO_REF=$(shell \
