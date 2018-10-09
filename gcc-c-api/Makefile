@@ -45,6 +45,7 @@ SOURCE_XML:= \
   cfg.xml \
   constant.xml \
   declaration.xml \
+  diagnostics.xml \
   function.xml \
   gimple.xml \
   location.xml \
