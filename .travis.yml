@@ -73,4 +73,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq python-six python-pygments graphviz python-lxml
 
-script: make
+script:
+- pwd=$(pwd -P)
+- mkdir build
+- cd build
+- make -f $pwd/Makefile srcdir=$pwd/
