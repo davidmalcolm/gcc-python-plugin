@@ -293,7 +293,8 @@ def write_semiprivate_types(registry, out):
     write_footer(out)
 
 registry = ApiRegistry()
-for xmlfile in sorted(glob.glob('*.xml')):
+xmldir=sys.argv[1]
+for xmlfile in sorted(glob.glob(xmldir + '*.xml')):
     api = Api(registry, xmlfile)
 for api in registry.apis:
     with open(api.get_header_filename(), 'w') as f:

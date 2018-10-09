@@ -103,9 +103,9 @@ def write_h(registry, h_out):
                     % (subclass.get_c_name(), subclass.get_c_name()))
     write_footer(h_out)
 
-def main(c_filename, h_filename):
+def main(c_filename, h_filename, xmldir):
     registry = ApiRegistry()
-    for xmlfile in sorted(glob.glob('gcc-c-api/*.xml')):
+    for xmlfile in sorted(glob.glob(xmldir + '*.xml')):
         api = Api(registry, xmlfile)
 
     with open(c_filename, 'w') as c_out:
@@ -116,4 +116,5 @@ def main(c_filename, h_filename):
 
 
 main(c_filename=sys.argv[1],
-     h_filename=sys.argv[2])
+     h_filename=sys.argv[2],
+     xmldir=sys.argv[3])
