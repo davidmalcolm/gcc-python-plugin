@@ -62,8 +62,9 @@ class ExpectedErrorNotFound(CompilationError):
 
 class AnalyzerTests(unittest.TestCase):
     def compile_src(self, bm):
+        here = os.path.dirname(os.path.abspath(__file__))
         extra_cflags=['-fplugin=%s' % os.path.abspath('%s.so' % PLUGIN_NAME),
-                      '-fplugin-arg-%s-script=cpychecker.py' % PLUGIN_NAME]
+                      '-fplugin-arg-%s-script=%s/cpychecker.py' % (PLUGIN_NAME, here)]
 
         # GCC 4.8 started showing the source line where the problem is,
         # followed by another line showing a caret indicating column.
