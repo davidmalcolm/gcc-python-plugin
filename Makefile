@@ -310,10 +310,11 @@ testdemo: DEMO_REF=$(shell \
 		echo demo.expected; \
 	fi)
 testdemo: plugin print-gcc-version
-	$(MAKE) demo > demo.out 2> demo.err
-	egrep '^demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
+	$(MAKE) -f $(srcdir)./Makefile demo > demo.out 2> demo.err
+	egrep '^.*demo.c:( In function |[0-9][0-9]*:[0-9][0-9]*: warning:)' \
 	  demo.err \
 	  | sed 's/:[0-9][0-9]*: warning:/:: warning:/;s/ \[enabled by default\]//' \
+	  | sed "s%$(srcdir)demo.c:%demo.c:%g" \
 	  > demo.filtered
 	diff $(DEMO_REF) demo.filtered
 	rm demo.out demo.err demo.filtered
