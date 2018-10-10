@@ -19,6 +19,7 @@ ifneq ($(srcdir),)
 VPATH = $(srcdir)
 endif
 xmldir = $(srcdir)./gcc-c-api/
+pwd = $(shell pwd -P)
 
 .PHONY: all clean debug dump_gimple plugin show-ssa tarball \
 	test-suite testcpychecker testcpybuilder testdejagnu \
@@ -291,9 +292,12 @@ dump_gimple:
 debug: plugin
 	$(INVOCATION_ENV_VARS) $(CC) -v $(TEST_CFLAGS) $(CURDIR)/test.c
 
+$(pwd)/gcc-with-cpychecker: gcc-with-cpychecker
+	cp $< $@
+
 # A simple demo, to make it easy to demonstrate the cpychecker:
-demo: demo.c plugin
-	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -c $(PYTHON_INCLUDES) $<
+demo: demo.c plugin $(pwd)/gcc-with-cpychecker
+	$(INVOCATION_ENV_VARS) ./gcc-with-cpychecker -c $(PYTHON_INCLUDES) $<
 
 # Run 'demo', and verify the output.
 testdemo: DEMO_REF=$(shell \
