@@ -154,8 +154,11 @@ $(PLUGIN_DSO): $(PLUGIN_OBJECT_FILES) $(LIBGCC_C_API_SO)
 	    $(LIBS) \
 	    -lgcc-c-api -Lgcc-c-api -Wl,-rpath=$(GCCPLUGINS_DIR)
 
-$(LIBGCC_C_API_SO):
-	cd gcc-c-api && make libgcc-c-api.so CC=$(CC) $(if $(srcdir),srcdir=$(srcdir)./gcc-c-api/)
+$(pwd)/gcc-c-api:
+	mkdir -p $@
+
+$(LIBGCC_C_API_SO): $(pwd)/gcc-c-api
+	cd gcc-c-api && make $(if $(srcdir),-f $(srcdir)./gcc-c-api/Makefile) libgcc-c-api.so CC=$(CC) $(if $(srcdir),srcdir=$(srcdir)./gcc-c-api/)
 
 $(PLUGIN_OBJECT_GENERATED_FILES): CPPFLAGS+= $(if $(srcdir),-I$(srcdir))
 
