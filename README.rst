@@ -17,8 +17,8 @@ for CPython, but it could be used e.g. to teach GCC about GTK's
 reference-counting semantics, or about locking in the Linux kernel, or about
 signal-safety in APIs.
 
-Other ideas include visualizations of code structure.   Given a `gcc.CFG`
-instance, `gccutils.render_to_dot(cfg)` and `gccutils.invoke_dot(cfg)` will
+Other ideas include visualizations of code structure.   Given a ``gcc.CFG``
+instance, ``gccutils.render_to_dot(cfg)`` and ``gccutils.invoke_dot(cfg)`` will
 use graphviz and eog to plot a handy visualization of a control flow graph,
 showing the source code interleaved with GCC's ``GIMPLE`` internal
 representation.
@@ -27,6 +27,7 @@ The documentation can be seen at:
 
   http://gcc-python-plugin.readthedocs.io/en/latest/index.html
 
+
 Requirements
 ------------
 
@@ -34,16 +35,21 @@ Requirements
 
   * tested with 4.8, 4.9, 5, 6, 7, and 8.
 
+* GCC plugin development package: usually available in distribution packages
+  such as ``gcc-N-plugin-dev`` or ``gcc-plugin-devel``.
+
 * Python: requires 2.7 or 3.2 or later
 
-* "six": The libcpychecker code uses the "six" Python compatibility library to
+* "six": The libcpychecker code uses the "six_" Python compatibility library to
   smooth over Python 2 vs Python 3 differences, both at build-time and
   run-time:
 
-     http://pypi.python.org/pypi/six/
+  .. _six: http://pypi.python.org/pypi/six/
+
 
 Usage
 -----
+
 I use::
 
     make
@@ -85,16 +91,17 @@ from within a script.
 
 Overview of the code
 --------------------
+
 This is currently three projects in one:
 
-gcc-python-*: the plugin for GCC.  The entrypoint (`init_plugin`) is in
-gcc-python.c
+``gcc-python-*``: the plugin for GCC.  The entrypoint (``init_plugin``) is in
+``gcc-python.c``.
 
-libcpychecker and cpychecker.py: a Python library (and a driver script),
+``libcpychecker`` and ``cpychecker.py``: a Python library (and a driver script),
 written for the plugin, in which I'm building new compiler warnings to
 help people find bugs in CPython extension code.
 
-cpybuilder: a handy module for programatically generating C source code for
+``cpybuilder``: a handy module for programatically generating C source code for
 CPython extensions.  I use this both to generate parts of the GCC plugin, and
 also in the selftests for the cpychecker script.  (I initially attempted to use
 Cython for the former, but wrapping the "tree" type hierarchy required more
@@ -105,15 +112,18 @@ I've chosen to follow Python's (PEP-7), as I prefer it (although my code is
 admittedly a mess in places).
 
 You'll find API documentation within the "docs" directory, written in the
-reStructuredText format (as is this file, in fact).  If you have Sphinx
-installed (http://sphinx.pocoo.org/), you can regenerate these docs using::
+reStructuredText format (as is this file, in fact).  If you have Sphinx_
+installed, you can regenerate these docs using::
 
    make html
 
-within the `docs` directory.  Sphinx is the `python-sphinx` package on a
+within the ``docs`` directory.  Sphinx is the ``python-sphinx`` package on a
 Fedora/RHEL box.
 
-More detailed documentation can be seen within `docs/getting-involved.rst`
+.. _Sphinx: http://sphinx.pocoo.org/
+
+
+More detailed documentation can be seen within ``docs/getting-involved.rst``.
 
 Enjoy!
 David Malcolm <dmalcolm@redhat.com>
