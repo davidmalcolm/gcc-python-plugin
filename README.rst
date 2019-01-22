@@ -42,7 +42,7 @@ Requirements
 
 * "six": The libcpychecker code uses the "six_" Python compatibility library to
   smooth over Python 2 vs Python 3 differences, both at build-time and
-  run-time:
+  run-time
 
   .. _six: http://pypi.python.org/pypi/six/
 
