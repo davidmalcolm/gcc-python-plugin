@@ -107,7 +107,7 @@ raise_not_during_lto(const char *what)
     Code for various tree types
  */
 static PyObject *
-do_pretty_print(struct PyGccTree * self, int spc, int flags)
+do_pretty_print(struct PyGccTree * self, int spc, dump_flags_t flags)
 {
     PyObject *ppobj = PyGccPrettyPrinter_New();
     PyObject *result = NULL;
@@ -173,7 +173,7 @@ PyGccCaseLabelExpr_New(gcc_case_label_expr t)
 PyObject *
 PyGccTree_str(struct PyGccTree * self)
 {
-    return do_pretty_print(self, 0, 0);
+    return do_pretty_print(self, 0, (dump_flags_t)0);
 }
 
 long
