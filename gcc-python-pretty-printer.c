@@ -44,7 +44,13 @@ PyGccPrettyPrinter_New(void)
 #if (GCC_VERSION >= 4009)
     /* GCC 4.9 eliminated pp_construct in favor of a C++ ctor.
        Use placement new to run it on obj->pp.  */
-    new ((void*)&obj->pp) pretty_printer(NULL, 0);
+    new ((void*)&obj->pp)
+        pretty_printer(
+# if (GCC_VERSION < 9000)
+                       /* GCC 9 eliminated the "prefix" param.  */
+                       NULL,
+# endif
+                       0);
 #else
     pp_construct(&obj->pp, /* prefix */NULL, /* line-width */0);
 #endif
