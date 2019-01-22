@@ -23,6 +23,10 @@
 #include "gimple.h"
 #include "tree.h"
 
+#if GCC_VERSION < 8000
+typedef int dump_flags_t;
+#endif
+
 /*
   There are a few GCC symbols that don't seem to be exposed in the plugin
   headers, but I wish were.
@@ -39,8 +43,7 @@
    the plugin headers AFAIK:
 */
 extern void
-dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
-
+dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, dump_flags_t flags);
 
 /*
    This is declared in gcc/tree-pretty-print.c (around line 580); it was only
@@ -54,7 +57,7 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags);
  */
 #if GCC_VERSION < 4009
 extern int
-dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
+dump_generic_node (pretty_printer *buffer, tree node, int spc, dump_flags_t flags,
 		   bool is_stmt);
 #endif
 

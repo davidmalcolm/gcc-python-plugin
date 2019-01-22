@@ -97,7 +97,7 @@ PyGccGimple_as_gcc_gimple_label(struct PyGccGimple *self)
 }
 
 static PyObject *
-do_pretty_print(struct PyGccGimple * self, int spc, int flags)
+do_pretty_print(struct PyGccGimple * self, int spc, dump_flags_t flags)
 {
     PyObject *ppobj = PyGccPrettyPrinter_New();
     PyObject *result = NULL;
@@ -141,7 +141,7 @@ PyGccGimple_repr(struct PyGccGimple * self)
 PyObject *
 PyGccGimple_str(struct PyGccGimple * self)
 {
-    return do_pretty_print(self, 0, 0);
+    return do_pretty_print(self, 0, (dump_flags_t)0);
 }
 
 long
