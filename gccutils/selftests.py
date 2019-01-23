@@ -24,3 +24,7 @@
 def assertEqual(lhs, rhs):
     if lhs != rhs:
         raise ValueError('non-equal values: %r != %r' % (lhs, rhs))
+
+def assertEndsWith(s, suffix):
+    if not s.endswith(suffix):
+        raise ValueError('%r does not end with %r' % (s, suffix))
