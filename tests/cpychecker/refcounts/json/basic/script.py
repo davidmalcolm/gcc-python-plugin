@@ -1,5 +1,5 @@
-#   Copyright 2012 David Malcolm <dmalcolm@redhat.com>
-#   Copyright 2012 Red Hat, Inc.
+#   Copyright 2012, 2019 David Malcolm <dmalcolm@redhat.com>
+#   Copyright 2012, 2019 Red Hat, Inc.
 #
 #   This is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 import gcc
 from libcpychecker.refcounts import impl_check_refcounts
 
-from gccutils.selftests import assertEqual
+from gccutils.selftests import assertEqual, assertEndsWith
 
 def verify_json(optpass, fun):
     # Only run in one pass
@@ -34,7 +34,7 @@ def verify_json(optpass, fun):
                 print(dumps(js, sort_keys=True, indent=4))
 
             # Verify the top-level JSON that's emitted:
-            assertEqual(js['filename'], 'tests/cpychecker/refcounts/json/basic/input.c')
+            assertEndsWith(js['filename'], 'tests/cpychecker/refcounts/json/basic/input.c')
             assertEqual(js['function']['name'], 'losing_refcnt_of_none')
             assertEqual(js['function']['lines'][0], 22)
             assertEqual(js['function']['lines'][1], 28)

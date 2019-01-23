@@ -71,8 +71,9 @@ class CompilationError(CommandError):
         return 'compiling: %s' % ' '.join(self.args)
 
 class TestStream:
-    def __init__(self, exppath):
+    def __init__(self, exppath, srcdir):
         self.exppath = exppath
+        self.srcdir = srcdir
         if os.path.exists(exppath):
             with open(exppath) as f:
                 expdata = f.read()
@@ -112,6 +113,10 @@ class TestStream:
                 # Handle stuff like this that changes every time:
                 # "Preprocessed source stored into /tmp/ccRm9Xgx.out file, please attach this to your bugreport."
                 continue
+
+            # Strip away references to the srcdir
+            line = re.sub(self.srcdir, '', line)
+
             # Remove exact pointer addresses from repr():
             line = re.sub(' object at (0x[0-9a-f]*)>',
                           ' object at 0xdeadbeef>',
@@ -272,14 +277,14 @@ class SkipTest(Exception):
     def __init__(self, reason):
         self.reason = reason
 
-def run_test(testdir):
+def run_test(testdir, srcdir):
     # Compile each 'input.c', using 'script.py'
     # Assume success and empty stdout; compare against expected stderr, or empty if file not present
     inputfiles = get_source_files(testdir)
     outfile = os.path.join(testdir, 'output.o')
     script_py = os.path.join(testdir, 'script.py')
-    out = TestStream(os.path.join(testdir, 'stdout.txt'))
-    err = TestStream(os.path.join(testdir, 'stderr.txt'))
+    out = TestStream(os.path.join(testdir, 'stdout.txt'), srcdir)
+    err = TestStream(os.path.join(testdir, 'stderr.txt'), srcdir)
 
     cp = configparser.SafeConfigParser()
     metadatapath = os.path.join(testdir, 'metadata.ini')
@@ -423,10 +428,17 @@ parser.add_option("-x", "--exclude",
                   type="string",
                   dest="excluded_dirs",
                   help="exclude tests in DIR and below", metavar="DIR")
+parser.add_option("--srcdir",
+                  type="string",
+                  dest="srcdir",
+                  help="FIXME", metavar="DIR")
 parser.add_option("-s", "--show",
                   action="store_true", dest="show", default=False,
                   help="Show stdout, stderr and the command line for each test")
 (options, args) = parser.parse_args()
+
+if options.srcdir is None:
+    options.srcdir = os.getcwd() + os.sep
 
 # print (options, args)
 
@@ -445,13 +457,18 @@ if len(args) > 0:
         testdirs += find_tests_below(path)
 else:
     # Run all the tests
-    testdirs = find_tests_below('tests')
+    path = os.path.join(options.srcdir, 'tests')
+    testdirs = find_tests_below(path)
 
 def exclude_test(test):
+    if not test.startswith(options.srcdir):
+        test = os.path.join(options.srcdir, test)
     if test in testdirs:
         testdirs.remove(test)
 
 def exclude_tests_below(path):
+    if not path.startswith(options.srcdir):
+        path = os.path.join(options.srcdir, path)
     for test in find_tests_below(path):
         exclude_test(test)
 
@@ -784,7 +801,7 @@ if GCC_VERSION >= 7000:
 def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)
-        run_test(testdir)
+        run_test(testdir, options.srcdir)
         print('OK')
         return (testdir, 'OK', None)
     except SkipTest:
