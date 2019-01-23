@@ -363,6 +363,8 @@ def run_test(testdir, srcdir):
 
     if uses_dg_directives(inputfiles):
         dg_context = DgContext(inputfiles)
+        if GCC_VERSION >= 9000:
+            dg_context.options.append('-fno-diagnostics-show-line-numbers')
         dg_context.echo_results = True
         for inputfile in inputfiles:
             dg_context.parse_directives(inputfile)
