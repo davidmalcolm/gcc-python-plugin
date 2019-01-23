@@ -1,5 +1,5 @@
-.. Copyright 2011-2018 David Malcolm <dmalcolm@redhat.com>
-   Copyright 2011-2018 Red Hat, Inc.
+.. Copyright 2019 David Malcolm <dmalcolm@redhat.com>
+   Copyright 2019 Red Hat, Inc.
 
    This is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -15,19 +15,18 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-Release Notes
-=============
+0.17
+~~~~
 
-.. toctree::
-   
-   0.17.rst
-   0.16.rst
-   0.15.rst
-   0.14.rst
-   0.13.rst
-   0.12.rst
-   0.11.rst
-   0.10.rst
-   0.9.rst
-   0.8.rst
-   0.7.rst
+This releases adds support for gcc 9 (along with continued support for
+gcc 4.6, 4.7, 4.8, 4.9, 5, 6, 7, and 8).
+
+Unfortunately, the reference-count checker no longer works for gcc 7
+onwards, so it is disabled when embedded in those builds of gcc.
+
+Additionally, this release contains the following improvements:
+
+* the plugin can now be built in a separate build directory from the
+  source directory (thanks to Tom de Vries)
+
+* gcc-with-cpychecker gained a :option:`--cpychecker-verbose` option
