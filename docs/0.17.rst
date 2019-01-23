@@ -18,7 +18,7 @@
 0.17
 ~~~~
 
-This releases adds support for gcc 9 (along with continued support for
+This release adds support for gcc 9 (along with continued support for
 gcc 4.6, 4.7, 4.8, 4.9, 5, 6, 7, and 8).
 
 Unfortunately, the reference-count checker no longer works for gcc 7
