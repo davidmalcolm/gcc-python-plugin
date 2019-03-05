@@ -36,8 +36,9 @@ def iter_tree_types():
                            STRING=m.group(2)[1:-1],
                            TYPE=m.group(3),
                            NARGS=int(m.group(4)))
+        elif line == "LAST_AND_UNUSED_TREE_CODE,\n":
+            yield TreeType('LAST_AND_UNUSED_TREE_CODE', None, None, 0)
         else:
-            #    print 'UNMATCHED: ', line
             assert(line.startswith('#') or line.strip() == '')
     f.close()
 

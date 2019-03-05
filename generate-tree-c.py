@@ -55,7 +55,7 @@ def generate_tree():
     #
     global modinit_preinit
     global modinit_postinit
-    
+
     cu.add_defn("""
 static PyObject *
 PyGccTree_get_type(struct PyGccTree *self, void *closure)
@@ -82,7 +82,7 @@ PyGccTree_get_addr(struct PyGccTree *self, void *closure)
                                    typename='PyGccTree')
 
     cu.add_defn(getsettable.c_defn())
-    
+
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccTree_TypeObj',
                           localname = 'Tree',
                           tp_name = 'gcc.Tree',
@@ -115,7 +115,7 @@ PyGccTree_debug(PyObject *self, PyObject *args)
     cu.add_defn(pytype.c_defn())
     modinit_preinit += pytype.c_invoke_type_ready()
     modinit_postinit += pytype.c_invoke_add_to_module()
-    
+
 generate_tree()
 
 type_for_code_class = {
@@ -140,7 +140,7 @@ def generate_intermediate_tree_classes():
     global modinit_preinit
     global modinit_postinit
 
-    
+
     for code_type in type_for_code_class.values():
         # We've already built the base class:
         if code_type == 'PyGccTree_TypeObj':
@@ -311,7 +311,7 @@ PyObject*
                                "FIXME")
 
         cu.add_defn(methods.c_defn())
-        cu.add_defn(getsettable.c_defn())            
+        cu.add_defn(getsettable.c_defn())
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
         modinit_postinit += pytype.c_invoke_add_to_module()
@@ -325,8 +325,10 @@ def generate_tree_code_classes():
     # as subclasses of the above layer:
     global modinit_preinit
     global modinit_postinit
-    
+
     for tree_type in tree_types:
+        if tree_type.TYPE is None:
+            continue
         base_type = type_for_code_class[tree_type.TYPE]
 
         cc = tree_type.camel_cased_string()
@@ -388,7 +390,7 @@ def generate_tree_code_classes():
             tp_repr = '(reprfunc)PyGccRealCst_repr'
 
         # TYPE_QUALS for various foo_TYPE classes:
-        if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE', 
+        if tree_type.SYM in ('VOID_TYPE', 'INTEGER_TYPE', 'REAL_TYPE',
                              'FIXED_POINT_TYPE', 'COMPLEX_TYPE', 'VECTOR_TYPE',
                              'ENUMERAL_TYPE', 'BOOLEAN_TYPE'):
             for qual in ('const', 'volatile', 'restrict'):
@@ -639,12 +641,15 @@ def generate_tree_code_classes():
         cu.add_defn(pytype.c_defn())
         modinit_preinit += pytype.c_invoke_type_ready()
         modinit_postinit += pytype.c_invoke_add_to_module()
-        
+
 
     cu.add_defn('\n/* Map from GCC tree codes to PyGccWrapperTypeObject* */\n')
     cu.add_defn('PyGccWrapperTypeObject *pytype_for_tree_code[] = {\n')
     for tree_type in tree_types:
-        cu.add_defn('    &PyGcc%s_TypeObj, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
+        if tree_type.TYPE is None:
+            cu.add_defn('    NULL, /* %s */\n' % (tree_type.SYM))
+        else:
+            cu.add_defn('    &PyGcc%s_TypeObj, /* %s */\n' % (tree_type.camel_cased_string(), tree_type.SYM))
     cu.add_defn('};\n\n')
 
     cu.add_defn('\n/* Map from PyGccWrapperTypeObject* to GCC tree codes*/\n')
@@ -652,6 +657,8 @@ def generate_tree_code_classes():
     cu.add_defn('PyGcc_tree_type_object_as_tree_code(PyObject *cls, enum tree_code *out)\n')
     cu.add_defn('{\n')
     for tree_type in tree_types:
+        if tree_type.TYPE is None:
+            continue
         cu.add_defn('    if (cls == (PyObject*)&PyGcc%s_TypeObj) {\n'
                     '        *out = %s; return 0;\n'
                     '    }\n'
