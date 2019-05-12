@@ -17,3 +17,5 @@
    <http://www.gnu.org/licenses/>.
 */
 
+typedef int mytype;
+typedef mytype nestedtype;

@@ -25,3 +25,27 @@ gcc.Type: 'double'
   t.const: False
   t.precision: 64
   t.sizeof: 8
+gcc.TypeDecl: 'mytype'
+  td.original_type: gcc.IntegerType(name=gcc.TypeDecl('int'))
+  td.original_type is gcc.Type.int(): True
+  td.original_type.name: gcc.TypeDecl('int')
+  td.original_type.name is mytype: False
+gcc.Type: 'mytype'
+  t.const: False
+  t.unsigned: False
+  t.precision: 32
+  t.min_value.constant: -2147483648
+  t.max_value.constant: 2147483647
+  t.sizeof: 4
+gcc.TypeDecl: 'nestedtype'
+  td.original_type: gcc.IntegerType(name=gcc.TypeDecl('mytype'))
+  td.original_type is gcc.Type.int(): False
+  td.original_type.name: gcc.TypeDecl('mytype')
+  td.original_type.name is mytype: True
+gcc.Type: 'nestedtype'
+  t.const: False
+  t.unsigned: False
+  t.precision: 32
+  t.min_value.constant: -2147483648
+  t.max_value.constant: 2147483647
+  t.sizeof: 4
