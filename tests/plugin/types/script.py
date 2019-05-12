@@ -55,5 +55,18 @@ def on_finish_unit():
     dump_real_type(gcc.Type.float())
     dump_real_type(gcc.Type.double())
 
+    def dump_typedef(td):
+        t = td.type
+        print('gcc.TypeDecl: %r' % str(td))
+        print('  td.original_type: %r' % td.original_type)
+        print('  td.original_type is gcc.Type.int(): %r' % (td.original_type is gcc.Type.int()))
+        mytype = gccutils.get_global_typedef('mytype')
+        print('  td.original_type.name: %r' % td.original_type.name)
+        print('  td.original_type.name is mytype: %r' % (td.original_type.name is mytype))
+        dump_integer_type(t)
+
+    dump_typedef(gccutils.get_global_typedef('mytype'))
+    dump_typedef(gccutils.get_global_typedef('nestedtype'))
+
 gcc.register_callback(gcc.PLUGIN_FINISH_UNIT,
                       on_finish_unit)
