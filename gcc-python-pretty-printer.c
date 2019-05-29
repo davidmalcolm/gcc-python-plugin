@@ -46,7 +46,7 @@ PyGccPrettyPrinter_New(void)
        Use placement new to run it on obj->pp.  */
     new ((void*)&obj->pp)
         pretty_printer(
-# if (GCC_VERSION < 9000)
+# if (GCC_VERSION < 8003)
                        /* GCC 9 eliminated the "prefix" param.  */
                        NULL,
 # endif
