@@ -88,7 +88,15 @@ PyGccPrettyPrinter_as_string(PyObject *obj)
     ppobj = (struct PyGccPrettyPrinter *)obj;
 
     /* Flush the pp first.  This forcibly adds a trailing newline: */
+#if (GCC_VERSION < 5003)
     pp_flush(&ppobj->pp);
+#else
+    /*
+     * pp_newline_and_flush provides the same functionality on GCC 5.3
+     * and later
+     */
+    pp_newline_and_flush(&ppobj->pp);
+#endif
 
     /* Convert to a python string, leaving off the trailing newline: */
     len = strlen(ppobj->buf);

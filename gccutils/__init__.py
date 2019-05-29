@@ -148,7 +148,18 @@ class PrettyPrinter(object):
             # Ignore private and "magic" attributes:
             if name.startswith('_'):
                 continue
-            value = getattr(obj, name)
+            if (isinstance(obj, gcc.FunctionDecl)
+                    and name == 'fullname'
+                    and not gcc.is_cplusplus()):
+                continue
+            try:
+                value = getattr(obj, name)
+            except TypeError as e:
+                # for gcc.Type, sizeof is not always defined, and
+                # TypeError is raise under this condition
+                if not isinstance(obj, gcc.Type) or name != 'sizeof':
+                    raise e
+                continue
             # Ignore methods:
             if hasattr(value, '__call__'):
                 continue
