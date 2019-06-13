@@ -297,7 +297,7 @@ Accessing parameters
 Adding new passes to the compiler
 ---------------------------------
 You can create new compiler passes by subclassing the appropriate
-:py:class:`gcc.Pass` subclasss.  For example, here's how to wire up a new pass
+:py:class:`gcc.Pass` subclass.  For example, here's how to wire up a new pass
 that displays the control flow graph of each function:
 
    .. literalinclude:: ../examples/show-gimple.py
