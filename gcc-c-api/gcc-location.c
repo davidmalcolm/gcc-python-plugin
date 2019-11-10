@@ -54,7 +54,7 @@ GCC_IMPLEMENT_PUBLIC_API (int) gcc_location_get_column (gcc_location loc)
 
 GCC_PUBLIC_API (bool) gcc_location_is_unknown (gcc_location loc)
 {
-  return UNKNOWN_LOCATION == loc.inner;
+  return UNKNOWN_LOCATION == loc.inner || !gcc_location_get_filename(loc);
 }
 
 GCC_IMPLEMENT_PUBLIC_API (bool) gcc_location_get_in_system_header (gcc_location loc)

@@ -24,7 +24,10 @@ def sorted_dict_repr(d):
 def get_src_for_loc(loc):
     # Given a gcc.Location, get the source line as a string
     import linecache
-    return linecache.getline(loc.file, loc.line).rstrip()
+    try:
+        return linecache.getline(loc.file, loc.line).rstrip()
+    except SyntaxError: # unrecognized encoding of file
+        return ''
 
 def get_field_by_name(typeobj, name):
     check_isinstance(typeobj,
