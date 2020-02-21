@@ -254,7 +254,11 @@ class PyTypeObject(NamedEntity):
         result += '    sizeof(%(struct_name)s), /*tp_basicsize*/\n' % self.__dict__
         result += '    0, /*tp_itemsize*/\n'
         result += self.c_ptr_field('tp_dealloc')
+        result += '#if PY_VERSION_HEX >= 0x03080000\n'
+        result += '    0, /*tp_vectorcall_offset*/\n'
+        result += '#else\n'
         result += self.c_ptr_field('tp_print')
+        result += '#endif\n'
         result += self.c_ptr_field('tp_getattr')
         result += self.c_ptr_field('tp_setattr')
         result += '#if PY_MAJOR_VERSION < 3\n' % self.__dict__
