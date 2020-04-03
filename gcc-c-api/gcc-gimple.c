@@ -35,7 +35,12 @@
 #include "gimple.h"
 
 #if 0
+
+/* gcc 10 removed this header */
+#if (GCC_VERSION < 10000)
 #include "params.h"
+#endif
+
 #include "cp/name-lookup.h"	/* for global_namespace */
 #include "tree.h"
 #include "diagnostic.h"
