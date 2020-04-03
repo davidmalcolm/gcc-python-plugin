@@ -22,7 +22,12 @@
 
 /* TODO: rationalize these headers */
 #include "tree.h"
+
+/* gcc 10 removed this header */
+#if (GCC_VERSION < 10000)
 #include "params.h"
+#endif
+
 #include "tree.h"
 #include "function.h"
 #include "diagnostic.h"

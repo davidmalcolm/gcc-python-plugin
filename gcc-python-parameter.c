@@ -17,9 +17,14 @@
    <http://www.gnu.org/licenses/>.
 */
 
+
+
 #include <Python.h>
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
+
+/* gcc 10 removed params.h */
+#if (GCC_VERSION < 10000)
 
 /*
   Wrapper for GCC's params.h.
@@ -49,6 +54,8 @@ PyGcc_WrtpMarkForPyGccParameter(PyGccParameter *wrapper)
 {
     /* empty */
 }
+
+#endif
 
 /*
   PEP-7

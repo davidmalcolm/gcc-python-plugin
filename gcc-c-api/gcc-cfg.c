@@ -37,7 +37,11 @@
 #include "gimple-iterator.h"
 #endif
 
+/* gcc 10 removed this header */
+#if (GCC_VERSION < 10000)
 #include "params.h"
+#endif
+
 #include "tree.h"
 #include "diagnostic.h"
 #include "cgraph.h"
