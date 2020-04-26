@@ -137,7 +137,11 @@ PyTypeObject PyGccWrapperMeta_TypeObj  = {
     sizeof(PyGccWrapperTypeObject), /*tp_basicsize*/
     0, /*tp_itemsize*/
     NULL, /* tp_dealloc */
+#if PY_VERSION_HEX >= 0x03080000
+    0, /*tp_vectorcall_offset*/
+#else
     NULL, /* tp_print */
+#endif
     NULL, /* tp_getattr */
     NULL, /* tp_setattr */
 #if PY_MAJOR_VERSION < 3
