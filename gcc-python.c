@@ -404,6 +404,12 @@ PyGcc_get_is_lto(PyObject *self, PyObject *noargs)
     return PyBool_FromLong(in_lto_p);
 }
 
+static PyObject *
+PyGcc_get_is_cplusplus(PyObject *self, PyObject *noargs)
+{
+    return PyBool_FromLong(decl_as_string != NULL);
+}
+
 static PyMethodDef GccMethods[] = {
     {"register_attribute",
      (PyCFunction)PyGcc_RegisterAttribute,
@@ -496,6 +502,9 @@ static PyMethodDef GccMethods[] = {
 
     {"is_lto", PyGcc_get_is_lto, METH_NOARGS,
      "Determine whether or not we're being invoked during link-time optimization"},
+
+    {"is_cplusplus", PyGcc_get_is_cplusplus, METH_NOARGS,
+     "Determine whether or not we're compiling C++"},
 
     /* Garbage collection */
     {"_force_garbage_collection", PyGcc__force_garbage_collection, METH_NOARGS,

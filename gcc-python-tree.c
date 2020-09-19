@@ -47,19 +47,6 @@ extern PyGccWrapperTypeObject PyGccIntegerCst_TypeObj;
 
 __typeof__ (lang_check_failed) lang_check_failed __attribute__ ((weak));
 
-
-/*
-  Unfortunately, decl_as_string() is only available from the C++
-  frontend: cc1plus (it's defined in gcc/cp/error.c).
-
-  See http://gcc.gnu.org/ml/gcc/2011-11/msg00504.html
-
-  Hence we redeclare the symbol as weak, and then check its definition
-  against 0 before using it.
-*/
-
-__typeof__ (decl_as_string) decl_as_string __attribute__ ((weak));
-
 /* Similar for namespace_binding, though gcc 8's r247654 (aka
    f906dcc33dd818b71e16c88cef38f33c161070db) replaced it with
    get_namespace_value and reversed the order of the params

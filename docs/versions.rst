@@ -83,3 +83,8 @@ On my machine, running this currently gives::
    4.8           4008
    4.9           4009
    ===========   ========================
+
+.. py:function:: gcc.is_cplusplus()
+   :rtype: bool
+
+   Determine whether or not we are compiling C++
