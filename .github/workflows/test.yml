@@ -33,13 +33,16 @@ jobs:
       - name: Display GCC version
         run: gcc-${{matrix.gcc-version}} --version
 
+      # https://docs.github.com/en/actions/guides/building-and-testing-python
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: |
+          python -c "import sys; print(sys.version)"
+          python-config --cflags
 
       - name: Install Python dependencies
         run: python -m pip install --upgrade six pygments lxml
