@@ -104,7 +104,7 @@ PYTHON_CONFIG=python-config
 #PYTHON_CONFIG=python3.3dm-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
-PYTHON_LIBS=$(shell $(PYTHON_CONFIG) --libs)
+PYTHON_LIBS=$(shell $(PYTHON) -c 'import sys;print("-lpython%d.%d" % sys.version_info[:2])') $(shell $(PYTHON_CONFIG) --libs)
 PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 # Support having multiple named plugins
