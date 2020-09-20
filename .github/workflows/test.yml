@@ -55,6 +55,8 @@ jobs:
           if [ $(python -c"import sys; print(sys.version_info.major)") = "3" ]
           then
             export PYTHON_CONFIG=python3-config
+          else
+            export PYTHON_CONFIG=python-config
           fi
           pwd=$(pwd -P)
           mkdir build
