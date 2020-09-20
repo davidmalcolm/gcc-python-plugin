@@ -33,13 +33,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Display Python version
-         run: python -c "import sys; print(sys.version)"
+        run: python -c "import sys; print(sys.version)"
 
       - name: Set up GCC ${{ matrix.gcc-version }}
         run: sudo apt-get install g++-${{matrix.gcc-version}} gcc-${{matrix.gcc-version}}-plugin-dev
 
       - name: Display GCC version
-         run: gcc-${{matrix.gcc-version}} --version
+        run: gcc-${{matrix.gcc-version}} --version
 
       - name: Build plugin and run the testsuite
         run: |
