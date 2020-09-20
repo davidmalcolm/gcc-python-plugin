@@ -39,6 +39,8 @@ jobs:
 
       - name: Build plugin and run the testsuite
         run: |
+          export CC=gcc-${{matrix.gcc}}
+          export CXX=g++-${{matrix.gcc}}
           pwd=$(pwd -P)
           mkdir build
           cd build
