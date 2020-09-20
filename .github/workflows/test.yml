@@ -16,12 +16,11 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    name: Python ${{ matrix.python }} and GCC ${{ matrix.gcc }}
+    name: Python ${{ matrix.python-version }} and GCC ${{ matrix.gcc-version }}
     strategy:
       matrix:
-        # TODO: python: [2, 3]; other versions?
-        python: [3]
-        gcc: [4.8, 4.9, 5, 6, 7, 8, 9, 10]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+        gcc-version: [5, 6, 7, 8, 9, 10]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -29,16 +28,23 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Python ${{ matrix.python }}
-        run: sudo apt-get install python-dev
-      # TODO: this seems to be Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-      - name: Set up GCC ${{ matrix.gcc }}
-        run: sudo apt-get install g++-${{matrix.gcc}} gcc-${{matrix.gcc}}-plugin-dev
+      - name: Display Python version
+         run: python -c "import sys; print(sys.version)"
+
+      - name: Set up GCC ${{ matrix.gcc-version }}
+        run: sudo apt-get install g++-${{matrix.gcc-version}} gcc-${{matrix.gcc-version}}-plugin-dev
+
+      - name: Display GCC version
+         run: gcc-${{matrix.gcc-version}} --version
 
       - name: Build plugin and run the testsuite
         run: |
-          export CC=gcc-${{matrix.gcc}}
-          export CXX=g++-${{matrix.gcc}}
+          export CC=gcc-${{matrix.gcc-version}}
+          export CXX=g++-${{matrix.gcc-version}}
           pwd=$(pwd -P)
           mkdir build
           cd build
