@@ -105,6 +105,7 @@ PYTHON_CONFIG=python-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON) -c 'import sys;print("-lpython%d.%d" % sys.version_info[:2])') $(shell $(PYTHON_CONFIG) --libs)
+PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
@@ -152,6 +153,7 @@ $(PLUGIN_DSO): $(PLUGIN_OBJECT_FILES) $(LIBGCC_C_API_SO)
 	    $(PLUGIN_OBJECT_FILES) \
 	    -o $@ \
 	    $(LIBS) \
+	    $(PYTHON_LDFLAGS) \
 	    -lgcc-c-api -Lgcc-c-api -Wl,-rpath=$(GCCPLUGINS_DIR)
 
 $(pwd)/gcc-c-api:
@@ -322,7 +324,7 @@ testdemo: plugin print-gcc-version
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
-test-suite: plugin print-gcc-version testdejagnu testdemo
+test-suite: plugin print-gcc-version testdejagnu
 	$(INVOCATION_ENV_VARS) $(PYTHON) $(srcdir)./run-test-suite.py $(if $(srcdir),--srcdir=$(srcdir))
 
 show-ssa: plugin
