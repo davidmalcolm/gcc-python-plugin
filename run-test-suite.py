@@ -797,7 +797,7 @@ if GCC_VERSION >= 8000:
     exclude_test('tests/cpychecker/PyArg_ParseTuple/without_PY_SSIZE_T_CLEAN')
 
 # absinterp and thus the refcount-checker have bit-rotted:
-if GCC_VERSION >= 6000:
+if GCC_VERSION >= 5000:
     exclude_tests_below('tests/cpychecker/absinterp')
     exclude_tests_below('tests/cpychecker/refcounts')
 
