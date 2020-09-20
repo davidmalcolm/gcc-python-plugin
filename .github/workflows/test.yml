@@ -59,4 +59,4 @@ jobs:
           pwd=$(pwd -P)
           mkdir build
           cd build
-          make -f $pwd/Makefile srcdir=$pwd/
+          make -f $pwd/Makefile srcdir=$pwd/ PYTHON_CONFIG=$PYTHON_CONFIG
