@@ -287,7 +287,7 @@ def run_test(testdir, srcdir):
     out = TestStream(os.path.join(testdir, 'stdout.txt'), srcdir)
     err = TestStream(os.path.join(testdir, 'stderr.txt'), srcdir)
 
-    cp = configparser.SafeConfigParser()
+    cp = configparser.ConfigParser()
     metadatapath = os.path.join(testdir, 'metadata.ini')
     cp.read([metadatapath])
 
