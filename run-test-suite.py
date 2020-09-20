@@ -137,10 +137,11 @@ class TestStream:
             # e.g.
             #   unknown struct PyObject * from /usr/include/python2.7/pyerrors.h:135
             #   unknown struct PyObject * from /usr/include/python3.2mu/pyerrors.h:132
-            # should both become:
+            #   unknown struct PyObject * from /opt/hostedtoolcache/Python/2.7.18/x64/include/python2.7/pyerrors.h:141
+            # should all become:
             #   unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
-            line = re.sub('/usr/include/python(.*)/(.*).h:[0-9]+',
-                          r'/usr/include/python?.?/\2.h:nn',
+            line = re.sub('(.*)/include/python(.*)/(.*).h:[0-9]+',
+                          r'/usr/include/python?.?/\3.h:nn',
                           line)
 
             # Convert to the Python 3 format for the repr() of a frozenset:
