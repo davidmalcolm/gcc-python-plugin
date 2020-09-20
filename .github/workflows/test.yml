@@ -64,7 +64,7 @@ jobs:
           $PYTHON_CONFIG --libs
           # Try to extract "-Lpath" from python-config --ldflags and add
           # it to LD_LIBRARY_PATH
-          LD_LIBRARY_PATH=$(echo $($PYTHON_CONFIG --ldflags) | grep -o "\-L\S*" | cut -c 3-):$(LD_LIBRARY_PATH)
+          LD_LIBRARY_PATH=$(echo $($PYTHON_CONFIG --ldflags) | grep -o "\-L\S*" | cut -c 3-):$LD_LIBRARY_PATH
           echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH
           pwd=$(pwd -P)
           mkdir build
