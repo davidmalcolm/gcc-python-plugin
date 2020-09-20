@@ -324,7 +324,7 @@ testdemo: plugin print-gcc-version
 json-examples: plugin
 	$(INVOCATION_ENV_VARS) $(srcdir)./gcc-with-cpychecker -I/usr/include/python2.7 -c libcpychecker_html/test/example1/bug.c
 
-test-suite: plugin print-gcc-version testdejagnu testdemo
+test-suite: plugin print-gcc-version testdejagnu
 	$(INVOCATION_ENV_VARS) $(PYTHON) $(srcdir)./run-test-suite.py $(if $(srcdir),--srcdir=$(srcdir))
 
 show-ssa: plugin
