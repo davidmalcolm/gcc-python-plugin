@@ -801,6 +801,10 @@ if GCC_VERSION >= 5000:
     exclude_tests_below('tests/cpychecker/absinterp')
     exclude_tests_below('tests/cpychecker/refcounts')
 
+# RuntimeError repr seems to have lost a trailing comma, perhaps in Python 3.7
+if sys.version_info[0] == 3 and sys.version_info[1] >= 7:
+    exclude_tests_below('tests/plugin/namespace')
+
 def run_one_test(testdir):
     try:
         sys.stdout.write('%s: ' % testdir)
