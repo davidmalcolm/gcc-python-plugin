@@ -140,7 +140,7 @@ class TestStream:
             #   unknown struct PyObject * from /opt/hostedtoolcache/Python/2.7.18/x64/include/python2.7/pyerrors.h:141
             # should all become:
             #   unknown struct PyObject * from /usr/include/python?.?/pyerrors.h:nn
-            line = re.sub('(.*)/include/python(.*)/(.*).h:[0-9]+',
+            line = re.sub('/(\S+)/include/python(.*)/(.*).h:[0-9]+',
                           r'/usr/include/python?.?/\3.h:nn',
                           line)
 
