@@ -484,11 +484,17 @@ def generate_tree_code_classes():
             add_simple_getter('methods',
                               'PyGcc_GetMethods(self)',
                               "The methods of this type")
+            add_simple_getter('stub',
+                              'PyGcc_GetStubDecl(self)',
+                              "The stub decl of this type")
 
         if tree_type.SYM == 'ENUMERAL_TYPE':
             add_simple_getter('values',
                               'PyGcc_TreeMakeListOfPairsFromTreeListChain(TYPE_VALUES(self->t.inner))',
                               "The values of this type")
+            add_simple_getter('stub',
+                              'PyGcc_GetStubDecl(self)',
+                              "The stub decl of this type")
 
         if tree_type.SYM == 'IDENTIFIER_NODE':
             add_simple_getter('name',

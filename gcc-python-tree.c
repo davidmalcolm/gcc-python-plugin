@@ -1103,6 +1103,11 @@ PyGcc_GetMethods(struct PyGccTree *self)
 #endif
 }
 
+PyObject * PyGcc_GetStubDecl(struct PyGccTree *self)
+{
+    return PyGccTree_New(gcc_private_make_tree(TYPE_STUB_DECL(self->t.inner)));
+}
+
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c

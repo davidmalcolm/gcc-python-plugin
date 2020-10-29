@@ -355,6 +355,9 @@ PyGcc_GetFields(struct PyGccTree *self);
 PyObject *
 PyGcc_GetMethods(struct PyGccTree *self);
 
+PyObject *
+PyGcc_GetStubDecl(struct PyGccTree *self);
+
 /* gcc-python-gimple.c: */
 extern gcc_gimple_asm
 PyGccGimple_as_gcc_gimple_asm(struct PyGccGimple *self);
