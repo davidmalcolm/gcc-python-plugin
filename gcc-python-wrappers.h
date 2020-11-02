@@ -245,6 +245,9 @@ PyObject *
 PyGccTree_get_str_no_uid(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccTree_get_str_decl(struct PyGccTree *self, void *closure);
+
+PyObject *
 PyGccTree_get_symbol(PyObject *cls, PyObject *args);
 
 PyObject *

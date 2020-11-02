@@ -121,6 +121,30 @@ do_pretty_print(struct PyGccTree * self, int spc, dump_flags_t flags)
     if (!result) {
 	goto error;
     }
+
+    Py_XDECREF(ppobj);
+    return result;
+
+ error:
+    Py_XDECREF(ppobj);
+    return NULL;
+}
+
+static PyObject *
+do_decl_print(struct PyGccTree * self, int spc, dump_flags_t flags)
+{
+    PyObject *ppobj = PyGccPrettyPrinter_New();
+    PyObject *result = NULL;
+    if (!ppobj) {
+        return NULL;
+    }
+
+    print_declaration (PyGccPrettyPrinter_as_pp(ppobj),
+                       self->t.inner, spc, flags);
+    result = PyGccPrettyPrinter_as_string(ppobj);
+    if (!result) {
+        goto error;
+    }
     
     Py_XDECREF(ppobj);
     return result;
@@ -282,6 +306,12 @@ PyObject *
 PyGccTree_get_str_no_uid(struct PyGccTree *self, void *closure)
 {
     return do_pretty_print(self, 0, TDF_NOUID);
+}
+
+PyObject *
+PyGccTree_get_str_decl(struct PyGccTree *self, void *closure)
+{
+    return do_decl_print(self, 0, TDF_NOUID);
 }
 
 PyObject *

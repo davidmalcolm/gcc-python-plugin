@@ -76,6 +76,8 @@ PyGccTree_get_addr(struct PyGccTree *self, void *closure)
                                                 'Instance of gcc.Tree giving the type of the node'),
                                     PyGetSetDef('addr', 'PyGccTree_get_addr', None,
                                                 'The address of the underlying GCC object in memory'),
+                                    PyGetSetDef('str_decl', 'PyGccTree_get_str_decl', None,
+                                                'A string representation of this declaration of the object.'),
                                     PyGetSetDef('str_no_uid', 'PyGccTree_get_str_no_uid', None,
                                                 'A string representation of this object, like str(), but without including any internal UID')],
                                    identifier_prefix='PyGccTree',
