@@ -404,6 +404,9 @@ def generate_tree_code_classes():
                 add_simple_getter('%s_equivalent' % qual,
                                   'PyGccTree_New(gcc_private_make_tree(build_qualified_type(self->t.inner, TYPE_QUALS(self->t.inner) | TYPE_QUAL_%s)))' % qual.upper(),
                                   'The gcc.Type for the %s version of this type' % qual)
+            add_simple_getter('main_variant',
+                              'PyGcc_MainVariant(self)',
+                              "The main vairant of this type")
             add_simple_getter('unqualified_equivalent',
                               'PyGccTree_New(gcc_private_make_tree(build_qualified_type(self->t.inner, 0)))',
                                   'The gcc.Type for the unqualified version of this type')
@@ -493,6 +496,9 @@ def generate_tree_code_classes():
             add_simple_getter('stub',
                               'PyGcc_GetStubDecl(self)',
                               "The stub decl of this type")
+            add_simple_getter('main_variant',
+                              'PyGcc_MainVariant(self)',
+                              "The main vairant of this type")
 
         if tree_type.SYM == 'ENUMERAL_TYPE':
             add_simple_getter('values',
