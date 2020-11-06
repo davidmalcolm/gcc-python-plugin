@@ -28,6 +28,7 @@
 #include "gcc-c-api/gcc-declaration.h"
 #include "gcc-c-api/gcc-diagnostics.h"
 #include "gcc-c-api/gcc-option.h"
+#include "gcc-c-api/gcc-function.h"
 
 int plugin_is_GPL_compatible;
 
@@ -152,6 +153,12 @@ PyGcc_set_location(PyObject *self, PyObject *args)
     gcc_set_input_location(loc_obj->loc);
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+PyGcc_get_current_function(PyObject *self, PyObject *args)
+{
+    return PyGccFunction_New(gcc_get_current_function());
 }
 
 static bool add_option_to_list(gcc_option opt, void *user_data)
@@ -458,6 +465,10 @@ static PyMethodDef GccMethods[] = {
      (PyCFunction)PyGcc_set_location,
      METH_VARARGS,
      ("Temporarily set the default location for error reports\n")},
+    {"get_current_function",
+     (PyCFunction)PyGcc_get_current_function,
+     METH_VARARGS,
+     ("Get the current function declaration\n")},
 
     /* Options: */
     {"get_option_list",
