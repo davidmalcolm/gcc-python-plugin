@@ -222,6 +222,16 @@ PyGccDeclaration_get_location(struct PyGccTree *self, void *closure)
     return PyGccLocation_New(gcc_decl_get_location(PyGccTree_as_gcc_decl(self)));
 }
 """)
+            getter = cu.add_simple_getter('PyGccTree_get_external',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(DECL_EXTERNAL(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_',
+                                              'PyGccTree',
+                                              'external',
+                                              'DECL_EXTERNAL(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('external',
+                                  getter, setter,
+                                  "(bool/bool)")
 
             getsettable.add_gsdef('name',
                                   'PyGccDeclaration_get_name',
