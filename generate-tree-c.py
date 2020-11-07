@@ -184,6 +184,17 @@ def generate_intermediate_tree_classes():
                                   getter, setter,
                                   "(bool/bool)")
 
+            getter = cu.add_simple_getter('PyGccTree_get_initial',
+                                          'PyGccTree',
+                                          'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_initial',
+                                              'PyGccTree',
+                                              'initial',
+                                              'DECL_INITIAL(self->t.inner) = NULL;')
+            getsettable.add_gsdef('initial',
+                                  getter, setter,
+                                  "(ptr/None)")
+
             cu.add_defn("""
 PyObject *
 PyGccDeclaration_get_name(struct PyGccTree *self, void *closure)
@@ -528,9 +539,7 @@ def generate_tree_code_classes():
             tp_repr = '(reprfunc)PyGccIdentifierNode_repr'
 
         if tree_type.SYM == 'VAR_DECL':
-            add_simple_getter('initial',
-                              'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))',
-                              "The initial value for this variable as a gcc.Constructor, or None")
+            pass
 
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
