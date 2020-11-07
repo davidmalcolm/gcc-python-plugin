@@ -173,6 +173,17 @@ def generate_intermediate_tree_classes():
                                   doc)
 
         if localname == 'Declaration':
+            getter = cu.add_simple_getter('PyGccTree_get_static',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(TREE_STATIC(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_static',
+                                              'PyGccTree',
+                                              'static',
+                                              'TREE_STATIC(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('static',
+                                  getter, setter,
+                                  "(bool/bool)")
+
             cu.add_defn("""
 PyObject *
 PyGccDeclaration_get_name(struct PyGccTree *self, void *closure)
@@ -520,9 +531,6 @@ def generate_tree_code_classes():
             add_simple_getter('initial',
                               'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))',
                               "The initial value for this variable as a gcc.Constructor, or None")
-            add_simple_getter('static',
-                              'PyBool_FromLong(gcc_var_decl_is_static(PyGccTree_as_gcc_var_decl(self)))',
-                              "Boolean: is this variable to be allocated with static storage")
 
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
