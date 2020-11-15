@@ -272,6 +272,9 @@ PyObject *
 PyGccDeclaration_repr(struct PyGccTree * self);
 
 PyObject *
+PyGccDeclaration_get_attributes(struct PyGccTree *self, void *closure);
+
+PyObject *
 PyGccFunctionDecl_get_fullname(struct PyGccTree *self, void *closure);
 
 PyObject *

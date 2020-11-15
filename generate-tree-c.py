@@ -241,6 +241,10 @@ PyGccDeclaration_get_location(struct PyGccTree *self, void *closure)
                                   'PyGccDeclaration_get_location',
                                   None,
                                   'The gcc.Location for this declaration')
+            getsettable.add_gsdef('attributes',
+                                  'PyGccDeclaration_get_attributes',
+                                  None,
+                                  'The user-defined attributes on this decl')
             add_simple_getter('is_artificial',
                               'PyBool_FromLong(gcc_decl_is_artificial(PyGccTree_as_gcc_decl(self)))',
                               "Is this a compiler-generated entity?")

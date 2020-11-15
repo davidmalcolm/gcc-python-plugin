@@ -457,6 +457,56 @@ PyGccIdentifierNode_repr(struct PyGccTree * self)
 }
 
 PyObject *
+PyGccDeclaration_get_attributes(struct PyGccTree *self, void *closure)
+{
+    /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
+       "A TREE_LIST of IDENTIFIER nodes of the attributes that apply
+       to this type"
+
+       Looking at:
+          typedef int (example3)(const char *, const char *, const char *)
+              __attribute__((nonnull(1)))
+              __attribute__((nonnull(3)));
+       (which is erroneous), we get this for TYPE_ATTRIBUTES:
+         gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                      value=gcc.TreeList(purpose=None,
+                                         value=gcc.IntegerCst(3),
+                                         chain=None),
+                      chain=gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                                         value=gcc.TreeList(purpose=None,
+                                                            value=gcc.IntegerCst(1),
+                                                            chain=None),
+                                         chain=None)
+                      )
+    */
+    tree attr;
+    PyObject *result = PyDict_New();
+    if (!result) {
+        return NULL;
+    }
+    for (attr = DECL_ATTRIBUTES(self->t.inner); attr; attr = TREE_CHAIN(attr)) {
+        const char *attrname = IDENTIFIER_POINTER(TREE_PURPOSE(attr));
+        PyObject *values;
+        values = PyGcc_TreeMakeListFromTreeList(TREE_VALUE(attr));
+        if (!values) {
+            goto error;
+        }
+
+        if (-1 == PyDict_SetItemString(result, attrname, values)) {
+            Py_DECREF(values);
+            goto error;
+        }
+        Py_DECREF(values);
+    }
+
+    return result;
+
+ error:
+    Py_DECREF(result);
+    return NULL;
+}
+
+PyObject *
 PyGccType_get_attributes(struct PyGccTree *self, void *closure)
 {
     /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
