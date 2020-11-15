@@ -44,6 +44,19 @@ def generate_variable():
                       'PyGccTree_New(gcc_variable_get_decl(self->var))',
                       'The declaration of this variable, as a gcc.Tree')
 
+    cu.add_decl('GCC_IMPLEMENT_PUBLIC_API (PyObject *) PyGccVariable_get_referring(struct PyGccVariable * self);')
+    cu.add_decl('GCC_IMPLEMENT_PUBLIC_API (PyObject *) PyGccVariable_get_reference(struct PyGccVariable * self);')
+
+    getsettable.add_gsdef('referring',
+                          'PyGccVariable_get_referring',
+                          None,
+                          'Referencing this var')
+
+    getsettable.add_gsdef('reference',
+                          'PyGccVariable_get_reference',
+                          None,
+                          'Referenced by this var')
+
     cu.add_defn(getsettable.c_defn())
     
     pytype = PyGccWrapperTypeObject(identifier = 'PyGccVariable_TypeObj',

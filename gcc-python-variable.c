@@ -51,6 +51,56 @@ PyGcc_WrtpMarkForPyGccVariable(PyGccVariable *wrapper)
     gcc_variable_mark_in_use(wrapper->var);
 }
 
+IMPL_APPENDER(add_var_to_list,
+              gcc_variable,
+              PyGccVariable_New)
+
+
+GCC_IMPLEMENT_PUBLIC_API (bool) gcc_variable_get_referring (gcc_variable var,
+                    bool (*cb) (gcc_variable var, void *user_data),
+                    void *user_data)
+{
+    ipa_ref *ref = NULL;
+    int i;
+    for (i = 0; var.inner->iterate_referring(i, ref); i++) {
+        if (cb(gcc_private_make_variable((varpool_node*)ref->referring), user_data))
+            return true;
+    }
+
+    return false;
+}
+
+GCC_IMPLEMENT_PUBLIC_API (PyObject *)
+PyGccVariable_get_referring(struct PyGccVariable * self)
+{
+    IMPL_LIST_MAKER(gcc_variable_get_referring,
+                    self->var,
+                    add_var_to_list)
+}
+
+
+GCC_IMPLEMENT_PUBLIC_API (bool) gcc_variable_get_reference (gcc_variable var,
+                    bool (*cb) (gcc_variable var, void *user_data),
+                    void *user_data)
+{
+    ipa_ref *ref = NULL;
+    int i;
+    for (i = 0; var.inner->iterate_reference(i, ref); i++) {
+        if (cb(gcc_private_make_variable((varpool_node*)ref->referred), user_data))
+            return true;
+    }
+
+    return false;
+}
+
+GCC_IMPLEMENT_PUBLIC_API (PyObject *)
+PyGccVariable_get_reference(struct PyGccVariable * self)
+{
+    IMPL_LIST_MAKER(gcc_variable_get_reference,
+                    self->var,
+                    add_var_to_list)
+}
+
 /*
   PEP-7  
 Local variables:
