@@ -269,6 +269,9 @@ PyObject *
 PyGccDeclaration_get_name(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccTree_walk_tree(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
+
+PyObject *
 PyGccDeclaration_repr(struct PyGccTree * self);
 
 PyObject *

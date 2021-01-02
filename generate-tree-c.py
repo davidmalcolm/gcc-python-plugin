@@ -96,6 +96,10 @@ PyGccTree_get_addr(struct PyGccTree *self, void *closure)
                           tp_str = '(reprfunc)PyGccTree_str',
                           tp_richcompare = 'PyGccTree_richcompare')
     methods = PyMethodTable('PyGccTree_methods', [])
+    methods.add_method('walk_tree',
+		       '(PyCFunction)PyGccTree_walk_tree',
+		       'METH_VARARGS | METH_KEYWORDS',
+		       'Walk the tree of the declaration')
     methods.add_method('debug',
                        'PyGccTree_debug',
                        'METH_VARARGS',

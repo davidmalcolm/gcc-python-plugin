@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
+#include "gcc-python-closure.h"
 #include "cp/cp-tree.h"
 #include "gimple.h"
 
@@ -326,6 +327,84 @@ PyGccTree_get_symbol(PyObject *cls, PyObject *args)
     }
 
     return PyGccString_FromString(op_symbol_code(code));
+}
+
+static tree
+tree_walk_callback(tree *tree_ptr, int *walk_subtree, void *data)
+{
+    struct callback_closure *closure = (struct callback_closure*)data;
+    PyObject *tree_obj = NULL;
+    PyObject *args = NULL;
+    PyObject *result = NULL;
+
+    assert(closure);
+    assert(*tree_ptr);
+    tree_obj = PyGccTree_New(gcc_private_make_tree(*tree_ptr));
+    if (!tree_obj) {
+        goto error;
+    }
+
+    args = PyGcc_Closure_MakeArgs(closure, 0, tree_obj);
+    if (!args) {
+        goto error;
+    }
+
+    /* Invoke the python callback: */
+    result = PyObject_Call(closure->callback, args, closure->kwargs);
+    if (!result) {
+        goto error;
+    }
+
+    Py_DECREF(tree_obj);
+    Py_DECREF(args);
+
+    if (PyObject_IsTrue(result)) {
+        Py_DECREF(result);
+        return *tree_ptr;
+    } else {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+error:
+    /* On and exception, terminate the traversal: */
+    *walk_subtree = 0;
+    Py_XDECREF(tree_obj);
+    Py_XDECREF(args);
+    Py_XDECREF(result);
+    return NULL;
+}
+
+PyObject *
+PyGccTree_walk_tree(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *callback;
+    PyObject *extraargs = NULL;
+    struct callback_closure *closure;
+    tree result;
+
+    callback = PyTuple_GetItem(args, 0);
+    extraargs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
+
+    closure = PyGcc_closure_new_generic(callback, extraargs, kwargs);
+
+    if (!closure) {
+        Py_DECREF(callback);
+        Py_DECREF(extraargs);
+        return NULL;
+    }
+
+    result = walk_tree (&self->t.inner,
+                        tree_walk_callback,
+                        closure, NULL);
+
+    PyGcc_closure_free(closure);
+
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    return PyGccTree_New(gcc_private_make_tree(result));
 }
 
 PyObject *
