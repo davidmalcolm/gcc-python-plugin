@@ -194,6 +194,17 @@ def generate_intermediate_tree_classes():
             getsettable.add_gsdef('initial',
                                   getter, setter,
                                   "(ptr/None)")
+            getter = cu.add_simple_getter('PyGccTree_get_public',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(TREE_PUBLIC(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_public',
+                                              'PyGccTree',
+                                              'public',
+                                              'TREE_PUBLIC(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('public',
+                                  getter, setter,
+                                  "(bool/bool)")
+
 
             cu.add_defn("""
 PyObject *
