@@ -1,68 +1,12 @@
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.8 gcc-4.8-plugin-dev
-      env:
-         - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+os: linux
 
-    # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9 gcc-4.9-plugin-dev
-      env:
-         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-
-    # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5 gcc-5-plugin-dev
-      env:
-         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-
-    # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6 gcc-6-plugin-dev
-      env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-
-    # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7 gcc-7-plugin-dev
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8 gcc-8-plugin-dev
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"  # 3.7 development branch
 
     - os: linux
       addons:
