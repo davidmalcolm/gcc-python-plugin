@@ -652,6 +652,9 @@ def generate_tree_code_classes():
             add_simple_getter('result',
                               'PyGccTree_New(gcc_private_make_tree(DECL_RESULT_FLD(self->t.inner)))',
                               'The gcc.ResultDecl for the return value')
+            add_simple_getter('inline',
+                              'PyBool_FromLong(DECL_DECLARED_INLINE_P(self->t.inner))',
+                              'If function is declared as inline')
             getsettable.add_gsdef('callgraph_node',
                                   'PyGccFunctionDecl_get_callgraph_node',
                                   None,
