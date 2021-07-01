@@ -30,6 +30,8 @@
 #include "predict.h" /* needed by gimple.h in 4.9 */
 #include "gimple-expr.h" /* needed by gimple.h in 4.9 */
 #endif
+#include "internal-fn.h"
+#include "gimple-expr.h"
 #include "gimple.h"
 
 /***********************************************************
