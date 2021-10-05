@@ -40,18 +40,22 @@ $(function() {
         // backwards, that starts a new subflow
         var $states = $report.find('.states li');
         var source_flow = [];
-        var last_line = null;
+        var last_line = Infinity;
         $states.each(function() {
             var $state = $(this);
             var lineno = parseInt($state.data('line'), 10);
             var $assoc_line = $line_index[lineno];
+
+            if ( $assoc_line === undefined ) {
+                // The commentary mentioned a line that we're not showing.
+                return;
+            }
             $state.data('line-element', $assoc_line);
             $state.prepend($('<h2>').text(String(lineno)));
 
             var flow;
-            if (! last_line || last_line >= lineno) {
-                // Mark commentary that starts a new subflow (but not the
-                // first)
+            if (last_line >= lineno) {
+                // This is a new subflow, possibly the first.
                 if (source_flow.length) {
                     $state.addClass('new-subflow');
                 }
@@ -97,11 +101,9 @@ $(function() {
                     flow.shift();
                 }
                 // Lines between the start and end of a subflow, or before the
-                // start of the first subflow, or after the end of the last
-                // subflow, get undotted lines
+                // start of the first subflow get undotted lines
                 else if (
                     (idx == 0 && flow.length) ||
-                    (idx == source_flow.length - 1 && ! flow.length) ||
                     (started[idx] && flow.length)
                 ) {
                     $paths = $paths.add($('<td>', { "class": "flow-line" }).html('&#x200b;'));
