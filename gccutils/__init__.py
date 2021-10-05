@@ -99,21 +99,17 @@ def get_nonnull_arguments(funtype):
         # No "nonnull" attribute was given:
         return frozenset()
 
-def invoke_dot(dot, name='test'):
+def invoke_dot(dot, name='test', fmt='.png'):
     from subprocess import Popen, PIPE
 
-    if 1:
-        fmt = 'png'
-    else:
-        # SVG generation seems to work, but am seeing some text-width issues
-        # with rendering of the SVG  by eog and firefox on this machine (though
-        # not chromium).
-        #
-        # Looks like X coordinates allocated by graphviz don't contain quite
-        # enough space for the <text> elements.
-        #
-        # Presumably a font selection/font metrics issue
-        fmt = 'svg'
+    # SVG generation seems to work, but am seeing some text-width issues
+    # with rendering of the SVG  by eog and firefox on this machine (though
+    # not chromium).
+    #
+    # Looks like X coordinates allocated by graphviz don't contain quite
+    # enough space for the <text> elements.
+    #
+    # Presumably a font selection/font metrics issue
     filename = '%s.%s' % (name, fmt)
     p = Popen(['dot', '-T%s' % fmt, '-o', filename],
               stdin=PIPE)
