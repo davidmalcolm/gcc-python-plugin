@@ -375,7 +375,12 @@ PyGcc_RegisterCallback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  PyGcc_CallbackFor_GGC_END,
 			  closure);
         break;
-
+    case PLUGIN_FINISH_PARSE_FUNCTION:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  PyGcc_CallbackFor_tree,
+			  closure);
+        break;
     /* PLUGIN_FINISH_DECL was added in gcc 4.7 onwards: */
 #ifdef GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL
     case PLUGIN_FINISH_DECL:
