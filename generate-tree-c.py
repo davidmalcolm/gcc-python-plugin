@@ -199,12 +199,18 @@ PyGccDeclaration_get_location(struct PyGccTree *self, void *closure)
             add_simple_getter('is_artificial',
                               'PyBool_FromLong(gcc_decl_is_artificial(PyGccTree_as_gcc_decl(self)))',
                               "Is this a compiler-generated entity?")
+            add_simple_getter('context',
+                              'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_private_make_function_decl(DECL_CONTEXT (PyGccTree_as_gcc_decl(self).inner))))',
+                              "context")
             add_simple_getter('is_builtin',
                               'PyBool_FromLong(gcc_decl_is_builtin(PyGccTree_as_gcc_decl(self)))',
                               "Is this declaration built in by the compiler?")
             pytype.tp_repr = '(reprfunc)PyGccDeclaration_repr'
 
         if localname == 'Type':
+            add_simple_getter('context',
+                              'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_private_make_function_decl(DECL_CONTEXT (PyGccTree_as_gcc_decl(self).inner))))',
+                              "context")
             add_simple_getter('name',
                               'PyGccTree_New(gcc_type_get_name(PyGccTree_as_gcc_type(self)))',
                               "The name of the type as a gcc.Tree, or None")
