@@ -564,7 +564,9 @@ def generate_tree_code_classes():
             tp_repr = '(reprfunc)PyGccIdentifierNode_repr'
 
         if tree_type.SYM == 'VAR_DECL':
-            pass
+            add_simple_getter('node',
+                              'PyGccVariable_New(gcc_private_make_variable(varpool_node::get (self->t.inner)))',
+                              'Node which contains this var decl')
 
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
