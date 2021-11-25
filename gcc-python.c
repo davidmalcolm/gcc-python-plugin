@@ -372,6 +372,12 @@ PyGcc_dump(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
+PyGcc_get_main_input_filename(PyObject *self, PyObject *args)
+{
+	return PyGccStringOrNone(main_input_filename);
+}
+
+static PyObject *
 PyGcc_get_dump_file_name(PyObject *self, PyObject *noargs)
 {
     /* gcc/tree-pass.h declares:
@@ -493,6 +499,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_callgraph_nodes", PyGcc_get_callgraph_nodes, METH_VARARGS,
      "Get a list of all gcc.CallgraphNode instances"},
+
+    {"get_main_input_filename", PyGcc_get_main_input_filename, METH_NOARGS,
+     "Get main_input_filename"},
 
     /* Dump files */
     {"dump", PyGcc_dump, METH_O,
