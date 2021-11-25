@@ -134,6 +134,12 @@ PyGcc_define_macro(PyObject *self,
 }
 
 static PyObject *
+PyGcc_get_location(PyObject *self, PyObject *args)
+{
+    return PyGccLocation_New(gcc_private_make_location(input_location));
+}
+
+static PyObject *
 PyGcc_set_location(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj;
@@ -438,6 +444,10 @@ static PyMethodDef GccMethods[] = {
      (METH_VARARGS | METH_KEYWORDS),
      ("Report an information message\n"
       "FIXME\n")},
+    {"get_location",
+     (PyCFunction)PyGcc_get_location,
+     METH_VARARGS,
+     ("Get the default location for error reports\n")},
     {"set_location",
      (PyCFunction)PyGcc_set_location,
      METH_VARARGS,
