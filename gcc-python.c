@@ -28,6 +28,7 @@
 #include "gcc-c-api/gcc-declaration.h"
 #include "gcc-c-api/gcc-diagnostics.h"
 #include "gcc-c-api/gcc-option.h"
+#include "gcc-c-api/gcc-function.h"
 
 int plugin_is_GPL_compatible;
 
@@ -134,6 +135,12 @@ PyGcc_define_macro(PyObject *self,
 }
 
 static PyObject *
+PyGcc_get_location(PyObject *self, PyObject *args)
+{
+    return PyGccLocation_New(gcc_private_make_location(input_location));
+}
+
+static PyObject *
 PyGcc_set_location(PyObject *self, PyObject *args)
 {
     PyGccLocation *loc_obj;
@@ -146,6 +153,12 @@ PyGcc_set_location(PyObject *self, PyObject *args)
     gcc_set_input_location(loc_obj->loc);
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+PyGcc_get_current_function(PyObject *self, PyObject *args)
+{
+    return PyGccFunction_New(gcc_get_current_function());
 }
 
 static bool add_option_to_list(gcc_option opt, void *user_data)
@@ -366,6 +379,12 @@ PyGcc_dump(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
+PyGcc_get_main_input_filename(PyObject *self, PyObject *args)
+{
+	return PyGccStringOrNone(main_input_filename);
+}
+
+static PyObject *
 PyGcc_get_dump_file_name(PyObject *self, PyObject *noargs)
 {
     /* gcc/tree-pass.h declares:
@@ -438,10 +457,18 @@ static PyMethodDef GccMethods[] = {
      (METH_VARARGS | METH_KEYWORDS),
      ("Report an information message\n"
       "FIXME\n")},
+    {"get_location",
+     (PyCFunction)PyGcc_get_location,
+     METH_VARARGS,
+     ("Get the default location for error reports\n")},
     {"set_location",
      (PyCFunction)PyGcc_set_location,
      METH_VARARGS,
      ("Temporarily set the default location for error reports\n")},
+    {"get_current_function",
+     (PyCFunction)PyGcc_get_current_function,
+     METH_VARARGS,
+     ("Get the current function declaration\n")},
 
     /* Options: */
     {"get_option_list",
@@ -483,6 +510,9 @@ static PyMethodDef GccMethods[] = {
 
     {"get_callgraph_nodes", PyGcc_get_callgraph_nodes, METH_VARARGS,
      "Get a list of all gcc.CallgraphNode instances"},
+
+    {"get_main_input_filename", PyGcc_get_main_input_filename, METH_NOARGS,
+     "Get main_input_filename"},
 
     /* Dump files */
     {"dump", PyGcc_dump, METH_O,

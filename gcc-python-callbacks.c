@@ -197,6 +197,18 @@ PyGcc_CallbackFor_tree(void *gcc_data, void *user_data)
 					user_data);
 }
 
+static void
+PyGcc_CallbackFor_string(void *gcc_data, void *user_data)
+{
+    PyGILState_STATE gstate;
+    const char *str = (const char *)gcc_data;
+
+    gstate = PyGILState_Ensure();
+
+    PyGcc_FinishInvokingCallback(gstate,
+					1, PyGccString_FromString(str),
+					user_data);
+}
 
 static void
 PyGcc_CallbackFor_PLUGIN_ATTRIBUTES(void *gcc_data, void *user_data)
@@ -375,7 +387,18 @@ PyGcc_RegisterCallback(PyObject *self, PyObject *args, PyObject *kwargs)
 			  PyGcc_CallbackFor_GGC_END,
 			  closure);
         break;
-
+    case PLUGIN_FINISH_PARSE_FUNCTION:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  PyGcc_CallbackFor_tree,
+			  closure);
+        break;
+    case PLUGIN_INCLUDE_FILE:
+        register_callback("python", // FIXME
+			  (enum plugin_event)event,
+			  PyGcc_CallbackFor_string,
+			  closure);
+        break;
     /* PLUGIN_FINISH_DECL was added in gcc 4.7 onwards: */
 #ifdef GCC_PYTHON_PLUGIN_CONFIG_has_PLUGIN_FINISH_DECL
     case PLUGIN_FINISH_DECL:

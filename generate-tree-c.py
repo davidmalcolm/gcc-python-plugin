@@ -76,6 +76,8 @@ PyGccTree_get_addr(struct PyGccTree *self, void *closure)
                                                 'Instance of gcc.Tree giving the type of the node'),
                                     PyGetSetDef('addr', 'PyGccTree_get_addr', None,
                                                 'The address of the underlying GCC object in memory'),
+                                    PyGetSetDef('str_decl', 'PyGccTree_get_str_decl', None,
+                                                'A string representation of this declaration of the object.'),
                                     PyGetSetDef('str_no_uid', 'PyGccTree_get_str_no_uid', None,
                                                 'A string representation of this object, like str(), but without including any internal UID')],
                                    identifier_prefix='PyGccTree',
@@ -94,6 +96,10 @@ PyGccTree_get_addr(struct PyGccTree *self, void *closure)
                           tp_str = '(reprfunc)PyGccTree_str',
                           tp_richcompare = 'PyGccTree_richcompare')
     methods = PyMethodTable('PyGccTree_methods', [])
+    methods.add_method('walk_tree',
+		       '(PyCFunction)PyGccTree_walk_tree',
+		       'METH_VARARGS | METH_KEYWORDS',
+		       'Walk the tree of the declaration')
     methods.add_method('debug',
                        'PyGccTree_debug',
                        'METH_VARARGS',
@@ -171,6 +177,39 @@ def generate_intermediate_tree_classes():
                                   doc)
 
         if localname == 'Declaration':
+            getter = cu.add_simple_getter('PyGccTree_get_static',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(TREE_STATIC(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_static',
+                                              'PyGccTree',
+                                              'static',
+                                              'TREE_STATIC(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('static',
+                                  getter, setter,
+                                  "(bool/bool)")
+
+            getter = cu.add_simple_getter('PyGccTree_get_initial',
+                                          'PyGccTree',
+                                          'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_initial',
+                                              'PyGccTree',
+                                              'initial',
+                                              'DECL_INITIAL(self->t.inner) = NULL;')
+            getsettable.add_gsdef('initial',
+                                  getter, setter,
+                                  "(ptr/None)")
+            getter = cu.add_simple_getter('PyGccTree_get_public',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(TREE_PUBLIC(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_public',
+                                              'PyGccTree',
+                                              'public',
+                                              'TREE_PUBLIC(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('public',
+                                  getter, setter,
+                                  "(bool/bool)")
+
+
             cu.add_defn("""
 PyObject *
 PyGccDeclaration_get_name(struct PyGccTree *self, void *closure)
@@ -187,6 +226,16 @@ PyGccDeclaration_get_location(struct PyGccTree *self, void *closure)
     return PyGccLocation_New(gcc_decl_get_location(PyGccTree_as_gcc_decl(self)));
 }
 """)
+            getter = cu.add_simple_getter('PyGccTree_get_external',
+                                          'PyGccTree',
+                                          'PyBool_FromLong(DECL_EXTERNAL(self->t.inner))')
+            setter = cu.add_simple_int_setter('PyGccTree_set_',
+                                              'PyGccTree',
+                                              'external',
+                                              'DECL_EXTERNAL(self->t.inner) = PyGccInt_AsLong(value)')
+            getsettable.add_gsdef('external',
+                                  getter, setter,
+                                  "(bool/bool)")
 
             getsettable.add_gsdef('name',
                                   'PyGccDeclaration_get_name',
@@ -196,15 +245,25 @@ PyGccDeclaration_get_location(struct PyGccTree *self, void *closure)
                                   'PyGccDeclaration_get_location',
                                   None,
                                   'The gcc.Location for this declaration')
+            getsettable.add_gsdef('attributes',
+                                  'PyGccDeclaration_get_attributes',
+                                  None,
+                                  'The user-defined attributes on this decl')
             add_simple_getter('is_artificial',
                               'PyBool_FromLong(gcc_decl_is_artificial(PyGccTree_as_gcc_decl(self)))',
                               "Is this a compiler-generated entity?")
+            add_simple_getter('context',
+                              'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_private_make_function_decl(DECL_CONTEXT (PyGccTree_as_gcc_decl(self).inner))))',
+                              "context")
             add_simple_getter('is_builtin',
                               'PyBool_FromLong(gcc_decl_is_builtin(PyGccTree_as_gcc_decl(self)))',
                               "Is this declaration built in by the compiler?")
             pytype.tp_repr = '(reprfunc)PyGccDeclaration_repr'
 
         if localname == 'Type':
+            add_simple_getter('context',
+                              'PyGccTree_New(gcc_function_decl_as_gcc_tree(gcc_private_make_function_decl(DECL_CONTEXT (PyGccTree_as_gcc_decl(self).inner))))',
+                              "context")
             add_simple_getter('name',
                               'PyGccTree_New(gcc_type_get_name(PyGccTree_as_gcc_type(self)))',
                               "The name of the type as a gcc.Tree, or None")
@@ -398,6 +457,9 @@ def generate_tree_code_classes():
                 add_simple_getter('%s_equivalent' % qual,
                                   'PyGccTree_New(gcc_private_make_tree(build_qualified_type(self->t.inner, TYPE_QUALS(self->t.inner) | TYPE_QUAL_%s)))' % qual.upper(),
                                   'The gcc.Type for the %s version of this type' % qual)
+            add_simple_getter('main_variant',
+                              'PyGcc_MainVariant(self)',
+                              "The main vairant of this type")
             add_simple_getter('unqualified_equivalent',
                               'PyGccTree_New(gcc_private_make_tree(build_qualified_type(self->t.inner, 0)))',
                                   'The gcc.Type for the unqualified version of this type')
@@ -484,11 +546,20 @@ def generate_tree_code_classes():
             add_simple_getter('methods',
                               'PyGcc_GetMethods(self)',
                               "The methods of this type")
+            add_simple_getter('stub',
+                              'PyGcc_GetStubDecl(self)',
+                              "The stub decl of this type")
+            add_simple_getter('main_variant',
+                              'PyGcc_MainVariant(self)',
+                              "The main vairant of this type")
 
         if tree_type.SYM == 'ENUMERAL_TYPE':
             add_simple_getter('values',
                               'PyGcc_TreeMakeListOfPairsFromTreeListChain(TYPE_VALUES(self->t.inner))',
                               "The values of this type")
+            add_simple_getter('stub',
+                              'PyGcc_GetStubDecl(self)',
+                              "The stub decl of this type")
 
         if tree_type.SYM == 'IDENTIFIER_NODE':
             add_simple_getter('name',
@@ -497,12 +568,9 @@ def generate_tree_code_classes():
             tp_repr = '(reprfunc)PyGccIdentifierNode_repr'
 
         if tree_type.SYM == 'VAR_DECL':
-            add_simple_getter('initial',
-                              'PyGccTree_New(gcc_constructor_as_gcc_tree(gcc_var_decl_get_initial(PyGccTree_as_gcc_var_decl(self))))',
-                              "The initial value for this variable as a gcc.Constructor, or None")
-            add_simple_getter('static',
-                              'PyBool_FromLong(gcc_var_decl_is_static(PyGccTree_as_gcc_var_decl(self)))',
-                              "Boolean: is this variable to be allocated with static storage")
+            add_simple_getter('node',
+                              'PyGccVariable_New(gcc_private_make_variable(varpool_node::get (self->t.inner)))',
+                              'Node which contains this var decl')
 
         if tree_type.SYM == 'CONSTRUCTOR':
             add_complex_getter('elements',
@@ -584,6 +652,9 @@ def generate_tree_code_classes():
             add_simple_getter('result',
                               'PyGccTree_New(gcc_private_make_tree(DECL_RESULT_FLD(self->t.inner)))',
                               'The gcc.ResultDecl for the return value')
+            add_simple_getter('inline',
+                              'PyBool_FromLong(DECL_DECLARED_INLINE_P(self->t.inner))',
+                              'If function is declared as inline')
             getsettable.add_gsdef('callgraph_node',
                                   'PyGccFunctionDecl_get_callgraph_node',
                                   None,

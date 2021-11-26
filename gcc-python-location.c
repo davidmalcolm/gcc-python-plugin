@@ -190,7 +190,7 @@ PyGccLocation_richcompare(PyObject *o1, PyObject *o2, int op)
 long
 PyGccLocation_hash(struct PyGccLocation * self)
 {
-    return self->loc.inner;
+    return (unsigned long)(LOCATION_FILE(self->loc.inner)) ^ LOCATION_LINE(self->loc.inner);
 }
 
 #if (GCC_VERSION >= 5000)

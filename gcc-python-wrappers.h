@@ -245,6 +245,9 @@ PyObject *
 PyGccTree_get_str_no_uid(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccTree_get_str_decl(struct PyGccTree *self, void *closure);
+
+PyObject *
 PyGccTree_get_symbol(PyObject *cls, PyObject *args);
 
 PyObject *
@@ -266,7 +269,13 @@ PyObject *
 PyGccDeclaration_get_name(struct PyGccTree *self, void *closure);
 
 PyObject *
+PyGccTree_walk_tree(struct PyGccTree * self, PyObject *args, PyObject *kwargs);
+
+PyObject *
 PyGccDeclaration_repr(struct PyGccTree * self);
+
+PyObject *
+PyGccDeclaration_get_attributes(struct PyGccTree *self, void *closure);
 
 PyObject *
 PyGccFunctionDecl_get_fullname(struct PyGccTree *self, void *closure);
@@ -354,6 +363,12 @@ PyGcc_GetFields(struct PyGccTree *self);
 
 PyObject *
 PyGcc_GetMethods(struct PyGccTree *self);
+
+PyObject *
+PyGcc_GetStubDecl(struct PyGccTree *self);
+
+PyObject *
+PyGcc_MainVariant(struct PyGccTree *self);
 
 /* gcc-python-gimple.c: */
 extern gcc_gimple_asm

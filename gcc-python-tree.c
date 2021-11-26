@@ -21,6 +21,7 @@
 #include "gcc-python.h"
 #include "gcc-python-wrappers.h"
 #include "gcc-python-compat.h"
+#include "gcc-python-closure.h"
 #include "cp/cp-tree.h"
 #include "gimple.h"
 
@@ -120,6 +121,30 @@ do_pretty_print(struct PyGccTree * self, int spc, dump_flags_t flags)
     result = PyGccPrettyPrinter_as_string(ppobj);
     if (!result) {
 	goto error;
+    }
+
+    Py_XDECREF(ppobj);
+    return result;
+
+ error:
+    Py_XDECREF(ppobj);
+    return NULL;
+}
+
+static PyObject *
+do_decl_print(struct PyGccTree * self, int spc, dump_flags_t flags)
+{
+    PyObject *ppobj = PyGccPrettyPrinter_New();
+    PyObject *result = NULL;
+    if (!ppobj) {
+        return NULL;
+    }
+
+    print_declaration (PyGccPrettyPrinter_as_pp(ppobj),
+                       self->t.inner, spc, flags);
+    result = PyGccPrettyPrinter_as_string(ppobj);
+    if (!result) {
+        goto error;
     }
     
     Py_XDECREF(ppobj);
@@ -285,6 +310,12 @@ PyGccTree_get_str_no_uid(struct PyGccTree *self, void *closure)
 }
 
 PyObject *
+PyGccTree_get_str_decl(struct PyGccTree *self, void *closure)
+{
+    return do_decl_print(self, 0, TDF_NOUID);
+}
+
+PyObject *
 PyGccTree_get_symbol(PyObject *cls, PyObject *args)
 {
     enum tree_code code;
@@ -296,6 +327,84 @@ PyGccTree_get_symbol(PyObject *cls, PyObject *args)
     }
 
     return PyGccString_FromString(op_symbol_code(code));
+}
+
+static tree
+tree_walk_callback(tree *tree_ptr, int *walk_subtree, void *data)
+{
+    struct callback_closure *closure = (struct callback_closure*)data;
+    PyObject *tree_obj = NULL;
+    PyObject *args = NULL;
+    PyObject *result = NULL;
+
+    assert(closure);
+    assert(*tree_ptr);
+    tree_obj = PyGccTree_New(gcc_private_make_tree(*tree_ptr));
+    if (!tree_obj) {
+        goto error;
+    }
+
+    args = PyGcc_Closure_MakeArgs(closure, 0, tree_obj);
+    if (!args) {
+        goto error;
+    }
+
+    /* Invoke the python callback: */
+    result = PyObject_Call(closure->callback, args, closure->kwargs);
+    if (!result) {
+        goto error;
+    }
+
+    Py_DECREF(tree_obj);
+    Py_DECREF(args);
+
+    if (PyObject_IsTrue(result)) {
+        Py_DECREF(result);
+        return *tree_ptr;
+    } else {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+error:
+    /* On and exception, terminate the traversal: */
+    *walk_subtree = 0;
+    Py_XDECREF(tree_obj);
+    Py_XDECREF(args);
+    Py_XDECREF(result);
+    return NULL;
+}
+
+PyObject *
+PyGccTree_walk_tree(struct PyGccTree * self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *callback;
+    PyObject *extraargs = NULL;
+    struct callback_closure *closure;
+    tree result;
+
+    callback = PyTuple_GetItem(args, 0);
+    extraargs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
+
+    closure = PyGcc_closure_new_generic(callback, extraargs, kwargs);
+
+    if (!closure) {
+        Py_DECREF(callback);
+        Py_DECREF(extraargs);
+        return NULL;
+    }
+
+    result = walk_tree (&self->t.inner,
+                        tree_walk_callback,
+                        closure, NULL);
+
+    PyGcc_closure_free(closure);
+
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    return PyGccTree_New(gcc_private_make_tree(result));
 }
 
 PyObject *
@@ -424,6 +533,56 @@ PyGccIdentifierNode_repr(struct PyGccTree * self)
         return PyGccString_FromFormat("%s(name=None)",
                                              Py_TYPE(self)->tp_name);
     }
+}
+
+PyObject *
+PyGccDeclaration_get_attributes(struct PyGccTree *self, void *closure)
+{
+    /* gcc/tree.h defines TYPE_ATTRIBUTES(NODE) as:
+       "A TREE_LIST of IDENTIFIER nodes of the attributes that apply
+       to this type"
+
+       Looking at:
+          typedef int (example3)(const char *, const char *, const char *)
+              __attribute__((nonnull(1)))
+              __attribute__((nonnull(3)));
+       (which is erroneous), we get this for TYPE_ATTRIBUTES:
+         gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                      value=gcc.TreeList(purpose=None,
+                                         value=gcc.IntegerCst(3),
+                                         chain=None),
+                      chain=gcc.TreeList(purpose=gcc.IdentifierNode(name='nonnull'),
+                                         value=gcc.TreeList(purpose=None,
+                                                            value=gcc.IntegerCst(1),
+                                                            chain=None),
+                                         chain=None)
+                      )
+    */
+    tree attr;
+    PyObject *result = PyDict_New();
+    if (!result) {
+        return NULL;
+    }
+    for (attr = DECL_ATTRIBUTES(self->t.inner); attr; attr = TREE_CHAIN(attr)) {
+        const char *attrname = IDENTIFIER_POINTER(TREE_PURPOSE(attr));
+        PyObject *values;
+        values = PyGcc_TreeMakeListFromTreeList(TREE_VALUE(attr));
+        if (!values) {
+            goto error;
+        }
+
+        if (-1 == PyDict_SetItemString(result, attrname, values)) {
+            Py_DECREF(values);
+            goto error;
+        }
+        Py_DECREF(values);
+    }
+
+    return result;
+
+ error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 PyObject *
@@ -1103,6 +1262,15 @@ PyGcc_GetMethods(struct PyGccTree *self)
 #endif
 }
 
+PyObject * PyGcc_GetStubDecl(struct PyGccTree *self)
+{
+    return PyGccTree_New(gcc_private_make_tree(TYPE_STUB_DECL(self->t.inner)));
+}
+
+PyObject * PyGcc_MainVariant(struct PyGccTree *self)
+{
+    return PyGccTree_New(gcc_private_make_tree(TYPE_MAIN_VARIANT(self->t.inner)));
+}
 /* 
    GCC's debug_tree is implemented in:
      gcc/print-tree.c
