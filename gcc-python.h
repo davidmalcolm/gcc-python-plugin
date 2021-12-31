@@ -148,10 +148,11 @@ extern PyTypeObject PyGccWrapperMeta_TypeObj;
     ARG_fieldname:
       the name of the field within the CPython struct, containing the pointer
       to the GCC data
+
+  struct PyGccWrapper head;
  */
 #define DECLARE_SIMPLE_WRAPPER(ARG_structname, ARG_typeobj, ARG_typename, ARG_wrappedtype, ARG_fieldname) \
   struct ARG_structname {           \
-     struct PyGccWrapper head;      \
      ARG_wrappedtype ARG_fieldname; \
   };                                \
                                     \

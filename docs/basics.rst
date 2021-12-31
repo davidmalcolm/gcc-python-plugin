@@ -219,7 +219,7 @@ Debugging your script
 ---------------------
 
 You can place a forced breakpoint in your script using this standard Python
-one-liner::
+one-lxiner::
 
    import pdb; pdb.set_trace()
 

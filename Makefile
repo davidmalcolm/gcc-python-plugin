@@ -90,9 +90,9 @@ GENERATOR_DEPS=cpybuilder.py wrapperbuilder.py print-gcc-version
 #    make  PYTHON=python3  PYTHON_CONFIG=python3-config  all
 
 # The python interpreter to use:
-PYTHON=python
+PYTHON=~/.pyenv/versions/3.9-dev/bin/python3
 # The python-config executable to use:
-PYTHON_CONFIG=python-config
+PYTHON_CONFIG=~/.pyenv/versions/3.9-dev/bin/python3-config
 
 #PYTHON=python3
 #PYTHON_CONFIG=python3-config
@@ -105,6 +105,9 @@ PYTHON_CONFIG=python-config
 
 PYTHON_INCLUDES=$(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LIBS=$(shell $(PYTHON) -c 'import sys;print("-lpython%d.%d" % sys.version_info[:2])') $(shell $(PYTHON_CONFIG) --libs)
+
+#PYTHON_LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags)
+PYTHON_LDFLAGS=-L/root/.pyenv/versions/3.9-dev/lib/python3.9/config-3.9-x86_64-linux-gnu -L/root/.pyenv/versions/3.9-dev/lib  -lcrypt -lpthread -ldl  -lutil -lm -lm 
 
 # Support having multiple named plugins
 # e.g. "python2.7" "python3.2mu" "python 3.2dmu" etc:
@@ -121,7 +124,8 @@ CPPFLAGS+= -I$(GCCPLUGINS_DIR)/include -I$(GCCPLUGINS_DIR)/include/c-family -I. 
 # and choose debugging information level.
 CFLAGS?=-O2 -Werror -g
 # Force these settings
-CFLAGS+= -fPIC -fno-strict-aliasing -Wall
+CFLAGS+= -fPIC# after any initial comment lines
+
 LIBS+= $(PYTHON_LIBS)
 ifneq "$(PLUGIN_PYTHONPATH)" ""
   CPPFLAGS+= -DPLUGIN_PYTHONPATH='"$(PLUGIN_PYTHONPATH)"'
@@ -147,7 +151,7 @@ INVOCATION_ENV_VARS := PYTHONPATH=$(srcdir)./ CC_FOR_CPYCHECKER=$(CC) LD_LIBRARY
 #
 $(PLUGIN_DSO): $(PLUGIN_OBJECT_FILES) $(LIBGCC_C_API_SO)
 	$(CC) \
-	    $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+	    $(CPPFLAGS) $(CFLAGS) $(PYTHON_LDFLAGS) $(LDFLAGS) \
 	    -shared \
 	    $(PLUGIN_OBJECT_FILES) \
 	    -o $@ \

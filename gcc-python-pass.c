@@ -283,7 +283,7 @@ do_pass_init(PyObject *s, PyObject *args, PyObject *kwargs,
     /*
       We need to call _track manually as we're not using PyGccWrapper_New():
     */
-    PyGccWrapper_Track(&self->head);
+    //PyGccWrapper_Track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "s:gcc.Pass.__init__", (char**)keywords,
@@ -647,16 +647,16 @@ get_type_for_pass_type(enum opt_pass_type pt)
     default: assert(0);
 
     case GIMPLE_PASS:
-	return &PyGccGimplePass_TypeObj;
+        return &PyGccGimplePass_TypeObj;
 
     case RTL_PASS:
-	return &PyGccRtlPass_TypeObj;
+        return &PyGccRtlPass_TypeObj;
 
     case SIMPLE_IPA_PASS:
-	return &PyGccSimpleIpaPass_TypeObj;
+        return &PyGccSimpleIpaPass_TypeObj;
 
     case IPA_PASS:
-	return &PyGccIpaPass_TypeObj;
+        return &PyGccIpaPass_TypeObj;
     }
 };
 
@@ -669,7 +669,7 @@ real_make_pass_wrapper(void *p)
     struct PyGccPass *pass_obj = NULL;
 
     if (NULL == pass) {
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
     type_obj = get_type_for_pass_type(pass->type);
@@ -683,7 +683,7 @@ real_make_pass_wrapper(void *p)
     /* FIXME: do we need to do something for the GCC GC? */
 
     return (PyObject*)pass_obj;
-      
+
 error:
     return NULL;
 }
@@ -702,12 +702,12 @@ PyObject *
 PyGccPass_New(struct opt_pass *pass)
 {
     return PyGcc_LazilyCreateWrapper(&pass_wrapper_cache,
-					    pass,
-					    real_make_pass_wrapper);
+                                            pass,
+                                            real_make_pass_wrapper);
 }
 
 /*
-  PEP-7  
+  PEP-7
 Local variables:
 c-basic-offset: 4
 indent-tabs-mode: nil
