@@ -794,7 +794,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 
     PyGcc_globals.module = PyImport_ImportModule("gcc");
 
-    PyEval_InitThreads();
+    //    PyEval_InitThreads(); This is deprecated
   
     if (!PyGcc_init_gcc_module(plugin_info)) {
         return 1;
@@ -804,7 +804,7 @@ plugin_init (struct plugin_name_args *plugin_info,
         return 1;
     }
 
-    /* Init other modules */
+    /* Init otherOA modules */
     PyGcc_wrapper_init();
 
     /* FIXME: properly integrate them within the module hierarchy */

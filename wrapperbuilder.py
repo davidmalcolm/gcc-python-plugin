@@ -30,7 +30,9 @@ class PyGccWrapperTypeObject(PyTypeObject):
     """
     def __init__(self, *args, **kwargs):
         PyTypeObject.__init__(self, *args, **kwargs)
-        self.ob_type = '&PyGccWrapperMeta_TypeObj'
+        # TODO make more dynamic here
+        # self.ob_type = '&PyGccWrapperMeta_TypeObj'
+        self.ob_type = 'NULL'
 
     def c_defn(self):
         result = '\n'

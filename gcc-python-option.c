@@ -49,7 +49,7 @@ PyGccOption_init(PyGccOption * self, PyObject *args, PyObject *kwargs)
     /*
       We need to call _track manually as we're not using PyGccWrapper_New():
     */
-    PyGccWrapper_Track(&self->head);
+    //PyGccWrapper_Track(&self->head);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist,
                                       &text)) {
